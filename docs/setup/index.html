@@ -1,0 +1,941 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+      
+      
+      
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/setup/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../quickstart/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>安装与环境 - Skill Family Foundation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#安装与环境" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              安装与环境
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与环境
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#必需环境" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        必需环境
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#安装依赖" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安装依赖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#合成与检查" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        合成与检查
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#文档站点Material-for-MkDocs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档站点（Material for MkDocs）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#公开静态站render-public-sitemjs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        公开静态站（render-public-site.mjs）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#文档事实与链接检查" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档事实与链接检查
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速开始
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git 生命周期指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../help/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    能力与诊断
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构边界
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存量采用与迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    独立审计集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/mutation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计变异分类学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/independence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计独立性证明
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/version-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计版本兼容定义
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/failure-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计失败证据与 AUD 码
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#必需环境" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        必需环境
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#安装依赖" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安装依赖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#合成与检查" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        合成与检查
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#文档站点Material-for-MkDocs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档站点（Material for MkDocs）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#公开静态站render-public-sitemjs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        公开静态站（render-public-site.mjs）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#文档事实与链接检查" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档事实与链接检查
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="安装与环境">安装与环境<a class="headerlink" href="#安装与环境" title="Permanent link">&para;</a></h1>
+<h2 id="必需环境">必需环境<a class="headerlink" href="#必需环境" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>版本</th>
+<th>锁定点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js</td>
+<td>22.22.2（锁定 major 22 并精确提高 floor：<code>&gt;=22.22.2 &lt;23</code>）</td>
+<td><code>.node-version</code>（取精确 floor）、根与各叶子包 <code>package.json</code> 的 <code>engines.node</code>；floor 由 <code>scripts/engine-floor-check.mjs</code> 从固定根 devDependencies 的 engines 实时重算，fact-check J 节绑定文档表面</td>
+</tr>
+<tr>
+<td>pnpm</td>
+<td>10.30.0</td>
+<td><code>package.json</code> 的 <code>packageManager</code></td>
+</tr>
+<tr>
+<td>projen</td>
+<td>0.101.23</td>
+<td><code>package.json</code> 的 <code>devDependencies.projen</code>（精确版本，无范围符号）</td>
+</tr>
+<tr>
+<td>Git</td>
+<td>近年版本即可</td>
+<td>仅开发者自行管理版本；本仓脚本不执行 Git 写操作</td>
+</tr>
+</tbody>
+</table>
+<p>工具版本与锁定点登记在 <code>.foundation/version-lock.json</code>（projen 生成的机器真源，禁止手改）。升级流程见 <code>scripts/README.md</code>。</p>
+<h2 id="安装依赖">安装依赖<a class="headerlink" href="#安装依赖" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">pnpm install
+</code></pre>
+<p><code>.npmrc</code> 启用 <code>save-exact=true</code>，新增依赖也会以精确版本写入。</p>
+<h2 id="合成与检查">合成与检查<a class="headerlink" href="#合成与检查" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">pnpm synth
+pnpm check
+</code></pre>
+<ul>
+<li><code>pnpm synth</code> 再生成 projen 受管文件。受管文件只能通过修改 <code>.projenrc.js</code> 间接变更；手写源码、文档和 fixture 不会被 synth 覆盖。</li>
+<li><code>pnpm check</code> 是当前统一根门禁：10 个稳定门禁 ID 按固定顺序串联执行，任一步骤非 0 即整体失败；本仓没有任何 CI/CD workflow，全部门禁都在私有工作区内运行。下方区块由根 <code>package.json</code> 的 <code>scripts.check</code> 机械投影（<code>node scripts/docs/fact-check.mjs</code> 逐字核对，禁止手写清单再次滞后）：</li>
+</ul>
+<!-- BEGIN SKILL-FAMILY-GATE-STAGES v2 (10 stable gate IDs; derived from package.json scripts.check; verified by fact-check) -->
+<ol>
+<li>pnpm run check:structure</li>
+<li>pnpm run check:packages</li>
+<li>pnpm run check:profiles</li>
+<li>pnpm run check:public-boundary</li>
+<li>pnpm run check:scaffold</li>
+<li>pnpm run check:docs</li>
+<li>pnpm run check:public-snapshots</li>
+<li>pnpm run check:release-artifacts</li>
+<li>pnpm run check:projen</li>
+<li>pnpm run check:integration</li>
+</ol>
+<!-- END SKILL-FAMILY-GATE-STAGES -->
+
+<ul>
+<li>发布字节合同由两个固定入口承载：<code>pnpm run release-artifacts:build</code>（构建候选产物）与 <code>pnpm run release-artifacts:verify</code>（按合同校验），接口与拒绝矩阵详见 当前产品状态。</li>
+<li>耗时的 Python 文档矩阵<strong>不属于</strong> <code>pnpm check</code>：它有独立入口 <code>node scripts/docs/verify-matrix.mjs</code>（矩阵版本覆盖由该脚本对照 <code>scripts/docs/toolchain.json</code> 机械核对；本仓无 CI，矩阵不声明在任何工作流里）。</li>
+</ul>
+<p>其余命令：<code>pnpm test</code>（仅测试）、<code>pnpm drift</code>（只读 synth 漂移检查）、<code>pnpm synth-idempotency</code>(幂等性验证)、<code>pnpm fixtures-projen</code>（projen 反例 fixture）。</p>
+<h2 id="文档站点Material-for-MkDocs">文档站点（Material for MkDocs）<a class="headerlink" href="#文档站点Material-for-MkDocs" title="Permanent link">&para;</a></h2>
+<p>文档站点锁定 mkdocs 1.6.1 与 Material for MkDocs 9.7.7。依赖锁是 <code>pip-compile --generate-hashes</code> 生成的完整内容锁（全部顶层与传递依赖都带 SHA-256 hash），见 <code>scripts/docs/requirements.txt</code>（人工输入只有同目录的 <code>requirements.in</code>）；工具链真源见 <code>scripts/docs/toolchain.json</code>。Python 3.10 或更高即可（<code>node scripts/docs/verify-matrix.mjs</code> 在最低版 3.10 与 tested 3.14 上都会用全新虚拟环境复现安装与严格构建）。</p>
+<p>约定：<strong>不做系统级 pip install</strong>，虚拟环境必须建在仓库外部。原因是根 <code>pnpm check</code> 会对全仓做本地绝对路径字节扫描（见 <code>node scripts/check-structure.mjs</code>），而 macOS/Windows 上的虚拟环境内部嵌有本机绝对路径，放进仓库会造成误报。</p>
+<p>安装命令统一使用 <code>--require-hashes</code>（内容锁要求逐条校验 hash）：</p>
+<pre><code class="language-bash"># 在仓库外部创建虚拟环境（路径可按需替换，示例用父目录）
+python3 -m venv ../docs-site-venv
+
+# 用哈希锁安装锁定版本（字节不符会直接失败）
+../docs-site-venv/bin/pip install --require-hashes -r scripts/docs/requirements.txt
+
+# 严格模式构建（任何警告都会失败），输出到 site/（已被 .gitignore 忽略）
+../docs-site-venv/bin/mkdocs build --strict
+
+# 本地预览（可选）
+../docs-site-venv/bin/mkdocs serve
+</code></pre>
+<p>离线环境安装（固定流程）：在线机器只下载 wheelhouse，离线安装必须进入一个<strong>从未在线安装过的新 offline venv</strong>——复用在线 venv 无法证明离线链路可用：</p>
+<pre><code class="language-bash"># 1. 在线机器：下载 wheelhouse（下载同样逐条校验 hash；本步不安装到任何 venv）
+python3 -m pip download --require-hashes -r scripts/docs/requirements.txt -d ./docs-wheels
+
+# 2. 离线机器：新建一个从未在线安装过的 offline venv（路径可按需替换，不得复用 ../docs-site-venv）
+python3 -m venv ../docs-site-offline-venv
+
+# 3. 完全离线安装：不访问任何索引，只从 wheelhouse 解析，继续逐条校验 hash（字节不符直接失败）
+../docs-site-offline-venv/bin/pip install --no-index --find-links ./docs-wheels --require-hashes -r scripts/docs/requirements.txt
+
+# 4. 严格模式构建（任何警告都会失败）
+../docs-site-offline-venv/bin/mkdocs build --strict
+</code></pre>
+<h2 id="公开静态站render-public-sitemjs">公开静态站（render-public-site.mjs）<a class="headerlink" href="#公开静态站render-public-sitemjs" title="Permanent link">&para;</a></h2>
+<p>公开静态站是本仓文档站的公开子集，唯一由 <code>scripts/render-public-site.mjs</code> 用上述冻结 MkDocs 环境渲染：</p>
+<ul>
+<li>脚本只发现并校验冻结虚拟环境（<code>SKILL_FAMILY_DOCS_VENV</code>，或按本节步骤建的 <code>../docs-site-venv</code> / <code>../docs-site-offline-venv</code>），自身不做任何安装；</li>
+<li>执行两次 strict 构建并要求树哈希一致（确定性），随后复用 <code>scripts/leak-scan.mjs</code> 核心与 <code>scripts/leak-policy.json</code> 做内容泄漏扫描；</li>
+<li><code>--write</code> 只写 <code>docs/public/site/**</code> 与 <code>docs/public/site-baseline.json</code>；<code>--check</code> 零写入重算并比对基线；<code>--self-test</code> 运行主动反例自测；</li>
+<li>symlink、特殊文件、越界 realpath、单文件超限与不确定输出一律拒绝；基线禁止手改（渲染器是唯一写入面）。</li>
+</ul>
+<pre><code class="language-bash">node scripts/render-public-site.mjs --write
+node scripts/render-public-site.mjs --check
+</code></pre>
+<p>站点文件与 engineering-kit public 发布镜像仓的 <code>docs/**</code> 逐文件对应（映射由发布配置执行，本仓不直接写镜像）；Pages 实例是否在线是发布后验证事实，口径唯一见 当前产品状态。</p>
+<h2 id="文档事实与链接检查">文档事实与链接检查<a class="headerlink" href="#文档事实与链接检查" title="Permanent link">&para;</a></h2>
+<p>文档中的版本、命令、包数与门禁事实由确定性脚本对照机器真源校验，链接由独立脚本解析：</p>
+<pre><code class="language-bash">node scripts/docs/fact-check.mjs
+node scripts/docs/link-check.mjs
+</code></pre>
+<p><code>fact-check.mjs</code> 是 Node 脚本，经仓内模块（<code>scripts/engine-floor-check.mjs</code>）消费根目录精确锁定的 <code>semver@7.8.5</code>，运行前必须先完成 <code>pnpm install --frozen-lockfile</code>；<code>link-check.mjs</code> 为纯 Node 实现（无第三方依赖）。两者退出码 0 表示通过。脚本职责见 <code>scripts/docs/README.md</code>。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

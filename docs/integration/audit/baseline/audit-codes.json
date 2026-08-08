@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-family.audit.error-codes",
+  "provenance": "product-fixture",
+  "policy": {
+    "prefix": "AUD-",
+    "stability": "Append-only; a frozen audit code is never reused for a different meaning. New codes require an audit-taxonomy change documented in failure-evidence.md.",
+    "namespace": "Audit-owned codes live in the AUD- namespace and are never added to the Contracts SFC registry; audit consumes Contracts error codes read-only."
+  },
+  "codes": [
+    {
+      "code": "AUD-M1-STRUCT",
+      "name": "STRUCTURE_MUTATION_DETECTED",
+      "meaning": "A structure-class mutation fixture was detected: the mutated document failed schema validation with the expected stable Contracts code."
+    },
+    {
+      "code": "AUD-M2-SEM",
+      "name": "SEMANTIC_MUTATION_DETECTED",
+      "meaning": "A semantics-class mutation fixture was detected: the document is schema-valid but violates frozen kernel or registry semantics with the expected stable Contracts code."
+    },
+    {
+      "code": "AUD-M3-DIGEST",
+      "name": "DIGEST_MISMATCH_DETECTED",
+      "meaning": "A digest-class mutation fixture was detected: the canonical SHA-256 digest of the mutated document differs from the frozen baseline pin."
+    },
+    {
+      "code": "AUD-M4-OMIT",
+      "name": "OMISSION_DETECTED",
+      "meaning": "An omission-class mutation fixture was detected: completeness coverage found exactly the expected frozen parts missing."
+    },
+    {
+      "code": "AUD-M5-ENGINE",
+      "name": "ENGINE_WEAKENING_DETECTED",
+      "meaning": "An engine-weakening mutation fixture was detected: integrity comparison against the frozen baseline facts found exactly the expected weakened fields."
+    },
+    {
+      "code": "AUD-MISS-001",
+      "name": "MUTATION_CLASS_MISSED",
+      "meaning": "A mutation class has fewer fixtures than the frozen per-class minimum, or zero detections. Any missed class fails the whole audit verdict."
+    },
+    {
+      "code": "AUD-BASE-001",
+      "name": "BASELINE_DRIFT",
+      "meaning": "The live audit surface of the consumed Contracts package does not match the frozen baseline pin (surface digest or per-artifact digests)."
+    },
+    {
+      "code": "AUD-FMT-001",
+      "name": "EVIDENCE_OR_FIXTURE_FORMAT_INVALID",
+      "meaning": "An audit fixture envelope or the evidence document itself failed format validation."
+    },
+    {
+      "code": "AUD-LOCK-001",
+      "name": "LOCK_VERIFICATION_FAILED",
+      "meaning": "The consumed Contracts package failed pin/lock verification (identity, dependency closure, or baseline pin comparison)."
+    },
+    {
+      "code": "AUD-IND-001",
+      "name": "INDEPENDENCE_VIOLATION",
+      "meaning": "An audit read or import left the permitted audit-owned read set, or a forbidden generator/oracle artifact was reachable from audit code."
+    }
+  ]
+}

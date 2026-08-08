@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.integration.skill-family.example/v1/audit-evidence.json",
+  "title": "AuditEvidence",
+  "description": "Machine-readable failure-evidence document emitted by the independent audit runner (FND-060). Audit-owned format: it is validated through the consumed Contracts validator but is not registered in the Contracts schema registry, because audit verdicts are audit authority, not contracts authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "auditId",
+    "generatedAt",
+    "consumer",
+    "verdict",
+    "classCoverage",
+    "fixtureResults",
+    "findings"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "skill-family.audit.evidence"
+    },
+    "auditId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "Stable identifier of the audit run configuration."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 date-time when the evidence was produced."
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractsVersion", "auditSurfaceVersion", "surfaceDigest"],
+      "properties": {
+        "contractsVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "auditSurfaceVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "surfaceDigest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algorithm", "value"],
+          "properties": {
+            "algorithm": {
+              "const": "sha256"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      },
+      "description": "The exact consumed Contracts package, pinned by version coordinates and surface digest."
+    },
+    "verdict": {
+      "enum": ["pass", "fail"],
+      "description": "pass only when zero findings remain; any missed mutation class forces fail."
+    },
+    "classCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["structure", "semantics", "digest", "omission", "engine"],
+      "properties": {
+        "structure": { "$ref": "#/$defs/classCoverage" },
+        "semantics": { "$ref": "#/$defs/classCoverage" },
+        "digest": { "$ref": "#/$defs/classCoverage" },
+        "omission": { "$ref": "#/$defs/classCoverage" },
+        "engine": { "$ref": "#/$defs/classCoverage" }
+      }
+    },
+    "fixtureResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fixtureId", "mutationClass", "expectedAuditCode", "detected"],
+        "properties": {
+          "fixtureId": {
+            "type": "string",
+            "pattern": "^AUD-M[1-5]-[0-9]{2}$"
+          },
+          "mutationClass": {
+            "enum": ["structure", "semantics", "digest", "omission", "engine"]
+          },
+          "expectedAuditCode": {
+            "type": "string",
+            "pattern": "^AUD-[A-Z0-9]+(-[A-Z0-9]+)*$"
+          },
+          "detected": {
+            "type": "boolean"
+          },
+          "observed": {
+            "type": "object",
+            "description": "Detector observation; shape varies per mutation class."
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "classCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtures", "detected", "required", "satisfied"],
+      "properties": {
+        "fixtures": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fixtures loaded for this class."
+        },
+        "detected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fixtures whose mutation was detected as expected."
+        },
+        "required": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Frozen per-class fixture minimum."
+        },
+        "satisfied": {
+          "type": "boolean",
+          "description": "fixtures >= required and detected >= 1."
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["findingId", "auditCode", "severity", "summary", "detected"],
+      "properties": {
+        "findingId": {
+          "type": "string",
+          "pattern": "^F-[0-9]{4}$"
+        },
+        "auditCode": {
+          "type": "string",
+          "pattern": "^AUD-[A-Z0-9]+(-[A-Z0-9]+)*$",
+          "description": "Audit-owned stable code from baseline/audit-codes.json."
+        },
+        "severity": {
+          "enum": ["mandatory"],
+          "description": "v1 freezes a single severity: every finding fails the verdict."
+        },
+        "mutationClass": {
+          "enum": ["structure", "semantics", "digest", "omission", "engine", null]
+        },
+        "fixtureId": {
+          "type": ["string", "null"],
+          "pattern": "^AUD-M[1-5]-[0-9]{2}$"
+        },
+        "detected": {
+          "type": "boolean",
+          "description": "True for positive detections of violations; false would indicate a miss, which is always escalated to AUD-MISS-001."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "description": "Machine-readable detail payload; shape depends on the audit code."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1022 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+      
+      
+      
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/integration/audit/mutation-taxonomy/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../independence/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>审计变异分类学 - Skill Family Foundation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#变异分类学冻结" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              审计变异分类学
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速开始
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../git-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git 生命周期指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../help/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    能力与诊断
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构边界
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存量采用与迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    独立审计集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计变异分类学
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计变异分类学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#各类别定义与判据" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        各类别定义与判据
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="各类别定义与判据">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#M1-结构structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 结构（structure）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M2-语义semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M2 语义（semantics）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M3-摘要digest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M3 摘要（digest）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M4-遗漏omission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 遗漏（omission）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M5-检查引擎被削弱engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5 检查引擎被削弱（engine）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fixture-信封冻结" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fixture 信封（冻结）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#数量冻结与漏报律" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数量冻结与漏报律
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../independence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计独立性证明
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../version-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计版本兼容定义
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计失败证据与 AUD 码
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#各类别定义与判据" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        各类别定义与判据
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="各类别定义与判据">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#M1-结构structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 结构（structure）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M2-语义semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M2 语义（semantics）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M3-摘要digest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M3 摘要（digest）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M4-遗漏omission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 遗漏（omission）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#M5-检查引擎被削弱engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5 检查引擎被削弱（engine）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fixture-信封冻结" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fixture 信封（冻结）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#数量冻结与漏报律" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数量冻结与漏报律
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="变异分类学冻结">变异分类学（冻结）<a class="headerlink" href="#变异分类学冻结" title="Permanent link">&para;</a></h1>
+<p>FND-060 冻结五类变异。每一类都有独立的检测机制与每类 ≥3 例的变异 fixture；fixture 与预期是产品侧维护的测试语料（provenance <code>product-fixture</code>，见下方 fixture 信封），不复用生成器自测预期表，不读取 oracle 判据（该输入隔离由 <a href="../independence/">independence.md</a> 的机械证明强制）。它们证明产品侧输入隔离和兼容性，不证明作者、模型或认知独立；外部最终接受由仓外独立复审承担。分类集合是闭合的：新增类别属于审计分类学变更，必须走新的裁决并更新本文件与 <code>runner/lib/paths.mjs</code> 的 <code>MUTATION_CLASSES</code>。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>枚举值</th>
+<th>检测机制</th>
+<th>消费接口</th>
+<th>审计码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>结构</td>
+<td><code>structure</code></td>
+<td>严格方言下的 schema 校验拒绝</td>
+<td><code>validateDocument</code>（strict, 2020-12）</td>
+<td>AUD-M1-STRUCT</td>
+</tr>
+<tr>
+<td>语义</td>
+<td><code>semantics</code></td>
+<td>结构合法但违反冻结语义（协议登记、操作词表、params 契约、错误码成员资格）</td>
+<td><code>findProtocol</code>、<code>checkOperation</code>、<code>isRegisteredErrorCode</code></td>
+<td>AUD-M2-SEM</td>
+</tr>
+<tr>
+<td>摘要</td>
+<td><code>digest</code></td>
+<td>规范化 JSON 的 SHA-256 与冻结 pin 不一致</td>
+<td><code>digestDocument</code></td>
+<td>AUD-M3-DIGEST</td>
+</tr>
+<tr>
+<td>遗漏</td>
+<td><code>omission</code></td>
+<td>冻结必备部件缺失（登记、规则覆盖、错误码成员）</td>
+<td>基线 pin 事实清单对比</td>
+<td>AUD-M4-OMIT</td>
+</tr>
+<tr>
+<td>检查引擎被削弱</td>
+<td><code>engine</code></td>
+<td>引擎参数完整性对比（预算、校验策略、检查类型闭集、稳定性政策）</td>
+<td><code>describeAuditSurface</code> + 基线 pin</td>
+<td>AUD-M5-ENGINE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="各类别定义与判据">各类别定义与判据<a class="headerlink" href="#各类别定义与判据" title="Permanent link">&para;</a></h2>
+<h3 id="M1-结构structure">M1 结构（structure）<a class="headerlink" href="#M1-结构structure" title="Permanent link">&para;</a></h3>
+<p>变异改变文档的<strong>形状</strong>：缺必填成员、类型漂移、未声明成员、模式违规。判据：在 <code>2020-12</code> 方言、<code>strict</code> 策略下，文档必须被拒绝，且稳定码等于 fixture 声明的 <code>expect.observedErrorCode</code>（本类全部为 SFC1001）。预期由产品侧对照相应 schema 的 required/pattern/additionalProperties 推导，不取自生成器自测预期表或 oracle 判据。</p>
+<h3 id="M2-语义semantics">M2 语义（semantics）<a class="headerlink" href="#M2-语义semantics" title="Permanent link">&para;</a></h3>
+<p>变异保持 schema 合法性，但违反冻结的<strong>登记语义</strong>。三个语义检查点（fixture 用 <code>expect.semanticCheck</code> 声明）：</p>
+<ul>
+<li><code>protocol-registered</code>：协议名/版本必须在登记表中，否则 SFC1011；</li>
+<li><code>operation-vocabulary</code>：操作名必须在协议版本的冻结词表内（否则 SFC2002），params 必须满足该操作的冻结 params 契约（否则 SFC2003）；</li>
+<li><code>error-code-registered</code>：operation-result 中的错误码必须是冻结登记表成员（形状合法但未登记 → SFC1009）。</li>
+</ul>
+<h3 id="M3-摘要digest">M3 摘要（digest）<a class="headerlink" href="#M3-摘要digest" title="Permanent link">&para;</a></h3>
+<p>变异保持结构与语义，仅改变<strong>规范化字节</strong>（措辞改写、同义替换）。判据：<code>digestDocument(input)</code> 必须不等于基线 pin 中 <code>documentDigests[expect.pinField]</code>。这是唯一能捕获"含义不变、字节改变"的类别。规范化规则由 Contracts 的 <code>canonicalJson</code> 冻结：对象键逐级字典序排序、数组保序、只接受 JSON 数据类型。</p>
+<h3 id="M4-遗漏omission">M4 遗漏（omission）<a class="headerlink" href="#M4-遗漏omission" title="Permanent link">&para;</a></h3>
+<p>变异从冻结文档中<strong>删除</strong>必备部件。三个覆盖检查（fixture 用 <code>expect.check</code> 声明）：</p>
+<ul>
+<li><code>registry-schema-coverage</code>：五个顶层对象的 schema 登记缺一不可；</li>
+<li><code>rules-checktype-coverage</code>：九个检查类型每个都必须被至少一条 mandatory 规则覆盖；</li>
+<li><code>error-code-coverage</code>：冻结错误码清单一个不能少。</li>
+</ul>
+<p>判据：观察到的缺失清单必须与 <code>expect.missing</code> <strong>完全一致</strong>（多报、漏报都算 fixture 失败）。</p>
+<h3 id="M5-检查引擎被削弱engine">M5 检查引擎被削弱（engine）<a class="headerlink" href="#M5-检查引擎被削弱engine" title="Permanent link">&para;</a></h3>
+<p>变异不删除部件，而是<strong>放宽引擎参数</strong>。四个完整性检查（fixture 用 <code>expect.check</code> 声明）：</p>
+<ul>
+<li><code>rules-budget</code>：预算数值（firstVersionMax=20、absoluteMax=30）不得变化；</li>
+<li><code>validation-policies</code>：strict 策略必须保持 coerceTypes=false、useDefaults=false、allErrors=true、validateFormats=true；tolerant 策略逐键对比；</li>
+<li><code>check-type-set</code>：九个检查类型是闭集，缺一不可；</li>
+<li><code>error-code-stability</code>：错误码 append-only 稳定性政策原文不得改写。</li>
+</ul>
+<p>判据：观察到的被削弱字段清单必须与 <code>expect.weakened</code> 完全一致。</p>
+<h2 id="fixture-信封冻结">fixture 信封（冻结）<a class="headerlink" href="#fixture-信封冻结" title="Permanent link">&para;</a></h2>
+<p>每个 fixture 是一个 JSON 文件：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schemaVersion</code></td>
+<td>常量 <code>1</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>常量 <code>skill-family.audit.mutation-fixture</code></td>
+</tr>
+<tr>
+<td><code>fixtureId</code></td>
+<td><code>^AUD-M[1-5]-[0-9]{2}$</code>，第 6 位数字必须与类别一致</td>
+</tr>
+<tr>
+<td><code>mutationClass</code></td>
+<td>五类之一，且必须与所在目录一致</td>
+</tr>
+<tr>
+<td><code>provenance</code></td>
+<td>必须为 <code>product-fixture</code>（机械检查 P5）</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>变异意图说明</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td>被测对象（schema/文件/投影）</td>
+</tr>
+<tr>
+<td><code>input</code></td>
+<td>变异后的完整文档或投影</td>
+</tr>
+<tr>
+<td><code>expect.detected</code></td>
+<td>必须为 <code>true</code>（变异必须被检出）</td>
+</tr>
+<tr>
+<td><code>expect.auditCode</code></td>
+<td>必须等于该类别的审计码</td>
+</tr>
+</tbody>
+</table>
+<p><strong>provenance 现行事实</strong>：变异 fixture 是产品侧测试语料（<code>product-fixture</code>），基线 pin 是产品侧兼容基线（<code>product-compatibility-fixture</code>，见 <a href="../version-compatibility/">version-compatibility.md</a>）；它们证明产品侧输入隔离和兼容性，不证明作者、模型或认知独立。外部最终接受由仓外独立复审承担。历史纠错：fixture 与 pin 曾携带旧值 <code>independent-r2</code> 与独立作者叙事，该声称与本仓事实不符，已修正为上述如实词汇；纠错不改变任何 fixture 的 <code>input</code>/<code>expect</code>、digest 或 facts 字段。</p>
+<h2 id="数量冻结与漏报律">数量冻结与漏报律<a class="headerlink" href="#数量冻结与漏报律" title="Permanent link">&para;</a></h2>
+<ul>
+<li>每类 fixture ≥ 3（当前实际：结构 4、语义 4、摘要 3、遗漏 3、引擎 4，共 18）；</li>
+<li>覆盖门要求每类 <code>fixtures ≥ 3 且 detected ≥ 1</code>，不满足产生 AUD-MISS-001 并强制 verdict fail；</li>
+<li>漏报律的负例验证由 <code>runner/selftest-negative.mjs</code> 执行：逐类禁用检测器，断言每次破坏都使运行失败。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

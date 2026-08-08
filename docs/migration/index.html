@@ -1,0 +1,1213 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+      
+      
+      
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/migration/">
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../integration/audit/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>存量采用与迁移 - Skill Family Foundation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#存量采用与迁移FND-070" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              存量采用与迁移
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装与环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速开始
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git 生命周期指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../help/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    能力与诊断
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构边界
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存量采用与迁移
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存量采用与迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#原则" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        原则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adopt-plan-输出结构" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        adopt-plan 输出结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#迁移清单skill-familymigrationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        迁移清单（skill-family.migration.json）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#迁移状态机" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        迁移状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#完成判定门禁" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        完成判定门禁
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="完成判定门禁">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#强制负例任一场景-completion-必须为-false" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        强制负例（任一场景 completion 必须为 false）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#十字段-hand-off-草案" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        十字段 hand-off 草案
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="十字段 hand-off 草案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#INCOMPLETE-阻断规则" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INCOMPLETE 阻断规则
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#绑定" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        绑定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#渲染边界" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        渲染边界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#危害类-fixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        危害类 fixture
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    独立审计集成
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/mutation-taxonomy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计变异分类学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/independence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计独立性证明
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/version-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计版本兼容定义
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration/audit/failure-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计失败证据与 AUD 码
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#原则" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        原则
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adopt-plan-输出结构" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        adopt-plan 输出结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#迁移清单skill-familymigrationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        迁移清单（skill-family.migration.json）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#迁移状态机" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        迁移状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#完成判定门禁" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        完成判定门禁
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="完成判定门禁">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#强制负例任一场景-completion-必须为-false" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        强制负例（任一场景 completion 必须为 false）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#十字段-hand-off-草案" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        十字段 hand-off 草案
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="十字段 hand-off 草案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#INCOMPLETE-阻断规则" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INCOMPLETE 阻断规则
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#绑定" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        绑定
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#渲染边界" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        渲染边界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#危害类-fixture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        危害类 fixture
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="存量采用与迁移FND-070">存量采用与迁移（FND-070）<a class="headerlink" href="#存量采用与迁移FND-070" title="Permanent link">&para;</a></h1>
+<p>本页描述存量项目如何采用 Skill Family 基础设施，以及迁移完成判定的门禁。</p>
+<h2 id="原则">原则<a class="headerlink" href="#原则" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>计划先行</strong>：任何存量仓先运行只读 <code>adopt-plan</code>，拿到现状、目标 Profile、
+   精确写集、冲突、旧实现退出清单与验收命令，再决定是否执行写入。</li>
+<li><strong>只读计划零变化</strong>：<code>adopt-plan</code> 不写任何文件（含临时文件）、不运行 git
+   写命令、不改名、不触碰远端；对输入仓字节零变化（前后哈希走查可证）。</li>
+<li><strong>采用与改名分离</strong>：基础设施采用绝不连带仓库改名或远端坐标变更；
+   两者是独立决策，工具不提供任何改名能力。</li>
+<li><strong>双轨不算完成</strong>：迁移完成判定要求旧重复实现已删除；只接入新基础设施
+   而旧实现仍在，判定恒为 false。</li>
+</ol>
+<h2 id="adopt-plan-输出结构">adopt-plan 输出结构<a class="headerlink" href="#adopt-plan-输出结构" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>段落</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td>现状：入口数、目标自有受管声明</td>
+</tr>
+<tr>
+<td><code>project</code> / <code>traceability</code></td>
+<td>目标 Profile 与每项写入的真源（Contracts 版本、skeleton 生成函数、许可证 Profile 与变体）</td>
+</tr>
+<tr>
+<td><code>git</code></td>
+<td>只读 Git 前置状态（仓库、HEAD、clean）</td>
+</tr>
+<tr>
+<td><code>writeSet</code></td>
+<td>精确写集：每路径的 action（仅 <code>create</code>/<code>unchanged</code>）、fileClass、sha256</td>
+</tr>
+<tr>
+<td><code>conflicts</code></td>
+<td>手写冲突、受管漂移、符号链接占位、缺字段临时例外</td>
+</tr>
+<tr>
+<td><code>risks</code></td>
+<td>dirty、嵌套仓、tracked-but-ignored、到期例外等</td>
+</tr>
+<tr>
+<td><code>migration</code></td>
+<td>迁移状态机：绑定（binding）、在盘证明（adoptionProof）、待写入数、check 门禁、四类验证证据、状态与完成判定</td>
+</tr>
+<tr>
+<td><code>verificationPlan</code></td>
+<td>验收命令序列（check → projection → 复查）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="迁移清单skill-familymigrationjson">迁移清单（skill-family.migration.json）<a class="headerlink" href="#迁移清单skill-familymigrationjson" title="Permanent link">&para;</a></h2>
+<p>目标仓在根目录声明自己的迁移状态：</p>
+<pre><code class="language-json">{
+  &quot;kind&quot;: &quot;skill-family.migration-manifest&quot;,
+  &quot;legacyInfra&quot;: [
+    { &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;, &quot;replacedBy&quot;: &quot;sf-kit check&quot; }
+  ],
+  &quot;exceptions&quot;: [
+    {
+      &quot;owner&quot;: &quot;负责人&quot;,
+      &quot;reason&quot;: &quot;具体原因&quot;,
+      &quot;deadline&quot;: &quot;2026-12-31&quot;,
+      &quot;migrationTarget&quot;: &quot;wave-m1&quot;
+    }
+  ],
+  &quot;targetProfile&quot;: &quot;generic&quot;,
+  &quot;foundationPackages&quot;: [
+    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;1.1.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; }
+  ],
+  &quot;verification&quot;: {
+    &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
+    &quot;integration&quot;: &quot;docs/evidence/integration.json&quot;,
+    &quot;consumer&quot;: &quot;docs/evidence/consumer.json&quot;,
+    &quot;independentAudit&quot;: &quot;docs/evidence/independent-audit.json&quot;
+  }
+}
+</code></pre>
+<ul>
+<li><code>legacyInfra</code> 每项给出旧实现路径与替代物；工具只读评估存在性，绝不代为删除。</li>
+<li><code>exceptions</code> 是<strong>临时例外</strong>：必须同时含负责人（owner）、原因（reason）、
+  截止时间（deadline）、迁移目标（migrationTarget）四项，缺任一字段即计为
+  冲突（计划失败）；到期例外不自动续期，持续阻断完成判定。</li>
+<li><code>targetProfile</code> / <code>foundationPackages</code>：采用绑定。目标 Profile
+  必须与计划 Profile 一致；三个 Foundation 包（contracts、harness-node、
+  engineering-kit）必须各自绑定<strong>精确版本号</strong>（不接受浮动范围）与
+  <code>sha256:</code> 摘要。</li>
+<li><code>verification</code>：四类验证证据文档路径（unit、integration、
+  consumer、independentAudit）。每份证据必须是可解析 JSON 且其
+  <code>projectId</code> 与目标项目身份一致，才计为 proven；路径越界、缺失、
+  不可解析、身份不符均为未证明，fail-closed。</li>
+</ul>
+<h2 id="迁移状态机">迁移状态机<a class="headerlink" href="#迁移状态机" title="Permanent link">&para;</a></h2>
+<p>状态单调递进，只由只读证据推导，任何工具都不通过写入推进状态：</p>
+<pre><code>not-declared → declared → adopted → verified → complete
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not-declared</code></td>
+<td>不存在契约有效的迁移清单</td>
+</tr>
+<tr>
+<td><code>declared</code></td>
+<td>清单契约有效，但采用事实证明不全</td>
+</tr>
+<tr>
+<td><code>adopted</code></td>
+<td>Foundation 字节已在盘且旧实现已退出，check 门禁未绿</td>
+</tr>
+<tr>
+<td><code>verified</code></td>
+<td>check 门禁绿，验证证据未全部 proven</td>
+</tr>
+<tr>
+<td><code>complete</code></td>
+<td>八项完成条件全部满足；<code>complete</code> 为真当且仅当状态为 <code>complete</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="完成判定门禁">完成判定门禁<a class="headerlink" href="#完成判定门禁" title="Permanent link">&para;</a></h2>
+<p><code>migration.completion.complete</code> 为 true 当且仅当<strong>全部八项</strong>成立：</p>
+<ol>
+<li>已声明契约有效的迁移清单（kind/字段经 Contracts schema 校验）；</li>
+<li>采用绑定已证明：目标 Profile 与计划一致，三个 Foundation 包均绑定
+   精确版本与 sha256 摘要；</li>
+<li>Project Manifest、managed lock、identity 与全部受管骨架文件在盘且
+   摘要与计划一致（<code>adoptionProof.missing</code>/<code>mismatched</code> 为空）；</li>
+<li>写集中无待执行的 create/replace/project 动作（<code>pendingWrites</code> 为 0）；</li>
+<li>Foundation check 门禁绿；</li>
+<li>每项旧实现均已退出（absent）——containment 拒绝或畸形条目与 present
+   同等 fail-closed；</li>
+<li>无缺字段、无不可解析截止时间、无已到期的临时例外；无未解决的采用冲突；</li>
+<li>四类验证证据（unit/integration/consumer/independentAudit）全部 proven
+   且身份（projectId）匹配。</li>
+</ol>
+<p>未评估的输入与未证明等价：门禁只依据出示的证据前进。
+阻断理由（<code>blockers</code>）为稳定可读字符串，可直接进入迁移评审记录。</p>
+<h3 id="强制负例任一场景-completion-必须为-false">强制负例（任一场景 completion 必须为 false）<a class="headerlink" href="#强制负例任一场景-completion-必须为-false" title="Permanent link">&para;</a></h3>
+<ul>
+<li>空仓 + 空清单（无契约有效清单 → <code>not-declared</code>）；</li>
+<li>清单 kind 错误（schema-invalid → 视同未声明）；</li>
+<li>9 个骨架文件仍待 create（<code>declared</code>，列出全部缺失路径）；</li>
+<li>managed lock 漂移（<code>mismatched</code> 非空）；</li>
+<li>只接入新实现、旧实现仍在（双轨 → <code>declared</code>）；</li>
+<li>消费者验证证据缺失或身份不符（<code>verified</code>，不得 complete）；</li>
+<li>临时例外过期（工具绝不续期）。</li>
+</ul>
+<h2 id="十字段-hand-off-草案">十字段 hand-off 草案<a class="headerlink" href="#十字段-hand-off-草案" title="Permanent link">&para;</a></h2>
+<p><code>adopt-plan</code> 输出携带 <code>handoffDraft</code> 子块（kind=<code>skill-family.handoff-draft</code>，
+schemaVersion=1），为 planner 侧的十字段 hand-off 提供结构化数据草案。
+字段来源只有两种：<code>derived</code>（可由只读证据机械推导）与 <code>INCOMPLETE</code>
+（不可机械推导，绝不猜测）。十字段与源码常量 <code>HANDOFF_FIELDS</code> 逐一对应：</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>字段名</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>project-identity</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>repository-state</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>foundation-binding</code></td>
+<td>derived（清单已声明绑定）／INCOMPLETE（无清单声明）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>write-set-policy</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>legacy-exits</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>business-logic-to-keep</code></td>
+<td>恒 INCOMPLETE</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>plan-summary</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>verification-entries</code></td>
+<td>derived（四类证据全部 proven）／INCOMPLETE（任一未证明）</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>legacy-removal-recovery</code></td>
+<td>恒 INCOMPLETE</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>authorization-status</code></td>
+<td>derived（commit/push/tag/publish 恒为 false）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="INCOMPLETE-阻断规则">INCOMPLETE 阻断规则<a class="headerlink" href="#INCOMPLETE-阻断规则" title="Permanent link">&para;</a></h3>
+<ul>
+<li>任何 INCOMPLETE 字段都使 <code>ready=false</code>：草案带缺口就不得进入 hand-off。</li>
+<li>工具绝不猜测不可机械推导的字段：</li>
+<li><code>business-logic-to-keep</code> 与 <code>legacy-removal-recovery</code> <strong>恒 INCOMPLETE</strong>，
+    必须由人类负责人给出，工具无推导依据；</li>
+<li><code>foundation-binding</code> 在无迁移清单声明（<code>foundationPackages</code>）时
+    INCOMPLETE，只计清单声明的绑定；</li>
+<li><code>verification-entries</code> 在四类证据（unit/integration/consumer/
+    independentAudit）任一未达 proven 时 INCOMPLETE。</li>
+</ul>
+<h3 id="绑定">绑定<a class="headerlink" href="#绑定" title="Permanent link">&para;</a></h3>
+<p>草案携带双 sha256 摘要（<code>binding</code> 块）：<code>targetSetDigest</code> 汇总目标仓
+文件集合，<code>foundationPlanDigest</code> 汇总 Foundation 计划写集。同一目标两次
+计划得到相同摘要，草案与计划时刻的目标状态精确绑定。</p>
+<h3 id="渲染边界">渲染边界<a class="headerlink" href="#渲染边界" title="Permanent link">&para;</a></h3>
+<ul>
+<li>渲染器只写 planner 侧的 hand-off 草案，<strong>绝不写消费者仓</strong>；</li>
+<li>不新增第五个 Kit 顶层命令：Kit 顶层命令恒为 scaffold、adopt-plan、
+  projection、check 四个，<code>handoffDraft</code> 只是 <code>adopt-plan</code> 输出的子块。</li>
+</ul>
+<h2 id="危害类-fixture">危害类 fixture<a class="headerlink" href="#危害类-fixture" title="Permanent link">&para;</a></h2>
+<p><code>fixtures/adoption/cases/</code> 覆盖七个危害类：dirty 仓、嵌套仓、
+tracked-but-ignored、符号链接占位、生成物漂移、旧实现退出门禁、
+临时例外字段。每个案例以字节级前后快照证明计划只读；案例说明见仓内
+<code>fixtures/adoption/README.md</code>。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
