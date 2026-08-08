@@ -139,7 +139,18 @@ async function loadManagedFileLock(rootAbs) {
 
 async function checkDrift(rootAbs, findings) {
   const lock = await loadManagedFileLock(rootAbs);
-  if (!lock) return null; // no lock => nothing to drift against
+  if (!lock) {
+    findings.push(
+      finding(
+        "drift",
+        KIT_ERROR_KINDS.MANAGED_FILE_MISSING,
+        "SFC2004",
+        "managed-file-lock is absent; drift check cannot run without it",
+        { path: MANAGED_LOCK_PATH },
+      ),
+    );
+    return null;
+  }
   const entries = Array.isArray(lock?.entries) ? lock.entries : [];
   for (const entry of entries) {
     const rel = typeof entry?.path === "string" ? normalizeRelPath(entry.path) : null;
@@ -178,7 +189,18 @@ async function checkDrift(rootAbs, findings) {
 }
 
 async function checkClosure(rootAbs, lock, findings) {
-  if (!lock) return { digest: null, note: "no managed-file-lock present; closure check skipped" };
+  if (!lock) {
+    findings.push(
+      finding(
+        "closure",
+        KIT_ERROR_KINDS.CLOSURE_INPUT_MISSING,
+        "SFC2004",
+        "managed-file-lock is absent; resource closure cannot be computed without it",
+        { path: MANAGED_LOCK_PATH },
+      ),
+    );
+    return { digest: null };
+  }
   const resources = [
     { path: MANAGED_LOCK_PATH, role: "input" },
     ...(Array.isArray(lock.entries) ? lock.entries : [])
@@ -227,7 +249,18 @@ async function checkVersion(rootAbs, docs, findings) {
     if (loaded.ok) manifest = loaded.value;
   }
   const declared = manifest?.contracts?.version;
-  if (typeof declared !== "string") return { contractsVersion: null };
+  if (typeof declared !== "string") {
+    findings.push(
+      finding(
+        "version",
+        KIT_ERROR_KINDS.CONTRACTS_MISSING,
+        "SFC2004",
+        "project manifest is absent or lacks contracts.version; version check cannot run",
+        { path: PROJECT_MANIFEST_PATH },
+      ),
+    );
+    return { contractsVersion: null };
+  }
   if (declared !== CONTRACTS_VERSION) {
     findings.push(
       finding(

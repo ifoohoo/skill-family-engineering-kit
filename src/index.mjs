@@ -61,6 +61,7 @@ import {
   PROJECT_MANIFEST_PATH,
   PROJECTION_MANIFEST_PATH,
 } from "./skeleton.mjs";
+import { matchAnyGlob } from "./workspace.mjs";
 
 /**
  * skill-family-engineering-kit: the four build-time engineering commands.
@@ -194,6 +195,7 @@ export {
   MANAGED_LOCK_PATH,
   PROJECTION_MANIFEST_PATH,
   IDENTITY_RECORD_PATH,
+  matchAnyGlob,
 };
 export { ContractsError };
 

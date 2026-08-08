@@ -8,8 +8,8 @@
     "url": "https://github.com/ifoohoo/skill-family-engineering-kit/issues"
   },
   "dependencies": {
-    "skill-family-contracts": "0.1.1",
-    "skill-family-harness-node": "0.1.1"
+    "skill-family-contracts": "0.1.2",
+    "skill-family-harness-node": "0.1.2"
   },
   "description": "Build-time scaffold, adoption planning, projection, and checks.",
   "engines": {
@@ -35,7 +35,7 @@
     "url": "https://github.com/ifoohoo/skill-family-engineering-kit.git"
   },
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "check": "node --input-type=module -e \"import('./src/index.mjs').then(() => console.log('smoke ok')).catch(e => { console.error(e); process.exit(1) })\"",
     "test": "node --input-type=module -e \"import('./src/index.mjs').then(() => console.log('smoke ok')).catch(e => { console.error(e); process.exit(1) })\""

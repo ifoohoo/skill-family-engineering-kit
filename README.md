@@ -15,18 +15,18 @@
 ## 使用
 
 ```sh
-npx skill-family-kit --help
-npx skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npx skill-family-kit adopt-plan --root <repo>
-npx skill-family-kit projection --root <repo>
-npx skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit
+npm exec -- skill-family-kit --help
+npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec -- skill-family-kit adopt-plan --root <repo>
+npm exec -- skill-family-kit projection --root <repo>
+npm exec -- skill-family-kit check --root <repo>
 ```
 
-或全局安装后直接使用：
+零安装形式（不修改 package.json）：
 
 ```sh
-npm install -g skill-family-engineering-kit
-skill-family-kit --help
+npm exec --package=skill-family-engineering-kit -- skill-family-kit --help
 ```
 
 ## 边界机制

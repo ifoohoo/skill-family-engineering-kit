@@ -853,13 +853,13 @@ python3 -m venv ../docs-site-venv
 </code></pre>
 <p>离线环境安装（固定流程）：在线机器只下载 wheelhouse，离线安装必须进入一个<strong>从未在线安装过的新 offline venv</strong>——复用在线 venv 无法证明离线链路可用：</p>
 <pre><code class="language-bash"># 1. 在线机器：下载 wheelhouse（下载同样逐条校验 hash；本步不安装到任何 venv）
-python3 -m pip download --require-hashes -r scripts/docs/requirements.txt -d ./docs-wheels
+python3 -m pip download --require-hashes -r scripts/docs/requirements.txt -d ../docs-wheels
 
 # 2. 离线机器：新建一个从未在线安装过的 offline venv（路径可按需替换，不得复用 ../docs-site-venv）
 python3 -m venv ../docs-site-offline-venv
 
 # 3. 完全离线安装：不访问任何索引，只从 wheelhouse 解析，继续逐条校验 hash（字节不符直接失败）
-../docs-site-offline-venv/bin/pip install --no-index --find-links ./docs-wheels --require-hashes -r scripts/docs/requirements.txt
+../docs-site-offline-venv/bin/pip install --no-index --find-links ../docs-wheels --require-hashes -r scripts/docs/requirements.txt
 
 # 4. 严格模式构建（任何警告都会失败）
 ../docs-site-offline-venv/bin/mkdocs build --strict
