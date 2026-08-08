@@ -127,10 +127,19 @@ async function readManagedCandidate(rootAbs, rel, findings) {
   }
 }
 
-async function checkDrift(rootAbs, findings) {
+/**
+ * Loads and parses the managed-file-lock JSON independently of any check class.
+ * Returns the parsed lock object, or null when the lock is absent or unreadable.
+ */
+async function loadManagedFileLock(rootAbs) {
   const loaded = await readOptionalJson(rootAbs, MANAGED_LOCK_PATH);
-  if (!loaded.ok) return null; // no lock => nothing to drift against
-  const lock = loaded.value;
+  if (!loaded.ok) return null;
+  return loaded.value;
+}
+
+async function checkDrift(rootAbs, findings) {
+  const lock = await loadManagedFileLock(rootAbs);
+  if (!lock) return null; // no lock => nothing to drift against
   const entries = Array.isArray(lock?.entries) ? lock.entries : [];
   for (const entry of entries) {
     const rel = typeof entry?.path === "string" ? normalizeRelPath(entry.path) : null;
@@ -210,8 +219,13 @@ async function checkClosure(rootAbs, lock, findings) {
   }
 }
 
-async function checkVersion(docs, findings) {
-  const manifest = docs[PROJECT_MANIFEST_PATH];
+async function checkVersion(rootAbs, docs, findings) {
+  let manifest = docs[PROJECT_MANIFEST_PATH];
+  if (!manifest) {
+    // Load independently when the contracts check didn't run first
+    const loaded = await readOptionalJson(rootAbs, PROJECT_MANIFEST_PATH);
+    if (loaded.ok) manifest = loaded.value;
+  }
   const declared = manifest?.contracts?.version;
   if (typeof declared !== "string") return { contractsVersion: null };
   if (declared !== CONTRACTS_VERSION) {
@@ -360,11 +374,18 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
   let identityRecord = null;
 
   if (classes.includes("contracts")) await checkContracts(rootAbs, docs, findings);
+
+  let driftLock = null;
   if (classes.includes("drift")) {
-    const lock = await checkDrift(rootAbs, findings);
-    if (classes.includes("closure")) closureInfo = await checkClosure(rootAbs, lock, findings);
+    driftLock = await checkDrift(rootAbs, findings);
   }
-  if (classes.includes("version")) versionInfo = await checkVersion(docs, findings);
+
+  if (classes.includes("closure")) {
+    const lock = driftLock ?? (classes.includes("drift") ? null : await loadManagedFileLock(rootAbs));
+    closureInfo = await checkClosure(rootAbs, lock, findings);
+  }
+
+  if (classes.includes("version")) versionInfo = await checkVersion(rootAbs, docs, findings);
   if (classes.includes("docs")) await checkDocs(rootAbs, docs, findings);
   if (classes.includes("git")) git = await checkGit(rootAbs, findings, allowGitSpawn);
   if (classes.includes("identity")) identityRecord = await checkIdentity(rootAbs, docs, findings, profilesRoot);

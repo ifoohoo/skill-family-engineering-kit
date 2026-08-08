@@ -15,11 +15,18 @@
 ## 使用
 
 ```sh
-node packages/skill-family-engineering-kit/src/cli.mjs --help
-node packages/skill-family-engineering-kit/src/cli.mjs scaffold --root <empty-dir> --project-id my-project
-node packages/skill-family-engineering-kit/src/cli.mjs adopt-plan --root <repo>
-node packages/skill-family-engineering-kit/src/cli.mjs projection --root <repo>
-node packages/skill-family-engineering-kit/src/cli.mjs check --root <repo>
+npx skill-family-kit --help
+npx skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npx skill-family-kit adopt-plan --root <repo>
+npx skill-family-kit projection --root <repo>
+npx skill-family-kit check --root <repo>
+```
+
+或全局安装后直接使用：
+
+```sh
+npm install -g skill-family-engineering-kit
+skill-family-kit --help
 ```
 
 ## 边界机制

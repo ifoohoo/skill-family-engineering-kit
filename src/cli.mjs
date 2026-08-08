@@ -24,7 +24,7 @@ import {
 
 const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包（恰好四个顶层命令）
 
-用法: node src/cli.mjs <command> [options]
+用法: skill-family-kit <command> [options]
 
 命令（四且仅四）:
   scaffold     在空目录生成 Skill Family 项目骨架。
