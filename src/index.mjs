@@ -1,6 +1,7 @@
 import { ContractsError } from "skill-family-contracts";
 import { buildHandoffDraft, HANDOFF_FIELDS, planAdoption } from "./adopt-plan.mjs";
-import { CHECK_CLASSES, runChecks } from "./check.mjs";
+import { CHECK_CLASSES, DOCUMENT_STATES, runChecks } from "./check.mjs";
+import { CORE_CHECK_SECURITY_KINDS, isContainedDeclaration, runCoreCheck } from "./core-check.mjs";
 import {
   invalidParamsError,
   KitError,
@@ -150,10 +151,13 @@ export async function runCommand(command, options = {}) {
     }
     case "check": {
       const output = await runChecks(options);
-      return {
-        exitCode: output.ok ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings,
-        output,
-      };
+      // 0 clean; 2 mechanism (a selected class could not complete); 1 findings.
+      const exitCode = output.mechanism
+        ? KIT_EXIT_CODES.rejected
+        : output.ok
+          ? KIT_EXIT_CODES.ok
+          : KIT_EXIT_CODES.findings;
+      return { exitCode, output };
     }
     default: {
       // TOP_LEVEL_COMMANDS is frozen with exactly the cases above; this
@@ -181,6 +185,10 @@ export {
   loadProjectionManifest,
   runChecks,
   CHECK_CLASSES,
+  DOCUMENT_STATES,
+  runCoreCheck,
+  CORE_CHECK_SECURITY_KINDS,
+  isContainedDeclaration,
   probeGitState,
   probeGitFacts,
   GIT_READ_ONLY_ALLOWLIST,

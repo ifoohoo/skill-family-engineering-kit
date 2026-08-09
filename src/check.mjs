@@ -40,6 +40,15 @@ import {
  *   git       — read-only Git pre-state (never a git write);
  *   identity  — licensing and identity drift checks (FND-045).
  *
+ * Every class is independently complete: it loads its own inputs and never
+ * consumes another class's cache, so a full run and a `--only <class>` run
+ * produce byte-identical findings for that class (the equivalence matrix in
+ * test/check-equivalence.test.mjs is the mechanical witness). Document
+ * loading distinguishes the four stable states missing / parse-failed /
+ * schema-invalid / incomplete, and class results distinguish selected /
+ * completed / findings — a class that never ran is never reported as having
+ * run.
+ *
  * This module contains no write call of any kind. Mutation-looking flags
  * (--fix, --apply, ...) are refused at intake by the CLI. Findings carry
  * stable kinds and registered SFC codes; the exit code is the stable
@@ -50,48 +59,86 @@ const CHECK_CLASSES = Object.freeze(["contracts", "drift", "closure", "version",
 
 export { CHECK_CLASSES };
 
+/**
+ * Stable document loading states every check class must distinguish:
+ *   missing        — the file does not exist;
+ *   parse-failed   — the bytes are not valid JSON;
+ *   schema-invalid — the parsed document fails its registered schema;
+ *   incomplete     — parsed (and schema-checked where requested) but a fact
+ *                    the consuming class needs is absent;
+ *   ok             — every requested state passed.
+ */
+export const DOCUMENT_STATES = Object.freeze([
+  "missing",
+  "parse-failed",
+  "schema-invalid",
+  "incomplete",
+  "ok",
+]);
+
 function finding(checkClass, kind, code, message, extra) {
   return { class: checkClass, kind, code, message, ...(extra ?? {}) };
 }
 
-async function checkContracts(rootAbs, docs, findings) {
+/**
+ * Loads one JSON document and classifies it into the stable document states.
+ * Options:
+ *   schemaObject — when given, an ok state additionally requires the parsed
+ *                  document to pass the registered schema of that object;
+ *   completeWhen — when given, an ok state additionally requires the predicate
+ *                  to hold on the parsed value (absence => "incomplete").
+ */
+async function loadDocument(rootAbs, relPath, { schemaObject, completeWhen } = {}) {
+  const loaded = await readOptionalJson(rootAbs, relPath);
+  if (loaded.reason === "missing") return { state: "missing", value: null };
+  if (!loaded.ok) return { state: "parse-failed", value: null };
+  if (schemaObject !== undefined) {
+    const registration = findSchemaByObject(schemaObject);
+    const outcome = validateContractDocument(loaded.value, { schemaId: registration.$id });
+    if (!outcome.valid) return { state: "schema-invalid", value: loaded.value, outcome };
+  }
+  if (completeWhen !== undefined && !completeWhen(loaded.value)) {
+    return { state: "incomplete", value: loaded.value };
+  }
+  return { state: "ok", value: loaded.value };
+}
+
+async function checkContracts(rootAbs, findings) {
   const targets = [
     ["project-manifest", PROJECT_MANIFEST_PATH],
     ["managed-file-lock", MANAGED_LOCK_PATH],
   ];
   let present = 0;
   for (const [objectName, relPath] of targets) {
-    const loaded = await readOptionalJson(rootAbs, relPath);
-    if (loaded.reason === "missing") continue;
+    const document = await loadDocument(rootAbs, relPath, { schemaObject: objectName });
+    if (document.state === "missing") continue;
     present += 1;
-    docs[relPath] = loaded.ok ? loaded.value : null;
-    if (!loaded.ok) {
+    if (document.state === "parse-failed") {
       findings.push(
         finding(
           "contracts",
           KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
           "SFC1001",
           `${relPath} is not valid JSON`,
-          { path: relPath },
+          { path: relPath, documentState: document.state },
         ),
       );
       continue;
     }
-    const registration = findSchemaByObject(objectName);
-    const outcome = validateContractDocument(loaded.value, { schemaId: registration.$id });
-    if (!outcome.valid) {
+    if (document.state === "schema-invalid") {
       findings.push(
         finding(
           "contracts",
           "schema-validation-failed",
-          outcome.errorCode,
-          `${relPath} fails the registered ${objectName} schema: ${outcome.errors
+          "SFC1001",
+          `${relPath} fails the registered ${objectName} schema: ${document.outcome.errors
             .slice(0, 3)
             .map((entry) => `${entry.instancePath || "/"} ${entry.message}`)
             .join("; ")}`,
-          { path: relPath, schemaId: registration.$id },
+          { path: relPath, schemaId: findSchemaByObject(objectName).$id, documentState: document.state },
         ),
       );
+      continue;
     }
   }
   if (present === 0) {
@@ -188,7 +235,10 @@ async function checkDrift(rootAbs, findings) {
   return lock;
 }
 
-async function checkClosure(rootAbs, lock, findings) {
+async function checkClosure(rootAbs, findings) {
+  // The closure class loads its own lock: it never depends on the drift
+  // class having run first.
+  const lock = await loadManagedFileLock(rootAbs);
   if (!lock) {
     findings.push(
       finding(
@@ -241,26 +291,49 @@ async function checkClosure(rootAbs, lock, findings) {
   }
 }
 
-async function checkVersion(rootAbs, docs, findings) {
-  let manifest = docs[PROJECT_MANIFEST_PATH];
-  if (!manifest) {
-    // Load independently when the contracts check didn't run first
-    const loaded = await readOptionalJson(rootAbs, PROJECT_MANIFEST_PATH);
-    if (loaded.ok) manifest = loaded.value;
-  }
-  const declared = manifest?.contracts?.version;
-  if (typeof declared !== "string") {
+async function checkVersion(rootAbs, findings) {
+  // Loads its own manifest without schema validation: schema conformance is
+  // the contracts class's finding, the version class only needs the fact.
+  const document = await loadDocument(rootAbs, PROJECT_MANIFEST_PATH, {
+    completeWhen: (value) => typeof value?.contracts?.version === "string",
+  });
+  if (document.state === "missing") {
     findings.push(
       finding(
         "version",
         KIT_ERROR_KINDS.CONTRACTS_MISSING,
         "SFC2004",
-        "project manifest is absent or lacks contracts.version; version check cannot run",
-        { path: PROJECT_MANIFEST_PATH },
+        "project manifest is absent; version check cannot run without it",
+        { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
     return { contractsVersion: null };
   }
+  if (document.state === "parse-failed") {
+    findings.push(
+      finding(
+        "version",
+        KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
+        "SFC2004",
+        "project manifest is not valid JSON; version check cannot run without it",
+        { path: PROJECT_MANIFEST_PATH, documentState: document.state },
+      ),
+    );
+    return { contractsVersion: null };
+  }
+  if (document.state === "incomplete") {
+    findings.push(
+      finding(
+        "version",
+        KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE,
+        "SFC2004",
+        "project manifest lacks contracts.version; version check cannot run without it",
+        { path: PROJECT_MANIFEST_PATH, documentState: document.state },
+      ),
+    );
+    return { contractsVersion: null };
+  }
+  const declared = document.value.contracts.version;
   if (declared !== CONTRACTS_VERSION) {
     findings.push(
       finding(
@@ -275,7 +348,9 @@ async function checkVersion(rootAbs, docs, findings) {
   return { contractsVersion: declared };
 }
 
-async function checkDocs(rootAbs, docs, findings) {
+async function checkDocs(rootAbs, findings) {
+  // The docs class reads every documentation fact itself: README, package.json
+  // and the project manifest. It never consumes another class's state.
   const readme = await readOptionalFile(rootAbs, "README.md");
   if (readme === null || readme.trim().length === 0) {
     findings.push(
@@ -284,26 +359,57 @@ async function checkDocs(rootAbs, docs, findings) {
         KIT_ERROR_KINDS.README_MISSING,
         "SFC2004",
         "README.md is missing or empty (documentation fact)",
-        { path: "README.md" },
+        { path: "README.md", documentState: "missing" },
       ),
     );
   }
-  const packageJson = await readOptionalJson(rootAbs, "package.json");
-  const manifest = docs[PROJECT_MANIFEST_PATH];
-  if (packageJson.ok && manifest && typeof manifest?.project === "object") {
-    const packageName = packageJson.value?.name;
-    if (typeof packageName === "string") {
-      if (manifest.project.id !== packageName) {
-        findings.push(
-          finding(
-            "docs",
-            KIT_ERROR_KINDS.IDENTITY_MISMATCH,
-            "SFC2004",
-            `project manifest id "${manifest.project.id}" does not match package.json name "${packageName}"`,
-            { manifestId: manifest.project.id, packageName },
-          ),
-        );
-      }
+  const packageDocument = await loadDocument(rootAbs, "package.json");
+  if (packageDocument.state === "parse-failed") {
+    findings.push(
+      finding(
+        "docs",
+        KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
+        "SFC2004",
+        "package.json is not valid JSON; documentation identity facts cannot be compared",
+        { path: "package.json", documentState: packageDocument.state },
+      ),
+    );
+  }
+  const manifestDocument = await loadDocument(rootAbs, PROJECT_MANIFEST_PATH, {
+    completeWhen: (value) => typeof value?.project?.id === "string",
+  });
+  if (manifestDocument.state === "parse-failed") {
+    findings.push(
+      finding(
+        "docs",
+        KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
+        "SFC2004",
+        "project manifest is not valid JSON; documentation identity facts cannot be compared",
+        { path: PROJECT_MANIFEST_PATH, documentState: manifestDocument.state },
+      ),
+    );
+  } else if (manifestDocument.state === "incomplete") {
+    findings.push(
+      finding(
+        "docs",
+        KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE,
+        "SFC2004",
+        "project manifest lacks a comparable project.id; documentation identity facts cannot be compared",
+        { path: PROJECT_MANIFEST_PATH, documentState: manifestDocument.state },
+      ),
+    );
+  } else if (manifestDocument.state === "ok" && packageDocument.state === "ok") {
+    const packageName = packageDocument.value?.name;
+    if (typeof packageName === "string" && manifestDocument.value.project.id !== packageName) {
+      findings.push(
+        finding(
+          "docs",
+          KIT_ERROR_KINDS.IDENTITY_MISMATCH,
+          "SFC2004",
+          `project manifest id "${manifestDocument.value.project.id}" does not match package.json name "${packageName}"`,
+          { manifestId: manifestDocument.value.project.id, packageName },
+        ),
+      );
     }
   }
 }
@@ -333,7 +439,7 @@ async function checkGit(rootAbs, findings, allowGitSpawn) {
   return git;
 }
 
-async function checkIdentity(rootAbs, docs, findings, profilesRoot) {
+async function checkIdentity(rootAbs, findings, profilesRoot) {
   // Load identity record
   const identityRecord = await loadIdentityRecord(rootAbs);
 
@@ -349,9 +455,6 @@ async function checkIdentity(rootAbs, docs, findings, profilesRoot) {
     );
     return null;
   }
-
-  // Store for later use
-  docs["skill-family.identity-record.json"] = identityRecord;
 
   // Validate against profile
   if (profilesRoot) {
@@ -388,9 +491,14 @@ async function checkIdentity(rootAbs, docs, findings, profilesRoot) {
 
 /**
  * Runs all check classes over one target.
- * Options: { root, allowGitSpawn, profilesRoot }.
+ * Options: { root, allowGitSpawn, only, profilesRoot }.
  * Returns the report document. Never writes anywhere; throws KitError only
  * for unusable inputs (an unreadable target).
+ *
+ * Class results distinguish three facts: selected (included by --only),
+ * completed (actually ran to its end), and findings (count). A class that
+ * throws mid-flight stays completed=false and contributes a mechanism
+ * finding; the report's mechanism flag maps to exit code 2.
  */
 export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot } = {}) {
   if (only !== undefined && !CHECK_CLASSES.includes(only)) {
@@ -398,30 +506,59 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
   }
   const rootAbs = await resolveTargetRoot(root ?? ".");
   const findings = [];
-  const docs = {};
+  const selected = new Set(only === undefined ? CHECK_CLASSES : [only]);
+  const completed = new Set();
+  let mechanismFailure = false;
 
-  const classes = only === undefined ? CHECK_CLASSES : CHECK_CLASSES.filter((name) => name === only);
-  let closureInfo = { digest: null, note: "skipped" };
-  let git = null;
-  let versionInfo = { contractsVersion: null };
-  let identityRecord = null;
+  const runners = {
+    contracts: () => checkContracts(rootAbs, findings),
+    drift: () => checkDrift(rootAbs, findings),
+    closure: () => checkClosure(rootAbs, findings),
+    version: () => checkVersion(rootAbs, findings),
+    docs: () => checkDocs(rootAbs, findings),
+    git: () => checkGit(rootAbs, findings, allowGitSpawn),
+    identity: () => checkIdentity(rootAbs, findings, profilesRoot),
+  };
 
-  if (classes.includes("contracts")) await checkContracts(rootAbs, docs, findings);
+  const classData = {
+    closure: { digest: null, note: "not-selected" },
+    git: null,
+    version: { contractsVersion: null },
+    identity: null,
+  };
 
-  let driftLock = null;
-  if (classes.includes("drift")) {
-    driftLock = await checkDrift(rootAbs, findings);
+  for (const name of CHECK_CLASSES) {
+    if (!selected.has(name)) continue;
+    try {
+      const result = await runners[name]();
+      completed.add(name);
+      if (name === "closure") classData.closure = result;
+      if (name === "git") classData.git = result;
+      if (name === "version") classData.version = result;
+      if (name === "identity") {
+        classData.identity = result
+          ? { record: result, licensing: result.licensing, authors: result.authors }
+          : null;
+      }
+    } catch (cause) {
+      // A selected class that could not finish is a mechanism finding, never a
+      // silent skip: completed stays false and the report says so.
+      mechanismFailure = true;
+      const causeKind =
+        cause && cause.details && typeof cause.details.kind === "string"
+          ? cause.details.kind
+          : "unknown";
+      findings.push(
+        finding(
+          name,
+          KIT_ERROR_KINDS.CHECK_CLASS_FAILED,
+          "SFC2004",
+          `check class '${name}' could not complete: ${cause && cause.message ? cause.message : String(cause)}`,
+          { causeKind },
+        ),
+      );
+    }
   }
-
-  if (classes.includes("closure")) {
-    const lock = driftLock ?? (classes.includes("drift") ? null : await loadManagedFileLock(rootAbs));
-    closureInfo = await checkClosure(rootAbs, lock, findings);
-  }
-
-  if (classes.includes("version")) versionInfo = await checkVersion(rootAbs, docs, findings);
-  if (classes.includes("docs")) await checkDocs(rootAbs, docs, findings);
-  if (classes.includes("git")) git = await checkGit(rootAbs, findings, allowGitSpawn);
-  if (classes.includes("identity")) identityRecord = await checkIdentity(rootAbs, docs, findings, profilesRoot);
 
   const byClass = {};
   for (const item of findings) {
@@ -446,22 +583,20 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
     generatedBy: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
     target: { root: ".", entryCount: entries.length },
     ok: findings.length === 0,
+    mechanism: mechanismFailure,
     classes: CHECK_CLASSES.map((name) => ({
       name,
-      ran: classes.includes(name),
+      selected: selected.has(name),
+      completed: completed.has(name),
       findings: byClass[name] ?? 0,
     })),
     findings,
     data: {
-      closure: closureInfo,
-      git,
-      version: versionInfo,
+      closure: classData.closure,
+      git: classData.git,
+      version: classData.version,
       managedDeclarations,
-      identity: identityRecord ? {
-        record: identityRecord,
-        licensing: identityRecord.licensing,
-        authors: identityRecord.authors,
-      } : null,
+      identity: classData.identity,
     },
     policy:
       "check is diagnosis only: it never writes, never fixes, and never calls git write commands; findings must be resolved by a human or an authorized generator",

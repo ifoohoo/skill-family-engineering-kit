@@ -48,9 +48,12 @@ export const KIT_ERROR_KINDS = Object.freeze({
   // check / shared
   CONTRACTS_MISSING: "contracts-missing",
   CONTRACT_PARSE_FAILED: "contract-parse-failed",
+  DOCUMENT_INCOMPLETE: "document-incomplete",
+  CHECK_CLASS_FAILED: "check-class-failed",
   MANAGED_FILE_MISSING: "managed-file-missing",
   MANAGED_FILE_DRIFT: "managed-file-drift",
   SYMLINK_AT_MANAGED_PATH: "symlink-at-managed-path",
+  NOT_A_REGULAR_FILE: "not-a-regular-file",
   CLOSURE_INPUT_MISSING: "closure-input-missing",
   CONTRACTS_VERSION_MISMATCH: "contracts-version-mismatch",
   README_MISSING: "readme-missing",
@@ -59,6 +62,11 @@ export const KIT_ERROR_KINDS = Object.freeze({
   GIT_NO_COMMITS: "git-no-commits",
   GIT_DIRTY: "git-dirty",
   MUTATION_MODE_REQUESTED: "mutation-mode-requested",
+  // core check: the single shared closed-world entry (C2)
+  UNREGISTERED_FILE: "unregistered-file",
+  SYMLINK_ENTRY: "symlink-entry",
+  SPECIAL_ENTRY: "special-entry",
+  UNCONTAINED_DECLARATION: "uncontained-declaration",
 });
 
 /** Error carrying one frozen SFC code plus a stable kit kind in details. */

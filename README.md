@@ -15,7 +15,7 @@
 ## 使用
 
 ```sh
-npm install --save-dev skill-family-engineering-kit
+npm install --save-dev skill-family-engineering-kit@0.1.3
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -26,7 +26,7 @@ npm exec -- skill-family-kit check --root <repo>
 零安装形式（不修改 package.json）：
 
 ```sh
-npm exec --package=skill-family-engineering-kit -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.1.3 -- skill-family-kit --help
 ```
 
 ## 边界机制
@@ -73,7 +73,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ## 安装
 
 ```sh
-npm install skill-family-engineering-kit
+npm install skill-family-engineering-kit@0.1.3
 ```
 
 ## 故障诊断

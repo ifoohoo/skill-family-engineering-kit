@@ -47,15 +47,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 
-2. lunr (search library)
--------------------------
+2. lunr (search library core)
+-----------------------------
 
 Version: 2.3.9
 License: MIT
 Copyright: Copyright (C) 2013 by Oliver Nightingale
-Files:
-  - docs/assets/javascripts/lunr/min/lunr.stemmer.support.min.js
-  - docs/assets/javascripts/lunr/min/lunr.multi.min.js
+
+The lunr core is embedded inside the MkDocs Material JavaScript bundle
+(docs/assets/javascripts/bundle.*.min.js, covered by entry 1 above); no
+standalone lunr core files are distributed with this site. The two
+support files under docs/assets/javascripts/lunr/min/ that earlier
+revisions of this notice attributed to lunr (lunr.stemmer.support.min.js
+and lunr.multi.min.js) are distributed by the lunr-languages project and
+are covered by entry 3 below.
 
 MIT License
 
@@ -83,7 +88,12 @@ IN THE SOFTWARE.
 3. lunr-languages (language stemmers and word cutters)
 -------------------------------------------------------
 
+Version: 1.14.0
+Source: MihaiValentin/lunr-languages (tag 1.14.0); the files listed below
+        are byte-identical to that tag. Bundled by mkdocs-material 9.7.7
+        (pinned in scripts/docs/toolchain.json).
 License: MPL-1.1
+License text: LICENSES/MPL-1.1.txt (repository root of the private workspace)
 Copyright: Mihai Valentin (and individual language stemmer authors)
 Files:
   - docs/assets/javascripts/lunr/min/lunr.ar.min.js
@@ -103,12 +113,14 @@ Files:
   - docs/assets/javascripts/lunr/min/lunr.jp.min.js
   - docs/assets/javascripts/lunr/min/lunr.kn.min.js
   - docs/assets/javascripts/lunr/min/lunr.ko.min.js
+  - docs/assets/javascripts/lunr/min/lunr.multi.min.js
   - docs/assets/javascripts/lunr/min/lunr.nl.min.js
   - docs/assets/javascripts/lunr/min/lunr.no.min.js
   - docs/assets/javascripts/lunr/min/lunr.pt.min.js
   - docs/assets/javascripts/lunr/min/lunr.ro.min.js
   - docs/assets/javascripts/lunr/min/lunr.ru.min.js
   - docs/assets/javascripts/lunr/min/lunr.sa.min.js
+  - docs/assets/javascripts/lunr/min/lunr.stemmer.support.min.js
   - docs/assets/javascripts/lunr/min/lunr.sv.min.js
   - docs/assets/javascripts/lunr/min/lunr.ta.min.js
   - docs/assets/javascripts/lunr/min/lunr.te.min.js
@@ -120,10 +132,11 @@ Files:
   - docs/assets/javascripts/lunr/wordcut.js
 
 These files are licensed under the Mozilla Public License Version 1.1
-(MPL-1.1). The full text of MPL-1.1 is available from the Mozilla project
-at mozilla.org (path: /en-US/MPL/1.1/).
+(MPL-1.1). The full text of MPL-1.1 is shipped with the private workspace
+repository at LICENSES/MPL-1.1.txt and is also available from the Mozilla
+project at mozilla.org (path: /en-US/MPL/1.1/).
 
 MPL-1.1 requires that recipients of a larger work containing MPL-covered
 files be informed of the location of the MPL source. The source for these
-files is the lunr-languages project on GitHub (user: MihaiValentin,
-repo: lunr-languages).
+files is the lunr-languages project, version 1.14.0 (GitHub user:
+MihaiValentin, repo: lunr-languages, tag 1.14.0).

@@ -101,7 +101,11 @@ export async function listTargetEntries(root) {
       }
       if (dirent.isFile()) {
         entries.push({ path: rel, kind: "file" });
+        continue;
       }
+      // Anything else (FIFO, socket, device, …) is a special entry: it is
+      // recorded so classification can fail closed on it; it is never opened.
+      entries.push({ path: rel, kind: "special" });
     }
   }
   await walk(root, "");
@@ -169,6 +173,61 @@ export function matchAnyGlob(patterns, relPath) {
   return Array.isArray(patterns) && patterns.some((pattern) => matchGlob(pattern, relPath));
 }
 
+function gitignoreSegmentRegExp(segment) {
+  let expression = "";
+  for (const char of segment) {
+    if (char === "*") expression += "[^/]*";
+    else expression += char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  return new RegExp(`^${expression}$`);
+}
+
+/**
+ * Gitignore-style lexical match for file-registry artifact patterns. The
+ * registry's artifacts class is mechanically identical to the .gitignore
+ * patterns (check-structure enforces the equality), so the closed-world
+ * classification interprets them with gitignore semantics:
+ *   - a leading "/" anchors the pattern at the target root;
+ *   - a "/" in the middle (after the trailing one is stripped) also anchors;
+ *   - a trailing "/" marks a directory pattern: it matches everything under
+ *     a directory with that name, never a regular file of that name;
+ *   - "*" is a per-segment wildcard (never crosses "/");
+ *   - unanchored patterns match at any depth.
+ * Purely lexical; never touches the filesystem.
+ */
+export function matchGitignoreStylePattern(pattern, relPath) {
+  if (typeof pattern !== "string" || typeof relPath !== "string") return false;
+  let trimmed = pattern.trim();
+  if (trimmed === "" || trimmed.startsWith("#")) return false;
+  let rootAnchored = trimmed.startsWith("/");
+  if (rootAnchored) trimmed = trimmed.slice(1);
+  const directoryOnly = trimmed.endsWith("/");
+  if (directoryOnly) trimmed = trimmed.slice(0, -1);
+  if (trimmed.includes("/")) rootAnchored = true;
+  const patternSegments = trimmed.split("/").filter((segment) => segment !== "");
+  if (patternSegments.length === 0) return false;
+  const pathSegments = relPath.split("/").filter((segment) => segment !== "");
+  const matchesAt = (start) => {
+    if (start + patternSegments.length > pathSegments.length) return false;
+    for (let i = 0; i < patternSegments.length; i += 1) {
+      if (!gitignoreSegmentRegExp(patternSegments[i]).test(pathSegments[start + i])) return false;
+    }
+    const end = start + patternSegments.length;
+    // A directory pattern matches everything strictly under the directory;
+    // a file pattern matches exactly the named entry.
+    return directoryOnly ? end < pathSegments.length : end === pathSegments.length;
+  };
+  if (rootAnchored) return matchesAt(0);
+  for (let start = 0; start < pathSegments.length; start += 1) {
+    if (matchesAt(start)) return true;
+  }
+  return false;
+}
+
+export function matchAnyGitignorePattern(patterns, relPath) {
+  return Array.isArray(patterns) && patterns.some((pattern) => matchGitignoreStylePattern(pattern, relPath));
+}
+
 /** Normalizes a relative path to forward slashes without touching the fs. */
 export function normalizeRelPath(relPath) {
   return String(relPath).replaceAll("\\", "/").replace(/\/+/g, "/").replace(/^\.\//, "");
@@ -189,6 +248,8 @@ export async function loadTargetFacts(root) {
     managedLock: null,
     managedSet: new Set(),
     handwrittenPatterns: [...DEFAULT_HANDWRITTEN_PATTERNS],
+    artifactPatterns: [],
+    trackedToolLocks: [],
     hasOwnRegistry: false,
   };
 
@@ -196,15 +257,36 @@ export async function loadTargetFacts(root) {
   if (registry.ok && registry.value && typeof registry.value === "object") {
     facts.fileRegistry = registry.value;
     facts.hasOwnRegistry = true;
+    // Foundation-shape registry: one flat managed list.
     const managed = registry.value?.classes?.managed;
     if (Array.isArray(managed)) {
       for (const entry of managed) {
         if (typeof entry === "string") facts.managedSet.add(normalizeRelPath(entry));
       }
     }
+    // Generated-skeleton registry: the managed set is declared as two classes
+    // (projen-managed + kit-managed). Both shapes feed the same closed world.
+    for (const classKey of ["projenManaged", "kitManaged"]) {
+      const files = registry.value?.classes?.[classKey]?.files;
+      if (Array.isArray(files)) {
+        for (const entry of files) {
+          if (typeof entry === "string") facts.managedSet.add(normalizeRelPath(entry));
+        }
+      }
+    }
     const patterns = registry.value?.classes?.handwritten?.entries;
     if (Array.isArray(patterns) && patterns.length > 0) {
       facts.handwrittenPatterns = patterns.filter((entry) => typeof entry === "string");
+    }
+    const artifactPatterns = registry.value?.classes?.artifacts?.patterns;
+    if (Array.isArray(artifactPatterns)) {
+      facts.artifactPatterns = artifactPatterns.filter((entry) => typeof entry === "string");
+    }
+    const toolLocks = registry.value?.classes?.trackedToolLocks?.entries;
+    if (Array.isArray(toolLocks)) {
+      facts.trackedToolLocks = toolLocks
+        .filter((entry) => typeof entry === "string")
+        .map((entry) => normalizeRelPath(entry));
     }
   }
 
