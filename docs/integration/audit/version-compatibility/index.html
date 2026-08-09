@@ -743,7 +743,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 冻结版本（当前 <code>1.1.1</code>）</td>
+<td>Contracts 冻结版本（当前 <code>1.4.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -758,7 +758,7 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.1.1.pin.json</code>）比对。</p>
+<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.4.0.pin.json</code>）比对。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -811,6 +811,9 @@
 <li>pin 由产品侧在冻结时刻构造（provenance <code>product-compatibility-fixture</code>）：摘要来自对已冻结产物的 <code>digestAuditSurface()</code> 机械计算，事实清单直接对照合同文档推导，不取自生成器或 oracle；本仓库不存在独立的第二审阅会话，pin 不作任何独立角色声称；</li>
 <li><strong>诚实性修正（2026-08-05）</strong>：旧 pin（1.0.0、1.1.0）曾携带 <code>independent-r2</code> provenance 与独立重签叙事，该声称与本仓事实不符，已就地修正 provenance 与 note；修正只触及 provenance/note 两处诚实性字段，不改变任何 digest 或 facts 字段，旧 pin 继续作为只读兼容存档；</li>
 <li><strong>Contracts 1.1.1（2026-08-05）</strong>：仅描述补丁（migration-manifest schema 三处 description 改写为稳定产品语义；无任何校验关键字、公开 API、错误码、规则或引擎参数变化）。按本生命周期新增 <code>contracts-1.1.1.pin.json</code> 为现行基线，<code>contracts-1.1.0.pin.json</code> 转为只读兼容存档。1.1.1 pin 相对 1.1.0 pin 的准确事实：<strong>校验语义和事实清单不变</strong>（<code>facts</code> 逐项一致）；四个 Contracts 文档（registry、error-codes、rules、kernel-protocol）因内嵌 <code>contractsVersion</code> 从 <code>1.1.0</code> 更新到 <code>1.1.1</code> 而改变摘要；migration-manifest Schema 因上述三处 description 更新而改变摘要；其余五个 Schema（project-manifest、profile-descriptor、managed-file-lock、operation-request、operation-result）摘要不变。<code>proof-independence.mjs</code> 的 P5 强制这套如实声明的 provenance 词汇（pin：<code>product-compatibility-fixture</code>；变异夹具：<code>product-fixture</code>）；</li>
+<li><strong>Contracts 1.2.0（2026-08-09）</strong>：报告能力线增量，不是描述补丁：新增 <code>report-model</code>、<code>report-binding</code> 两个顶层契约和 SFC3001～SFC3003 报告错误码，改变了公开机器合同与审计事实。</li>
+<li><strong>Contracts 1.3.0（2026-08-09）</strong>：宿主接入能力线增量，不是描述补丁：新增 <code>host-descriptor</code>、<code>host-capability-fact</code>、<code>adapter-build-manifest</code>、<code>host-operation-plan</code>、<code>host-operation-receipt</code> 五个顶层契约，改变了公开机器合同与审计事实。</li>
+<li><strong>Contracts 1.4.0（2026-08-09）</strong>：持久状态能力线增量，不是描述补丁：新增 <code>state-event-envelope</code>、<code>state-snapshot-metadata</code> 两个顶层契约，改变了公开机器合同与审计事实。<code>contracts-1.4.0.pin.json</code> 是当前现行基线；1.1.x 及更早 pin 保留为只读兼容存档。该 pin 的摘要与事实均从当前 <code>describeAuditSurface()/digestAuditSurface()</code> 机械投影，provenance 仍为 <code>product-compatibility-fixture</code>。</li>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
 

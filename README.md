@@ -15,7 +15,7 @@
 ## 使用
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.1.3
+npm install --save-dev skill-family-engineering-kit@0.2.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -23,10 +23,33 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
+### 报告子动作
+
+```sh
+npm exec -- skill-family-kit projection report --root <repo> --model <report-model.json> --result <operation-result.json> --out <report.md> --binding <binding.json>
+npm exec -- skill-family-kit check report --root <repo> --report <report.md> --model <report-model.json> --result <operation-result.json> --binding <binding.json>
+```
+
+调用方必须先构造合法 report model；Kit 不从开放的业务 `outputs` 推导事实。所有事实文本按字面转义，失败结果的
+完整 errors 必须出现在 model 和中性报告中。
+
+### 宿主子动作
+
+```sh
+npm exec -- skill-family-kit adopt-plan host-describe --host <id> --hosts-root <dir>
+npm exec -- skill-family-kit adopt-plan host-probe --host <id> --hosts-root <dir>
+npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> --path-category <id> --input <relpath> --out <relpath> --hosts-root <dir>
+npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
+```
+
+Profile 必须显式提供，Kit 不默认绑定具体宿主。probe 默认不启动进程；只有同时给出
+`--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。`host-apply` 稳定拒绝，未实现安装、更新或卸载。
+Codex 的技能目标路径固定为 `.agents/skills`；其他受支持宿主只按已登记 Profile 提供；Qoder 为 `unsupported`，本版只参考其结构，不提供完整 driver，也不声称已在 Qoder 运行。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见本版本 CHANGELOG 与已登记 Profile。
+
 零安装形式（不修改 package.json）：
 
 ```sh
-npm exec --package=skill-family-engineering-kit@0.1.3 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.2.0 -- skill-family-kit --help
 ```
 
 ## 边界机制
@@ -73,7 +96,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ## 安装
 
 ```sh
-npm install skill-family-engineering-kit@0.1.3
+npm install skill-family-engineering-kit@0.2.0
 ```
 
 ## 故障诊断

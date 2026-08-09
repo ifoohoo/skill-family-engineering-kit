@@ -840,9 +840,9 @@ pnpm check
 </code></pre>
 <ul>
 <li><code>pnpm synth</code> 再生成 projen 受管文件。受管文件只能通过修改 <code>.projenrc.js</code> 间接变更；手写源码、文档和 fixture 不会被 synth 覆盖。</li>
-<li><code>pnpm check</code> 是当前统一根门禁：10 个稳定门禁 ID 按固定顺序串联执行，任一步骤非 0 即整体失败；本仓没有任何 CI/CD workflow，全部门禁都在私有工作区内运行。下方区块由根 <code>package.json</code> 的 <code>scripts.check</code> 机械投影（<code>node scripts/docs/fact-check.mjs</code> 逐字核对，禁止手写清单再次滞后）：</li>
+<li><code>pnpm check</code> 是当前统一根门禁：11 个稳定门禁 ID 按固定顺序串联执行，任一步骤非 0 即整体失败；本仓没有任何 CI/CD workflow，全部门禁都在私有工作区内运行。下方区块由根 <code>package.json</code> 的 <code>scripts.check</code> 机械投影（<code>node scripts/docs/fact-check.mjs</code> 逐字核对，禁止手写清单再次滞后）：</li>
 </ul>
-<!-- BEGIN SKILL-FAMILY-GATE-STAGES v2 (10 stable gate IDs; derived from package.json scripts.check; verified by fact-check) -->
+<!-- BEGIN SKILL-FAMILY-GATE-STAGES v2 (11 stable gate IDs; derived from package.json scripts.check; verified by fact-check) -->
 <ol>
 <li>pnpm run check:structure</li>
 <li>pnpm run check:packages</li>
@@ -854,6 +854,7 @@ pnpm check
 <li>pnpm run check:release-artifacts</li>
 <li>pnpm run check:projen</li>
 <li>pnpm run check:integration</li>
+<li>pnpm run check:artifacts</li>
 </ol>
 <!-- END SKILL-FAMILY-GATE-STAGES -->
 

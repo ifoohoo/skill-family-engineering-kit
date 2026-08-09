@@ -436,6 +436,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#下一阶段能力线架构-hand-off" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一阶段能力线（架构 hand-off）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#唯一权威" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -725,6 +736,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#下一阶段能力线架构-hand-off" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一阶段能力线（架构 hand-off）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#唯一权威" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -798,11 +820,35 @@
 
 <h1 id="架构边界">架构边界<a class="headerlink" href="#架构边界" title="Permanent link">&para;</a></h1>
 <h2 id="分层">分层<a class="headerlink" href="#分层" title="Permanent link">&para;</a></h2>
-<pre><code class="language-text">Contracts &lt;- Harness Node &lt;- Engineering Kit &lt;- Profile &lt;- Skill Family Project
-    ^
-    └---------------- independent Audit consumer
+<p>2026-08-09 架构 hand-off（FND-ADR-001～007，active，见 <code>artifacts/decisions/</code>）确立的分层：纵向依赖链四层，横向能力挂接，不新增纵层。</p>
+<pre><code class="language-text">技能族业务（各产品仓：release-skill、loop-agent、skill-eval 等）
+        │ 依赖
+        ▼
+Engineering Kit（scaffold / adopt-plan / projection / check）
+        │ 依赖
+        ▼
+Harness Node（Contracts 机制协议实现）
+        │ 依赖
+        ▼
+Contracts（结构、协议、错误码、协议名登记）
+        ▲
+        └---------------- independent Audit consumer
+
+横向（挂接面，不新增纵层）：
+- profiles/       宿主与项目形态差异声明，只实现稳定 SPI
+- 宿主            外部 AI 编码运行环境：拥有语义，Foundation 统一结构性差异
+- release-skill   发布状态与全部远端写入，不进入 Foundation
+- Artifact Graph  `artifacts/` 架构制品体系，门禁为 check:artifacts
 </code></pre>
-<p>箭头表示左侧是右侧的依赖。公共核心不得反向依赖具体 Profile 或具体技能族。</p>
+<p>箭头指向被依赖方。公共核心不得反向依赖具体 Profile 或具体技能族；新能力的依赖方向落位见 <code>artifacts/design/FND-DES-001.md</code>，逐资产归属见 FND-ADR-002。</p>
+<h2 id="下一阶段能力线架构-hand-off">下一阶段能力线（架构 hand-off）<a class="headerlink" href="#下一阶段能力线架构-hand-off" title="Permanent link">&para;</a></h2>
+<p>三条能力线均经 FND-ADR-001 能力纳入门（宿主差异轴/跨技能族共性轴两主轴判定、业务语义一票否决、七项进入门）裁决纳入，全部在上图既有分层内落位：</p>
+<ul>
+<li><strong>宿主接入线</strong>（FND-FR-001/FND-FR-002，FND-ADR-003）：Contracts 登记 descriptor/source/manifest/probe/plan/receipt；Harness 实现通用 source closure、原子 build/materialize 和 probe 分类；Kit 注入具体 Profile 与受信 driver。当前只支持 describe/build/probe/plan，<code>apply</code> 稳定拒绝，安装/卸载/更新均未实现。</li>
+<li><strong>持久状态底座线</strong>（FND-FR-003，FND-ADR-004）：append-only 事件、hash chain、快照与校验恢复；只提供状态底座，状态机、任务节点、重试、终态、记忆等业务语义不纳入 Foundation。</li>
+<li><strong>人类报告线</strong>（FND-FR-004，FND-ADR-005）：双层合同——机器结果是唯一真源，人类报告由机器结果确定性渲染（Markdown + digest 绑定 + 分级检查），不自由撰写。</li>
+</ul>
+<p>三包结构保持、不拆第四包（FND-ADR-007）；制品治理采用 artifact-graph CLI 与版本锁（FND-ADR-006，体系说明见 <code>artifacts/README.md</code>）。</p>
 <h2 id="唯一权威">唯一权威<a class="headerlink" href="#唯一权威" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Contracts：结构、协议、错误码和协议名登记；</li>
@@ -810,16 +856,17 @@
 <li>Kit：四个工程命令及其只读/受限写入边界；</li>
 <li>Profile：项目形态差异；</li>
 <li>Audit：独立 fixture、预期值和裁决；</li>
-<li>Release：发布状态和全部远端写入。</li>
+<li>Release：发布状态和全部远端写入；</li>
+<li>Artifacts：<code>artifacts/</code> 架构制品体系的关系合同与版本锁由 artifact-graph 机械验证（<code>check:artifacts</code>），体系说明见 <code>artifacts/README.md</code>（FND-ADR-006）。</li>
 </ul>
 <h2 id="首版预算">首版预算<a class="headerlink" href="#首版预算" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象：6 类（project-manifest、profile-descriptor、managed-file-lock、operation-request、operation-result、migration-manifest）；</li>
+<li>顶层 Contracts 对象：18 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata；</li>
 <li>Kit 顶层命令：4 个（scaffold、adopt-plan、projection、check）；</li>
-<li>强制机械规则：当前 13 条，预算不超过 20 条，绝对上限 30 条；</li>
+<li>强制机械规则：当前 9 条，预算不超过 20 条，绝对上限 30 条；CR-001 对登记表内全部 Schema 做统一编译；</li>
 <li>叶子包：3 个（skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit）；</li>
 <li>Schema 校验器：Ajv 8.20.0（精确版本 pin），支持 draft-07 与 2020-12 双方言；</li>
-<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 版本 1.1.1；</li>
+<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 版本 1.4.0；</li>
 <li>默认运行时语言：Node；第二语言实现首版为 0。</li>
 </ul>
 <p>任何新增组件必须说明删除它会导致的两个以上真实消费者重复实现，并通过独立 fixture 验证。</p>
@@ -870,7 +917,7 @@
 </ol>
 <p>两个检查脚本都可直接 <code>node scripts/docs/&lt;name&gt;.mjs</code> 运行：<code>fact-check.mjs</code> 是 Node 脚本，经仓内模块（<code>scripts/engine-floor-check.mjs</code>）消费根目录精确锁定的 <code>semver@7.8.5</code>，运行前必须先完成 <code>pnpm install --frozen-lockfile</code>；<code>link-check.mjs</code> 为纯 Node 实现（无第三方依赖）。职责说明见 <code>scripts/docs/README.md</code>。</p>
 <h2 id="稳定产品门禁">稳定产品门禁<a class="headerlink" href="#稳定产品门禁" title="Permanent link">&para;</a></h2>
-<p>根 <code>pnpm check</code> 只编排 10 个稳定产品 gate ID（<code>check:structure</code>～<code>check:integration</code>，逐 ID 见 当前产品状态），不再锁死原始命令清单；每个稳定 ID 在自己的 package script 内组合少量产品检查。门禁事实由 <code>node scripts/docs/fact-check.mjs</code> 从根 <code>package.json</code> 的 <code>scripts.check</code> 机械推导并逐字核对（setup 投影区块与 <code>scripts.check</code> 逐字一致）。文档与 setup 只调用或列出 10 个稳定 ID 或根 <code>pnpm check</code>，不复制底层命令列表。</p>
+<p>根 <code>pnpm check</code> 只编排 11 个稳定产品 gate ID（<code>check:structure</code>～<code>check:artifacts</code>，逐 ID 见 当前产品状态），不再锁死原始命令清单；每个稳定 ID 在自己的 package script 内组合少量产品检查。门禁事实由 <code>node scripts/docs/fact-check.mjs</code> 从根 <code>package.json</code> 的 <code>scripts.check</code> 机械推导并逐字核对（setup 投影区块与 <code>scripts.check</code> 逐字一致）。文档与 setup 只调用或列出 11 个稳定 ID 或根 <code>pnpm check</code>，不复制底层命令列表。</p>
 <p>仓内检查的诚实边界：结构检查只证明“字节/结构一致性（仓内可证）”；一次性迁移完整性、普通正文语义与最终接受/拒绝结论属于外部审阅职责，不在目标仓内维护第二份门禁 registry、baseline 或命令比较器。</p>
 
 

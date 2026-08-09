@@ -67,6 +67,14 @@ export const KIT_ERROR_KINDS = Object.freeze({
   SYMLINK_ENTRY: "symlink-entry",
   SPECIAL_ENTRY: "special-entry",
   UNCONTAINED_DECLARATION: "uncontained-declaration",
+  // report sub-actions (projection report / check report, FND-ADR-005)
+  REPORT_INPUT_MISSING: "report-input-missing",
+  REPORT_PATH_CONFLICT: "report-path-conflict",
+  REPORT_WRITE_FAILED: "report-write-failed",
+  // read-only host integration slice
+  HOST_CONTRACT_INVALID: "host-contract-invalid",
+  HOST_PROBE_FAILED: "host-probe-failed",
+  HOST_BUILD_FAILED: "host-build-failed",
 });
 
 /** Error carrying one frozen SFC code plus a stable kit kind in details. */

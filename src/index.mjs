@@ -51,7 +51,17 @@ import {
   loadLicensingProfile,
 } from "./licensing.mjs";
 import { runProjection, loadProjectionManifest } from "./projection.mjs";
+import { checkReportAction, renderReportAction } from "./report.mjs";
 import { scaffoldTarget } from "./scaffold.mjs";
+import {
+  assertPlanConsistency,
+  buildHostAdapter,
+  materializeHostBuild,
+  planHost,
+  probeHost,
+  refuseHostApply,
+} from "./host.mjs";
+import { describeHost, loadHostRegistry } from "./host-profiles.mjs";
 import {
   describeSkeletonFiles,
   IDENTITY_RECORD_PATH,
@@ -109,13 +119,13 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   projection: Object.freeze({
     summary: "投影受管生成物。",
     sideEffect:
-      "writes only manifest-authorized managed artifacts; unauthorized, handwritten, escaping, or conflicting paths are refused with zero writes",
+      "writes only manifest-authorized managed artifacts; the report sub-action (projection report) writes only the explicitly named --out/--binding paths contained in --root (Markdown goes to stdout when no --out is given); unauthorized, handwritten, escaping, or conflicting paths are refused with zero writes",
     exitCodes: "0 成功；2 拒绝/用法/机制错误",
   }),
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none — diagnosis only: never writes, never auto-fixes; git is probed read-only (one frozen status query at most)",
+      "none — diagnosis only: never writes, never auto-fixes; git is probed read-only (one frozen status query at most); the report sub-action (check report) grades one rendered report against its bound machine result and writes nothing",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -183,6 +193,8 @@ export {
   HANDOFF_FIELDS,
   runProjection,
   loadProjectionManifest,
+  renderReportAction,
+  checkReportAction,
   runChecks,
   CHECK_CLASSES,
   DOCUMENT_STATES,
@@ -204,6 +216,14 @@ export {
   PROJECTION_MANIFEST_PATH,
   IDENTITY_RECORD_PATH,
   matchAnyGlob,
+  describeHost,
+  loadHostRegistry,
+  probeHost,
+  buildHostAdapter,
+  materializeHostBuild,
+  planHost,
+  assertPlanConsistency,
+  refuseHostApply,
 };
 export { ContractsError };
 
