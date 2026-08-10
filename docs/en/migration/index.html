@@ -1,0 +1,2334 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+
+
+
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/en/migration/">
+
+
+        <link rel="prev" href="../architecture/">
+
+
+        <link rel="next" href="../licensing/">
+
+
+
+
+
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+
+
+
+        <title>English · Migration - Skill Family Foundation</title>
+
+
+
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+
+
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+
+
+
+
+
+  </head>
+
+
+
+
+
+
+
+
+
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+
+
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+
+
+        <a href="#Existing-Repository-Adoption-and-Migration-FND-070" class="md-skip">
+          跳转至
+        </a>
+
+    </div>
+    <div data-md-component="announce">
+
+    </div>
+
+
+
+
+
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+
+              English · Migration
+
+          </span>
+        </div>
+      </div>
+    </div>
+
+
+        <form class="md-header__option" data-md-component="palette">
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+</form>
+
+
+
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+
+
+
+
+
+        <label class="md-header__button md-icon" for="__search">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  </nav>
+
+</header>
+
+    <div class="md-container" data-md-component="container">
+
+
+
+
+
+
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+
+
+
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+
+  <ul class="md-nav__list" data-md-scrollfix>
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 首页
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安装与环境
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 快速开始
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../git-lifecycle/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Git 生命周期指南
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 能力与诊断
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构边界
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../public/status/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 公开状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../migration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 存量采用与迁移
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 许可与署名
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 智能体入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构路由
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 兼容性
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 失败与副作用
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/api/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · API 参考
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/api/contracts/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Contracts API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/api/harness/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Harness API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../reference/api/engineering-kit/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Engineering Kit API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 样例与 Fixture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 采用存量仓库
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安全文件系统与原子写
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Adapter 文本闭包
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 确定性人类报告
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 持久本地状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 宿主 Profile 集成
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 领域 Schema 校验
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Home
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Quickstart
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Capabilities and diagnostics
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item md-nav__item--active">
+
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+
+
+
+
+
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Migration
+
+
+
+  </span>
+
+
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+
+      <a href="./" class="md-nav__link md-nav__link--active">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Migration
+
+
+
+  </span>
+
+
+
+      </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#Classification-Method" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Classification Method
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Principles" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Principles
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#adopt-plan-Output-Structure" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        adopt-plan Output Structure
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Migration-Manifest-skill-familymigrationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Migration Manifest (skill-family.migration.json)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Migration-State-Machine" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Migration State Machine
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Completion-Gate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Completion Gate
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Completion Gate">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#Mandatory-Negative-Cases-completion-must-be-false-in-any-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Mandatory Negative Cases (completion must be false in any scenario)
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Legacy-Removal-and-Rollback-Contract" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Legacy-Removal and Rollback Contract
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Ten-Field-Hand-off-Draft" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Ten-Field Hand-off Draft
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Ten-Field Hand-off Draft">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#INCOMPLETE-Blocking-Rules" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        INCOMPLETE Blocking Rules
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#Binding" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Binding
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#Rendering-Boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Rendering Boundary
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Hazard-Class-Fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Hazard-Class Fixtures
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Licensing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Agent entry
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture routing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../reference/compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Compatibility
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../reference/failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Failures and side effects
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../reference/api/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · API reference
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Examples and fixtures
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adopt an existing repository
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Safe filesystem and atomic write
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adapter text closure
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Deterministic human report
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Durable local state
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Host Profile integration
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Domain Schema validation
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../integration/audit/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../integration/audit/mutation-taxonomy/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 变异分类学
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../integration/audit/independence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 独立性证明
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../integration/audit/version-compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 版本兼容
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../integration/audit/failure-evidence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 失败证据与 AUD 码
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#Classification-Method" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Classification Method
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Principles" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Principles
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#adopt-plan-Output-Structure" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        adopt-plan Output Structure
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Migration-Manifest-skill-familymigrationjson" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Migration Manifest (skill-family.migration.json)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Migration-State-Machine" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Migration State Machine
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Completion-Gate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Completion Gate
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Completion Gate">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#Mandatory-Negative-Cases-completion-must-be-false-in-any-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Mandatory Negative Cases (completion must be false in any scenario)
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Legacy-Removal-and-Rollback-Contract" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Legacy-Removal and Rollback Contract
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Ten-Field-Hand-off-Draft" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Ten-Field Hand-off Draft
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Ten-Field Hand-off Draft">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#INCOMPLETE-Blocking-Rules" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        INCOMPLETE Blocking Rules
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#Binding" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Binding
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#Rendering-Boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Rendering Boundary
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Hazard-Class-Fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Hazard-Class Fixtures
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+            <div class="md-content" data-md-component="content">
+
+              <article class="md-content__inner md-typeset">
+
+
+
+
+
+<blockquote>
+<p><a href="../../migration/">简体中文</a></p>
+</blockquote>
+<h1 id="Existing-Repository-Adoption-and-Migration-FND-070">Existing-Repository Adoption and Migration (FND-070)<a class="headerlink" href="#Existing-Repository-Adoption-and-Migration-FND-070" title="Permanent link">&para;</a></h1>
+<p>This page describes how an existing project adopts the Skill Family infrastructure, and the gate for judging migration completion. It serves two reader types: a human owner uses it to judge the adoption path and risks; an agent uses it to run a read-only inventory via <code>adopt-plan</code>, without duplicating write actions on this page.</p>
+<h2 id="Classification-Method">Classification Method<a class="headerlink" href="#Classification-Method" title="Permanent link">&para;</a></h2>
+<p>Before an existing repository connects to Foundation, classify it into one of the four categories below. The classification determines which path to take, whether files are written, and how the legacy implementation is handled.</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Meaning</th>
+<th>Handling path</th>
+<th>Writes files?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>direct-adoption</code></td>
+<td>The repository already has a capability that can be replaced by Foundation as-is, with no business-semantic coupling</td>
+<td>Direct adoption: <code>adopt-plan</code> inventory → <code>scaffold</code>/<code>projection</code> writes to disk</td>
+<td>Yes (contained)</td>
+</tr>
+<tr>
+<td><code>compatibility-layer</code></td>
+<td>The repository's existing implementation differs from the Foundation interface and needs a compatibility adaptation layer</td>
+<td>Write a compatibility layer, then adopt; the legacy implementation exits via the compatibility layer</td>
+<td>Yes (compatibility layer contained)</td>
+</tr>
+<tr>
+<td><code>keep-business</code></td>
+<td>The capability contains domain semantics or a business state machine, belongs to the caller, and Foundation does not take it</td>
+<td>Keep with the consumer; connect only business-neutral mechanisms</td>
+<td>No (on the Foundation side)</td>
+</tr>
+<tr>
+<td><code>foundation-gap</code></td>
+<td>A needed capability is not yet provided by Foundation (e.g., host apply, Qoder driver)</td>
+<td>Keep with the consumer or a later version; do not forcibly expand Foundation</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Classification is a prerequisite for the adoption decision. Capabilities that fall into <code>keep-business</code> or <code>foundation-gap</code> should not be stuffed into Foundation just to "complete adoption"; this is exactly the concrete instantiation of architecture-routing steps 1 and 8.</p>
+</blockquote>
+<h2 id="Principles">Principles<a class="headerlink" href="#Principles" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Plan first</strong>: any existing repository first runs the read-only <code>adopt-plan</code>, obtaining the current state, target Profile, exact write set, conflicts, legacy-implementation exit list, and acceptance commands, before deciding whether to perform a write.</li>
+<li><strong>Read-only plan, zero change</strong>: <code>adopt-plan</code> writes no files (including temporary files), runs no git write commands, renames nothing, and touches no remotes; zero change to the input repository's bytes (provable by before/after hash walk-through).</li>
+<li><strong>Adoption and rename are separate</strong>: infrastructure adoption never drags along a repository rename or remote-coordinate change; the two are independent decisions, and the tool provides no rename capability.</li>
+<li><strong>Dual-track does not count as complete</strong>: the migration-completion judgment requires the legacy duplicate implementation to have been deleted; connecting the new infrastructure while the legacy implementation still remains is permanently judged false.</li>
+</ol>
+<h2 id="adopt-plan-Output-Structure">adopt-plan Output Structure<a class="headerlink" href="#adopt-plan-Output-Structure" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target</code></td>
+<td>Current state: entry-point count, target's own managed declarations</td>
+</tr>
+<tr>
+<td><code>project</code> / <code>traceability</code></td>
+<td>Target Profile and the source of truth for each write (Contracts version, skeleton generation function, license Profile and variant)</td>
+</tr>
+<tr>
+<td><code>git</code></td>
+<td>Read-only Git pre-state (repository, HEAD, clean)</td>
+</tr>
+<tr>
+<td><code>writeSet</code></td>
+<td>Exact write set: per-path action (only <code>create</code>/<code>unchanged</code>), fileClass, sha256</td>
+</tr>
+<tr>
+<td><code>conflicts</code></td>
+<td>Handwritten conflicts, managed drift, symlink placeholders, temporary exceptions for missing fields</td>
+</tr>
+<tr>
+<td><code>risks</code></td>
+<td>dirty, nested repository, tracked-but-ignored, expired exceptions, etc.</td>
+</tr>
+<tr>
+<td><code>migration</code></td>
+<td>Migration state machine: binding, on-disk proof (adoptionProof), pending-write count, check gate, four-class verification evidence, state and completion judgment</td>
+</tr>
+<tr>
+<td><code>verificationPlan</code></td>
+<td>Acceptance command sequence (check → projection → re-check)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Migration-Manifest-skill-familymigrationjson">Migration Manifest (skill-family.migration.json)<a class="headerlink" href="#Migration-Manifest-skill-familymigrationjson" title="Permanent link">&para;</a></h2>
+<p>The target repository declares its own migration state in the root directory:</p>
+<pre><code class="language-json">{
+  &quot;kind&quot;: &quot;skill-family.migration-manifest&quot;,
+  &quot;legacyInfra&quot;: [
+    { &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;, &quot;replacedBy&quot;: &quot;sf-kit check&quot; }
+  ],
+  &quot;exceptions&quot;: [
+    {
+      &quot;owner&quot;: &quot;owner&quot;,
+      &quot;reason&quot;: &quot;specific reason&quot;,
+      &quot;deadline&quot;: &quot;2026-12-31&quot;,
+      &quot;migrationTarget&quot;: &quot;wave-m1&quot;
+    }
+  ],
+  &quot;targetProfile&quot;: &quot;generic&quot;,
+  &quot;foundationPackages&quot;: [
+    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; }
+  ],
+  &quot;verification&quot;: {
+    &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
+    &quot;integration&quot;: &quot;docs/evidence/integration.json&quot;,
+    &quot;consumer&quot;: &quot;docs/evidence/consumer.json&quot;,
+    &quot;independentAudit&quot;: &quot;docs/evidence/independent-audit.json&quot;
+  }
+}
+</code></pre>
+<p>The structure above shows the core fields of the migration manifest; each <code>legacyInfra</code> entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</p>
+<ul>
+<li><code>legacyInfra</code>: each entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</li>
+<li><code>exceptions</code> are <strong>temporary exceptions</strong>: must simultaneously contain all four fields — owner, reason, deadline, and migrationTarget — and missing any field counts as a conflict (plan failure); expired exceptions are not auto-renewed and persistently block the completion judgment.</li>
+<li><code>targetProfile</code> / <code>foundationPackages</code>: adoption binding. The target Profile must be consistent with the plan Profile; the three Foundation packages (contracts, harness-node, engineering-kit) must each bind an <strong>exact version number</strong> (floating ranges not accepted) and a <code>sha256:</code> digest.</li>
+<li><code>verification</code>: paths to the four classes of verification-evidence documents (unit, integration, consumer, independentAudit). Each piece of evidence must be parseable JSON whose <code>projectId</code> matches the target project's identity to count as proven; out-of-bounds paths, missing, unparseable, or identity-mismatched evidence are all unproven, fail-closed.</li>
+</ul>
+<h2 id="Migration-State-Machine">Migration State Machine<a class="headerlink" href="#Migration-State-Machine" title="Permanent link">&para;</a></h2>
+<p>States advance monotonically and are derived only from read-only evidence; no tool advances state by writing.</p>
+<pre><code>not-declared → declared → adopted → verified → complete
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not-declared</code></td>
+<td>No contract-valid migration manifest exists</td>
+</tr>
+<tr>
+<td><code>declared</code></td>
+<td>The manifest contract is valid, but the adoption-proof facts are incomplete</td>
+</tr>
+<tr>
+<td><code>adopted</code></td>
+<td>Foundation bytes are on disk and the legacy implementation has exited, but the check gate is not green</td>
+</tr>
+<tr>
+<td><code>verified</code></td>
+<td>The check gate is green, but not all verification evidence is proven</td>
+</tr>
+<tr>
+<td><code>complete</code></td>
+<td>All eight completion conditions are satisfied; <code>complete</code> is true if and only if the state is <code>complete</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="Completion-Gate">Completion Gate<a class="headerlink" href="#Completion-Gate" title="Permanent link">&para;</a></h2>
+<p><code>migration.completion.complete</code> is true if and only if <strong>all eight</strong> hold:</p>
+<ol>
+<li>A contract-valid migration manifest has been declared (kind/fields validated by the Contracts schema);</li>
+<li>The adoption binding is proven: the target Profile is consistent with the plan, and the three Foundation packages each bind an exact version and a sha256 digest;</li>
+<li>The Project Manifest, managed lock, identity, and all managed skeleton files are on disk and their digests are consistent with the plan (<code>adoptionProof.missing</code>/<code>mismatched</code> are empty);</li>
+<li>The write set has no pending create/replace/project actions (<code>pendingWrites</code> is 0);</li>
+<li>The Foundation check gate is green;</li>
+<li>Each legacy implementation has exited (absent) — containment refusal or malformed entries fail-closed identically to present;</li>
+<li>No missing fields, no unparseable deadline, no expired temporary exceptions; no unresolved adoption conflicts;</li>
+<li>All four classes of verification evidence (unit/integration/consumer/independentAudit) are proven and identity (projectId) matches.</li>
+</ol>
+<p>An unevaluated input is equivalent to unproven: the gate advances only on presented evidence. The blocking reason (<code>blockers</code>) is a stable, readable string that can go directly into the migration review record.</p>
+<h3 id="Mandatory-Negative-Cases-completion-must-be-false-in-any-scenario">Mandatory Negative Cases (completion must be false in any scenario)<a class="headerlink" href="#Mandatory-Negative-Cases-completion-must-be-false-in-any-scenario" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Empty repository + empty manifest (no contract-valid manifest → <code>not-declared</code>);</li>
+<li>Manifest with wrong kind (schema-invalid → treated as undeclared);</li>
+<li>9 skeleton files still pending create (<code>declared</code>, all missing paths listed);</li>
+<li>Managed lock drift (<code>mismatched</code> non-empty);</li>
+<li>Only the new implementation connected, legacy still present (dual-track → <code>declared</code>);</li>
+<li>Consumer verification evidence missing or identity mismatched (<code>verified</code>, must not complete);</li>
+<li>Temporary exception expired (the tool never renews).</li>
+</ul>
+<h2 id="Legacy-Removal-and-Rollback-Contract">Legacy-Removal and Rollback Contract<a class="headerlink" href="#Legacy-Removal-and-Rollback-Contract" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Removal is the caller's responsibility</strong>: <code>adopt-plan</code> only evaluates legacy-implementation existence and lists the exit manifest, never deleting on its behalf; <code>foundation-gap</code> and <code>keep-business</code> capabilities do not require removal.</li>
+<li><strong>Rollback relies on evidence</strong>: before adoption writes to disk, a dual-digest binding of <code>adoptionProof</code> and <code>foundationPlanDigest</code> must exist first; on rollback, the plan write set's <code>expect.sha256</code> pre-state is used to restore; an overwrite action that does not declare its pre-state is refused at the <code>projection</code> stage.</li>
+<li><strong>fail-closed default</strong>: any unparseable, out-of-bounds, identity-mismatched, or evidence-missing input makes the corresponding judgment unproven; success is not assumed.</li>
+</ul>
+<h2 id="Ten-Field-Hand-off-Draft">Ten-Field Hand-off Draft<a class="headerlink" href="#Ten-Field-Hand-off-Draft" title="Permanent link">&para;</a></h2>
+<p><code>adopt-plan</code> output carries a <code>handoffDraft</code> sub-block (kind=<code>skill-family.handoff-draft</code>, schemaVersion=1), providing structured data draft for the planner-side ten-field hand-off. Field sources are only two kinds: <code>derived</code> (mechanically derivable from read-only evidence) and <code>INCOMPLETE</code> (not mechanically derivable, never guessed). The ten fields correspond one-to-one with the source constant <code>HANDOFF_FIELDS</code>:</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>Field name</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>project-identity</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>repository-state</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>foundation-binding</code></td>
+<td>derived (manifest declared binding) / INCOMPLETE (no manifest declared)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>write-set-policy</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>legacy-exits</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>business-logic-to-keep</code></td>
+<td>always INCOMPLETE</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>plan-summary</code></td>
+<td>derived</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>verification-entries</code></td>
+<td>derived (all four classes of evidence proven) / INCOMPLETE (any unproven)</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>legacy-removal-recovery</code></td>
+<td>always INCOMPLETE</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>authorization-status</code></td>
+<td>derived (commit/push/tag/publish always false)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="INCOMPLETE-Blocking-Rules">INCOMPLETE Blocking Rules<a class="headerlink" href="#INCOMPLETE-Blocking-Rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any INCOMPLETE field makes <code>ready=false</code>: a draft with gaps must not enter the hand-off.</li>
+<li>The tool never guesses mechanically-undeterminable fields:</li>
+<li><code>business-logic-to-keep</code> and <code>legacy-removal-recovery</code> are <strong>always INCOMPLETE</strong> and must be provided by a human owner; the tool has no basis to derive them;</li>
+<li><code>foundation-binding</code> is INCOMPLETE when no migration manifest declares (<code>foundationPackages</code>) it, counting only the manifest-declared binding;</li>
+<li><code>verification-entries</code> is INCOMPLETE when any of the four classes of evidence (unit/integration/consumer/independentAudit) is not proven.</li>
+</ul>
+<h3 id="Binding">Binding<a class="headerlink" href="#Binding" title="Permanent link">&para;</a></h3>
+<p>The draft carries a dual sha256 digest (the <code>binding</code> block): <code>targetSetDigest</code> summarizes the target repository's file set, and <code>foundationPlanDigest</code> summarizes the Foundation plan write set. Two plans for the same target yield the same digest, precisely binding the draft and the target state at plan time.</p>
+<h3 id="Rendering-Boundary">Rendering Boundary<a class="headerlink" href="#Rendering-Boundary" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The renderer writes only the planner-side hand-off draft, <strong>never the consumer repository</strong>;</li>
+<li>No fifth Kit top-level command is added: Kit top-level commands are permanently the four — scaffold, adopt-plan, projection, check — and <code>handoffDraft</code> is only a sub-block of <code>adopt-plan</code> output.</li>
+</ul>
+<h2 id="Hazard-Class-Fixtures">Hazard-Class Fixtures<a class="headerlink" href="#Hazard-Class-Fixtures" title="Permanent link">&para;</a></h2>
+<p><code>fixtures/adoption/cases/</code> covers seven hazard classes: dirty repository, nested repository, tracked-but-ignored, symlink placeholder, generated-artifact drift, legacy-implementation exit gate, and temporary-exception fields. Each case proves the plan is read-only via byte-level before/after snapshots; see the in-repo <code>fixtures/adoption/README.md</code> for case descriptions.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </article>
+            </div>
+
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+
+      </main>
+
+        <footer class="md-footer">
+
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+
+
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+
+</div>
+
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+
+
+
+
+
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+
+
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+
+
+  </body>
+</html>

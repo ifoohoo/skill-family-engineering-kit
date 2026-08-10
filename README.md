@@ -1,21 +1,52 @@
 <!-- release-skill:safe-first-command -->
 <!-- release-skill:external-write-boundary -->
+> 简体中文版：[README.zh-CN.md](./README.zh-CN.md)
 
 # skill-family-engineering-kit
 
-开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
+<!-- release-skill:release-version: 0.2.1 -->
 
-| 命令 | 用途 | 副作用 |
+An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
+
+<!-- release-skill:managed:start id=latest-release -->
+**0.2.1** (2026-08-10)
+
+This release adds a candidate Quickstart Profile projection bundle while preserving the Kit's four-command boundary and adds bilingual package release documentation.
+
+**Added**
+
+- Adds a candidate builder and CLI for a deterministic, self-contained Quickstart Profile projection bundle with source-closure and bundle digests.
+- Adds complete English and Simplified Chinese package documentation, including an agent quick-reference section.
+
+**Changed**
+
+- Manages the current README and CHANGELOG release sections from one bilingual, versioned notes source.
+- Distributes the project NOTICE separately from the existing third-party notices and license closure.
+
+**Upgrade Notes**
+
+The candidate bundle remains under the existing projection authorization boundary. It does not add a fifth top-level Kit command or replace THIRD_PARTY_NOTICES.
+<!-- release-skill:managed:end id=latest-release -->
+
+| Command | Purpose | Side effects |
 | --- | --- | --- |
-| `scaffold` | 在空目录生成 Skill Family 项目骨架 | 只向空目标目录写入骨架文件（原子写、路径收容）；非空或冲突目标被拒绝且不被触碰 |
-| `adopt-plan` | 严格只读地规划存量仓采用 | 无——不写任何文件（含临时文件），不运行 git 写命令；计划输出到 stdout |
-| `projection` | 投影受管生成物 | 只写 manifest 授权且被目标声明为受管的路径；未授权、手写与越界路径一律拒绝（拒绝时零写入） |
-| `check` | 契约/漂移/闭包/版本/文档事实/Git 前置状态诊断 | 无——只诊断、绝不自动修复；git 仅只读探测 |
+| `scaffold` | Generate a Skill Family project skeleton in an empty directory | Only writes skeleton files to the empty target directory (atomic write, path containment); non-empty or conflicting targets are rejected and not touched |
+| `adopt-plan` | Strictly read-only planning of adopting an existing repo | None — writes no files (including temp files), runs no git write commands; plan output goes to stdout |
+| `projection` | Project managed artifacts | Only writes paths authorized by manifest and declared managed by the target; unauthorized, hand-written, and out-of-bounds paths are all rejected (zero writes on rejection) |
+| `check` | Contract/drift/closure/version/doc-fact/Git-precondition diagnostics | None — only diagnoses, never auto-fixes; git is read-only probe only |
 
-## 使用
+## Problem It Solves
+
+The engineering stage often carries two kinds of risk: either each skeleton generates its own copy and each projection writes its own copy, causing structural drift; or diagnostic tools conveniently "auto-fix", silently mutating the caller's repo. Kit consolidates engineering actions into four read-only or restricted-write commands, making "generate, inventory, project, diagnose" reproducible, auditable, and never auto-modifying across boundaries.
+
+## Core Mental Model
+
+Kit is the "engineering stage" layer, depending on the Harness and Contracts. It does only four things: generate a precise skeleton for a new project, perform a read-only adoption inventory of an existing repo, mechanically project managed facts to a target, and perform read-only diagnostics on engineering inconsistencies. `report` and `host` are sub-actions hanging under the four commands and do not change the "four-command" boundary. All write actions go through the Harness's atomic contained write, leaving no half-written artifact on failure.
+
+## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.2.0
+npm install --save-dev skill-family-engineering-kit@0.2.1
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -23,17 +54,31 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-### 报告子动作
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.2.1 -- skill-family-kit --help`.
+
+### Report sub-action
 
 ```sh
 npm exec -- skill-family-kit projection report --root <repo> --model <report-model.json> --result <operation-result.json> --out <report.md> --binding <binding.json>
 npm exec -- skill-family-kit check report --root <repo> --report <report.md> --model <report-model.json> --result <operation-result.json> --binding <binding.json>
 ```
 
-调用方必须先构造合法 report model；Kit 不从开放的业务 `outputs` 推导事实。所有事实文本按字面转义，失败结果的
-完整 errors 必须出现在 model 和中性报告中。
+The caller must first construct a valid report model; Kit does not derive facts from open business `outputs`. All fact text is escaped literally, and the full errors of a failed result must appear in both the model and the neutral report.
 
-### 宿主子动作
+### Candidate Quickstart projection bundle
+
+Use the candidate subpath to build a deterministic projection manifest containing the Quickstart Profile schemas, runner, and required runtime dependency closure:
+
+```js
+import {
+  buildQuickstartProfileProjection,
+  QUICKSTART_PROFILE_TARGET_PREFIX,
+} from "skill-family-engineering-kit/candidate/quickstart-profile";
+```
+
+Pass the returned `manifest` to the stable `runProjection` API; the candidate helper does not write files or add a fifth top-level command. This subpath is public but **not stable** and may change or be removed in a later minor release. Pin the exact package version, inspect the returned manifest before authorization, and keep candidate imports outside a stable consumer API.
+
+### Host sub-action
 
 ```sh
 npm exec -- skill-family-kit adopt-plan host-describe --host <id> --hosts-root <dir>
@@ -42,63 +87,120 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-Profile 必须显式提供，Kit 不默认绑定具体宿主。probe 默认不启动进程；只有同时给出
-`--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。`host-apply` 稳定拒绝，未实现安装、更新或卸载。
-Codex 的技能目标路径固定为 `.agents/skills`；其他受支持宿主只按已登记 Profile 提供；Qoder 为 `unsupported`，本版只参考其结构，不提供完整 driver，也不声称已在 Qoder 运行。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见本版本 CHANGELOG 与已登记 Profile。
+The Profile must be provided explicitly; Kit does not bind a specific host by default. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. `host-apply` is stably rejected; install, update, or uninstall is not implemented. Codex's skill target path is fixed at `.agents/skills`; other supported hosts are offered only per registered Profile; Qoder is `unsupported`, this version only references its structure, provides no full driver, and does not claim to have run in Qoder. adapter source only accepts declared text closures; binary projection is not supported; see this version's CHANGELOG and registered Profile for the precise host support matrix.
 
-零安装形式（不修改 package.json）：
+## Typical Use Cases
 
-```sh
-npm exec --package=skill-family-engineering-kit@0.2.0 -- skill-family-kit --help
-```
+- New project skeleton: `scaffold` (does not overwrite a non-empty existing repo).
+- Existing-repo adoption inventory: `adopt-plan` (strictly read-only, no file writes, no auto-migration).
+- Managed projection: `projection` + Profile (does not overwrite handwritten files).
+- Engineering diagnostics: `check` (diagnosis only, no fix, `--only` narrows scope).
 
-## 边界机制
+## Boundary Mechanisms
 
-- `scaffold` 的目标必须是**空目录**（任何条目含点文件都算非空），或其父目录已存在的不存在路径（只创建最后一级）。
-  全部写入经 harness 的原子收容写（`writeFileAtomic`），失败不留半成品，路径不能越出目标根。
-- `adopt-plan` 结构性只读：实现中不存在任何写调用，连临时文件都不产生；计划字节与 `scaffold`
-  同源（`describeSkeletonFiles` 单一事实源），因此「计划即动作」。dirty 仓运行前后字节级零变化。
-- `projection` 采用两阶段执行：先对每个条目做路径分类、收容预检、自投影检查、manifest 授权检查、
-  手写保护与冲突守卫；任一条目违规则整体拒绝、零写入。覆盖既有文件必须声明精确的 `expect.sha256`
-  前置状态；内容相同的既有文件是幂等 no-op。写入失败时尽力还原已覆盖文件的前置字节。
-- `check` 只诊断：无写调用、无 `--fix/--apply/--repair` 模式（此类标志在入口处被拒绝）。
-  Git 前置状态仅用文件系统事实加至多一次冻结参数矢量的只读 `git status --porcelain=2`
-  （`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`，不刷新索引）。
+- `scaffold`'s target must be an **empty directory** (any entry including dotfiles counts as non-empty), or a non-existent path whose parent directory exists (only the last level is created). All writes go through the harness's atomic contained write (`writeFileAtomic`), leaving no half-written artifact on failure, and paths cannot escape the target root.
+- `adopt-plan` is structurally read-only: there is no write call in the implementation, not even a temp file; the plan bytes share the same source as `scaffold` (single source of truth `describeSkeletonFiles`), hence "the plan is the action". A dirty repo has zero byte-level change before and after running.
+- `projection` uses two-phase execution: first, for each entry, it performs path classification, containment pre-check, self-projection check, manifest authorization check, hand-written protection, and conflict guard; if any entry violates, the whole is rejected with zero writes. Overwriting an existing file must declare the precise `expect.sha256` precondition; an existing file with identical content is an idempotent no-op. On write failure it best-effort restores the pre-write bytes of already-overwritten files.
+- `check` is diagnosis only: no write calls, no `--fix/--apply/--repair` modes (such flags are rejected at the entry point). Git precondition state uses only filesystem facts plus at most one read-only `git status --porcelain=2` with a frozen parameter vector (`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`, no index refresh).
 
-## 错误码与退出码
+## Error Codes and Exit Codes
 
-错误码复用 contracts 冻结的 SFC\* 体系，不新增码：
+Error codes reuse the contracts frozen SFC\* system; no new codes are added:
 
-- `SFC2002`（UNKNOWN_OPERATION）——入口收到四命令词表之外的命令名；
-- `SFC2003`（INVALID_PARAMS）——选项/参数值违规，或请求 `--fix` 等不存在的变更模式；
-- `SFC2004`（EXECUTION_FAILED）——执行期失败，`details.kind` 为稳定的 kit 级 kind
-  （如 `target-not-empty`、`unauthorized-path`、`handwritten-overwrite`、`conflict-drift`）；
-  harness 抛出的收容类 kind（`path-traversal`、`symlink-escape` 等）原样透传；
-- `SFC1001`（SCHEMA_VALIDATION_FAILED）——`check` 发现的合同文档未通过注册 Schema。
+- `SFC2002` (UNKNOWN_OPERATION) — the entry receives a command name outside the four-command vocabulary;
+- `SFC2003` (INVALID_PARAMS) — option/argument value violation, or requesting a non-existent mutation mode like `--fix`;
+- `SFC2004` (EXECUTION_FAILED) — runtime failure, with `details.kind` as a stable kit-level kind (e.g., `target-not-empty`, `unauthorized-path`, `handwritten-overwrite`, `conflict-drift`); containment kinds thrown by the harness (`path-traversal`, `symlink-escape`, etc.) pass through unchanged;
+- `SFC1001` (SCHEMA_VALIDATION_FAILED) — a contract document found by `check` failed the registered Schema.
 
-进程退出码：`0` 成功/无发现；`1` check 有发现；`2` 拒绝/用法/机制错误。
+Process exit codes: `0` success / no findings; `1` check has findings; `2` rejection / usage / mechanism error.
 
-## 目标工作区文档约定
+## Target Workspace Document Conventions
 
-- `skill-family.project-manifest.json` —— contracts 的 project-manifest 实例（项目身份与 managedFiles 声明）；
-- `skill-family.managed-file-lock.json` —— contracts 的 managed-file-lock 实例（受管路径与内容哈希锁定）；
-- `skill-family.projection.json` —— projection 的授权 manifest（kit 级文档）。
+- `skill-family.project-manifest.json` — the contracts project-manifest instance (project identity and managedFiles declaration);
+- `skill-family.managed-file-lock.json` — the contracts managed-file-lock instance (managed path and content-hash lock);
+- `skill-family.projection.json` — the projection authorization manifest (kit-level document).
 
-projection 只写同时满足两个条件的路径：manifest 列出，且目标自身的登记
-（file-registry / project-manifest managedFiles / managed-file-lock）声明为受管。
-匹配手写模式的路径永不写入，即使有受管声明也拒绝。
+`projection` only writes paths that satisfy both conditions: listed by the manifest, and declared managed by the target's own registry (file-registry / project-manifest managedFiles / managed-file-lock). Paths matching hand-written patterns are never written, even if a managed declaration exists, they are rejected.
 
-## 禁止项
+## Prohibited Items
 
-本包不得执行 git init、commit、push、tag、stash、分支切换、发布、删除、远端写入或发布状态复述；
-不实现第五个顶层命令；不做业务判断、模型调用、远程网络。
+This package must not perform git init, commit, push, tag, stash, branch switch, publish, delete, remote write, or publish-state recital; it does not implement a fifth top-level command; it does no business judgments, model calls, or remote networking.
 
-## 安装
+## Troubleshooting
 
-```sh
-npm install skill-family-engineering-kit@0.2.0
-```
+`check`'s exit code 1 means findings, exit code 2 means usage or mechanism error. If it fails, confirm the target repo exists and `skill-family.project-manifest.json` is well-formed; when path overrun or hand-written protection triggers, the command rejects the write and reports `SFC2004`.
 
-## 故障诊断
+## Further Documentation
 
-`check` 退出码 1 表示有发现，退出码 2 表示用法或机制错误。如失败，确认目标仓库存在且 `skill-family.project-manifest.json` 形状合法；路径越界或手写保护触发时命令会拒绝写入并报告 `SFC2004`。
+- Architecture boundaries and routing: [Architecture](https://ifoohoo.github.io/skill-family-engineering-kit/architecture/), [Agent architecture routing](https://ifoohoo.github.io/skill-family-engineering-kit/agents/architecture-routing/)
+- Capability catalog: [capability-catalog.json](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json)
+- Adoption and migration: [Migration guide](https://ifoohoo.github.io/skill-family-engineering-kit/migration/)
+- Side-effect matrix: [Failure and side-effect matrix](https://ifoohoo.github.io/skill-family-engineering-kit/reference/failure-and-side-effect-matrix/)
+
+<!-- agent-quick-reference:start -->
+## Agent Quick Reference
+
+### Use when
+
+- You need to generate a new project skeleton, perform a read-only adoption inventory of an existing repo, managed projection, or engineering diagnostics.
+- You need to produce report text from a rendered model, or perform tiered checks on a report.
+- You need a deterministic, self-contained projection manifest for an exact-version Quickstart candidate trial.
+
+### Do not use when
+
+- You need auto-fix (`check` does not fix), or auto-migration (`adopt-plan` writes no files).
+- You need host apply/install/update/uninstall or a full Qoder driver (explicitly unsupported).
+- You need a stable Quickstart API or expect the candidate helper to bypass `runProjection` authorization.
+
+### Capability selection
+
+- `foundation.kit.scaffold`: generate a precise skeleton in an empty directory, atomic + contained.
+- `foundation.kit.adopt-plan`: strictly read-only inventory and completion determination of an existing repo.
+- `foundation.kit.projection`: managed projection, write only after full validation, zero writes on failure.
+- `foundation.kit.check`: seven check classes, diagnosis only, no fix.
+- `foundation.kit.report`: projection/check report sub-action orchestration.
+- `foundation.kit.git-probe`: read-only whitelisted Git status probe.
+- `foundation.kit.host`: describe/build/probe/plan, apply stably rejected.
+- `foundation.kit.licensing`: Profile authorization-data loading and generation.
+- `foundation.kit.identity-check`: identity-drift and Profile-consistency checks.
+- `foundation.kit.cli`: four-command dispatch and mutation-flag entry rejection.
+- `foundation.kit.quickstart-profile-candidate`: exact-version deterministic Quickstart projection-manifest bundle.
+
+### Required inputs
+
+- Target root (scaffold needs an empty directory; adopt-plan/projection/check need an accessible repo).
+- Profile identifier (host sub-action must be provided explicitly).
+
+### Outputs and evidence
+
+- Skeleton files, adoption classification / completion determination, projected files, findings list, report text.
+- Evidence: `packages/skill-family-engineering-kit/test/scaffold.test.mjs`, `adopt-plan.test.mjs`, `projection.test.mjs`, `check.test.mjs`, `host.test.mjs`, `git-probe.test.mjs`.
+
+### Side effects
+
+- scaffold/projection/host-build write files to the contained target (atomic + contained).
+- adopt-plan and check are strictly read-only; git is read-only whitelisted probe only.
+- `FORBIDDEN_SIDE_EFFECTS` includes git-init/commit/push/tag, publish, remote-write.
+
+### Failure semantics
+
+- Stable error codes such as `SFC2002/2003/2004/1001`; exit codes 0/1/2.
+- check findings exit code 1, mechanism/usage error exit code 2.
+
+### Architectural invariants
+
+- The top-level commands are fixed at 4, not expanded; `REFUSED_MUTATION_FLAGS` is rejected at the CLI entry.
+- Diagnosis only, no fix; projection only, no overwrite of handwritten.
+
+### Route elsewhere when
+
+- Remote publish: route to release-skill.
+- host apply/install/update/uninstall: explicitly unsupported.
+- Business state machine / migration execution: stays with the caller or a later version.
+
+### Machine-readable sources
+
+- Public capability catalog: [`capability-catalog.json`](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json) (`foundation.kit.*` entries).
+- Package-local source: `src/*.mjs`.
+- Package-local candidate source: `candidate/*`; public import: `skill-family-engineering-kit/candidate/quickstart-profile`.
+<!-- agent-quick-reference:end -->

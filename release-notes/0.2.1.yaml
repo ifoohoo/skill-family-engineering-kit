@@ -1,0 +1,23 @@
+version: 0.2.1
+date: 2026-08-10
+locales:
+  en:
+    summary: This release adds a candidate Quickstart Profile projection bundle while preserving the Kit's four-command boundary and adds bilingual package release documentation.
+    changes:
+      added:
+        - Adds a candidate builder and CLI for a deterministic, self-contained Quickstart Profile projection bundle with source-closure and bundle digests.
+        - Adds complete English and Simplified Chinese package documentation, including an agent quick-reference section.
+      changed:
+        - Manages the current README and CHANGELOG release sections from one bilingual, versioned notes source.
+        - Distributes the project NOTICE separately from the existing third-party notices and license closure.
+    upgradeNotes: The candidate bundle remains under the existing projection authorization boundary. It does not add a fifth top-level Kit command or replace THIRD_PARTY_NOTICES.
+  zh-CN:
+    summary: 本版新增 Quickstart Profile 候选投影包，同时保持 Kit 四命令边界，并补齐双语包发布文档。
+    changes:
+      added:
+        - 新增候选构建函数与 CLI，用于生成确定性、自包含的 Quickstart Profile 投影包，并记录源码闭包与投影包摘要。
+        - 新增完整的英文与简体中文包文档，并补充智能体快速参考章节。
+      changed:
+        - 使用同一份双语版本化说明源管理当前 README 与 CHANGELOG 的发布区域。
+        - 项目 NOTICE 与现有第三方声明及许可证闭包分开分发。
+    upgradeNotes: 候选投影包仍受既有 projection 授权边界约束。它不增加第五个 Kit 顶层命令，也不替代 THIRD_PARTY_NOTICES。

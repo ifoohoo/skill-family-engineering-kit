@@ -9,6 +9,10 @@
          <lastmod>1970-01-01</lastmod>
     </url>
     <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/examples-and-fixtures/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
          <loc>https://ifoohoo.github.io/skill-family-engineering-kit/git-lifecycle/</loc>
          <lastmod>1970-01-01</lastmod>
     </url>
@@ -17,11 +21,103 @@
          <lastmod>1970-01-01</lastmod>
     </url>
     <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/licensing/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
          <loc>https://ifoohoo.github.io/skill-family-engineering-kit/quickstart/</loc>
          <lastmod>1970-01-01</lastmod>
     </url>
     <url>
          <loc>https://ifoohoo.github.io/skill-family-engineering-kit/setup/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/agents/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/agents/architecture-routing/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/architecture/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/examples-and-fixtures/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/help/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/licensing/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/quickstart/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/agents/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/agents/architecture-routing/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/migration/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/adapter-text-closure/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/adopt-existing-repository/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/deterministic-human-report/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/domain-schema-validation/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/durable-local-state/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/host-profile-integration/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/recipes/safe-filesystem-and-atomic-write/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/reference/compatibility/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/reference/failure-and-side-effect-matrix/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/en/reference/api/</loc>
          <lastmod>1970-01-01</lastmod>
     </url>
     <url>
@@ -50,6 +146,62 @@
     </url>
     <url>
          <loc>https://ifoohoo.github.io/skill-family-engineering-kit/public/status/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/adapter-text-closure/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/adopt-existing-repository/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/deterministic-human-report/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/domain-schema-validation/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/durable-local-state/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/host-profile-integration/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/recipes/safe-filesystem-and-atomic-write/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/compatibility/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/failure-and-side-effect-matrix/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/contracts/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/engineering-kit/</loc>
+         <lastmod>1970-01-01</lastmod>
+    </url>
+    <url>
+         <loc>https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/</loc>
          <lastmod>1970-01-01</lastmod>
     </url>
 </urlset>

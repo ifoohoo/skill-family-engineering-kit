@@ -1,0 +1,2551 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+
+
+
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/engineering-kit/">
+
+
+        <link rel="prev" href="../harness/">
+
+
+        <link rel="next" href="../../../examples-and-fixtures/">
+
+
+
+
+
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+
+
+
+        <title>中文 · Engineering Kit API - Skill Family Foundation</title>
+
+
+
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+
+
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+
+
+
+
+
+  </head>
+
+
+
+
+
+
+
+
+
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+
+
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+
+
+        <a href="#skill-family-engineering-kit-公共-API-参考" class="md-skip">
+          跳转至
+        </a>
+
+    </div>
+    <div data-md-component="announce">
+
+    </div>
+
+
+
+
+
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+
+              中文 · Engineering Kit API
+
+          </span>
+        </div>
+      </div>
+    </div>
+
+
+        <form class="md-header__option" data-md-component="palette">
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+</form>
+
+
+
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+
+
+
+
+
+        <label class="md-header__button md-icon" for="__search">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  </nav>
+
+</header>
+
+    <div class="md-container" data-md-component="container">
+
+
+
+
+
+
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+
+
+
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+
+  <ul class="md-nav__list" data-md-scrollfix>
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 首页
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../setup/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安装与环境
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 快速开始
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../git-lifecycle/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Git 生命周期指南
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 能力与诊断
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构边界
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../public/status/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 公开状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../migration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 存量采用与迁移
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 许可与署名
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 智能体入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构路由
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 兼容性
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 失败与副作用
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · API 参考
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../contracts/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Contracts API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../harness/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Harness API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item md-nav__item--active">
+
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+
+
+
+
+
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Engineering Kit API
+
+
+
+  </span>
+
+
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+
+      <a href="./" class="md-nav__link md-nav__link--active">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Engineering Kit API
+
+
+
+  </span>
+
+
+
+      </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#scaffold-foundationkitscaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        scaffold (foundation.kit.scaffold)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="scaffold (foundation.kit.scaffold)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#adopt-plan-foundationkitadopt-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        adopt-plan (foundation.kit.adopt-plan)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="adopt-plan (foundation.kit.adopt-plan)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#projection-foundationkitprojection" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        projection (foundation.kit.projection)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="projection (foundation.kit.projection)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runProjection--loadProjectionManifest" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runProjection / loadProjectionManifest
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#check-foundationkitcheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        check (foundation.kit.check)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="check (foundation.kit.check)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runChecks--runCoreCheck--isContainedDeclaration" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runChecks / runCoreCheck / isContainedDeclaration
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#report-foundationkitreport" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        report (foundation.kit.report)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="report (foundation.kit.report)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#renderReportAction--checkReportAction" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        renderReportAction / checkReportAction
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#git-probe-foundationkitgit-probe" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        git-probe (foundation.kit.git-probe)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="git-probe (foundation.kit.git-probe)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#probeGitState--probeGitFacts" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        probeGitState / probeGitFacts
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#host-foundationkithost" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        host (foundation.kit.host)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="host (foundation.kit.host)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#licensing-foundationkitlicensing" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        licensing (foundation.kit.licensing)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="licensing (foundation.kit.licensing)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadLicensingProfile--listLicensingProfiles--validateLicensingProfile--generateLicenseContent--generateNoticeContent--generateIdentityRecord--bundledProfilesRoot" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadLicensingProfile / listLicensingProfiles / validateLicensingProfile / generateLicenseContent / generateNoticeContent / generateIdentityRecord / bundledProfilesRoot
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#identity-check-foundationkitidentity-check" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        identity-check (foundation.kit.identity-check)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="identity-check (foundation.kit.identity-check)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadIdentityRecord--checkIdentityDrift--validateIdentityAgainstProfile" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadIdentityRecord / checkIdentityDrift / validateIdentityAgainstProfile
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#CLI-foundationkitcli" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CLI (foundation.kit.cli)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="CLI (foundation.kit.cli)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runCommand--cliMain--拒绝变更旗标" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runCommand / cliMain / 拒绝变更旗标
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#与机器事实层的互链" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        与机器事实层的互链
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 样例与 Fixture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 采用存量仓库
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安全文件系统与原子写
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Adapter 文本闭包
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 确定性人类报告
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 持久本地状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 宿主 Profile 集成
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 领域 Schema 校验
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Home
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Quickstart
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Capabilities and diagnostics
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/migration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Migration
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Licensing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Agent entry
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture routing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Compatibility
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Failures and side effects
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/api/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · API reference
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Examples and fixtures
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adopt an existing repository
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Safe filesystem and atomic write
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adapter text closure
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Deterministic human report
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Durable local state
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Host Profile integration
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Domain Schema validation
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/mutation-taxonomy/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 变异分类学
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/independence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 独立性证明
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/version-compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 版本兼容
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/failure-evidence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 失败证据与 AUD 码
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#scaffold-foundationkitscaffold" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        scaffold (foundation.kit.scaffold)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="scaffold (foundation.kit.scaffold)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#adopt-plan-foundationkitadopt-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        adopt-plan (foundation.kit.adopt-plan)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="adopt-plan (foundation.kit.adopt-plan)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#projection-foundationkitprojection" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        projection (foundation.kit.projection)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="projection (foundation.kit.projection)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runProjection--loadProjectionManifest" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runProjection / loadProjectionManifest
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#check-foundationkitcheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        check (foundation.kit.check)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="check (foundation.kit.check)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runChecks--runCoreCheck--isContainedDeclaration" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runChecks / runCoreCheck / isContainedDeclaration
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#report-foundationkitreport" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        report (foundation.kit.report)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="report (foundation.kit.report)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#renderReportAction--checkReportAction" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        renderReportAction / checkReportAction
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#git-probe-foundationkitgit-probe" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        git-probe (foundation.kit.git-probe)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="git-probe (foundation.kit.git-probe)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#probeGitState--probeGitFacts" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        probeGitState / probeGitFacts
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#host-foundationkithost" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        host (foundation.kit.host)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="host (foundation.kit.host)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#licensing-foundationkitlicensing" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        licensing (foundation.kit.licensing)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="licensing (foundation.kit.licensing)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadLicensingProfile--listLicensingProfiles--validateLicensingProfile--generateLicenseContent--generateNoticeContent--generateIdentityRecord--bundledProfilesRoot" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadLicensingProfile / listLicensingProfiles / validateLicensingProfile / generateLicenseContent / generateNoticeContent / generateIdentityRecord / bundledProfilesRoot
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#identity-check-foundationkitidentity-check" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        identity-check (foundation.kit.identity-check)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="identity-check (foundation.kit.identity-check)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadIdentityRecord--checkIdentityDrift--validateIdentityAgainstProfile" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadIdentityRecord / checkIdentityDrift / validateIdentityAgainstProfile
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#CLI-foundationkitcli" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CLI (foundation.kit.cli)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="CLI (foundation.kit.cli)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runCommand--cliMain--拒绝变更旗标" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runCommand / cliMain / 拒绝变更旗标
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#与机器事实层的互链" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        与机器事实层的互链
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+            <div class="md-content" data-md-component="content">
+
+              <article class="md-content__inner md-typeset">
+
+
+
+
+
+<h1 id="skill-family-engineering-kit-公共-API-参考">skill-family-engineering-kit 公共 API 参考<a class="headerlink" href="#skill-family-engineering-kit-公共-API-参考" title="Permanent link">&para;</a></h1>
+<p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
+<p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
+<p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
+<ul>
+<li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code></li>
+<li><a href="#adopt-plan-foundationkitadopt-plan">adopt-plan</a> → <code>planAdoption</code> / <code>evaluateMigrationCompletion</code></li>
+<li><a href="#projection-foundationkitprojection">projection</a> → <code>runProjection</code> / <code>loadProjectionManifest</code></li>
+<li><a href="#check-foundationkitcheck">check</a> → <code>runChecks</code> / <code>runCoreCheck</code></li>
+<li><a href="#report-foundationkitreport">report</a> → <code>renderReportAction</code> / <code>checkReportAction</code></li>
+<li><a href="#git-probe-foundationkitgit-probe">git-probe</a> → <code>probeGitState</code> / <code>probeGitFacts</code></li>
+<li><a href="#host-foundationkithost">host</a> → <code>describeHost</code> / <code>probeHost</code> / <code>refuseHostApply</code> …</li>
+<li><a href="#licensing-foundationkitlicensing">licensing</a> → <code>loadLicensingProfile</code> / <code>generateLicenseContent</code> …</li>
+<li><a href="#identity-check-foundationkitidentity-check">identity-check</a> → <code>checkIdentityDrift</code> / <code>validateIdentityAgainstProfile</code></li>
+<li><a href="./">CLI</a> → <code>runCommand</code> / <code>cliMain</code></li>
+</ul>
+<hr />
+<h2 id="scaffold-foundationkitscaffold">scaffold (foundation.kit.scaffold)<a class="headerlink" href="#scaffold-foundationkitscaffold" title="Permanent link">&para;</a></h2>
+<h3 id="scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs">scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs<a class="headerlink" href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections } = {})</code>（async）</li>
+<li><code>describeSkeletonFiles(inputs)</code>（async）</li>
+<li><code>normalizeSkeletonInputs({ projectId, projectName, profileId, licensingProfile, licensingVariant, rootBasename })</code></li>
+<li>输入：目标根、骨架选项（<code>projectId</code> 等）。</li>
+<li>输出：精确集合的托管骨架文件（原子 + 路径收容）。</li>
+<li>纯函数：<code>normalizeSkeletonInputs</code> 是；<code>scaffoldTarget</code> 落盘。</li>
+<li>副作用：在受收容目标创建文件（原子 + 收容）；目标非空则拒绝、不覆盖。</li>
+<li>稳定错误码与 <code>details.kind</code>：非法 kebab <code>projectId</code> / 非空目标抛 <code>KitError</code>（<code>KIT_ERROR_KINDS</code> 的 <code>invalid-params</code> / <code>rejected</code>）；非法参数 <code>+ INVALID_PARAMS</code>（<code>SFC2003</code>）。</li>
+<li>前置条件与信任锚：目标为可写空目录；Node &gt;= 22.22.2；骨架集合与 <code>scaffold-conformance</code> fixture 一致。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/scaffold.mjs</code>、<code>skeleton.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/scaffold.test.mjs</code>、<code>skeleton-contract.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：业务项目内容（存量仓改用 <code>adopt-plan</code>）。</li>
+</ul>
+<hr />
+<h2 id="adopt-plan-foundationkitadopt-plan">adopt-plan (foundation.kit.adopt-plan)<a class="headerlink" href="#adopt-plan-foundationkitadopt-plan" title="Permanent link">&para;</a></h2>
+<h3 id="planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories">planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories<a class="headerlink" href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名（节选）：</li>
+<li><code>planAdoption({ root, manifest, ... } = {})</code>（async）</li>
+<li><code>buildHandoffDraft({ ... })</code></li>
+<li><code>evaluateMigrationCompletion({ ... })</code></li>
+<li><code>validateException(exception, index, nowMs)</code></li>
+<li><code>assessLegacyExitList(root, legacyItems)</code>（async）</li>
+<li><code>findNestedRepositories(entries)</code></li>
+<li>输入：目标根、迁移清单路径。</li>
+<li>输出：采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、handoff 草稿（仅输出，不落盘）。</li>
+<li>纯函数：分类与评估函数为纯函数；<code>planAdoption</code> 含只读探测。</li>
+<li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；可能触发只读 Git 探测。</li>
+<li>稳定错误码与 <code>details.kind</code>：例外缺字段 / 未退出旧实现则完成判定 <code>false</code>；硬失败抛 <code>KitError</code>（<code>CONTRACTS_VERSION</code> 不一致等）。</li>
+<li>前置条件与信任锚：目标仓存在且可只读访问；<code>MIGRATION_MANIFEST_PATH</code> / <code>MIGRATION_MANIFEST_SCHEMA_ID</code> 指向契约。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/adopt-plan.mjs</code>、<code>migration.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/adopt-plan.test.mjs</code>、<code>migration.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：存量业务代码的迁移决策（真正迁移执行由调用方负责）。</li>
+</ul>
+<hr />
+<h2 id="projection-foundationkitprojection">projection (foundation.kit.projection)<a class="headerlink" href="#projection-foundationkitprojection" title="Permanent link">&para;</a></h2>
+<h3 id="runProjection--loadProjectionManifest">runProjection / loadProjectionManifest<a class="headerlink" href="#runProjection--loadProjectionManifest" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>runProjection({ root, manifest: manifestRelPath } = {})</code>（async）</li>
+<li><code>loadProjectionManifest(rootAbs, manifestRelPath)</code>（async）</li>
+<li>输入：投影清单、目标根。</li>
+<li>输出：投影文件（仅在校验全部通过时写入）。</li>
+<li>纯函数：<code>loadProjectionManifest</code> 是；<code>runProjection</code> 两阶段（全校验后才写，失败回滚）。</li>
+<li>副作用：在受收容目标写投影文件；不覆盖 handwritten 文件；任一校验失败零写。</li>
+<li>稳定错误码与 <code>details.kind</code>：未授权 / 手写冲突 / 越界 / 内容冲突抛 <code>KitError</code>（<code>rejected</code> / <code>unauthorized</code> 类 <code>kind</code>）。</li>
+<li>前置条件与信任锚：投影清单已登记（<code>PROJECTION_MANIFEST_PATH</code>）。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/projection.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/projection.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：投影内容的业务含义（远端发布转 <code>release-skill</code>）。</li>
+</ul>
+<hr />
+<h2 id="check-foundationkitcheck">check (foundation.kit.check)<a class="headerlink" href="#check-foundationkitcheck" title="Permanent link">&para;</a></h2>
+<h3 id="runChecks--runCoreCheck--isContainedDeclaration">runChecks / runCoreCheck / isContainedDeclaration<a class="headerlink" href="#runChecks--runCoreCheck--isContainedDeclaration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>runChecks({ root, allowGitSpawn = true, only, profilesRoot } = {})</code>（async）</li>
+<li><code>runCoreCheck({ root, allowGitSpawn = true, profilesRoot } = {})</code>（async）</li>
+<li><code>isContainedDeclaration(rel)</code></li>
+<li>输入：<code>--only</code> 取值 <code>contracts|drift|closure|version|docs|git|identity</code>。</li>
+<li>输出：发现清单；退出码 <code>findings=1</code>（有发现）、<code>mechanism=2</code>（某类检查无法完成）、<code>ok=0</code>。</li>
+<li>纯函数：否（读取目标文件与只读 Git 状态）；但<strong>只诊断、不修复、不写</strong>。</li>
+<li>副作用：无文件写入；只读 Git 探测（至多一次冻结 <code>status</code> 查询）。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>CHECK_CLASSES</code> 为七类闭集，不扩张；机制失败抛 <code>KitError</code>（<code>mechanism</code> 类）。</li>
+<li>前置条件与信任锚：<code>GIT_READ_ONLY_ALLOWLIST</code> 限定可调用子命令。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/check.mjs</code>、<code>core-check.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/check.test.mjs</code>、<code>core-check.test.mjs</code>、<code>check-equivalence.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：发现项的业务处置（自动修复执行由调用方负责）。</li>
+</ul>
+<hr />
+<h2 id="report-foundationkitreport">report (foundation.kit.report)<a class="headerlink" href="#report-foundationkitreport" title="Permanent link">&para;</a></h2>
+<h3 id="renderReportAction--checkReportAction">renderReportAction / checkReportAction<a class="headerlink" href="#renderReportAction--checkReportAction" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>renderReportAction(options = {})</code>（async）</li>
+<li><code>checkReportAction(options = {})</code>（async）</li>
+<li>输入：<code>report-model</code>、<code>--out</code> / <code>--binding</code> 选项。</li>
+<li>输出：Markdown 文本；显式 <code>--out</code> / <code>--binding</code> 才落盘，否则只写 stdout。</li>
+<li>纯函数：否（默认只写 stdout；显式选项才写受收容文件）。</li>
+<li>副作用：默认无文件写入；显式 <code>--out</code> / <code>--binding</code> 才写受收容文件。</li>
+<li>稳定错误码与 <code>details.kind</code>：硬失败计为发现；非法参数 <code>reject</code>（<code>invalid-params</code>）。</li>
+<li>前置条件与信任锚：已存在 Harness <code>report-model</code>；报告由机器结果确定性渲染。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/report.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/report.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：报告结论解读（机制在 Harness <code>report</code>）。</li>
+</ul>
+<hr />
+<h2 id="git-probe-foundationkitgit-probe">git-probe (foundation.kit.git-probe)<a class="headerlink" href="#git-probe-foundationkitgit-probe" title="Permanent link">&para;</a></h2>
+<h3 id="probeGitState--probeGitFacts">probeGitState / probeGitFacts<a class="headerlink" href="#probeGitState--probeGitFacts" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>probeGitState(root, { allowSpawn = true } = {})</code>（async）</li>
+<li><code>probeGitFacts(root, candidatePaths, { allowSpawn = true } = {})</code>（async）</li>
+<li>输入：目标根。</li>
+<li>输出：Git 状态与事实（只读）。</li>
+<li>纯函数：否（调用 <code>git</code> 只读子命令）；不含任何写操作。</li>
+<li>副作用：只读调用 <code>git status</code> / <code>ls-files</code> / <code>check-ignore</code>；参数向量冻结于 <code>GIT_STATUS_ARGS</code> / <code>GIT_LS_FILES_ARGS</code> / <code>GIT_CHECK_IGNORE_ARGS</code>，不在白名单即拒绝。</li>
+<li>稳定错误码与 <code>details.kind</code>：非白名单参数向量抛 <code>KitError</code>（<code>unauthorized-git</code> 类）。</li>
+<li>前置条件与信任锚：<code>GIT_READ_ONLY_ALLOWLIST</code> 限定可调用子命令。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/gitprobe.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/git-probe.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：Git 写操作授权（Git 写归 Git 生命周期指南，Foundation 不拥有）。</li>
+</ul>
+<hr />
+<h2 id="host-foundationkithost">host (foundation.kit.host)<a class="headerlink" href="#host-foundationkithost" title="Permanent link">&para;</a></h2>
+<h3 id="describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver">describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver<a class="headerlink" href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名（节选，除 <code>refuseHostApply</code> 外均为 async）：</li>
+<li><code>describeHost({ hostId, hostsRoot, registry } = {})</code></li>
+<li><code>loadHostRegistry({ hostsRoot, registry } = {})</code></li>
+<li><code>probeHost({ hostId, hostsRoot, registry, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
+<li><code>buildHostAdapter({ hostId, pathCategoryId, input, hostsRoot, registry } = {})</code></li>
+<li><code>materializeHostBuild(options)</code></li>
+<li><code>planHost({ hostId, pathCategoryId, buildManifest, probeFacts, hostsRoot, registry } = {})</code></li>
+<li><code>assertPlanConsistency(planInput)</code></li>
+<li><code>refuseHostApply()</code>（直接抛错）</li>
+<li><code>probeTrustedVersionDriver({ hostId, driverId, capabilities = CAPABILITIES, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
+<li>输入：宿主标识、probe/plan 选项。</li>
+<li>输出：宿主描述、probe 结果、构建产物、plan。</li>
+<li>纯函数：<code>assertPlanConsistency</code> / <code>refuseHostApply</code> 是；其余含落盘或进程调用。</li>
+<li>副作用：<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。</li>
+<li>稳定错误码与 <code>details.kind</code>：unsupported host（如 <code>qoder</code>）抛 <code>KitError</code>（<code>unsupported-host</code>）；<code>apply</code> 由 <code>refuseHostApply</code> 稳定拒绝；缺 probe facts 抛 <code>KitError</code>（<code>missing-probe-facts</code>）。<code>HOST_DRIVER_IDS</code> 仅两个受信 driver（<code>claude-version-v1</code> / <code>codex-version-v1</code>）。</li>
+<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记；受信 driver 限定；<code>apply</code> / <code>install</code> / <code>update</code> / <code>uninstall</code> 明确 unsupported。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>unstable</code>（host 能力整体 unstable）。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/host.mjs</code>、<code>host-profiles.mjs</code>、<code>host-drivers.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：宿主业务语义（<code>host apply</code> 明确 unsupported；Qoder 完整 driver unsupported）。</li>
+</ul>
+<hr />
+<h2 id="licensing-foundationkitlicensing">licensing (foundation.kit.licensing)<a class="headerlink" href="#licensing-foundationkitlicensing" title="Permanent link">&para;</a></h2>
+<h3 id="loadLicensingProfile--listLicensingProfiles--validateLicensingProfile--generateLicenseContent--generateNoticeContent--generateIdentityRecord--bundledProfilesRoot">loadLicensingProfile / listLicensingProfiles / validateLicensingProfile / generateLicenseContent / generateNoticeContent / generateIdentityRecord / bundledProfilesRoot<a class="headerlink" href="#loadLicensingProfile--listLicensingProfiles--validateLicensingProfile--generateLicenseContent--generateNoticeContent--generateIdentityRecord--bundledProfilesRoot" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名（节选）：</li>
+<li><code>loadLicensingProfile({ profilesRoot, profileId, variant } = {})</code>（async）</li>
+<li><code>listLicensingProfiles(profilesRoot)</code></li>
+<li><code>validateLicensingProfile(profile)</code></li>
+<li><code>generateLicenseContent(profile)</code> / <code>generateNoticeContent(profile, { projectName })</code> / <code>generateIdentityRecord(profile, { projectId, projectName, projections } = {})</code></li>
+<li><code>bundledProfilesRoot()</code></li>
+<li>输入：Profile 标识、变体选择。</li>
+<li>输出：许可证 / 声明 / 身份记录文本。</li>
+<li>纯函数：<code>validateLicensingProfile</code> 与各 <code>generate*</code> 是；<code>load*</code> 含只读读取 Profile 数据。</li>
+<li>副作用：无（纯函数生成 + 只读读取）。</li>
+<li>稳定错误码与 <code>details.kind</code>：多变体未指定 / 非法 Profile 抛 <code>KitError</code>（<code>invalid-licensing-profile</code>）。</li>
+<li>前置条件与信任锚：<code>profiles/licensing/registry.json</code> + <code>schema.json</code> 存在；默认取 registry 第一变体，多变体须显式选择；所有商业载荷当前关闭。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/licensing.mjs</code>、<code>profiles/licensing/registry.json</code>、<code>profiles/licensing/schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/licensing.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：授权业务语义（授权执行决策由调用方负责）。</li>
+</ul>
+<hr />
+<h2 id="identity-check-foundationkitidentity-check">identity-check (foundation.kit.identity-check)<a class="headerlink" href="#identity-check-foundationkitidentity-check" title="Permanent link">&para;</a></h2>
+<h3 id="loadIdentityRecord--checkIdentityDrift--validateIdentityAgainstProfile">loadIdentityRecord / checkIdentityDrift / validateIdentityAgainstProfile<a class="headerlink" href="#loadIdentityRecord--checkIdentityDrift--validateIdentityAgainstProfile" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>loadIdentityRecord(rootAbs)</code>（async）</li>
+<li><code>checkIdentityDrift({ rootAbs, identityRecord } = {})</code>（async）</li>
+<li><code>validateIdentityAgainstProfile(record, profilesRoot)</code>（async）</li>
+<li>输入：目标根、Profile 标识。</li>
+<li>输出：漂移发现、校验结论。</li>
+<li>纯函数：<code>validateIdentityAgainstProfile</code> 是；<code>load*</code> / <code>check*</code> 含只读读取目标文件。</li>
+<li>副作用：只读读取目标文件；不修改。</li>
+<li>稳定错误码与 <code>details.kind</code>：漂移或校验失败产出 findings（不抛错，由 <code>check</code> 退出码 <code>1</code> 表达）。</li>
+<li>前置条件与信任锚：<code>IDENTITY_RECORD_PATH</code> 指向身份记录。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/identity-check.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/identity-check.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：漂移业务处置（自动修复由调用方负责）。</li>
+</ul>
+<hr />
+<h2 id="CLI-foundationkitcli">CLI (foundation.kit.cli)<a class="headerlink" href="#CLI-foundationkitcli" title="Permanent link">&para;</a></h2>
+<h3 id="runCommand--cliMain--拒绝变更旗标">runCommand / cliMain / 拒绝变更旗标<a class="headerlink" href="#runCommand--cliMain--拒绝变更旗标" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>runCommand(command, options = {})</code>（async）—— 按 <code>TOP_LEVEL_COMMANDS</code> 分派，返回 <code>{ exitCode, output }</code></li>
+<li><code>cliMain(argv)</code>（async）—— CLI 入口</li>
+<li>输入：<code>argv</code>。</li>
+<li>输出：命令结果；退出码 <code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>。</li>
+<li>纯函数：否（依命令产生受收容文件写入或只读探测）。</li>
+<li>副作用：依命令而定（scaffold/projection 受收容写；adopt-plan/check 只读）；<code>REFUSED_MUTATION_FLAGS</code>（如 <code>--apply</code>）在 <code>parseOptions</code> 入口即拒。</li>
+<li>稳定错误码与 <code>details.kind</code>：未知命令 / 拒绝旗标退出码 <code>2</code>（<code>unknown-command</code> / <code>refused-mutation</code>）。</li>
+<li>前置条件与信任锚：Node &gt;= 22.22.2；<code>TOP_LEVEL_COMMANDS</code> 固定 4 个，第 5 个命令禁止新增；<code>REFUSED_MUTATION_FLAGS</code> 在解析入口即拒。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/index.mjs</code>、<code>cli.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/cli.test.mjs</code>、<code>boundary.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：命令的业务目标（命令集合不扩张）。</li>
+</ul>
+<p>Kit 错误类型：<code>KitError extends ContractsError</code>（构造未登记码立即抛 <code>TypeError</code>）；<code>KIT_ERROR_KINDS</code> 为稳定 kind 枚举；<code>kitError</code> / <code>invalidParamsError</code> / <code>unknownCommandError</code> / <code>mutationModeError</code> / <code>refusalError</code> 为构造辅助。<code>REFUSED_MUTATION_FLAGS</code> 列出入口即拒的变更旗标（如 <code>--apply</code>）。</p>
+<hr />
+<h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.kit.*</code>、<code>foundation.unsupported.*</code>）。</li>
+<li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code> 与 <code>cli.mjs</code>，拒绝引用不存在的入口，并校验 <code>TOP_LEVEL_COMMANDS</code> 未扩张为超 4 个。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </article>
+            </div>
+
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+
+      </main>
+
+        <footer class="md-footer">
+
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+
+
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+
+</div>
+
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+
+
+
+
+
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+
+
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+
+
+  </body>
+</html>

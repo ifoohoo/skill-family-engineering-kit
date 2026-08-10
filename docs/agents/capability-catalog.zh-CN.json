@@ -1,0 +1,1561 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-family.documentation-capability-catalog",
+  "bundle": "locale-overlay",
+  "locale": "zh-CN",
+  "generatedFrom": [
+    "package.json",
+    "packages/skill-family-contracts/package.json",
+    "packages/skill-family-harness-node/package.json",
+    "packages/skill-family-engineering-kit/package.json",
+    "packages/skill-family-contracts/src/index.mjs",
+    "packages/skill-family-harness-node/src/index.mjs",
+    "packages/skill-family-engineering-kit/src/index.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs",
+    "packages/skill-family-contracts/src/registry.json",
+    "profiles/README.md",
+    "docs/architecture.md",
+    "docs/status/current.md"
+  ],
+  "capabilities": [
+    {
+      "id": "foundation.contracts.object-validation",
+      "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的 18 类顶层契约对象文档",
+      "useWhen": [
+        "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
+        "需要探测文档方言并选择 strict 或 tolerant 校验策略"
+      ],
+      "doNotUseWhen": [
+        "需要校验消费者自有业务 Schema（消费者应自行持有，Foundation 不取代）",
+        "需要把领域语义校验混入通用契约"
+      ],
+      "prerequisites": [
+        "待校验文档带有已登记契约对象的 $id",
+        "Node >= 22.22.2"
+      ],
+      "inputs": [
+        "契约文档对象（任意 JSON 值）",
+        "目标契约对象 $id 或 schema",
+        "校验策略（strict | tolerant，默认 strict）"
+      ],
+      "outputs": [
+        "校验通过：返回 {valid:true}（不含 errorCode 字段）",
+        "校验失败：返回 {valid:false, errorCode, errors}，不抛出",
+        "首次编译结果写入 Ajv 编译缓存，后续同 (schemaId,dialect,policy) 复用"
+      ],
+      "sideEffects": [
+        "无文件系统、Git、网络或进程副作用（纯函数 + 内存缓存）"
+      ],
+      "failureSemantics": [
+        "SFC1002：未知契约对象 $id 未登记（返回 valid:false，不抛出）",
+        "SFC1001：文档不符合已登记 Schema（返回 valid:false，errors 含 Ajv keyword 明细）",
+        "调用方以返回值的 valid 字段判断成败，不以 try/catch 捕获——validateDocument 永不抛出",
+        "compileSchema 对无法编译的 schema 抛 ContractsError（SFC1012 SCHEMA_COMPILE_FAILED）；detectDialect 对未知方言抛 ContractsError（SFC1006）"
+      ],
+      "invariants": [
+        "同一 (对象, 方言, 策略) 复用编译缓存，重复校验不重新编译",
+        "仅接受 Ajv 8.20.0，不接入其他校验器"
+      ],
+      "ownedByCaller": [
+        "具体业务字段的语义解释",
+        "领域级校验规则"
+      ],
+      "routeElsewhere": [
+        "消费者业务 Schema 校验：留在调用方",
+        "远端发布写入：转 release-skill"
+      ]
+    },
+    {
+      "id": "foundation.contracts.registry-protocol",
+      "intent": "登记并查询契约对象 Schema $id 与协议名，作为协议名与 Schema 唯一权威",
+      "useWhen": [
+        "需要按对象名或 $id 查找已登记 Schema",
+        "需要按协议名查找 kernel 协议定义"
+      ],
+      "doNotUseWhen": [
+        "需要新增第四类登记对象（未经 ADR 不得扩展 18 类对象集）"
+      ],
+      "prerequisites": [
+        "registry.json 已随包发布",
+        "Node >= 22.22.2"
+      ],
+      "inputs": [
+        "对象名、Schema $id 或协议名"
+      ],
+      "outputs": [
+        "已登记的 Schema 元信息或协议定义",
+        "查询未命中时返回 undefined 或抛错"
+      ],
+      "sideEffects": [
+        "无文件系统、Git、网络或进程副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "SFC1003：重复 $id 登记",
+        "SFC1004：重复协议登记"
+      ],
+      "invariants": [
+        "registry.json 的 schemaVersion=1、contractsVersion=1.4.0 为唯一权威",
+        "18 类顶层对象集合固定，新增需 ADR"
+      ],
+      "ownedByCaller": [
+        "对象业务含义的解释"
+      ],
+      "routeElsewhere": [
+        "发布状态：转 release-skill"
+      ]
+    },
+    {
+      "id": "foundation.contracts.kernel-protocol",
+      "intent": "加载并校验 skill-family.kernel.operation 协议（stable，Contracts 1.4.0），定义操作请求/结果结构",
+      "useWhen": [
+        "需要解析或校验 operation-request / operation-result 结构",
+        "需要按操作名查找参数契约"
+      ],
+      "doNotUseWhen": [
+        "需要定义业务操作语义（语义由消费者拥有）"
+      ],
+      "prerequisites": [
+        "kernel-protocol.json 已随包发布"
+      ],
+      "inputs": [
+        "协议名、操作名、操作参数"
+      ],
+      "outputs": [
+        "协议定义或操作参数校验结果"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "SFC2002：未知操作",
+        "SFC2003：参数违反协议"
+      ],
+      "invariants": [
+        "kernel 协议版本与 Contracts 版本绑定"
+      ],
+      "ownedByCaller": [
+        "操作的具体业务语义"
+      ],
+      "routeElsewhere": [
+        "业务状态机/重试/终态：转 loop-agent"
+      ]
+    },
+    {
+      "id": "foundation.contracts.mandatory-checks",
+      "intent": "运行 9 类 mandatory rule 的机械检查（预算上限 20，绝对上限 30），对登记表内全部 Schema 统一编译",
+      "useWhen": [
+        "需要确认契约集满足强制机械规则",
+        "需要收集未解析引用（unresolved refs）"
+      ],
+      "doNotUseWhen": [
+        "需要语义级审阅（属外部独立审阅，不在仓内维护第二份门禁）"
+      ],
+      "prerequisites": [
+        "registry 与 rules 已加载"
+      ],
+      "inputs": [
+        "待检查的契约集或合成 registry/fixtures"
+      ],
+      "outputs": [
+        "检查结论与未解析引用清单"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "SFC1002/1003/1004/1005/1006/1008/1009/1010：对应规则 violated"
+      ],
+      "invariants": [
+        "CHECK_TYPES 为 9 类闭集",
+        "RULE_BUDGET 限制 firstVersionMax 与 absoluteMax"
+      ],
+      "ownedByCaller": [
+        "规则业务理由的解释"
+      ],
+      "routeElsewhere": [
+        "语义接受/拒绝：外部独立审阅"
+      ]
+    },
+    {
+      "id": "foundation.contracts.fixture-verification",
+      "intent": "枚举并校验公开/虚构 fixture，确认其符合对应契约对象的 expect 声明",
+      "useWhen": [
+        "需要证明某契约对象被 fixture 覆盖",
+        "需要运行 positive/negative/dialect-boundary 类 fixture"
+      ],
+      "doNotUseWhen": [
+        "需要把 fixture 当作业务 oracle（fixture 只证明结构，不证明语义）"
+      ],
+      "prerequisites": [
+        "fixtures 目录为公开或完全虚构数据"
+      ],
+      "inputs": [
+        "fixture 类或单个 fixture 标识"
+      ],
+      "outputs": [
+        "逐 fixture 的校验结果"
+      ],
+      "sideEffects": [
+        "无副作用（只读 fixture）"
+      ],
+      "failureSemantics": [
+        "SFC1010：负例 fixture 未产生预期失败"
+      ],
+      "invariants": [
+        "fixture 与审计器预期结果不共享"
+      ],
+      "ownedByCaller": [
+        "fixture 背后的业务意图"
+      ],
+      "routeElsewhere": [
+        "领域审计语义：转独立审计消费者"
+      ]
+    },
+    {
+      "id": "foundation.contracts.error-codes",
+      "intent": "定义并登记稳定错误码体系，提供校验与断言入口，保证错误码不漂移",
+      "useWhen": [
+        "需要抛出或分类带稳定错误码的 ContractsError",
+        "需要断言某错误码已登记"
+      ],
+      "doNotUseWhen": [
+        "需要定义在 Foundation 范围外的业务错误语义"
+      ],
+      "prerequisites": [
+        "error-codes.json 已随包发布"
+      ],
+      "inputs": [
+        "错误码字符串、错误上下文"
+      ],
+      "outputs": [
+        "带稳定错误码与 details 的错误对象"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "对未登记错误码的断言失败",
+        "冻结对象不可变违反"
+      ],
+      "invariants": [
+        "错误码注册表冻结，不可运行时增删"
+      ],
+      "ownedByCaller": [
+        "错误码的业务归因"
+      ],
+      "routeElsewhere": [
+        "语义审阅结论：外部独立审阅"
+      ]
+    },
+    {
+      "id": "foundation.contracts.audit-surface",
+      "intent": "以确定性方式序列化契约表面（canonical JSON + sha256 摘要），供审计消费者只读投影",
+      "useWhen": [
+        "需要为契约表面生成可复算摘要",
+        "需要描述审计表面结构"
+      ],
+      "doNotUseWhen": [
+        "需要审计领域语义（语义与最终接受/拒绝属外部审阅）"
+      ],
+      "prerequisites": [
+        "AUDIT_SURFACE_VERSION=1、AUDIT_DIGEST_ALGORITHMS=[sha256]"
+      ],
+      "inputs": [
+        "任意 JSON 文档"
+      ],
+      "outputs": [
+        "canonical 字符串与 sha256 摘要"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "非 JSON 值、未知算法、冻结违规均抛错"
+      ],
+      "invariants": [
+        "摘要算法仅 sha256，版本号固定"
+      ],
+      "ownedByCaller": [
+        "审计语义结论"
+      ],
+      "routeElsewhere": [
+        "领域审计语义：转独立审计消费者"
+      ]
+    },
+    {
+      "id": "foundation.harness.contract-validation",
+      "intent": "在 Node 运行时解析契约上下文并复用 Contracts 校验器，校验契约文档并缓存校验器实例",
+      "useWhen": [
+        "需要在 Node 内校验 Foundation 契约文档",
+        "需要复用以 schema 为键的校验器缓存"
+      ],
+      "doNotUseWhen": [
+        "需要在非 Node 运行时校验（当前只有 Node 实现）"
+      ],
+      "prerequisites": [
+        "已安装 skill-family-contracts"
+      ],
+      "inputs": [
+        "schema 上下文、契约文档"
+      ],
+      "outputs": [
+        "校验结果，复用缓存的 Ajv 实例"
+      ],
+      "sideEffects": [
+        "进程内内存缓存校验器（无文件/Git/网络）"
+      ],
+      "failureSemantics": [
+        "date-time 等反例矩阵触发 SFC 校验失败"
+      ],
+      "invariants": [
+        "校验器以 (schema) 为键缓存，size 可查询"
+      ],
+      "ownedByCaller": [
+        "契约业务字段语义"
+      ],
+      "routeElsewhere": [
+        "契约对象定义：转 Contracts"
+      ]
+    },
+    {
+      "id": "foundation.harness.path-containment",
+      "intent": "把外部路径输入分类并解析到受收容根目录内，拒绝路径穿越、symlink 逃逸与 realpath 逃逸",
+      "useWhen": [
+        "需要把用户/调用方提供的路径限制在某个根目录内",
+        "需要安全读取受收容文件"
+      ],
+      "doNotUseWhen": [
+        "需要把文件选择的业务规则放入 Foundation（业务规则由调用方拥有）"
+      ],
+      "prerequisites": [
+        "调用方提供明确的根目录（收容边界）"
+      ],
+      "inputs": [
+        "根目录、待解析的相对/绝对路径"
+      ],
+      "outputs": [
+        "受收容的绝对路径或读到的文件内容"
+      ],
+      "sideEffects": [
+        "只读文件系统访问（读取/解析）"
+      ],
+      "failureSemantics": [
+        "SFC2004：path-traversal / symlink-escape / realpath-escape，携带稳定 kind",
+        "Windows 盘符/UNC 逃逸同样拒绝"
+      ],
+      "invariants": [
+        "所有解析结果必须落在根目录内"
+      ],
+      "ownedByCaller": [
+        "哪些路径是业务允许的选择规则"
+      ],
+      "routeElsewhere": [
+        "业务文件选择语义：留在调用方"
+      ]
+    },
+    {
+      "id": "foundation.harness.atomic-write",
+      "intent": "在已收容路径内以临时文件 + fsync + rename 原子写入普通文件，失败时回滚不留残影",
+      "useWhen": [
+        "需要更新受收容目录内的普通文本/二进制文件",
+        "需要保证写入要么完整可见、要么不可见"
+      ],
+      "doNotUseWhen": [
+        "需要写入未受收容路径（越界由 path-containment 拒绝）"
+      ],
+      "prerequisites": [
+        "目标路径经 path-containment 验证在根目录内"
+      ],
+      "inputs": [
+        "已收容目标路径、文件内容（string 或 Buffer）"
+      ],
+      "outputs": [
+        "写入完成的文件，字节与输入一致"
+      ],
+      "sideEffects": [
+        "在根目录内创建临时文件并最终 rename 覆盖目标"
+      ],
+      "failureSemantics": [
+        "越界路径、非法数据类型抛错并回滚临时文件",
+        "二进制内容逐字节保留"
+      ],
+      "invariants": [
+        "rename 前先 fsync，保证崩溃一致性"
+      ],
+      "ownedByCaller": [
+        "写入内容的业务正确性"
+      ],
+      "routeElsewhere": [
+        "内容选择业务规则：留在调用方"
+      ]
+    },
+    {
+      "id": "foundation.harness.temporary-workspace",
+      "intent": "创建并管理临时工作目录，提供 with 语法的安全生命周期，退出时清理",
+      "useWhen": [
+        "需要在隔离目录内做构建/中间产物",
+        "需要保证异常时临时目录被回收"
+      ],
+      "doNotUseWhen": [
+        "需要持久保存产物（应显式 materialize 到受收容路径）"
+      ],
+      "prerequisites": [
+        "宿主提供可写临时目录（如 os.tmpdir）"
+      ],
+      "inputs": [
+        "可选前缀/标签"
+      ],
+      "outputs": [
+        "临时工作目录句柄"
+      ],
+      "sideEffects": [
+        "在系统临时目录创建子目录，退出时删除"
+      ],
+      "failureSemantics": [
+        "创建失败 reject；with 回调抛错时仍清理临时目录"
+      ],
+      "invariants": [
+        "临时目录路径不逃逸出宿主临时根"
+      ],
+      "ownedByCaller": [
+        "临时产物的最终去处"
+      ],
+      "routeElsewhere": [
+        "持久状态：转 state-store"
+      ]
+    },
+    {
+      "id": "foundation.harness.resource-closure",
+      "intent": "计算确定性、去重、有序的资源闭包并以 sha256 摘要，供 adapter 文本闭包与构建清单使用",
+      "useWhen": [
+        "需要把一组资源归一成可复算的闭包",
+        "需要为构建清单生成摘要"
+      ],
+      "doNotUseWhen": [
+        "需要纳入二进制资源（当前只支持文本闭包）"
+      ],
+      "prerequisites": [
+        "资源为可序列化的文本条目"
+      ],
+      "inputs": [
+        "资源列表（路径 + 内容）"
+      ],
+      "outputs": [
+        "确定性闭包对象与 sha256 摘要"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "非法/重复资源声明抛错或 reject"
+      ],
+      "invariants": [
+        "去重与排序固定，相同输入恒得相同摘要"
+      ],
+      "ownedByCaller": [
+        "资源业务含义"
+      ],
+      "routeElsewhere": [
+        "二进制投影：明确 unsupported"
+      ]
+    },
+    {
+      "id": "foundation.harness.request-processing",
+      "intent": "解析 operation-request 并驱动 operation-result 管线，产出终态 REJECTED / FAILED / SUCCESS",
+      "useWhen": [
+        "需要把入站请求规整为统一操作请求结构",
+        "需要确定性产出操作结果"
+      ],
+      "doNotUseWhen": [
+        "需要模型调用或业务编排（均不在 Foundation 范围）"
+      ],
+      "prerequisites": [
+        "请求符合 kernel 协议结构"
+      ],
+      "inputs": [
+        "原始请求负载"
+      ],
+      "outputs": [
+        "规范化 operation-request 与终态 operation-result"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数管线）"
+      ],
+      "failureSemantics": [
+        "解析失败进入 REJECTED/FAILED 终态并带稳定错误码"
+      ],
+      "invariants": [
+        "终态集合固定为 REJECTED/FAILED/SUCCESS"
+      ],
+      "ownedByCaller": [
+        "操作的具体业务语义"
+      ],
+      "routeElsewhere": [
+        "业务状态机/重试：转 loop-agent"
+      ]
+    },
+    {
+      "id": "foundation.harness.report",
+      "intent": "以确定性方式校验 report-model、渲染 Markdown、绑定摘要并分级检查，人类报告由机器结果派生而非自由撰写",
+      "useWhen": [
+        "需要把机器结果渲染成人类可读报告",
+        "需要把 model/result/report 三摘要绑定防篡改"
+      ],
+      "doNotUseWhen": [
+        "需要从开放业务 outputs 自由编报告（禁止）"
+      ],
+      "prerequisites": [
+        "REPORT_RENDERER_NAME / VERSION 取自各自 package（当前 0.2.1）",
+        "SUPPORTED_REPORT_LOCALES = [zh-CN, en-US]"
+      ],
+      "inputs": [
+        "report-model、渲染选项（locale/audience/style）"
+      ],
+      "outputs": [
+        "Markdown 文本、绑定对象、分级检查发现"
+      ],
+      "sideEffects": [
+        "无文件/Git/网络副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "SFC3001/3002/3003：模型校验/绑定/检查硬失败"
+      ],
+      "invariants": [
+        "Markdown 确定性转义，双输出成组写入并拒绝路径别名与输入覆盖"
+      ],
+      "ownedByCaller": [
+        "报告业务结论的解读"
+      ],
+      "routeElsewhere": [
+        "报告生成编排：Kit report 子动作"
+      ]
+    },
+    {
+      "id": "foundation.harness.host-adapter",
+      "intent": "实现宿主接入的通用机制层：归一化 adapter source、计算构建闭包、校验构建清单、materialize 构建、probe 版本向量（默认禁 spawn）",
+      "useWhen": [
+        "需要把宿主适配源做成可复算的文本闭包",
+        "需要在受收容处 materialize 构建产物",
+        "需要探测宿主版本向量（不自动执行宿主二进制）"
+      ],
+      "doNotUseWhen": [
+        "需要 host apply/install/update/uninstall（明确 unsupported）",
+        "需要二进制 adapter source（仅支持文本闭包）"
+      ],
+      "prerequisites": [
+        "adapter source 为已声明文本闭包"
+      ],
+      "inputs": [
+        "adapter source、目标路径"
+      ],
+      "outputs": [
+        "构建闭包、校验后的清单、materialize 产物"
+      ],
+      "sideEffects": [
+        "在受收容目标创建 sibling staging 并单次 rename",
+        "probe 默认不 spawn，不走 PATH"
+      ],
+      "failureSemantics": [
+        "清单摘要不符、目标已存在、非受信可执行文件均抛错"
+      ],
+      "invariants": [
+        "materialize 为原子 sibling + rename"
+      ],
+      "ownedByCaller": [
+        "宿主具体业务语义"
+      ],
+      "routeElsewhere": [
+        "host apply：明确 unsupported",
+        "宿主差异声明：转 Profile + Kit host 子动作"
+      ]
+    },
+    {
+      "id": "foundation.harness.state-store",
+      "intent": "提供持久状态底座：append-only 事件、hash chain、派生快照，以及锁检查与显式恢复；事件含义与 reducer 转移由调用方拥有",
+      "useWhen": [
+        "需要持久化事件日志并保证顺序与完整性",
+        "需要重建或校验派生快照",
+        "需要检查或恢复协作式单写者锁"
+      ],
+      "doNotUseWhen": [
+        "需要在 Foundation 定义 workflow 状态机（禁止）",
+        "需要抵御同权限恶意进程（fencing 不承诺该场景）"
+      ],
+      "prerequisites": [
+        "STATE_GENESIS_DIGEST 作为链起点"
+      ],
+      "inputs": [
+        "事件负载、快照、锁令牌"
+      ],
+      "outputs": [
+        "事件、hash chain 校验结果、快照"
+      ],
+      "sideEffects": [
+        "在受收容路径读写事件日志与快照文件",
+        "写锁文件用于协作式单写者"
+      ],
+      "failureSemantics": [
+        "hash chain 断裂、锁 fencing 冲突、恢复失败抛错"
+      ],
+      "invariants": [
+        "事件日志是唯一权威，snapshot 为派生缓存",
+        "本地协作式单写者使用 fencing 与显式恢复"
+      ],
+      "ownedByCaller": [
+        "事件业务含义、reducer 转移、confirmOwnerTerminated 信任锚"
+      ],
+      "routeElsewhere": [
+        "业务状态机/终态：转 loop-agent"
+      ]
+    },
+    {
+      "id": "foundation.harness.errors",
+      "intent": "定义 Harness 机制错误类型与稳定错误类，统一错误分类",
+      "useWhen": [
+        "需要抛出带稳定 kind 的 HarnessError"
+      ],
+      "doNotUseWhen": [
+        "需要定义业务错误语义"
+      ],
+      "prerequisites": [],
+      "inputs": [
+        "错误 kind、上下文"
+      ],
+      "outputs": [
+        "带稳定 kind 的错误对象"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数）"
+      ],
+      "failureSemantics": [
+        "非法 kind 调用抛错"
+      ],
+      "invariants": [
+        "HARNESS_EXCLUSIONS 明确排除 release-state / remote-network-access / business-semantics / workflow-orchestration / model-calls / git-writes"
+      ],
+      "ownedByCaller": [
+        "错误业务归因"
+      ],
+      "routeElsewhere": [
+        "业务语义：留在调用方"
+      ]
+    },
+    {
+      "id": "foundation.kit.scaffold",
+      "intent": "在新项目骨架中生成精确集合的托管文件（原子 + 路径收容），不覆盖非空存量仓",
+      "useWhen": [
+        "需要为新技能族项目生成最小可验证骨架",
+        "目标目录为空或仅含可收容内容"
+      ],
+      "doNotUseWhen": [
+        "需要覆盖已存在的非空存量仓（应改用 adopt-plan）"
+      ],
+      "prerequisites": [
+        "目标为可写空目录",
+        "Node >= 22.22.2"
+      ],
+      "inputs": [
+        "目标根、骨架选项（id 等）"
+      ],
+      "outputs": [
+        "精确集合的托管骨架文件"
+      ],
+      "sideEffects": [
+        "在受收容目标创建文件（原子 + 收容）"
+      ],
+      "failureSemantics": [
+        "非空目标、非法 kebab id 抛错"
+      ],
+      "invariants": [
+        "只写空目标、原子 + 收容",
+        "骨架集合与 scaffold-conformance fixture 一致"
+      ],
+      "ownedByCaller": [
+        "业务项目内容"
+      ],
+      "routeElsewhere": [
+        "存量采用：转 adopt-plan"
+      ]
+    },
+    {
+      "id": "foundation.kit.adopt-plan",
+      "intent": "对已存在的存量仓做严格只读盘点（分类、嵌套仓发现、迁移清单、完成判定），不写文件、不自动迁移",
+      "useWhen": [
+        "需要把存量仓分类为 direct-adoption / compatibility-layer / keep-business / foundation-gap",
+        "需要为迁移生成 handoff 草稿或完成判定"
+      ],
+      "doNotUseWhen": [
+        "需要自动改写存量仓（禁止写文件、禁止自动迁移）"
+      ],
+      "prerequisites": [
+        "目标仓存在且可只读访问"
+      ],
+      "inputs": [
+        "目标根、迁移清单路径"
+      ],
+      "outputs": [
+        "采用分类、完成判定、handoff 草稿（仅输出，不落盘）"
+      ],
+      "sideEffects": [
+        "无文件写入（严格只读）",
+        "可能触发只读 git 探测"
+      ],
+      "failureSemantics": [
+        "例外缺字段、未退出旧实现则完成判定为 false"
+      ],
+      "invariants": [
+        "不写文件、不自动迁移"
+      ],
+      "ownedByCaller": [
+        "存量业务代码的迁移决策"
+      ],
+      "routeElsewhere": [
+        "真正迁移执行：调用方负责"
+      ]
+    },
+    {
+      "id": "foundation.kit.projection",
+      "intent": "按投影清单把受管事实机械投影到目标（如 public 镜像），全校验通过后才写，任一失败零写/回滚",
+      "useWhen": [
+        "需要把权威数据投影到 public 快照或发布镜像",
+        "需要保证投影与目标一致"
+      ],
+      "doNotUseWhen": [
+        "需要覆盖 handwritten 文件（禁止）"
+      ],
+      "prerequisites": [
+        "投影清单已登记"
+      ],
+      "inputs": [
+        "投影清单、目标根"
+      ],
+      "outputs": [
+        "投影文件（仅在校验全部通过时）"
+      ],
+      "sideEffects": [
+        "在受收容目标写投影文件",
+        "两阶段：全校验后才写，失败回滚"
+      ],
+      "failureSemantics": [
+        "未授权、手写冲突、越界、内容冲突均抛错且不残留"
+      ],
+      "invariants": [
+        "不覆盖 handwritten 文件",
+        "任一校验失败零写"
+      ],
+      "ownedByCaller": [
+        "投影内容的业务含义"
+      ],
+      "routeElsewhere": [
+        "远端发布：转 release-skill"
+      ]
+    },
+    {
+      "id": "foundation.kit.check",
+      "intent": "只诊断不修复：运行 contracts/drift/closure/version/docs/git/identity 七类检查，输出发现（findings）",
+      "useWhen": [
+        "需要发现工程不一致但不自动修改",
+        "需要按 --only 缩小检查范围"
+      ],
+      "doNotUseWhen": [
+        "需要自动修复（禁止，check 不写修复）"
+      ],
+      "prerequisites": [],
+      "inputs": [
+        "--only 取值：contracts|drift|closure|version|docs|git|identity"
+      ],
+      "outputs": [
+        "发现清单；退出码 findings=1、mechanism=2"
+      ],
+      "sideEffects": [
+        "无文件写入（只读诊断）"
+      ],
+      "failureSemantics": [
+        "findings 退出码 1；mechanism 拒绝退出码 2"
+      ],
+      "invariants": [
+        "CHECK_CLASSES 为七类闭集，不扩张"
+      ],
+      "ownedByCaller": [
+        "发现项的业务处置"
+      ],
+      "routeElsewhere": [
+        "自动修复执行：调用方"
+      ]
+    },
+    {
+      "id": "foundation.kit.report",
+      "intent": "以 CLI 子动作编排人类报告：projection report 渲染、check report 分级，默认只写 stdout",
+      "useWhen": [
+        "需要从已渲染 model 产出报告文本",
+        "需要对报告做分级检查"
+      ],
+      "doNotUseWhen": [
+        "需要从开放业务输出自由编报告（禁止）"
+      ],
+      "prerequisites": [
+        "已存在 Harness report-model"
+      ],
+      "inputs": [
+        "report-model、--out/--binding 选项"
+      ],
+      "outputs": [
+        "Markdown 文本；--out/--binding 才落盘"
+      ],
+      "sideEffects": [
+        "默认只写 stdout；显式 --out/--binding 才写受收容文件"
+      ],
+      "failureSemantics": [
+        "硬失败计为发现；非法参数 reject"
+      ],
+      "invariants": [
+        "报告由机器结果确定性渲染"
+      ],
+      "ownedByCaller": [
+        "报告结论解读"
+      ],
+      "routeElsewhere": [
+        "报告机制：转 Harness report"
+      ]
+    },
+    {
+      "id": "foundation.kit.git-probe",
+      "intent": "以只读白名单探测 Git 状态与事实，供诊断与采用盘点使用，不执行任何 Git 写操作",
+      "useWhen": [
+        "需要只读发现当前 Git 状态（status/ls-files/check-ignore）",
+        "需要为采用盘点提供 Git 事实"
+      ],
+      "doNotUseWhen": [
+        "需要 Git 写操作（stage/commit/push/tag，明确禁止）"
+      ],
+      "prerequisites": [],
+      "inputs": [
+        "目标根"
+      ],
+      "outputs": [
+        "Git 状态与事实（只读）"
+      ],
+      "sideEffects": [
+        "只读调用 git status/ls-files/check-ignore（参数向量冻结）"
+      ],
+      "failureSemantics": [
+        "不在白名单的参数向量被拒绝"
+      ],
+      "invariants": [
+        "GIT_READ_ONLY_ALLOWLIST 限定可调用子命令"
+      ],
+      "ownedByCaller": [
+        "Git 写操作授权"
+      ],
+      "routeElsewhere": [
+        "Git 写操作：见 Git 生命周期指南，Foundation 不拥有"
+      ]
+    },
+    {
+      "id": "foundation.kit.host",
+      "intent": "注入具体宿主 Profile 与受信 driver，提供 describe/build/probe/plan；apply 稳定拒绝，install/update/uninstall 未实现",
+      "useWhen": [
+        "需要描述已登记宿主（claude/codex）",
+        "需要探测、构建或规划宿主接入（只读机制层）"
+      ],
+      "doNotUseWhen": [
+        "需要 host apply/install/update/uninstall（明确 unsupported）",
+        "需要 Qoder 完整 driver（该宿主 unsupported）"
+      ],
+      "prerequisites": [
+        "宿主 Profile 已在 profiles/hosts 登记",
+        "受信 driver 仅 claude-version-v1 / codex-version-v1"
+      ],
+      "inputs": [
+        "宿主标识、probe/plan 选项"
+      ],
+      "outputs": [
+        "宿主描述、probe 结果、构建产物、plan"
+      ],
+      "sideEffects": [
+        "build/materialize 在受收容目标写产物",
+        "probe 默认不 spawn"
+      ],
+      "failureSemantics": [
+        "unsupported host（如 qoder）抛错",
+        "apply 稳定拒绝",
+        "缺 probe facts 抛错"
+      ],
+      "invariants": [
+        "HOST_DRIVER_IDS 仅两个受信 driver",
+        "apply 稳定拒绝"
+      ],
+      "ownedByCaller": [
+        "宿主业务语义"
+      ],
+      "routeElsewhere": [
+        "host apply：明确 unsupported",
+        "Qoder 完整 driver：unsupported"
+      ]
+    },
+    {
+      "id": "foundation.kit.licensing",
+      "intent": "加载并校验 Profile 授权数据，生成许可证/声明/身份记录内容",
+      "useWhen": [
+        "需要按 Profile 生成 LICENSE/NOTICE/身份记录",
+        "需要校验授权 Profile 合法性"
+      ],
+      "doNotUseWhen": [
+        "需要执行业务授权决策（语义由调用方）"
+      ],
+      "prerequisites": [
+        "profiles/licensing/registry.json + schema.json 存在"
+      ],
+      "inputs": [
+        "Profile 标识、变体选择"
+      ],
+      "outputs": [
+        "许可证/声明/身份记录文本"
+      ],
+      "sideEffects": [
+        "无副作用（纯函数生成）"
+      ],
+      "failureSemantics": [
+        "多变体未指定、非法 Profile 抛错"
+      ],
+      "invariants": [
+        "默认取 registry 第一变体，多变体须显式选择"
+      ],
+      "ownedByCaller": [
+        "授权业务语义"
+      ],
+      "routeElsewhere": [
+        "授权决策：留在调用方"
+      ]
+    },
+    {
+      "id": "foundation.kit.identity-check",
+      "intent": "加载身份记录与清单，检查身份漂移并对照 Profile 校验一致性",
+      "useWhen": [
+        "需要检测 package/identity 漂移",
+        "需要对照 Profile 校验身份"
+      ],
+      "doNotUseWhen": [
+        "需要自动修复漂移（check 不修复）"
+      ],
+      "prerequisites": [],
+      "inputs": [
+        "目标根、Profile 标识"
+      ],
+      "outputs": [
+        "漂移发现、校验结论"
+      ],
+      "sideEffects": [
+        "只读读取目标文件"
+      ],
+      "failureSemantics": [
+        "漂移或校验失败产出 findings"
+      ],
+      "invariants": [
+        "不修改目标文件"
+      ],
+      "ownedByCaller": [
+        "漂移业务处置"
+      ],
+      "routeElsewhere": [
+        "自动修复：调用方"
+      ]
+    },
+    {
+      "id": "foundation.kit.cli",
+      "intent": "提供 skill-family-kit CLI 入口，分派四个顶层命令与子动作，并在入口处拒绝变更旗标",
+      "useWhen": [
+        "需要通过命令行运行 scaffold/adopt-plan/projection/check",
+        "需要运行 report/host 子动作"
+      ],
+      "doNotUseWhen": [
+        "需要第五个顶层命令（命令集合固定为 4，不扩张）"
+      ],
+      "prerequisites": [
+        "Node >= 22.22.2"
+      ],
+      "inputs": [
+        "argv"
+      ],
+      "outputs": [
+        "命令结果；退出码 ok=0/findings=1/rejected=2"
+      ],
+      "sideEffects": [
+        "依命令产生受收容文件写入或只读探测"
+      ],
+      "failureSemantics": [
+        "未知命令、拒绝旗标（如 --apply）退出码 2"
+      ],
+      "invariants": [
+        "TOP_LEVEL_COMMANDS 固定 4 个",
+        "REFUSED_MUTATION_FLAGS 在 parseOptions 入口即拒"
+      ],
+      "ownedByCaller": [
+        "命令的业务目标"
+      ],
+      "routeElsewhere": [
+        "第 5 个命令：禁止新增"
+      ]
+    },
+    {
+      "id": "foundation.profile.extension-spi",
+      "intent": "声明宿主与项目形态差异的扩展机制：differences（adds/overrides/removes）与开放扩展点（host-projection/artifact-render/surface-scan），校验 Profile 合法性",
+      "useWhen": [
+        "需要声明项目形态差异而不改公共核心",
+        "需要把扩展点数据资源注入稳定 SPI"
+      ],
+      "doNotUseWhen": [
+        "需要把业务语义塞进公共核心（coreOwned 目标禁入）",
+        "需要把可执行脚本放进 Profile（入口必须为 JSON 数据资源）"
+      ],
+      "prerequisites": [
+        "Profile 为声明式差异，不反向依赖公共核心"
+      ],
+      "inputs": [
+        "profileRoot、descriptorRelPath"
+      ],
+      "outputs": [
+        "SPI 结果码（SPE0000/1001..1005）"
+      ],
+      "sideEffects": [
+        "无副作用（只读校验 Profile）"
+      ],
+      "failureSemantics": [
+        "SPE1004：带可执行扩展名的 entrypoint 在读取字节前即拒绝",
+        "越界目标或非法差异结构报错"
+      ],
+      "invariants": [
+        "coreOwned = packages/commands/namespacePrefixes 为禁入目标",
+        "entrypoint 必须为 JSON 数据资源"
+      ],
+      "ownedByCaller": [
+        "差异的业务语义"
+      ],
+      "routeElsewhere": [
+        "公共核心变更：须走 Contracts/Harness/Kit"
+      ]
+    },
+    {
+      "id": "foundation.profile.public-plugin",
+      "intent": "公开样例 Profile：以 public-plugin 声明三个 adds 差异与三个 SPI 数据资源，作为 Profile 形态的可读实例",
+      "useWhen": [
+        "需要参考一个符合规范的公开 Profile 实例",
+        "需要理解 Profile descriptor 与 SPI 资源如何挂接"
+      ],
+      "doNotUseWhen": [
+        "需要把私有 Profile 或真实业务数据写进公开文档（禁止泄漏）"
+      ],
+      "prerequisites": [
+        "base.contractsVersion = 1.4.0"
+      ],
+      "inputs": [
+        "Profile descriptor 与各 SPI 数据资源"
+      ],
+      "outputs": [
+        "可被 verifyProfile 通过的公开 Profile"
+      ],
+      "sideEffects": [
+        "无副作用（声明数据）"
+      ],
+      "failureSemantics": [
+        "descriptor 不符合 schema 时报错"
+      ],
+      "invariants": [
+        "仅使用公开或完全虚构样例"
+      ],
+      "ownedByCaller": [
+        "Profile 业务含义"
+      ],
+      "routeElsewhere": [
+        "私有 Profile：不进入公开文档"
+      ]
+    },
+    {
+      "id": "foundation.profile.licensing",
+      "intent": "声明授权数据权威（registry + schema），由 Kit licensing 入口经契约校验器执行，默认取第一变体",
+      "useWhen": [
+        "需要定义授权数据变体",
+        "需要为 Kit licensing 提供数据权威"
+      ],
+      "doNotUseWhen": [
+        "需要执行业务授权决策（语义由调用方）"
+      ],
+      "prerequisites": [
+        "registry.json + schema.json 存在"
+      ],
+      "inputs": [
+        "授权变体声明"
+      ],
+      "outputs": [
+        "供 Kit 加载的授权数据"
+      ],
+      "sideEffects": [
+        "无副作用（声明数据）"
+      ],
+      "failureSemantics": [
+        "多变体未指定则加载失败"
+      ],
+      "invariants": [
+        "所有商业载荷当前关闭"
+      ],
+      "ownedByCaller": [
+        "授权业务语义"
+      ],
+      "routeElsewhere": [
+        "授权执行：调用方"
+      ]
+    },
+    {
+      "id": "foundation.profile.hosts",
+      "intent": "登记宿主差异声明（claude/codex 支持、qoder 不支持），为 Kit host 子动作提供 descriptor 与 registry",
+      "useWhen": [
+        "需要登记受支持宿主（claude/codex）的差异",
+        "需要为宿主接入提供声明数据"
+      ],
+      "doNotUseWhen": [
+        "需要登记 Qoder 完整 driver（该宿主 unsupported）"
+      ],
+      "prerequisites": [
+        "宿主 descriptor 绑定受信 driverId"
+      ],
+      "inputs": [
+        "宿主标识、descriptor 字段"
+      ],
+      "outputs": [
+        "宿主 registry 与 descriptor"
+      ],
+      "sideEffects": [
+        "无副作用（声明数据）"
+      ],
+      "failureSemantics": [
+        "qoder 标记 unsupported，引用即拒绝"
+      ],
+      "invariants": [
+        "claude/codex support=supported 且绑定 driverId；qoder support=unsupported"
+      ],
+      "ownedByCaller": [
+        "宿主业务语义"
+      ],
+      "routeElsewhere": [
+        "Qoder 完整 driver：unsupported"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.host-apply",
+      "intent": "宿主 apply（应用接入变更到宿主运行环境）在只读 Phase D 切片中稳定拒绝，不实现",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要真正改变宿主运行环境的场景（当前不可用）"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "抛错：host apply is not implemented in the read-only Phase D slice"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "调用即抛错，CLI 层 host-apply 子动作同样拒绝"
+      ],
+      "invariants": [
+        "apply 稳定拒绝，不进入 0.2.x 实现范围"
+      ],
+      "ownedByCaller": [
+        "宿主接入的最终落地"
+      ],
+      "routeElsewhere": [
+        "宿主应用逻辑：调用方或后续版本"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.host-install-update-uninstall",
+      "intent": "宿主 install/update/uninstall 均未实现，不在 Foundation 0.2.x 范围",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要安装/更新/卸载宿主组件的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（未实现）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "不存在对应入口，调用应转向外部工具"
+      ],
+      "invariants": [
+        "安装/卸载/更新均未实现"
+      ],
+      "ownedByCaller": [
+        "宿主生命周期管理"
+      ],
+      "routeElsewhere": [
+        "宿主生命周期：外部工具或后续版本"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.qoder-driver",
+      "intent": "Qoder 宿主的完整 driver 未冻结（No auditable non-interactive host driver is frozen），标记为 unsupported，仅参考其结构",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要在 Qoder 实际运行的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（unsupported）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "引用 qoder driver 即报错"
+      ],
+      "invariants": [
+        "HOST_DRIVER_IDS 仅 claude-version-v1 / codex-version-v1"
+      ],
+      "ownedByCaller": [
+        "Qoder 接入"
+      ],
+      "routeElsewhere": [
+        "Qoder 支持：后续版本或外部"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.binary-adapter-source",
+      "intent": "adapter source 的 content 仅支持 string（utf8 文本闭包），二进制投影不在范围",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "需要把二进制资源纳入 adapter 投影"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（明确不支持二进制）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "非 string content 校验失败"
+      ],
+      "invariants": [
+        "adapter source content 类型固定为 string，仅 utf8"
+      ],
+      "ownedByCaller": [
+        "二进制资源处理"
+      ],
+      "routeElsewhere": [
+        "二进制处理：外部工具"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.remote-publish",
+      "intent": "远端发布与全部远端写入归 release-skill，Foundation 不拥有",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要发布到 npm/GitHub/Registry 或远端写入的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（转 release-skill）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "Foundation 不提供任何远端写入入口"
+      ],
+      "invariants": [
+        "contracts doesNotOwn remote writes；harness HARNESS_EXCLUSIONS 含 remote-network-access；kit FORBIDDEN_SIDE_EFFECTS 含 publish/remote-write"
+      ],
+      "ownedByCaller": [
+        "发布流程"
+      ],
+      "routeElsewhere": [
+        "发布：release-skill"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.business-state-machine",
+      "intent": "业务状态机、任务节点、重试、终态、记忆等语义不纳入 Foundation，state-store 只提供底座",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要在 Foundation 定义 workflow 状态机或业务终态的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（转 loop-agent）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "不应在 Foundation 内实现业务状态转移"
+      ],
+      "invariants": [
+        "Event meaning and reducer transitions remain consumer-owned"
+      ],
+      "ownedByCaller": [
+        "业务状态机语义"
+      ],
+      "routeElsewhere": [
+        "任务/重试/返工/验收：loop-agent"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.model-orchestration",
+      "intent": "模型编排与工作流编排不在 Foundation 范围，仅提供业务中立机制",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要模型调用或工作流编排的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（转相应编排层）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "Foundation 不含模型调用或工作流引擎"
+      ],
+      "invariants": [
+        "harness HARNESS_EXCLUSIONS 含 workflow-orchestration / model-calls；contracts doesNotOwn generation"
+      ],
+      "ownedByCaller": [
+        "编排语义"
+      ],
+      "routeElsewhere": [
+        "编排：相应消费者或编排层"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.domain-audit-semantics",
+      "intent": "领域审计语义与最终接受/拒绝结论属外部独立审阅，Foundation 只提供审计表面（canonical + digest）",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要 Foundation 拥有领域审计 oracle 或语义结论的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（转独立审计消费者）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "Foundation 不承载领域审计语义"
+      ],
+      "invariants": [
+        "audit-surface 仅做确定性序列化，不含语义"
+      ],
+      "ownedByCaller": [
+        "审计语义结论"
+      ],
+      "routeElsewhere": [
+        "领域审计：独立审计消费者"
+      ]
+    },
+    {
+      "id": "foundation.unsupported.git-writes",
+      "intent": "Git 写操作（stage/commit/push/tag/release）不在 Foundation 范围，仅提供只读探测",
+      "useWhen": [],
+      "doNotUseWhen": [
+        "任何需要 Foundation 执行 Git 写操作的场景"
+      ],
+      "prerequisites": [
+        "无"
+      ],
+      "inputs": [
+        "无"
+      ],
+      "outputs": [
+        "无（转 Git 生命周期指南授权流程）"
+      ],
+      "sideEffects": [
+        "无"
+      ],
+      "failureSemantics": [
+        "Foundation 不提供 Git 写入入口"
+      ],
+      "invariants": [
+        "harness HARNESS_EXCLUSIONS 含 git-writes；kit git-init/commit/push/tag 为禁写"
+      ],
+      "ownedByCaller": [
+        "Git 写操作授权"
+      ],
+      "routeElsewhere": [
+        "Git 写操作：Git 生命周期指南"
+      ]
+    },
+    {
+      "id": "foundation.contracts.quickstart-profile-candidate",
+      "intent": "通过 skill-family-contracts/candidate/quickstart-profile 公开候选 Quickstart Resource、Task 与 Result Schema，供锁定精确版本的接入试验使用",
+      "useWhen": [
+        "需要在提议进入冻结登记表前检查或校验候选 Resource、Task、Result 形状",
+        "调用方能够锁定 skill-family-contracts 精确版本，并把 candidate 导入隔离在自身稳定 API 之外"
+      ],
+      "doNotUseWhen": [
+        "需要已进入登记表或兼容性已冻结的合同",
+        "需要 Foundation 解释领域审计语义"
+      ],
+      "prerequisites": [
+        "安装导出 skill-family-contracts/candidate/quickstart-profile 的精确 skill-family-contracts 版本",
+        "Node >= 22.22.2"
+      ],
+      "inputs": [
+        "文档种类：resource、task 或 result",
+        "待校验的候选文档"
+      ],
+      "outputs": [
+        "候选 Schema 副本，或包含 valid、errors 与规范化 data 的校验结果"
+      ],
+      "sideEffects": [
+        "不写文件系统、Git、网络或进程状态"
+      ],
+      "failureSemantics": [
+        "未知文档种类抛出 TypeError",
+        "候选文档无效时返回 valid:false 与 Ajv 发现"
+      ],
+      "invariants": [
+        "候选 Schema 不进入 src/registry.json，也不扩张 18 类稳定对象",
+        "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+      ],
+      "ownedByCaller": [
+        "method、parameters、evidence 与 domainResult 的领域含义",
+        "是否采用或封装候选 API 的决定"
+      ],
+      "routeElsewhere": [
+        "冻结的生产合同：使用 skill-family-contracts 稳定包根导出",
+        "领域审计结论：转独立审计消费者"
+      ]
+    },
+    {
+      "id": "foundation.harness.quickstart-profile-candidate",
+      "intent": "通过 skill-family-harness-node/candidate/quickstart-profile 构造并复验绑定 observation 的候选 Task/Result 交换",
+      "useWhen": [
+        "需要开展早期接入试验，把受收容的 observation 文件绑定到候选 Task 与终态 Result",
+        "需要为锁定精确版本的候选交换取得结构化、不抛出的复验结果"
+      ],
+      "doNotUseWhen": [
+        "需要领域审计器、method 选择器、重试编排或生命周期所有者",
+        "需要兼容性已冻结的 Quickstart API"
+      ],
+      "prerequisites": [
+        "安装精确匹配的 skill-family-harness-node 与 skill-family-contracts 版本",
+        "observation 路径受 supplied root 收容"
+      ],
+      "inputs": [
+        "受收容根与 observation 路径",
+        "operation 身份、method、parameters 与 run/stage/attempt correlation",
+        "待复验的候选 Task 与 Result 文档"
+      ],
+      "outputs": [
+        "Observation Resource、候选 Task、终态 Result 或结构化交换复验结果"
+      ],
+      "sideEffects": [
+        "读取受收容的 observation 文件，以计算或复验 sha256 摘要",
+        "不写文件，不访问 Git 或网络"
+      ],
+      "failureSemantics": [
+        "Profile 或绑定无效时，抛出式 API 以 SFC2004 与 details.kind=invalid-result 失败关闭",
+        "verifyQuickstartExchange 把失败转成 {valid:false, code, message, details}"
+      ],
+      "invariants": [
+        "Result 必须绑定精确 Task 摘要、observation 摘要、operation 身份与 correlation 字段",
+        "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+      ],
+      "ownedByCaller": [
+        "审计 method 语义与 domainResult 解释",
+        "重试、调度与生命周期决定"
+      ],
+      "routeElsewhere": [
+        "稳定通用机制：使用 skill-family-harness-node 包根导出",
+        "业务编排：转调用方或相应编排层"
+      ]
+    },
+    {
+      "id": "foundation.kit.quickstart-profile-candidate",
+      "intent": "通过 skill-family-engineering-kit/candidate/quickstart-profile 构建确定、自包含的 Quickstart 投影 manifest",
+      "useWhen": [
+        "需要通过稳定投影授权边界，在目标中试用候选 Quickstart Schema 与 runner",
+        "需要取得候选投影包的来源摘要、运行依赖闭包摘要与 bundle 摘要"
+      ],
+      "doNotUseWhen": [
+        "需要稳定 Quickstart API 或第五个 Kit 顶层命令",
+        "需要绕过目标 manifest 授权或手写文件保护"
+      ],
+      "prerequisites": [
+        "安装精确匹配的三个 Foundation 包版本",
+        "targetPrefix 是受收容的 POSIX 相对路径"
+      ],
+      "inputs": [
+        "可选的受收容 targetPrefix",
+        "已安装 Contracts、Harness 与 Kit 的精确包字节"
+      ],
+      "outputs": [
+        "投影 manifest 与 provenance 记录，包含 source、运行依赖和 bundle 摘要"
+      ],
+      "sideEffects": [
+        "在内存中构建 manifest，并读取已安装包文件",
+        "不执行写入；调用方把 manifest 交给稳定 runProjection 后才发生受权写入"
+      ],
+      "failureSemantics": [
+        "targetPrefix 无效时抛出 TypeError",
+        "已安装依赖闭包缺失或不一致时拒绝构建；runProjection 另行报告稳定投影失败"
+      ],
+      "invariants": [
+        "辅助函数不增加 Kit 顶层命令，也不绕过 runProjection",
+        "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+      ],
+      "ownedByCaller": [
+        "返回 manifest 的检查与授权",
+        "目标 file-registry 与 managed-file 声明"
+      ],
+      "routeElsewhere": [
+        "普通受管投影：使用 Kit 稳定包根导出的 runProjection",
+        "远端发布：转 release-skill"
+      ]
+    }
+  ]
+}

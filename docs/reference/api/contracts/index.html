@@ -1,0 +1,2532 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        <meta name="description" content="Skill Family 生命周期公共工程基础设施父工作区">
+
+
+
+        <link rel="canonical" href="https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/contracts/">
+
+
+        <link rel="prev" href="../">
+
+
+        <link rel="next" href="../harness/">
+
+
+
+
+
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+
+
+
+        <title>中文 · Contracts API - Skill Family Foundation</title>
+
+
+
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+
+
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+
+
+
+
+
+  </head>
+
+
+
+
+
+
+
+
+
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+
+
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+
+
+        <a href="#skill-family-contracts-公共-API-参考" class="md-skip">
+          跳转至
+        </a>
+
+    </div>
+    <div data-md-component="announce">
+
+    </div>
+
+
+
+
+
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Skill Family Foundation" class="md-header__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skill Family Foundation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+
+              中文 · Contracts API
+
+          </span>
+        </div>
+      </div>
+    </div>
+
+
+        <form class="md-header__option" data-md-component="palette">
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到深色模式"  type="radio" name="__palette" id="__palette_0">
+
+      <label class="md-header__button md-icon" title="切换到深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+
+
+
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到浅色模式"  type="radio" name="__palette" id="__palette_1">
+
+      <label class="md-header__button md-icon" title="切换到浅色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+
+
+</form>
+
+
+
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+
+
+
+
+
+        <label class="md-header__button md-icon" for="__search">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  </nav>
+
+</header>
+
+    <div class="md-container" data-md-component="container">
+
+
+
+
+
+
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+
+
+
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Skill Family Foundation" class="md-nav__button md-logo" aria-label="Skill Family Foundation" data-md-component="logo">
+
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skill Family Foundation
+  </label>
+
+  <ul class="md-nav__list" data-md-scrollfix>
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 首页
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../setup/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安装与环境
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 快速开始
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../git-lifecycle/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Git 生命周期指南
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 能力与诊断
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构边界
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../public/status/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 公开状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../migration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 存量采用与迁移
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 许可与署名
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 智能体入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 架构路由
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 兼容性
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 失败与副作用
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · API 参考
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item md-nav__item--active">
+
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+
+
+
+
+
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Contracts API
+
+
+
+  </span>
+
+
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+
+      <a href="./" class="md-nav__link md-nav__link--active">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Contracts API
+
+
+
+  </span>
+
+
+
+      </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#对象校验-foundationcontractsobject-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        对象校验 (foundation.contracts.object-validation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="对象校验 (foundation.contracts.object-validation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateDocument" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateDocument
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#compileSchema" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        compileSchema
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#detectDialect" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        detectDialect
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        登记与协议 (foundation.contracts.registry-protocol)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="登记与协议 (foundation.contracts.registry-protocol)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadRegistry / listSchemas / listProtocols / findSchemaRegistration / findSchemaByObject / findProtocol
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#registerSchema--registerProtocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        registerSchema / registerProtocol
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#内核协议-foundationcontractskernel-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        内核协议 (foundation.contracts.kernel-protocol)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="内核协议 (foundation.contracts.kernel-protocol)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadKernelProtocol--findOperation--checkOperation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadKernelProtocol / findOperation / checkOperation
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#强制检查-foundationcontractsmandatory-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        强制检查 (foundation.contracts.mandatory-checks)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="强制检查 (foundation.contracts.mandatory-checks)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runChecks--collectUnresolvedRefs" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runChecks / collectUnresolvedRefs
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#fixture-校验-foundationcontractsfixture-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        fixture 校验 (foundation.contracts.fixture-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="fixture 校验 (foundation.contracts.fixture-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#listFixtures--fixtureClasses--verifyFixture--verifyAllFixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        listFixtures / fixtureClasses / verifyFixture / verifyAllFixtures
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#错误码-foundationcontractserror-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        错误码 (foundation.contracts.error-codes)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="错误码 (foundation.contracts.error-codes)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#ContractsError--errorCodeRegistry--errorCodeInfo--isRegisteredErrorCode--assertRegisteredErrorCode--stableError" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        ContractsError / errorCodeRegistry / errorCodeInfo / isRegisteredErrorCode / assertRegisteredErrorCode / stableError
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#审计表面-foundationcontractsaudit-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        审计表面 (foundation.contracts.audit-surface)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="审计表面 (foundation.contracts.audit-surface)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#canonicalJson--digestDocument--describeAuditSurface--digestAuditSurface" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        canonicalJson / digestDocument / describeAuditSurface / digestAuditSurface
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#与机器事实层的互链" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        与机器事实层的互链
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../harness/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Harness API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../engineering-kit/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Engineering Kit API
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 样例与 Fixture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 采用存量仓库
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 安全文件系统与原子写
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · Adapter 文本闭包
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 确定性人类报告
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 持久本地状态
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 宿主 Profile 集成
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    中文 · 领域 Schema 校验
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Home
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/quickstart/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Quickstart
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/help/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Capabilities and diagnostics
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/architecture/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/migration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Migration
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/licensing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Licensing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/agents/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Agent entry
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/agents/architecture-routing/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Architecture routing
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Compatibility
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/failure-and-side-effect-matrix/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Failures and side effects
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/reference/api/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · API reference
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/examples-and-fixtures/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Examples and fixtures
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Recipes
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/adopt-existing-repository/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adopt an existing repository
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/safe-filesystem-and-atomic-write/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Safe filesystem and atomic write
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/adapter-text-closure/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Adapter text closure
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/deterministic-human-report/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Deterministic human report
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/durable-local-state/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Durable local state
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/host-profile-integration/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Host Profile integration
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../en/recipes/domain-schema-validation/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    English · Domain Schema validation
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 入口
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/mutation-taxonomy/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 变异分类学
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/independence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 独立性证明
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/version-compatibility/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 版本兼容
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+
+
+
+
+
+
+    <li class="md-nav__item">
+      <a href="../../../integration/audit/failure-evidence/" class="md-nav__link">
+
+
+
+  <span class="md-ellipsis">
+
+
+    审计集成 · 失败证据与 AUD 码
+
+
+
+  </span>
+
+
+
+      </a>
+    </li>
+
+
+
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+
+
+
+
+
+
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+
+        <li class="md-nav__item">
+  <a href="#对象校验-foundationcontractsobject-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        对象校验 (foundation.contracts.object-validation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="对象校验 (foundation.contracts.object-validation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateDocument" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateDocument
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#compileSchema" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        compileSchema
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#detectDialect" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        detectDialect
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        登记与协议 (foundation.contracts.registry-protocol)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="登记与协议 (foundation.contracts.registry-protocol)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadRegistry / listSchemas / listProtocols / findSchemaRegistration / findSchemaByObject / findProtocol
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#registerSchema--registerProtocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        registerSchema / registerProtocol
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#内核协议-foundationcontractskernel-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        内核协议 (foundation.contracts.kernel-protocol)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="内核协议 (foundation.contracts.kernel-protocol)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#loadKernelProtocol--findOperation--checkOperation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        loadKernelProtocol / findOperation / checkOperation
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#强制检查-foundationcontractsmandatory-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        强制检查 (foundation.contracts.mandatory-checks)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="强制检查 (foundation.contracts.mandatory-checks)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runChecks--collectUnresolvedRefs" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runChecks / collectUnresolvedRefs
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#fixture-校验-foundationcontractsfixture-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        fixture 校验 (foundation.contracts.fixture-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="fixture 校验 (foundation.contracts.fixture-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#listFixtures--fixtureClasses--verifyFixture--verifyAllFixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        listFixtures / fixtureClasses / verifyFixture / verifyAllFixtures
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#错误码-foundationcontractserror-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        错误码 (foundation.contracts.error-codes)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="错误码 (foundation.contracts.error-codes)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#ContractsError--errorCodeRegistry--errorCodeInfo--isRegisteredErrorCode--assertRegisteredErrorCode--stableError" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        ContractsError / errorCodeRegistry / errorCodeInfo / isRegisteredErrorCode / assertRegisteredErrorCode / stableError
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#审计表面-foundationcontractsaudit-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        审计表面 (foundation.contracts.audit-surface)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="审计表面 (foundation.contracts.audit-surface)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#canonicalJson--digestDocument--describeAuditSurface--digestAuditSurface" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        canonicalJson / digestDocument / describeAuditSurface / digestAuditSurface
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#与机器事实层的互链" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        与机器事实层的互链
+
+    </span>
+  </a>
+
+</li>
+
+    </ul>
+
+</nav>
+                  </div>
+                </div>
+              </div>
+
+
+
+            <div class="md-content" data-md-component="content">
+
+              <article class="md-content__inner md-typeset">
+
+
+
+
+
+<h1 id="skill-family-contracts-公共-API-参考">skill-family-contracts 公共 API 参考<a class="headerlink" href="#skill-family-contracts-公共-API-参考" title="Permanent link">&para;</a></h1>
+<p>本页从真实导出（<code>src/index.mjs</code> 与各源模块）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
+<p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
+<ul>
+<li><a href="#对象校验-foundationcontractsobject-validation">对象校验</a> → <code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code></li>
+<li><a href="#登记与协议-foundationcontractsregistry-protocol">登记与协议</a> → <code>loadRegistry</code> / <code>findSchemaByObject</code> / <code>findProtocol</code> / <code>registerSchema</code> / <code>registerProtocol</code></li>
+<li><a href="#内核协议-foundationcontractskernel-protocol">内核协议</a> → <code>loadKernelProtocol</code> / <code>findOperation</code> / <code>checkOperation</code></li>
+<li><a href="#强制检查-foundationcontractsmandatory-checks">强制检查</a> → <code>runChecks</code> / <code>collectUnresolvedRefs</code></li>
+<li><a href="#fixture-校验-foundationcontractsfixture-verification">fixture 校验</a> → <code>listFixtures</code> / <code>verifyFixture</code> / <code>verifyAllFixtures</code></li>
+<li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
+<li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
+</ul>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（18 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.4.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<hr />
+<h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
+<h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>validateDocument(document, { schemaId, schema, dialect, policy = "strict" } = {})</code></li>
+<li>输入：任意 JSON 文档；目标契约对象 <code>$id</code> 或 schema 对象；方言（<code>draft-07</code> / <code>2020-12</code>）；策略（<code>strict</code> | <code>tolerant</code>）。</li>
+<li>输出：校验通过返回 <code>{valid:true}</code>（不含 <code>errorCode</code>）；失败返回 <code>{valid:false, errorCode, errors}</code>，<strong>不抛出</strong>（已实测：未知 <code>$id</code> 返回 <code>SFC1002</code>，文档不符返回 <code>SFC1001</code>）。</li>
+<li>纯函数：是。仅读取进程内 Ajv 编译缓存，不触外部资源。</li>
+<li>副作用：无文件/Git/网络/进程副作用；首次编译写入内存编译缓存，后续同 <code>(schemaId,dialect,policy)</code> 复用。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1002</code>（未知 <code>$id</code>）、<code>SFC1001</code>（文档不符 Schema）。两者均经返回值 <code>errorCode</code> 表达，调用方以 <code>valid</code> 字段判断成败，不以 <code>try/catch</code> 捕获。</li>
+<li>前置条件与信任锚：待校验文档带已登记契约对象 <code>$id</code>；Node &gt;= 22.22.2；校验器固定为 Ajv 8.20.0。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
+<li>正例测试：<code>packages/skill-family-contracts/test/validator.test.mjs</code>、<code>schemas.test.mjs</code>、<code>host-contracts.test.mjs</code>、<code>report-contracts.test.mjs</code>。</li>
+<li>负例测试：同上（未知 <code>$id</code> 与不符 Schema 均返回 <code>valid:false</code>）。</li>
+<li>调用方仍拥有的业务语义：具体业务字段的语义解释、领域级校验规则。</li>
+</ul>
+<h3 id="compileSchema">compileSchema<a class="headerlink" href="#compileSchema" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>compileSchema(target, { dialect, policy = "strict" } = {})</code></li>
+<li>输入：schema 对象或 <code>$id</code>；方言；策略。</li>
+<li>输出：编译后的 Ajv <code>validate</code> 函数；或抛 <code>ContractsError</code>（<code>SFC1012</code> <code>SCHEMA_COMPILE_FAILED</code>，当 schema 自身无法在声明方言下编译）。</li>
+<li>纯函数：是。</li>
+<li>副作用：无外部副作用，仅写入编译缓存。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1012</code>（编译失败，抛异常——与 <code>validateDocument</code> 的返回式失败不同）、<code>SFC1006</code>（未知方言，由 <code>detectDialect</code> 抛）。</li>
+<li>前置条件与信任锚：Ajv 8.20.0 固定；<code>dialect</code> 属冻结支持集。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
+<li>正例/负例测试：同 <code>validateDocument</code>。</li>
+<li>调用方仍拥有的业务语义：schema 的业务含义。</li>
+</ul>
+<h3 id="detectDialect">detectDialect<a class="headerlink" href="#detectDialect" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>detectDialect(schema)</code></li>
+<li>输入：带 <code>$schema</code> 字段的 schema 对象。</li>
+<li>输出：方言字符串（<code>draft-07</code> / <code>2020-12</code>）；未知方言抛 <code>ContractsError</code>（<code>SFC1006</code> <code>UNSUPPORTED_DIALECT</code>）。</li>
+<li>纯函数：是。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1006</code>（声明方言不在冻结支持集）。</li>
+<li>前置条件与信任锚：方言集冻结（<code>SUPPORTED_DIALECTS</code>）。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
+<li>正例/负例测试：同上。</li>
+<li>调用方仍拥有的业务语义：方言选择策略（何时用 tolerant）。</li>
+</ul>
+<hr />
+<h2 id="登记与协议-foundationcontractsregistry-protocol">登记与协议 (foundation.contracts.registry-protocol)<a class="headerlink" href="#登记与协议-foundationcontractsregistry-protocol" title="Permanent link">&para;</a></h2>
+<h3 id="loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol">loadRegistry / listSchemas / listProtocols / findSchemaRegistration / findSchemaByObject / findProtocol<a class="headerlink" href="#loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>loadRegistry()</code></li>
+<li><code>listSchemas(registry = REGISTRY)</code></li>
+<li><code>listProtocols(registry = REGISTRY)</code></li>
+<li><code>findSchemaRegistration(schemaId, registry = REGISTRY)</code></li>
+<li><code>findSchemaByObject(object, registry = REGISTRY)</code></li>
+<li><code>findProtocol(name, version, registry = REGISTRY)</code></li>
+<li>输入：对象名、<code>$id</code>、协议名/版本（其余默认读冻结 <code>REGISTRY</code>）。</li>
+<li>输出：已登记 schema 元信息或协议定义；未命中返回 <code>undefined</code>。</li>
+<li>纯函数：是。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
+<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.4.0</code> 为唯一权威；18 类顶层对象集合固定，新增需 ADR。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：对象业务含义的解释。</li>
+</ul>
+<h3 id="registerSchema--registerProtocol">registerSchema / registerProtocol<a class="headerlink" href="#registerSchema--registerProtocol" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>registerSchema(entry, registry = REGISTRY)</code></li>
+<li><code>registerProtocol(entry, registry = REGISTRY)</code></li>
+<li>输入：schema/protocol 登记项。</li>
+<li>输出：写入后的 registry（默认冻结 <code>REGISTRY</code> 上的副作用）；重复 <code>$id</code>/协议名抛 <code>ContractsError</code>。</li>
+<li>纯函数：否（默认向进程内冻结 registry 登记，属受控内存副作用）。</li>
+<li>副作用：进程内 registry 变更；不落盘。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
+<li>前置条件与信任锚：18 类对象集与协议名集冻结。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：同上。</li>
+<li>正例/负例测试：同上。</li>
+<li>调用方仍拥有的业务语义：登记项的业务理由。</li>
+</ul>
+<hr />
+<h2 id="内核协议-foundationcontractskernel-protocol">内核协议 (foundation.contracts.kernel-protocol)<a class="headerlink" href="#内核协议-foundationcontractskernel-protocol" title="Permanent link">&para;</a></h2>
+<h3 id="loadKernelProtocol--findOperation--checkOperation">loadKernelProtocol / findOperation / checkOperation<a class="headerlink" href="#loadKernelProtocol--findOperation--checkOperation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>loadKernelProtocol()</code></li>
+<li><code>findOperation(name, kernel = KERNEL)</code></li>
+<li><code>checkOperation(operation, params)</code></li>
+<li>输入：协议名、操作名、操作参数。</li>
+<li>输出：协议定义或操作参数校验结果；失败时抛 <code>ContractsError</code>。</li>
+<li>纯函数：是（加载为只读解析，无外部副作用）。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC2002</code>（<code>UNKNOWN_OPERATION</code>，操作名不在冻结词汇）、<code>SFC2003</code>（<code>INVALID_PARAMS</code>，参数违反操作参数契约）。</li>
+<li>前置条件与信任锚：<code>kernel-protocol.json</code> 随包发布；内核协议版本与 Contracts 版本绑定。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/kernel.mjs</code>、<code>kernel-protocol.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/kernel.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：操作的具体业务语义（状态机/重试/终态转 <code>loop-agent</code>）。</li>
+</ul>
+<hr />
+<h2 id="强制检查-foundationcontractsmandatory-checks">强制检查 (foundation.contracts.mandatory-checks)<a class="headerlink" href="#强制检查-foundationcontractsmandatory-checks" title="Permanent link">&para;</a></h2>
+<h3 id="runChecks--collectUnresolvedRefs">runChecks / collectUnresolvedRefs<a class="headerlink" href="#runChecks--collectUnresolvedRefs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>runChecks({ schemaEntries, ... } = {})</code></li>
+<li><code>collectUnresolvedRefs(schemaEntries)</code></li>
+<li>输入：待检查契约集或合成 registry/fixtures。</li>
+<li>输出：检查结论与未解析引用清单；违反规则抛 <code>ContractsError</code>。</li>
+<li>纯函数：是。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1002</code>/<code>1003</code>/<code>1004</code>/<code>1005</code>/<code>1006</code>/<code>1008</code>/<code>1009</code>/<code>1010</code> 对应各规则 violated；<code>SFC1005</code>（<code>UNRESOLVED_REF</code>）、<code>SFC1008</code>（<code>RULE_BUDGET_EXCEEDED</code>）、<code>SFC1010</code>（<code>FIXTURE_EXPECTATION_MISMATCH</code>）。</li>
+<li>前置条件与信任锚：registry 与 rules 已加载；<code>CHECK_TYPES</code> 为 9 类闭集；<code>RULE_BUDGET</code> 限制 <code>firstVersionMax</code> 与 <code>absoluteMax</code>。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/checker.mjs</code>、<code>rules.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/checker.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：规则业务理由的解释（语义接受/拒绝属外部独立审阅）。</li>
+</ul>
+<hr />
+<h2 id="fixture-校验-foundationcontractsfixture-verification">fixture 校验 (foundation.contracts.fixture-verification)<a class="headerlink" href="#fixture-校验-foundationcontractsfixture-verification" title="Permanent link">&para;</a></h2>
+<h3 id="listFixtures--fixtureClasses--verifyFixture--verifyAllFixtures">listFixtures / fixtureClasses / verifyFixture / verifyAllFixtures<a class="headerlink" href="#listFixtures--fixtureClasses--verifyFixture--verifyAllFixtures" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>listFixtures()</code></li>
+<li><code>fixtureClasses()</code></li>
+<li><code>verifyFixture(fixture)</code></li>
+<li><code>verifyAllFixtures()</code></li>
+<li>输入：fixture 类或单个 fixture 标识。</li>
+<li>输出：逐 fixture 的校验结果（正例须通过、负例须以声明稳定码失败）。</li>
+<li>纯函数：是（只读 fixture 目录）。</li>
+<li>副作用：只读访问 fixture，无写。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1010</code>（<code>FIXTURE_EXPECTATION_MISMATCH</code>，负例未产生预期失败）；<code>SFC1009</code>（<code>UNKNOWN_ERROR_CODE</code>，fixture 引用未登记码）。</li>
+<li>前置条件与信任锚：fixtures 目录为公开或完全虚构数据；fixture 与审计器预期结果不共享。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/fixtures.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/fixtures.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：fixture 背后的业务意图（fixture 只证结构、不证语义）。</li>
+</ul>
+<hr />
+<h2 id="错误码-foundationcontractserror-codes">错误码 (foundation.contracts.error-codes)<a class="headerlink" href="#错误码-foundationcontractserror-codes" title="Permanent link">&para;</a></h2>
+<h3 id="ContractsError--errorCodeRegistry--errorCodeInfo--isRegisteredErrorCode--assertRegisteredErrorCode--stableError">ContractsError / errorCodeRegistry / errorCodeInfo / isRegisteredErrorCode / assertRegisteredErrorCode / stableError<a class="headerlink" href="#ContractsError--errorCodeRegistry--errorCodeInfo--isRegisteredErrorCode--assertRegisteredErrorCode--stableError" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>class ContractsError extends Error</code>（构造 <code>(code, message, details)</code>）</li>
+<li><code>errorCodeRegistry()</code></li>
+<li><code>errorCodeInfo(code)</code></li>
+<li><code>isRegisteredErrorCode(code)</code></li>
+<li><code>assertRegisteredErrorCode(code)</code></li>
+<li><code>stableError(code, message, details)</code></li>
+<li>输入：错误码字符串、错误上下文。</li>
+<li>输出：带稳定错误码与 <code>details</code> 的错误对象；<code>assertRegisteredErrorCode</code> 对未登记码抛 <code>TypeError</code>。</li>
+<li>纯函数：是（<code>ContractsError</code> 构造为纯对象，无外部副作用）。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：错误码体系本身冻结（<code>error-codes.json</code>），新增码属 Contracts 变更；<code>SFC1009</code> 用于未登记码断言。</li>
+<li>前置条件与信任锚：<code>error-codes.json</code> 随包发布；冻结对象不可变。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/errors.mjs</code>、<code>error-codes.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/boundary.test.mjs</code>、<code>immutability.test.mjs</code>、<code>audit-surface.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：错误码的业务归因。</li>
+</ul>
+<p>Contracts 错误码一览（稳定、append-only）：</p>
+<table>
+<thead>
+<tr>
+<th>码</th>
+<th>名称</th>
+<th>类别</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFC1001</td>
+<td>SCHEMA_VALIDATION_FAILED</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1002</td>
+<td>UNKNOWN_SCHEMA_ID</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1003</td>
+<td>DUPLICATE_SCHEMA_ID</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1004</td>
+<td>DUPLICATE_PROTOCOL_NAME</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1005</td>
+<td>UNRESOLVED_REF</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1006</td>
+<td>UNSUPPORTED_DIALECT</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1007</td>
+<td>UNKNOWN_CHECK_TYPE</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1008</td>
+<td>RULE_BUDGET_EXCEEDED</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1009</td>
+<td>UNKNOWN_ERROR_CODE</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1010</td>
+<td>FIXTURE_EXPECTATION_MISMATCH</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1011</td>
+<td>UNKNOWN_PROTOCOL</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC1012</td>
+<td>SCHEMA_COMPILE_FAILED</td>
+<td>contract</td>
+</tr>
+<tr>
+<td>SFC2002</td>
+<td>UNKNOWN_OPERATION</td>
+<td>kernel</td>
+</tr>
+<tr>
+<td>SFC2003</td>
+<td>INVALID_PARAMS</td>
+<td>kernel</td>
+</tr>
+<tr>
+<td>SFC2004</td>
+<td>EXECUTION_FAILED</td>
+<td>kernel（机制失败统一码，承载 <code>details.kind</code>）</td>
+</tr>
+<tr>
+<td>SFC3001</td>
+<td>REPORT_DIGEST_MISMATCH</td>
+<td>report</td>
+</tr>
+<tr>
+<td>SFC3002</td>
+<td>REPORT_ELEMENT_MISSING</td>
+<td>report</td>
+</tr>
+<tr>
+<td>SFC3003</td>
+<td>REPORT_FACT_DRIFT</td>
+<td>report</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="审计表面-foundationcontractsaudit-surface">审计表面 (foundation.contracts.audit-surface)<a class="headerlink" href="#审计表面-foundationcontractsaudit-surface" title="Permanent link">&para;</a></h2>
+<h3 id="canonicalJson--digestDocument--describeAuditSurface--digestAuditSurface">canonicalJson / digestDocument / describeAuditSurface / digestAuditSurface<a class="headerlink" href="#canonicalJson--digestDocument--describeAuditSurface--digestAuditSurface" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>canonicalJson(value)</code></li>
+<li><code>digestDocument(value, { algorithm = "sha256" } = {})</code></li>
+<li><code>describeAuditSurface()</code></li>
+<li><code>digestAuditSurface(surface = describeAuditSurface())</code></li>
+<li>输入：任意 JSON 文档。</li>
+<li>输出：canonical 字符串与 sha256 摘要；审计表面结构描述与其摘要。</li>
+<li>纯函数：是。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：非 JSON 值、未知算法（<code>AUDIT_DIGEST_ALGORITHMS</code> 仅 <code>sha256</code>）、冻结违规抛 <code>ContractsError</code>。</li>
+<li>前置条件与信任锚：<code>AUDIT_SURFACE_VERSION=1</code>；摘要算法仅 <code>sha256</code>；依赖方向 Audit → Contracts，本模块不反向导入审计产物。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/audit-surface.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/audit-surface.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：审计语义结论（接受/拒绝属外部独立审阅）。</li>
+</ul>
+<hr />
+<h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.contracts.*</code>）。</li>
+<li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code>，拒绝引用不存在的入口；<code>sourceRefs</code> 与测试引用均指向本页所列真实文件。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </article>
+            </div>
+
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+
+      </main>
+
+        <footer class="md-footer">
+
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+
+
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+
+</div>
+
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+
+
+
+
+
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+
+
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+
+
+  </body>
+</html>

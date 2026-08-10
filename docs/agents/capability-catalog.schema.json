@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "skill-family.documentation-capability-catalog.schema",
+  "title": "Skill Family Foundation 能力目录 Schema（core + locale-overlay 双形态）",
+  "description": "约束 docs/agents/capability-catalog.json（locale-neutral core，仅机器事实）与 capability-catalog.zh-CN.json / capability-catalog.en.json（locale overlay，仅自然语言解释）。core 不得含任何自然语言说明；两个 overlay 的 capability ID 与字段集合必须完全相等，locale 只允许 en 与 zh-CN，不存在 fallback。该目录是文档层机器事实，不是 Contracts 的新公共对象；任何必填字段缺失或填入空字符串、TBD、营销语言都应被校验器拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "bundle",
+    "generatedFrom",
+    "capabilities"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "目录 Schema 版本，当前固定为 1；Contract 权威版本另见 CONTRACTS_VERSION=1.4.0，两套版本并行，不混用。"
+    },
+    "kind": {
+      "type": "string",
+      "const": "skill-family.documentation-capability-catalog",
+      "description": "目录种类标识，用于机械比对与投影。"
+    },
+    "bundle": {
+      "type": "string",
+      "enum": ["core", "locale-overlay"],
+      "description": "形态：core 仅机器事实；locale-overlay 仅自然语言解释并携带 locale。"
+    },
+    "locale": {
+      "type": "string",
+      "enum": ["en", "zh-CN"],
+      "description": "仅 locale-overlay 使用；core 不出现此字段。禁止 locale fallback。"
+    },
+    "generatedFrom": {
+      "type": "array",
+      "description": "生成该目录所消费的机器真源路径清单（package.json、src/index.mjs、CLI、registry.json 等）。",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/capability" }
+    }
+  },
+  "definitions": {
+    "capability": {
+      "oneOf": [
+        { "$ref": "#/definitions/coreCapability" },
+        { "$ref": "#/definitions/overlayCapability" }
+      ]
+    },
+    "coreCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "package", "layer", "since", "stability",
+        "entrypoints", "sourceRefs", "positiveTestRefs", "negativeTestRefs"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^foundation\\.[a-z0-9\\-]+(\\.[a-z0-9\\-]+)+$",
+          "description": "稳定能力 ID，全局唯一，形如 foundation.harness.atomic-write。"
+        },
+        "package": {
+          "type": "string",
+          "minLength": 1,
+          "description": "承载该能力的包名或层名。取值为 skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit、profiles、foundation 之一。"
+        },
+        "layer": {
+          "type": "string",
+          "enum": ["contracts", "harness", "engineering-kit", "profile", "unsupported"],
+          "description": "能力所在分层。"
+        },
+        "since": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "该能力首次稳定出现的包版本，必须从 package.json 真源生成或经 fact-check 校验，不得使用 TBD。"
+        },
+        "stability": {
+          "type": "string",
+          "enum": ["stable", "unstable", "experimental", "unsupported"],
+          "description": "稳定性档位。unsupported 表示明确不在 Foundation 范围内，不得标为 stable。"
+        },
+        "entrypoints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "真实公共入口（函数名 + 源文件路径）；unsupported 能力可空。"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "仓内真实源文件路径；校验器会核对文件存在。"
+        },
+        "positiveTestRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "验证正向行为的正例测试路径；unsupported 可空，其他必须非空且文件存在。"
+        },
+        "negativeTestRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "验证拒绝/失败行为的负例测试路径；unsupported 可空，其他必须非空且文件存在。"
+        }
+      }
+    },
+    "overlayCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "intent", "useWhen", "doNotUseWhen",
+        "prerequisites", "inputs", "outputs",
+        "sideEffects", "failureSemantics", "invariants",
+        "ownedByCaller", "routeElsewhere"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^foundation\\.[a-z0-9\\-]+(\\.[a-z0-9\\-]+)+$",
+          "description": "稳定能力 ID，必须与 core 完全一致。"
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 4,
+          "description": "一句话说明能力解决的真实问题；禁止空泛或营销表述。"
+        },
+        "useWhen": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "适用场景；unsupported 能力可空，其他能力至少一条，禁止空字符串或 TBD。"
+        },
+        "doNotUseWhen": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "不适用场景；至少一条，禁止空字符串或 TBD。"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 }
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 }
+        },
+        "sideEffects": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "读写文件、spawn、Git、网络、残余状态等真实副作用；纯函数/只读以「无（...）」显式声明。"
+        },
+        "failureSemantics": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "失败后的错误码、details.kind 与残余状态。"
+        },
+        "invariants": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 }
+        },
+        "ownedByCaller": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "仍由调用方拥有的业务语义。"
+        },
+        "routeElsewhere": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "description": "应转交其他项目（release-skill/loop-agent/artifact-graph/消费者）的情形。"
+        }
+      }
+    }
+  }
+}
