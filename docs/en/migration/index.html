@@ -2113,9 +2113,9 @@
   ],
   &quot;targetProfile&quot;: &quot;generic&quot;,
   &quot;foundationPackages&quot;: [
-    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; }
+    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; }
   ],
   &quot;verification&quot;: {
     &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
@@ -2126,6 +2126,7 @@
 }
 </code></pre>
 <p>The structure above shows the core fields of the migration manifest; each <code>legacyInfra</code> entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</p>
+<p>The Quickstart Profile candidate moves to v2 in 0.3.0. A migration manifest that binds candidate capabilities must pin all three Foundation packages to exactly 0.3.0; an existing integration that still requires v1 must keep all three packages pinned to exactly 0.2.1 and must not mix the two sets.</p>
 <ul>
 <li><code>legacyInfra</code>: each entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</li>
 <li><code>exceptions</code> are <strong>temporary exceptions</strong>: must simultaneously contain all four fields — owner, reason, deadline, and migrationTarget — and missing any field counts as a conflict (plan failure); expired exceptions are not auto-renewed and persistently block the completion judgment.</li>

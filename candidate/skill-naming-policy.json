@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-family.skill-naming-policy",
+  "policyVersion": "1.0.0",
+  "status": "candidate",
+  "summary": "Plugin skill naming and description policy: every published skill name carries the plugin prefix, every frontmatter description carries a domain signal, and routing entry skills declare plugin-internal routing scope.",
+  "pluginSlugPattern": "^[a-z][a-z0-9-]*$",
+  "skillName": {
+    "ruleId": "SNR-001",
+    "summary": "Every published skill name must be <plugin-slug>-<suffix>; bare generic names are forbidden.",
+    "suffixPattern": "[a-z0-9][a-z0-9-]*",
+    "reservedBareNames": ["help", "setup", "quickstart", "where-am-i"],
+    "additionalApprovedPatterns": [],
+    "note": "Equivalent namespace forms are only valid when their regular expression is explicitly approved and registered in additionalApprovedPatterns; a reserved bare name stays forbidden even then."
+  },
+  "description": {
+    "ruleId": "SNR-002",
+    "summary": "The frontmatter description must contain a domain signal (the plugin slug or a declared domain word) and must not consist of a bare global trigger phrase.",
+    "forbiddenGlobalTriggers": [
+      "what can this plugin do",
+      "what can you do",
+      "how to start",
+      "how do i start",
+      "is my environment ready",
+      "你能做什么",
+      "怎么开始",
+      "我的环境准备好了吗"
+    ]
+  },
+  "routingEntry": {
+    "ruleId": "SNR-003",
+    "summary": "A routing entry skill must name its plugin slug in the description (plugin-internal routing scope) and must not imply global arbitration.",
+    "suffixes": ["help", "quickstart", "where-am-i"],
+    "forbiddenGlobalScopePhrases": [
+      "across all plugins",
+      "all installed plugins",
+      "global routing",
+      "global arbitration",
+      "routes every plugin",
+      "全局路由",
+      "全局仲裁",
+      "所有插件",
+      "跨插件仲裁"
+    ]
+  }
+}

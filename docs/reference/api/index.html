@@ -673,6 +673,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1739,6 +1750,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1796,8 +1818,10 @@
 <ul>
 <li>机制失败统一 <code>SFC2004</code>（<code>EXECUTION_FAILED</code>），由 <code>details.kind</code> 区分（<code>HARNESS_ERROR_KINDS</code> 冻结枚举）；Contracts 校验失败（<code>SFC1001</code> / <code>SFC1002</code>）经 <code>validateDocument</code> 返回值表达、不抛异常。</li>
 <li>Kit 顶层命令集合固定为 4 个（<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>），不扩张；<code>host apply</code> / <code>install</code> / <code>update</code> / <code>uninstall</code>、Qoder 完整 driver、二进制 adapter source、远端发布、业务状态机、模型编排、领域审计语义均明确 unsupported。</li>
-<li>所有版本字段从 <code>package.json</code> 与 Contracts 真源生成或由 fact-check 校验；<code>CONTRACTS_VERSION=1.4.0</code> 与 npm 包版本 <code>0.2.1</code> 并行。</li>
+<li>所有版本字段从 <code>package.json</code> 与 Contracts 真源生成或由 fact-check 校验；<code>CONTRACTS_VERSION=1.4.0</code> 与 npm 包版本 <code>0.3.0</code> 并行。</li>
 </ul>
+<h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
+<p>三个包都通过既有 candidate 子路径公开 Quickstart Profile v2。Contracts 定义 <code>execute-method</code> 交换结构，Harness 复验字节和绑定，Kit 从显式消费者 Schema 生成离线 Bundle。该能力仍标记为 <code>candidate</code>，0.3.0 的 v2 与 0.2.1 的 v1 不兼容；消费者必须精确锁定所选包版本。</p>
 
 
 

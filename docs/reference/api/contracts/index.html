@@ -897,6 +897,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2143,6 +2154,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2467,6 +2489,10 @@
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/audit-surface.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：审计语义结论（接受/拒绝属外部独立审阅）。</li>
 </ul>
+<hr />
+<h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
+<p><code>skill-family-contracts/candidate/quickstart-profile</code> 导出 v2 协议、按真实 <code>$id</code> 索引的 Resource/Task/Result Schema 集合，以及 <code>validateQuickstartProfileDocument</code>。唯一操作名是业务中立的 <code>execute-method</code>；Foundation 不登记 method 词表，也不解释 parameters、evidence 或 domainResult 的领域含义。</p>
+<p>该入口从 <code>0.2.1</code> 起公开，但稳定性仍为 <code>candidate</code>。0.3.0 已用 v2 替换 v1，两者不兼容：新接入需精确锁定 <code>0.3.0</code>，仍需 v1 的接入继续精确锁定 <code>0.2.1</code>。candidate Schema 不进入稳定 <code>src/registry.json</code>。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

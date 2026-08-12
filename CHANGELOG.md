@@ -1,5 +1,27 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.3.0 locale=en baseline=sha256:4c017d6121ff888f90ad9a4ef958b4fee3e25c8d1b69be61cc1ba1f79d527163 -->
+## [0.3.0] - 2026-08-12
+
+This source candidate builds a deterministic Quickstart Profile v2 bundle that runs offline without Foundation packages, node_modules, or runtime Ajv.
+
+### Added
+
+- Accepts explicit consumer schema files and source identity, then generates standalone validators selected by schema $id.
+- Records complete source and payload provenance, package-manager identity, and the licenses for third-party code that enters the bundle.
+- Adds a candidate plugin skill naming checker (policy JSON plus build-time CLI) that scans a plugin skills root and reports per-rule PASS/FAIL for the prefixed-name, description-signal, and routing-scope rules.
+
+### Changed
+
+- Replaces the incompatible 0.2.1 dependency-closure bundle; consumers that still require v1 must remain pinned to exactly 0.2.1.
+- Projects the Contracts and Harness runtime mechanically while preserving the stable four-command Kit surface.
+
+### Upgrade Notes
+
+Version 0.3.0 is a local, unpublished source candidate. Regenerate managed bundles from frozen inputs and pin the builder to exactly 0.3.0 when adopting v2.
+<!-- release-skill:changelog:end version=0.3.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.2.1 locale=en baseline=sha256:3457c97a9a2f25fd233a1947dcd9c88fb40279e90ae5b437bea1f7660ac6ce60 -->
 ## [0.2.1] - 2026-08-10
 

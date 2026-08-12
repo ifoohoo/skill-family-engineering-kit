@@ -505,7 +505,7 @@
         "Need to freely author a report from open business outputs (forbidden)"
       ],
       "prerequisites": [
-        "REPORT_RENDERER_NAME / VERSION come from their respective packages (currently 0.2.1)",
+        "REPORT_RENDERER_NAME / VERSION come from their respective packages (currently 0.3.0)",
         "SUPPORTED_REPORT_LOCALES = [zh-CN, en-US]"
       ],
       "inputs": [
@@ -1430,7 +1430,7 @@
     },
     {
       "id": "foundation.contracts.quickstart-profile-candidate",
-      "intent": "Expose the candidate Quickstart Resource, Task, and Result schemas through skill-family-contracts/candidate/quickstart-profile for exact-version integration trials.",
+      "intent": "Expose the Quickstart Profile v2 protocol and real-$id Resource, Task, and Result schema collection through skill-family-contracts/candidate/quickstart-profile for exact-version integration trials.",
       "useWhen": [
         "Need to inspect or validate the candidate Resource, Task, or Result shape before it is proposed for the frozen registry",
         "The consumer can pin the exact skill-family-contracts package version and isolate candidate imports from its stable API"
@@ -1458,6 +1458,7 @@
         "An invalid candidate document returns valid:false with Ajv findings"
       ],
       "invariants": [
+        "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
         "Candidate schemas remain absent from src/registry.json and do not expand the 18 stable object classes",
         "Stability is candidate: a later minor release may change or remove this subpath"
       ],
@@ -1502,7 +1503,7 @@
         "verifyQuickstartExchange converts a failure into {valid:false, code, message, details}"
       ],
       "invariants": [
-        "The Result must bind the exact Task digest, observation digest, operation identity, and correlation fields",
+        "The Result must bind the exact Task digest, real Resource bytes, globally unique Resource ids, operation identity, correlation fields, and the complete evidence-binding set",
         "Stability is candidate: a later minor release may change or remove this subpath"
       ],
       "ownedByCaller": [
@@ -1516,35 +1517,37 @@
     },
     {
       "id": "foundation.kit.quickstart-profile-candidate",
-      "intent": "Build a deterministic, self-contained Quickstart projection manifest through skill-family-engineering-kit/candidate/quickstart-profile.",
+      "intent": "Build a deterministic Quickstart Profile v2 offline Bundle with standalone validators selected by schema $id through skill-family-engineering-kit/candidate/quickstart-profile.",
       "useWhen": [
         "Need to trial the candidate Quickstart schemas and runner in a target using the stable projection authorization boundary",
-        "Need provenance and dependency-closure digests for the generated candidate bundle"
+        "Need complete source, consumer-schema, payload, tool-version, and license provenance for the generated Bundle"
       ],
       "doNotUseWhen": [
         "Need a stable Quickstart API or a fifth top-level Kit command",
         "Need to bypass target manifest authorization or handwritten-file protection"
       ],
       "prerequisites": [
-        "Install exact matching versions of all three Foundation packages",
+        "Install exact matching 0.3.0 versions of all three Foundation packages",
         "The target prefix is a contained relative POSIX path"
       ],
       "inputs": [
-        "Optional contained targetPrefix",
+        "Contained targetPrefix, consumerSchemaRoot, and an explicit relative consumer-schema path set",
+        "Frozen sourceRepository and sourceBaseCommit identity",
         "Exact installed Contracts, Harness, and Kit package bytes"
       ],
       "outputs": [
-        "A projection manifest and provenance record with source, runtime dependency, and bundle digests"
+        "A projection manifest and provenance record with Foundation sources, consumer schemas, payload digests, tool versions, and licenses"
       ],
       "sideEffects": [
-        "Builds the manifest in memory and reads installed package files",
+        "Builds the manifest in memory and reads installed package plus explicit consumer-schema files",
         "Performs no writes; callers pass the manifest to stable runProjection for authorized writes"
       ],
       "failureSemantics": [
         "An invalid targetPrefix throws TypeError",
-        "A missing or inconsistent installed dependency closure rejects the build; runProjection reports its own stable projection failures"
+        "Duplicate schema ids, bad references, mixed dialects, unsupported formats, path escapes, or missing source identity reject the build; runProjection reports its own stable projection failures"
       ],
       "invariants": [
+        "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
         "The helper adds no top-level Kit command and never bypasses runProjection",
         "Stability is candidate: a later minor release may change or remove this subpath"
       ],

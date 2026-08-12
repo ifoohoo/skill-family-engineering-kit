@@ -1770,13 +1770,14 @@
 <li>需要持久事件与派生快照 → 看 <code>durable-local-state</code>。</li>
 <li>需要存量采用盘点 → 看 <code>adopt-existing-repository</code>。</li>
 <li>需要文本资源闭包或宿主接入 → 看 <code>adapter-text-closure</code> / <code>host-profile-integration</code>。</li>
+<li>需要试用 Quickstart Profile v2 → 精确锁定三个包的 0.3.0 candidate 子路径；需要 v1 时继续锁定 0.2.1。</li>
 </ul>
 <h2 id="共同验证约定">共同验证约定<a class="headerlink" href="#共同验证约定" title="Permanent link">&para;</a></h2>
 <ul>
 <li>所有示例在<strong>新的系统临时目录</strong>执行，不留个人路径或凭据。</li>
 <li>示例不含企业标识、私有 Profile、真实业务数据或个人路径。</li>
 <li>每个 recipe 至少给出一个正例与一个负例；负例必须产生稳定失败码或拒绝。</li>
-<li>验证命令可直接复制运行；需要包时先 <code>npm install</code> 对应 <code>@0.2.1</code>。</li>
+<li>验证命令可直接复制运行；需要包时先 <code>npm install</code> 对应 <code>@0.3.0</code>。</li>
 </ul>
 <h2 id="能力-ID-总览">能力 ID 总览<a class="headerlink" href="#能力-ID-总览" title="Permanent link">&para;</a></h2>
 <table>

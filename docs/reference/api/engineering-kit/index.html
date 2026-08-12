@@ -1002,6 +1002,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2245,6 +2256,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2486,6 +2508,10 @@
 <li>调用方仍拥有的业务语义：命令的业务目标（命令集合不扩张）。</li>
 </ul>
 <p>Kit 错误类型：<code>KitError extends ContractsError</code>（构造未登记码立即抛 <code>TypeError</code>）；<code>KIT_ERROR_KINDS</code> 为稳定 kind 枚举；<code>kitError</code> / <code>invalidParamsError</code> / <code>unknownCommandError</code> / <code>mutationModeError</code> / <code>refusalError</code> 为构造辅助。<code>REFUSED_MUTATION_FLAGS</code> 列出入口即拒的变更旗标（如 <code>--apply</code>）。</p>
+<hr />
+<h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
+<p><code>skill-family-engineering-kit/candidate/quickstart-profile</code> 导出 <code>buildQuickstartProfileProjection</code> 与 <code>QUICKSTART_PROFILE_TARGET_PREFIX</code>。builder 接收显式消费者 Schema 路径与冻结来源身份，生成按 Schema <code>$id</code> 查询的 standalone validator、机械投影的 Contracts/Harness runtime、许可证和完整 provenance。</p>
+<p>Bundle 离线运行时不需要 Foundation 包、<code>node_modules</code> 或 Ajv。builder 只返回稳定 projection manifest，不写目标文件，也不增加第五个 Kit 顶层命令；调用方仍需把 manifest 交给 <code>runProjection</code> 完成授权写入。0.3.0 的 v2 与 0.2.1 的依赖闭包 Bundle 不兼容，必须精确锁定版本。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

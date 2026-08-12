@@ -1,0 +1,25 @@
+version: 0.3.0
+date: 2026-08-12
+locales:
+  en:
+    summary: This source candidate builds a deterministic Quickstart Profile v2 bundle that runs offline without Foundation packages, node_modules, or runtime Ajv.
+    changes:
+      added:
+        - Accepts explicit consumer schema files and source identity, then generates standalone validators selected by schema $id.
+        - Records complete source and payload provenance, package-manager identity, and the licenses for third-party code that enters the bundle.
+        - Adds a candidate plugin skill naming checker (policy JSON plus build-time CLI) that scans a plugin skills root and reports per-rule PASS/FAIL for the prefixed-name, description-signal, and routing-scope rules.
+      changed:
+        - Replaces the incompatible 0.2.1 dependency-closure bundle; consumers that still require v1 must remain pinned to exactly 0.2.1.
+        - Projects the Contracts and Harness runtime mechanically while preserving the stable four-command Kit surface.
+    upgradeNotes: Version 0.3.0 is a local, unpublished source candidate. Regenerate managed bundles from frozen inputs and pin the builder to exactly 0.3.0 when adopting v2.
+  zh-CN:
+    summary: 本源码候选版构建确定性的 Quickstart Profile v2 Bundle，运行时不依赖 Foundation 包、node_modules 或 Ajv。
+    changes:
+      added:
+        - 接收显式消费者 Schema 文件与来源身份，生成按 Schema $id 选择的 standalone validator。
+        - 完整记录来源与 payload provenance、包管理器身份，以及实际进入 Bundle 的第三方代码许可证。
+        - 新增候选插件技能命名检查器（policy JSON 加构建期 CLI）：扫描插件 skills 根目录，对前缀命名、description 领域信号与路由入口范围三条规则逐项输出 PASS/FAIL。
+      changed:
+        - 替换与 0.2.1 不兼容的依赖闭包 Bundle；仍依赖 v1 的消费者必须继续精确锁定 0.2.1。
+        - 机械投影 Contracts 与 Harness 运行代码，同时保持 Kit 稳定的四命令边界。
+    upgradeNotes: 0.3.0 当前只是本地、未发布的源码候选。采用 v2 时，应从冻结输入重新生成受管 Bundle，并把 builder 精确锁定为 0.3.0。

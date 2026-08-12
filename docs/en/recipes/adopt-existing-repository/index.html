@@ -1903,7 +1903,7 @@
 <li>Trust boundary: <code>adopt-plan</code> makes zero byte changes to the input repository; legacy-implementation deletion is the caller's responsibility, and the tool never deletes on its behalf.</li>
 </ul>
 <h2 id="4-Minimal-Command">4. Minimal Command<a class="headerlink" href="#4-Minimal-Command" title="Permanent link">&para;</a></h2>
-<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit@0.2.1
+<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit@0.3.0
 npm exec -- skill-family-kit adopt-plan --root &lt;repo&gt;
 </code></pre>
 <h2 id="5-Expected-Output-and-Evidence">5. Expected Output and Evidence<a class="headerlink" href="#5-Expected-Output-and-Evidence" title="Permanent link">&para;</a></h2>
@@ -1926,6 +1926,7 @@ npm exec -- skill-family-kit check --root fixtures/m0-consumer
 <ul>
 <li><code>adopt-plan</code> is read-only, has no write risk, and needs no rollback.</li>
 <li>Actual disk writes are performed by <code>scaffold</code>/<code>projection</code>; rollback relies on the dual-digest binding of <code>adoptionProof</code> and <code>foundationPlanDigest</code>; an overwrite action that does not declare the <code>expect.sha256</code> pre-state is refused at the <code>projection</code> stage.</li>
+<li>When adopting the Quickstart Profile candidate, pin all three packages to one profile: 0.3.0 for v2 or 0.2.1 for v1. Do not mix them.</li>
 </ul>
 
 

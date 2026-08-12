@@ -1219,6 +1219,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-Candidate-Compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile Candidate Compatibility
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Node-Support-Matrix" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1751,6 +1762,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-Candidate-Compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile Candidate Compatibility
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Node-Support-Matrix" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1840,33 +1862,56 @@
 <tbody>
 <tr>
 <td><code>skill-family-contracts</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Contracts 1.4.0 machine contracts</td>
 <td>Public release target (private: false)</td>
 </tr>
 <tr>
 <td><code>skill-family-harness-node</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Node thin-mechanism runtime of Contracts</td>
 <td>Public release target</td>
 </tr>
 <tr>
 <td><code>skill-family-engineering-kit</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Four engineering commands (CLI <code>skill-family-kit</code>)</td>
 <td>Public release target</td>
 </tr>
 <tr>
 <td>Workspace repository</td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Private parent workspace (private: true)</td>
 <td>Development source of truth only</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p>The contract authority version (<code>CONTRACTS_VERSION</code>) is <code>1.4.0</code>, and the npm package version is <code>0.2.1</code>; the two version lines run in parallel and are not mixed.</p>
+<p>The contract authority version (<code>CONTRACTS_VERSION</code>) is <code>1.4.0</code>, and the npm package version is <code>0.3.0</code>; the two version lines run in parallel and are not mixed.</p>
 </blockquote>
+<h2 id="Quickstart-Profile-Candidate-Compatibility">Quickstart Profile Candidate Compatibility<a class="headerlink" href="#Quickstart-Profile-Candidate-Compatibility" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Package version</th>
+<th>Candidate profile</th>
+<th>Compatibility rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2.1</td>
+<td>v1</td>
+<td>Existing integrations may remain pinned to exactly 0.2.1</td>
+</tr>
+<tr>
+<td>0.3.0</td>
+<td>v2</td>
+<td>Uses <code>execute-method</code>, real <code>$id</code> schema resolution, and the offline Bundle; pin exactly 0.3.0</td>
+</tr>
+</tbody>
+</table>
+<p>Version 2 replaces v1 and provides no dual-track compatibility layer. Stable Contracts 1.4.0, the 18 object classes, the kernel protocol, and the error-code registry do not change with the candidate profile.</p>
 <h2 id="Node-Support-Matrix">Node Support Matrix<a class="headerlink" href="#Node-Support-Matrix" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Engine requirement: <code>&gt;=22.22.2 &lt;23</code> (major 22 locked).</li>
@@ -1922,6 +1967,7 @@
 <li><strong>Kit commands</strong>: top-level commands are fixed at 4 (scaffold/adopt-plan/projection/check), not expanded; <code>REFUSED_MUTATION_FLAGS</code> are refused at the CLI entry point.</li>
 <li><strong>Node/pnpm/projen</strong>: follow the exact locks in <code>.foundation/version-lock.json</code> and <code>package.json</code>; upgrades require re-generating the managed projection via <code>pnpm synth</code>.</li>
 <li><strong>Host</strong>: adding a supported host requires registering a descriptor and binding a trusted driver; unsupported hosts (e.g., qoder) are only referenced structurally and not claimed to have been run on.</li>
+<li><strong>Candidate</strong>: a later minor version may change or remove a candidate subpath; do not mix the 0.2.1 v1 packages with the 0.3.0 v2 packages, and pin all three package versions exactly.</li>
 </ul>
 <h2 id="Anti-Compatibility-Boundaries-Explicitly-Unsupported">Anti-Compatibility Boundaries (Explicitly Unsupported)<a class="headerlink" href="#Anti-Compatibility-Boundaries-Explicitly-Unsupported" title="Permanent link">&para;</a></h2>
 <ul>

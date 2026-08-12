@@ -4,28 +4,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.2.1 -->
+<!-- release-skill:release-version: 0.3.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.2.1** (2026-08-10)
+**0.3.0** (2026-08-12)
 
-This release adds a candidate Quickstart Profile projection bundle while preserving the Kit's four-command boundary and adds bilingual package release documentation.
+This source candidate builds a deterministic Quickstart Profile v2 bundle that runs offline without Foundation packages, node_modules, or runtime Ajv.
 
 **Added**
 
-- Adds a candidate builder and CLI for a deterministic, self-contained Quickstart Profile projection bundle with source-closure and bundle digests.
-- Adds complete English and Simplified Chinese package documentation, including an agent quick-reference section.
+- Accepts explicit consumer schema files and source identity, then generates standalone validators selected by schema $id.
+- Records complete source and payload provenance, package-manager identity, and the licenses for third-party code that enters the bundle.
+- Adds a candidate plugin skill naming checker (policy JSON plus build-time CLI) that scans a plugin skills root and reports per-rule PASS/FAIL for the prefixed-name, description-signal, and routing-scope rules.
 
 **Changed**
 
-- Manages the current README and CHANGELOG release sections from one bilingual, versioned notes source.
-- Distributes the project NOTICE separately from the existing third-party notices and license closure.
+- Replaces the incompatible 0.2.1 dependency-closure bundle; consumers that still require v1 must remain pinned to exactly 0.2.1.
+- Projects the Contracts and Harness runtime mechanically while preserving the stable four-command Kit surface.
 
 **Upgrade Notes**
 
-The candidate bundle remains under the existing projection authorization boundary. It does not add a fifth top-level Kit command or replace THIRD_PARTY_NOTICES.
+Version 0.3.0 is a local, unpublished source candidate. Regenerate managed bundles from frozen inputs and pin the builder to exactly 0.3.0 when adopting v2.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -46,7 +47,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.2.1
+npm install --save-dev skill-family-engineering-kit@0.3.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,7 +55,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.2.1 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.3.0 -- skill-family-kit --help`.
 
 ### Report sub-action
 
@@ -67,7 +68,7 @@ The caller must first construct a valid report model; Kit does not derive facts 
 
 ### Candidate Quickstart projection bundle
 
-Use the candidate subpath to build a deterministic projection manifest containing the Quickstart Profile schemas, runner, and required runtime dependency closure:
+Use the candidate subpath to build a deterministic Quickstart Profile v2 projection from explicit consumer schemas and frozen source identity:
 
 ```js
 import {
@@ -76,7 +77,9 @@ import {
 } from "skill-family-engineering-kit/candidate/quickstart-profile";
 ```
 
-Pass the returned `manifest` to the stable `runProjection` API; the candidate helper does not write files or add a fifth top-level command. This subpath is public but **not stable** and may change or be removed in a later minor release. Pin the exact package version, inspect the returned manifest before authorization, and keep candidate imports outside a stable consumer API.
+The generated Bundle selects standalone validators by schema `$id` and runs offline without Foundation packages, `node_modules`, or runtime Ajv. Its provenance binds Foundation sources, consumer schemas, payload bytes, tool versions, and the licenses of code that actually enters the Bundle.
+
+Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. This subpath is public but **not stable**. Pin exactly `0.3.0` for v2; integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
 
 ### Host sub-action
 

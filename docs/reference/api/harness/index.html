@@ -975,6 +975,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2245,6 +2256,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile v2 candidate
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2416,7 +2438,7 @@
 <li>纯函数：是（无时钟、无环境、无网络、无模型调用）。</li>
 <li>副作用：无文件/Git/网络。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC3001</code>（<code>REPORT_DIGEST_MISMATCH</code>，绑定摘要不符或报告非模型规范渲染）、<code>SFC3002</code>（<code>REPORT_ELEMENT_MISSING</code>，强制元素缺失）、<code>SFC3003</code>（<code>REPORT_FACT_DRIFT</code>，报告改写绑定结果事实或字节与确定性再渲染不一致）。风格告警由 <code>collectStyleWarnings</code> 产出，仅建议、不编码、不阻断。</li>
-<li>前置条件与信任锚：<code>REPORT_RENDERER_NAME</code> / <code>VERSION</code> 取自各自 package（当前 <code>0.2.1</code>）；双输出成组写入并拒绝路径别名与输入覆盖。</li>
+<li>前置条件与信任锚：<code>REPORT_RENDERER_NAME</code> / <code>VERSION</code> 取自各自 package（当前 <code>0.3.0</code>）；双输出成组写入并拒绝路径别名与输入覆盖。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/report.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/report.test.mjs</code>。</li>
@@ -2543,6 +2565,10 @@
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
+<p><code>skill-family-harness-node/candidate/quickstart-profile</code> 负责创建 observation Resource、Task 与终态 Result，并复验真实文件字节、Resource id 全局唯一性、Task digest、operation 身份、逐字段 <code>run/stage/attempt</code> 以及 evidence 精确回指。<code>verifyQuickstartExchange</code> 把机制拒绝转换成结构化结果，抛出式入口继续使用已登记的 <code>SFC2004</code> 与稳定 <code>details.kind</code>。</p>
+<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。0.3.0 的 v2 与 0.2.1 的 v1 不兼容；接入必须精确锁定所选版本。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

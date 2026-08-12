@@ -598,6 +598,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-candidate-兼容性" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile candidate 兼容性
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Node-支持矩阵" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1751,6 +1762,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Quickstart-Profile-candidate-兼容性" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Quickstart Profile candidate 兼容性
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Node-支持矩阵" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1840,33 +1862,56 @@
 <tbody>
 <tr>
 <td><code>skill-family-contracts</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Contracts 1.4.0 机器契约</td>
 <td>公开发布目标（private: false）</td>
 </tr>
 <tr>
 <td><code>skill-family-harness-node</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>Contracts 的 Node 薄机制运行时</td>
 <td>公开发布目标</td>
 </tr>
 <tr>
 <td><code>skill-family-engineering-kit</code></td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>四个工程命令（CLI <code>skill-family-kit</code>）</td>
 <td>公开发布目标</td>
 </tr>
 <tr>
 <td>工作区仓</td>
-<td>0.2.1</td>
+<td>0.3.0</td>
 <td>私有父工作区（private: true）</td>
 <td>仅开发真源</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p>契约权威版本（<code>CONTRACTS_VERSION</code>）为 <code>1.4.0</code>，npm 包版本为 <code>0.2.1</code>，两套版本并行，不混用。</p>
+<p>契约权威版本（<code>CONTRACTS_VERSION</code>）为 <code>1.4.0</code>，npm 包版本为 <code>0.3.0</code>，两套版本并行，不混用。</p>
 </blockquote>
+<h2 id="Quickstart-Profile-candidate-兼容性">Quickstart Profile candidate 兼容性<a class="headerlink" href="#Quickstart-Profile-candidate-兼容性" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>包版本</th>
+<th>candidate profile</th>
+<th>兼容规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2.1</td>
+<td>v1</td>
+<td>已有接入可继续精确锁定 0.2.1</td>
+</tr>
+<tr>
+<td>0.3.0</td>
+<td>v2</td>
+<td>使用 <code>execute-method</code>、真实 <code>$id</code> Schema 集合与离线 Bundle；必须精确锁定 0.3.0</td>
+</tr>
+</tbody>
+</table>
+<p>v2 替换 v1，不提供双轨兼容层。稳定 Contracts 1.4.0、18 类对象、内核协议与错误码登记不随 candidate 切换而变化。</p>
 <h2 id="Node-支持矩阵">Node 支持矩阵<a class="headerlink" href="#Node-支持矩阵" title="Permanent link">&para;</a></h2>
 <ul>
 <li>引擎要求：<code>&gt;=22.22.2 &lt;23</code>（锁定 major 22）。</li>
@@ -1922,6 +1967,7 @@
 <li><strong>Kit 命令</strong>：顶层命令固定 4 个（scaffold/adopt-plan/projection/check），不扩张；<code>REFUSED_MUTATION_FLAGS</code> 在 CLI 入口即拒。</li>
 <li><strong>Node/pnpm/projen</strong>：跟随 <code>.foundation/version-lock.json</code> 与 <code>package.json</code> 的精确锁定，升级须经 <code>pnpm synth</code> 重新生成受管投影。</li>
 <li><strong>宿主</strong>：新增受支持宿主须登记 descriptor 并绑定受信 driver；unsupported 宿主（如 qoder）只参考结构，不声称已在其上运行。</li>
+<li><strong>Candidate</strong>：candidate 子路径允许在后续 minor 版本修改或移除；0.2.1 v1 与 0.3.0 v2 不混装，消费者按所需 profile 精确锁定三个包版本。</li>
 </ul>
 <h2 id="反兼容边界明确不支持">反兼容边界（明确不支持）<a class="headerlink" href="#反兼容边界明确不支持" title="Permanent link">&para;</a></h2>
 <ul>

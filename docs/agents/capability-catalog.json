@@ -875,10 +875,11 @@
       "since": "0.2.1",
       "stability": "candidate",
       "entrypoints": [
-        "skill-family-contracts/candidate/quickstart-profile: QUICKSTART_PROTOCOL, quickstartProfileSchemas, validateQuickstartProfileDocument (packages/skill-family-contracts/candidate/quickstart-profile/index.mjs)"
+        "skill-family-contracts/candidate/quickstart-profile: QUICKSTART_PROTOCOL, QUICKSTART_PROFILE_VERSION, loadQuickstartProtocol, quickstartProfileSchemas, listQuickstartProfileSchemas, validateQuickstartProfileDocument (packages/skill-family-contracts/candidate/quickstart-profile/index.mjs)"
       ],
       "sourceRefs": [
         "packages/skill-family-contracts/candidate/quickstart-profile/index.mjs",
+        "packages/skill-family-contracts/candidate/quickstart-profile/protocol.json",
         "packages/skill-family-contracts/candidate/quickstart-profile/resource.schema.json",
         "packages/skill-family-contracts/candidate/quickstart-profile/task.schema.json",
         "packages/skill-family-contracts/candidate/quickstart-profile/result.schema.json"
@@ -897,7 +898,7 @@
       "since": "0.2.1",
       "stability": "candidate",
       "entrypoints": [
-        "skill-family-harness-node/candidate/quickstart-profile: createObservationResource, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)"
+        "skill-family-harness-node/candidate/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)"
       ],
       "sourceRefs": [
         "packages/skill-family-harness-node/candidate/quickstart-profile.mjs"

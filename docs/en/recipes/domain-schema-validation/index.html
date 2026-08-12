@@ -1895,6 +1895,7 @@
 <h2 id="1-Scenario-and-Non-Scenario">1. Scenario and Non-Scenario<a class="headerlink" href="#1-Scenario-and-Non-Scenario" title="Permanent link">&para;</a></h2>
 <p>Applicable: you need to validate whether a document conforms to a Foundation-registered contract object (e.g., project-manifest), choosing a validation strategy by dialect.</p>
 <p>Not applicable: needs to validate the consumer's own business Schema (the consumer should hold it itself; Foundation does not replace it); needs to mix domain-semantic validation into the generic contract.</p>
+<p>Quickstart Profile v2 is a separate candidate path. The consumer still owns its business schemas; Engineering Kit only compiles an explicit schema collection into offline validators selected by <code>$id</code>, and does not own the method-to-schema choice.</p>
 <h2 id="2-Architecture-Choice-and-Capability-ID">2. Architecture Choice and Capability ID<a class="headerlink" href="#2-Architecture-Choice-and-Capability-ID" title="Permanent link">&para;</a></h2>
 <p>Preferred capability: <code>foundation.contracts.object-validation</code> (<code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code>). A pure Ajv implementation, supporting draft-07 and 2020-12.</p>
 <h2 id="3-Preconditions-and-Trust-Boundary">3. Preconditions and Trust Boundary<a class="headerlink" href="#3-Preconditions-and-Trust-Boundary" title="Permanent link">&para;</a></h2>
@@ -1945,8 +1946,9 @@ if (!bad.valid) console.error(bad.errorCode); // SFC1002
 </ul>
 <h2 id="9-Upgrade-and-Rollback-Notes">9. Upgrade and Rollback Notes<a class="headerlink" href="#9-Upgrade-and-Rollback-Notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The contract authority version <code>CONTRACTS_VERSION = 1.4.0</code>, and the npm package version <code>0.2.1</code> run in parallel and are not mixed.</li>
+<li>The contract authority version <code>CONTRACTS_VERSION = 1.4.0</code>, and the npm package version <code>0.3.0</code> run in parallel and are not mixed.</li>
 <li>Error codes are frozen and do not drift; Schema changes are handled as a new contract-version task, not by modifying frozen content in place.</li>
+<li>Candidate v2 must be pinned to exactly 0.3.0; integrations that still require v1 must remain pinned to exactly 0.2.1.</li>
 </ul>
 
 

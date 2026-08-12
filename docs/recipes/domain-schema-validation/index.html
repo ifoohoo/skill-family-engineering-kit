@@ -1895,6 +1895,7 @@
 <h2 id="1-场景与非场景">1. 场景与非场景<a class="headerlink" href="#1-场景与非场景" title="Permanent link">&para;</a></h2>
 <p>适用：需要校验一份文档是否符合 Foundation 已登记的契约对象（如 project-manifest），按方言选择校验策略。</p>
 <p>不适用：需要校验消费者自有业务 Schema（消费者应自行持有，Foundation 不取代）；需要把领域语义校验混入通用契约。</p>
+<p>Quickstart Profile v2 是单独的 candidate 路径。消费者仍拥有业务 Schema；Engineering Kit 只在构建阶段把显式 Schema 集合编译成按 <code>$id</code> 查询的离线 validator，不接管 method 到 Schema 的选择。</p>
 <h2 id="2-架构选择及能力-ID">2. 架构选择及能力 ID<a class="headerlink" href="#2-架构选择及能力-ID" title="Permanent link">&para;</a></h2>
 <p>首选能力：<code>foundation.contracts.object-validation</code>（<code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code>）。纯 Ajv 实现，支持 draft-07 与 2020-12。</p>
 <h2 id="3-前置条件与信任边界">3. 前置条件与信任边界<a class="headerlink" href="#3-前置条件与信任边界" title="Permanent link">&para;</a></h2>
@@ -1945,8 +1946,9 @@ if (!bad.valid) console.error(bad.errorCode); // SFC1002
 </ul>
 <h2 id="9-升级与回滚注意事项">9. 升级与回滚注意事项<a class="headerlink" href="#9-升级与回滚注意事项" title="Permanent link">&para;</a></h2>
 <ul>
-<li>契约权威版本 <code>CONTRACTS_VERSION = 1.4.0</code>，npm 包版本 <code>0.2.1</code> 并行，不混用。</li>
+<li>契约权威版本 <code>CONTRACTS_VERSION = 1.4.0</code>，npm 包版本 <code>0.3.0</code> 并行，不混用。</li>
 <li>错误码冻结不漂移；Schema 变更作为新的合同版本任务进行，不就地改冻结内容。</li>
+<li>candidate v2 必须精确锁定 0.3.0；仍需 v1 的接入继续精确锁定 0.2.1。</li>
 </ul>
 
 

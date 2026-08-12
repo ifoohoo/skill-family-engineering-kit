@@ -505,7 +505,7 @@
         "需要从开放业务 outputs 自由编报告（禁止）"
       ],
       "prerequisites": [
-        "REPORT_RENDERER_NAME / VERSION 取自各自 package（当前 0.2.1）",
+        "REPORT_RENDERER_NAME / VERSION 取自各自 package（当前 0.3.0）",
         "SUPPORTED_REPORT_LOCALES = [zh-CN, en-US]"
       ],
       "inputs": [
@@ -1430,7 +1430,7 @@
     },
     {
       "id": "foundation.contracts.quickstart-profile-candidate",
-      "intent": "通过 skill-family-contracts/candidate/quickstart-profile 公开候选 Quickstart Resource、Task 与 Result Schema，供锁定精确版本的接入试验使用",
+      "intent": "通过 skill-family-contracts/candidate/quickstart-profile 公开 Quickstart Profile v2 协议与按真实 $id 索引的 Resource、Task、Result Schema 集合，供锁定精确版本的接入试验使用",
       "useWhen": [
         "需要在提议进入冻结登记表前检查或校验候选 Resource、Task、Result 形状",
         "调用方能够锁定 skill-family-contracts 精确版本，并把 candidate 导入隔离在自身稳定 API 之外"
@@ -1458,6 +1458,7 @@
         "候选文档无效时返回 valid:false 与 Ajv 发现"
       ],
       "invariants": [
+        "唯一业务中立操作为 execute-method；method 标识与领域 Schema 继续归消费者所有",
         "候选 Schema 不进入 src/registry.json，也不扩张 18 类稳定对象",
         "稳定性为 candidate：后续小版本可以修改或移除该子路径"
       ],
@@ -1502,7 +1503,7 @@
         "verifyQuickstartExchange 把失败转成 {valid:false, code, message, details}"
       ],
       "invariants": [
-        "Result 必须绑定精确 Task 摘要、observation 摘要、operation 身份与 correlation 字段",
+        "Result 必须绑定精确 Task 摘要、真实 Resource 字节、全局唯一 Resource id、operation 身份、correlation 字段与完整 evidence binding 集合",
         "稳定性为 candidate：后续小版本可以修改或移除该子路径"
       ],
       "ownedByCaller": [
@@ -1516,35 +1517,37 @@
     },
     {
       "id": "foundation.kit.quickstart-profile-candidate",
-      "intent": "通过 skill-family-engineering-kit/candidate/quickstart-profile 构建确定、自包含的 Quickstart 投影 manifest",
+      "intent": "通过 skill-family-engineering-kit/candidate/quickstart-profile 构建确定性的 Quickstart Profile v2 离线 Bundle，并按 Schema $id 选择 standalone validator",
       "useWhen": [
         "需要通过稳定投影授权边界，在目标中试用候选 Quickstart Schema 与 runner",
-        "需要取得候选投影包的来源摘要、运行依赖闭包摘要与 bundle 摘要"
+        "需要取得完整的来源、消费者 Schema、payload、工具版本与许可证 provenance"
       ],
       "doNotUseWhen": [
         "需要稳定 Quickstart API 或第五个 Kit 顶层命令",
         "需要绕过目标 manifest 授权或手写文件保护"
       ],
       "prerequisites": [
-        "安装精确匹配的三个 Foundation 包版本",
+        "安装精确匹配的三个 Foundation 0.3.0 包版本",
         "targetPrefix 是受收容的 POSIX 相对路径"
       ],
       "inputs": [
-        "可选的受收容 targetPrefix",
+        "受收容 targetPrefix、consumerSchemaRoot 与显式消费者 Schema 相对路径集合",
+        "冻结的 sourceRepository 与 sourceBaseCommit 身份",
         "已安装 Contracts、Harness 与 Kit 的精确包字节"
       ],
       "outputs": [
-        "投影 manifest 与 provenance 记录，包含 source、运行依赖和 bundle 摘要"
+        "投影 manifest 与 provenance 记录，包含 Foundation 来源、消费者 Schema、payload 摘要、工具版本与许可证"
       ],
       "sideEffects": [
-        "在内存中构建 manifest，并读取已安装包文件",
+        "在内存中构建 manifest，并读取已安装包文件与显式消费者 Schema 文件",
         "不执行写入；调用方把 manifest 交给稳定 runProjection 后才发生受权写入"
       ],
       "failureSemantics": [
         "targetPrefix 无效时抛出 TypeError",
-        "已安装依赖闭包缺失或不一致时拒绝构建；runProjection 另行报告稳定投影失败"
+        "重复 Schema id、坏引用、混合方言、不支持的 format、路径越界或来源身份缺失时拒绝构建；runProjection 另行报告稳定投影失败"
       ],
       "invariants": [
+        "Bundle 不含 node_modules 或运行时 Ajv，不依赖已安装 Foundation 包或网络",
         "辅助函数不增加 Kit 顶层命令，也不绕过 runProjection",
         "稳定性为 candidate：后续小版本可以修改或移除该子路径"
       ],

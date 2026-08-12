@@ -5,28 +5,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.2.1 -->
+<!-- release-skill:release-version: 0.3.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.2.1** (2026-08-10)
+**0.3.0** (2026-08-12)
 
-本版新增 Quickstart Profile 候选投影包，同时保持 Kit 四命令边界，并补齐双语包发布文档。
+本源码候选版构建确定性的 Quickstart Profile v2 Bundle，运行时不依赖 Foundation 包、node_modules 或 Ajv。
 
 **新增**
 
-- 新增候选构建函数与 CLI，用于生成确定性、自包含的 Quickstart Profile 投影包，并记录源码闭包与投影包摘要。
-- 新增完整的英文与简体中文包文档，并补充智能体快速参考章节。
+- 接收显式消费者 Schema 文件与来源身份，生成按 Schema $id 选择的 standalone validator。
+- 完整记录来源与 payload provenance、包管理器身份，以及实际进入 Bundle 的第三方代码许可证。
+- 新增候选插件技能命名检查器（policy JSON 加构建期 CLI）：扫描插件 skills 根目录，对前缀命名、description 领域信号与路由入口范围三条规则逐项输出 PASS/FAIL。
 
 **变更**
 
-- 使用同一份双语版本化说明源管理当前 README 与 CHANGELOG 的发布区域。
-- 项目 NOTICE 与现有第三方声明及许可证闭包分开分发。
+- 替换与 0.2.1 不兼容的依赖闭包 Bundle；仍依赖 v1 的消费者必须继续精确锁定 0.2.1。
+- 机械投影 Contracts 与 Harness 运行代码，同时保持 Kit 稳定的四命令边界。
 
 **升级说明**
 
-候选投影包仍受既有 projection 授权边界约束。它不增加第五个 Kit 顶层命令，也不替代 THIRD_PARTY_NOTICES。
+0.3.0 当前只是本地、未发布的源码候选。采用 v2 时，应从冻结输入重新生成受管 Bundle，并把 builder 精确锁定为 0.3.0。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -47,7 +48,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.2.1
+npm install --save-dev skill-family-engineering-kit@0.3.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -55,7 +56,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.2.1 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.3.0 -- skill-family-kit --help`。
 
 ### 报告子动作
 
@@ -68,7 +69,7 @@ npm exec -- skill-family-kit check report --root <repo> --report <report.md> --m
 
 ### Candidate Quickstart 投影包
 
-需要生成确定性的投影 manifest，并携带 Quickstart Profile Schema、runner 与必要运行时依赖闭包时，使用 candidate 子路径：
+需要从显式消费者 Schema 与冻结来源身份生成确定性的 Quickstart Profile v2 投影时，使用 candidate 子路径：
 
 ```js
 import {
@@ -77,7 +78,9 @@ import {
 } from "skill-family-engineering-kit/candidate/quickstart-profile";
 ```
 
-以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**，后续小版本可以修改或移除；调用方需要锁定精确包版本，在授权前检查 manifest，并避免通过自身稳定 API 再导出 candidate 导入。
+生成的 Bundle 按 Schema `$id` 选择 standalone validator，离线运行时不依赖 Foundation 包、`node_modules` 或 Ajv。provenance 绑定 Foundation 来源、消费者 Schema、payload 字节、工具版本，以及实际进入 Bundle 的代码许可证。
+
+以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**；使用 v2 时应精确锁定 `0.3.0`，仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
 
 ### 宿主子动作
 

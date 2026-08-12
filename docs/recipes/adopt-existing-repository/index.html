@@ -1903,7 +1903,7 @@
 <li>信任边界：<code>adopt-plan</code> 对输入仓字节零变化；旧实现删除由调用方负责，工具绝不代为删除。</li>
 </ul>
 <h2 id="4-最小命令">4. 最小命令<a class="headerlink" href="#4-最小命令" title="Permanent link">&para;</a></h2>
-<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit@0.2.1
+<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit@0.3.0
 npm exec -- skill-family-kit adopt-plan --root &lt;repo&gt;
 </code></pre>
 <h2 id="5-预期输出与证据">5. 预期输出与证据<a class="headerlink" href="#5-预期输出与证据" title="Permanent link">&para;</a></h2>
@@ -1926,6 +1926,7 @@ npm exec -- skill-family-kit check --root fixtures/m0-consumer
 <ul>
 <li><code>adopt-plan</code> 只读，无写风险，无需回滚。</li>
 <li>真正落盘由 <code>scaffold</code>/<code>projection</code> 执行，回滚以 <code>adoptionProof</code> 与 <code>foundationPlanDigest</code> 双摘要绑定为准；未声明 <code>expect.sha256</code> 前置状态的覆盖动作在 <code>projection</code> 阶段即拒绝。</li>
+<li>若采用 Quickstart Profile candidate，三个包按同一 profile 精确锁定：v2 使用 0.3.0，v1 继续使用 0.2.1，不混装。</li>
 </ul>
 
 

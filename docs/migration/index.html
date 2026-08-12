@@ -2113,9 +2113,9 @@
   ],
   &quot;targetProfile&quot;: &quot;generic&quot;,
   &quot;foundationPackages&quot;: [
-    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.2.1&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; }
+    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
+    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; }
   ],
   &quot;verification&quot;: {
     &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
@@ -2126,6 +2126,7 @@
 }
 </code></pre>
 <p>以上结构展示了迁移清单的核心字段；<code>legacyInfra</code> 每项给出旧实现路径与替代物，工具只读评估存在性，绝不代为删除。</p>
+<p>0.3.0 中的 Quickstart Profile candidate 已升级到 v2。迁移清单若绑定 candidate 能力，三个 Foundation 包必须统一精确锁定为 0.3.0；仍需 v1 的存量接入继续统一锁定 0.2.1，不混装两组版本。</p>
 <ul>
 <li><code>legacyInfra</code> 每项给出旧实现路径与替代物；工具只读评估存在性，绝不代为删除。</li>
 <li><code>exceptions</code> 是<strong>临时例外</strong>：必须同时含负责人（owner）、原因（reason）、截止时间（deadline）、迁移目标（migrationTarget）四项，缺任一字段即计为冲突（计划失败）；到期例外不自动续期，持续阻断完成判定。</li>
