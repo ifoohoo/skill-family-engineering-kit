@@ -684,7 +684,7 @@
   },
   {
    "id": "foundation.harness.surface-scan",
-   "intent": "按策略契约文档对声明表面做路径与内容模式扫描，首个命中即失败关闭，策略非法也失败关闭",
+   "intent": "按策略契约文档对声明表面做路径与内容模式扫描，首个命中即失败关闭，策略非法同样失败关闭。它是与结构化扫描器同一机制族的执行内核通用化投影，不携带任何私有身份或批准清单解释",
    "useWhen": [
     "需要按可配置策略扫描一组受收容文件的路径或内容模式",
     "需要注入后字节可恢复的自测证明扫描器无状态"
@@ -717,6 +717,79 @@
    ],
    "routeElsewhere": [
     "业务禁词与豁免判定：留在消费者"
+   ]
+  },
+  {
+   "id": "foundation.harness.declared-read-surface",
+   "intent": "断言声明模块集内的每个 node:fs 具名导入都落在消费者声明的读取表面内；保守的语法面近似同样覆盖注释与字符串中的 fs API 文本，且不执行任何代码",
+   "useWhen": [
+    "需要在不执行的前提下断言所有文件系统读取来自已声明读取器",
+    "需要对未声明 fs 模块与写族 fs API 的失败关闭保证"
+   ],
+   "doNotUseWhen": [
+    "需要超出静态导入语法面的运行时行为分析"
+   ],
+   "prerequisites": [
+    "一份模块到 API 的声明映射；模块仅按语法分析"
+   ],
+   "inputs": [
+    "工作区根与 declaredReaders 映射"
+   ],
+   "outputs": [
+    "declared-read-surface-result 契约对象，违规项来自闭集规则集"
+   ],
+   "sideEffects": [
+    "只读语法扫描，不执行代码"
+   ],
+   "failureSemantics": [
+    "违规在结果中失败关闭；非法输入抛出 declared-read-surface-invalid"
+   ],
+   "invariants": [
+    "仅语法面、保守近似、不执行、无模型调用、无网络访问",
+    "guarantees 是闭集枚举，结果不携带时间戳"
+   ],
+   "ownedByCaller": [
+    "声明读取器集合与违规后的处置"
+   ],
+   "routeElsewhere": [
+    "运行时行为、动态导入与写强制：超出本原语范围"
+   ]
+  },
+  {
+   "id": "foundation.harness.structured-scan",
+   "intent": "按 structured-scan-policy 契约对声明表面做结构化语义扫描：IP 形候选统一进入单一标准解析入口并按 CIDR 批准，坐标、注册表与主机需批准，格式适配器（pnpm-lockfile、tree-json）结构化解析，二进制与符号链接策略失败关闭；首个命中即失败关闭，策略非法同样失败关闭。它与 scanSurface 属同一机制族，是公开、消费者参数化的形态，自身不解释任何私有身份、路径或批准清单",
+   "useWhen": [
+    "需要按消费者声明的批准项扫描锁文件、JSON 树或文本中的地址、坐标、注册表与主机",
+    "需要无位置级豁免的确定性结构化扫描"
+   ],
+   "doNotUseWhen": [
+    "需要机制解释工作区私有事实（托管路径解释留在消费者侧）",
+    "需要凭据模式或锁文件完整性形状规则（不在闭集词汇表内）"
+   ],
+   "prerequisites": [
+    "一份 CIDR 合法、模式可编译的 structured-scan-policy 契约文档"
+   ],
+   "inputs": [
+    "扫描根、相对路径清单与 structured-scan-policy 文档"
+   ],
+   "outputs": [
+    "{ scanned, bytes, policy } 结果对象"
+   ],
+   "sideEffects": [
+    "只读；唯一的写入是 OS 临时目录下的一份 pnpm-lock.yaml 临时副本，用后即删"
+   ],
+   "failureSemantics": [
+    "命中抛出 structured-scan-violation，details.rule 来自闭集九规则词汇表；策略非法抛出 structured-scan-invalid"
+   ],
+   "invariants": [
+    "闭集规则词汇表永不静默跳过；不可解析的 IP 形 token 失败关闭",
+    "永不跟随符号链接；解析失败失败关闭"
+   ],
+   "ownedByCaller": [
+    "批准清单、适配器选择与命中后的处置"
+   ],
+   "routeElsewhere": [
+    "工作区布局事实、锁文件完整性保证与凭据模式：留在消费者侧"
    ]
   },
   {

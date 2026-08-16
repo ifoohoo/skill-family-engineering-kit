@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.5.0 locale=en baseline=sha256:f83b9c3442e5391149531b198be25131cf45728ff945d4ffc531342996e4e6f3 -->
+## [0.5.0] - 2026-08-16
+
+This release keeps the stable four-command Kit surface unchanged and strengthens the offline-consumer verification gates to cover the complete third-party production closure of the three Foundation packages.
+
+### Added
+
+- Strengthens the offline-consumer verification gates: the third-party closure derivation in candidate-profile-bundle and tarball-source-binding tests is extended from a single-package closure to the complete production closure of the three Foundation packages (identity-deduplicated, npm: alias-aware, range-scoped override selectors, byte identity against the real store directory of pnpm), so the harness runtime-dependency review decision (FND-ADR-011) is continuously verified against the real installed bytes.
+
+### Changed
+
+- Keeps the stable scaffold, adopt-plan, projection, and check commands unchanged.
+- Carries forward the 0.4.0 adoption CLI candidate and the Quickstart Profile v2 offline bundle; no Kit surface or candidate entry point is added or removed in 0.5.0.
+
+### Upgrade Notes
+
+Version 0.5.0 is released on npm and the public mirror. The Kit public surface is unchanged from 0.4.0; pin the package to exactly 0.5.0 for the new contract-spec 1.5.0 line.
+<!-- release-skill:changelog:end version=0.5.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.4.0 locale=en baseline=sha256:b75bcca6a62cddc63d0a8d88faf268415aec803bcf00e04aacd797907d1ea6e8 -->
 ## [0.4.0] - 2026-08-16
 

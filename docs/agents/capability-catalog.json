@@ -441,6 +441,45 @@
    ]
   },
   {
+   "id": "foundation.harness.declared-read-surface",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.5.0",
+   "stability": "stable",
+   "entrypoints": [
+    "assertDeclaredReadSurface (packages/skill-family-harness-node/src/declared-read-surface.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/declared-read-surface.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/declared-read-surface.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/declared-read-surface.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.harness.structured-scan",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.5.0",
+   "stability": "stable",
+   "entrypoints": [
+    "scanSurfaceStructured (packages/skill-family-harness-node/src/structured-scan.mjs)",
+    "STRUCTURED_SCAN_RULES (packages/skill-family-harness-node/src/structured-scan.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/structured-scan.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/structured-scan.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/structured-scan.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.harness.token-estimation",
    "package": "skill-family-harness-node",
    "layer": "harness",

@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.5.0 locale=zh-CN baseline=sha256:bdeefb2e456f6e9d1348152b464c701e96a739e514c5a08ca3576e9982e9b7e0 -->
+## [0.5.0] - 2026-08-16
+
+本版保持 Kit 稳定四命令边界不变，并把离线消费者验证门加固为覆盖三个 Foundation 包的完整第三方生产闭包。
+
+### 新增
+
+- 加固离线消费者验证门：candidate-profile-bundle 与 tarball-source-binding 测试中的第三方闭包推导从单包闭包扩展为三个 Foundation 包的完整生产闭包（真实身份去重、npm: 别名感知、range-scoped override selector、对 pnpm 真实本地存储目录的字节身份），使 harness 运行时依赖评审决策（FND-ADR-011）持续对着真实安装字节被验证。
+
+### 变更
+
+- 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
+- 延续 0.4.0 的 adoption CLI 候选与 Quickstart Profile v2 离线 Bundle；0.5.0 未新增或移除任何 Kit 边界或候选入口。
+
+### 升级说明
+
+0.5.0 已发布到 npm 与 public 镜像仓。Kit 公开面与 0.4.0 相同；面向新的契约规格 1.5.0 线请把包精确锁定为 0.5.0。
+<!-- release-skill:changelog:end version=0.5.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.4.0 locale=zh-CN baseline=sha256:0305934fb2f833eff10b17014f551533bfca9e9e51d3820a5a1e62613a3edb6a -->
 ## [0.4.0] - 2026-08-16
 

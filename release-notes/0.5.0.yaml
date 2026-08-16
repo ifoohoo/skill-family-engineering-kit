@@ -1,0 +1,21 @@
+version: 0.5.0
+date: 2026-08-16
+locales:
+  en:
+    summary: This release keeps the stable four-command Kit surface unchanged and strengthens the offline-consumer verification gates to cover the complete third-party production closure of the three Foundation packages.
+    changes:
+      added:
+        - "Strengthens the offline-consumer verification gates: the third-party closure derivation in candidate-profile-bundle and tarball-source-binding tests is extended from a single-package closure to the complete production closure of the three Foundation packages (identity-deduplicated, npm: alias-aware, range-scoped override selectors, byte identity against the real store directory of pnpm), so the harness runtime-dependency review decision (FND-ADR-011) is continuously verified against the real installed bytes."
+      changed:
+        - Keeps the stable scaffold, adopt-plan, projection, and check commands unchanged.
+        - Carries forward the 0.4.0 adoption CLI candidate and the Quickstart Profile v2 offline bundle; no Kit surface or candidate entry point is added or removed in 0.5.0.
+    upgradeNotes: Version 0.5.0 is released on npm and the public mirror. The Kit public surface is unchanged from 0.4.0; pin the package to exactly 0.5.0 for the new contract-spec 1.5.0 line.
+  zh-CN:
+    summary: 本版保持 Kit 稳定四命令边界不变，并把离线消费者验证门加固为覆盖三个 Foundation 包的完整第三方生产闭包。
+    changes:
+      added:
+        - "加固离线消费者验证门：candidate-profile-bundle 与 tarball-source-binding 测试中的第三方闭包推导从单包闭包扩展为三个 Foundation 包的完整生产闭包（真实身份去重、npm: 别名感知、range-scoped override selector、对 pnpm 真实本地存储目录的字节身份），使 harness 运行时依赖评审决策（FND-ADR-011）持续对着真实安装字节被验证。"
+      changed:
+        - 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
+        - 延续 0.4.0 的 adoption CLI 候选与 Quickstart Profile v2 离线 Bundle；0.5.0 未新增或移除任何 Kit 边界或候选入口。
+    upgradeNotes: 0.5.0 已发布到 npm 与 public 镜像仓。Kit 公开面与 0.4.0 相同；面向新的契约规格 1.5.0 线请把包精确锁定为 0.5.0。

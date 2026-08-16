@@ -684,7 +684,7 @@
   },
   {
    "id": "foundation.harness.surface-scan",
-   "intent": "Scan a declared surface for path and content patterns according to a policy contract document; the first hit fails closed, and an invalid policy also fails closed",
+   "intent": "Scan a declared surface for path and content patterns under a policy contract; the first hit fails closed, invalid policies also fail closed. It is the execution-core generalization projection of the same mechanism family as the structured scanner, carrying no private identity or approval-list interpretation",
    "useWhen": [
     "Need to scan a set of contained files for path or content patterns under a configurable policy",
     "Need an injection self-test with byte-recoverable results to prove the scanner is stateless"
@@ -717,6 +717,79 @@
    ],
    "routeElsewhere": [
     "Business forbidden words and exemption decisions: keep with the consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.declared-read-surface",
+   "intent": "Assert that every node:fs named import inside the declared module set is contained in the consumer-declared read surface; the conservative syntax-surface approximation also covers fs API text in comments and strings, with no execution",
+   "useWhen": [
+    "Need a no-execution assertion that all filesystem reads come from declared readers",
+    "Need fail-closed guarantees against undeclared fs modules and write-family fs APIs"
+   ],
+   "doNotUseWhen": [
+    "Need runtime behavior analysis beyond the static import syntax surface"
+   ],
+   "prerequisites": [
+    "A declared module-to-API mapping; modules are analyzed by syntax only"
+   ],
+   "inputs": [
+    "Workspace root and declaredReaders mapping"
+   ],
+   "outputs": [
+    "A declared-read-surface-result contract object with violations from a closed rule set"
+   ],
+   "sideEffects": [
+    "Read-only syntax scan, no execution"
+   ],
+   "failureSemantics": [
+    "Violations fail closed in the result; illegal inputs throw declared-read-surface-invalid"
+   ],
+   "invariants": [
+    "Syntax-surface only, conservative approximation, no execution, no model calls, no network access",
+    "guarantees is a closed enumeration and the result carries no timestamp"
+   ],
+   "ownedByCaller": [
+    "Declared reader sets and post-violation disposition"
+   ],
+   "routeElsewhere": [
+    "Runtime behavior, dynamic imports, and write enforcement: beyond this primitive"
+   ]
+  },
+  {
+   "id": "foundation.harness.structured-scan",
+   "intent": "Scan a declared surface with structural semantics under a structured-scan-policy contract: IP-shaped candidates enter a single standard parse entry with CIDR approval, coordinates, registries, and hosts need approval, format adapters (pnpm-lockfile, tree-json) parse structurally, binary and symlink policies fail closed; the first hit fails closed, invalid policies also fail closed. It is the public, consumer-parameterized form of the same mechanism family as scanSurface, with no private identity, path, or approval-list interpretation",
+   "useWhen": [
+    "Need to scan lockfiles, JSON trees, or text for addresses, coordinates, registries, and hosts under consumer-declared approvals",
+    "Need deterministic structure-aware scanning with no position-level exemptions"
+   ],
+   "doNotUseWhen": [
+    "Need workspace-private facts interpreted (managed-path interpretation stays with the consumer)",
+    "Need credential-pattern or lockfile-integrity-shape rules (outside the closed vocabulary)"
+   ],
+   "prerequisites": [
+    "A structured-scan-policy contract document with valid CIDRs and compilable patterns"
+   ],
+   "inputs": [
+    "Scan root, relative-path list, and structured-scan-policy document"
+   ],
+   "outputs": [
+    "A { scanned, bytes, policy } result object"
+   ],
+   "sideEffects": [
+    "Read-only except one temporary pnpm-lock.yaml copy under the OS temp directory, removed afterwards"
+   ],
+   "failureSemantics": [
+    "Hits throw structured-scan-violation with details.rule from the closed nine-rule vocabulary; invalid policies throw structured-scan-invalid"
+   ],
+   "invariants": [
+    "The closed rule vocabulary is never silently skipped; unparseable IP-shaped tokens fail closed",
+    "Symlinks are never followed; parse failures fail closed"
+   ],
+   "ownedByCaller": [
+    "Approval lists, adapter selection, and post-hit disposition"
+   ],
+   "routeElsewhere": [
+    "Workspace layout facts, lockfile integrity guarantees, and credential patterns: keep with the consumer"
    ]
   },
   {
