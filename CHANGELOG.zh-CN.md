@@ -1,5 +1,26 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.4.0 locale=zh-CN baseline=sha256:0305934fb2f833eff10b17014f551533bfca9e9e51d3820a5a1e62613a3edb6a -->
+## [0.4.0] - 2026-08-16
+
+本版为 Engineering Kit 新增候选 adoption CLI 与 adoption mechanisms，同时保持稳定四命令边界与 0.3.0 的离线 Bundle 不变。
+
+### 新增
+
+- 新增 adoption-cli 候选：基于 stdin/stdout 的 CLI，通过 migration manifest 评估 adoption 绑定、遗留 exit list 与遗留引用，并校验 managed-bundle 身份与 harness 表面清单。
+- 新增 adoption-mechanisms 候选模块，作为 adoption CLI 的共享实现。
+
+### 变更
+
+- 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
+- 延续 0.3.0 的 Quickstart Profile v2 离线 Bundle（按 schema $id 选择的 standalone validator、完整 provenance 记录）与候选插件技能命名检查器。
+
+### 升级说明
+
+0.4.0 已发布到 npm 与 public 镜像仓。adoption CLI 是候选入口，须经显式 candidate 子路径调用，并把包精确锁定为 0.4.0。
+<!-- release-skill:changelog:end version=0.4.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.3.0 locale=zh-CN baseline=sha256:ddb48e61ef87de545348880216ee283b5d0165305dd5dfd8e044929b93ec4673 -->
 ## [0.3.0] - 2026-08-12
 

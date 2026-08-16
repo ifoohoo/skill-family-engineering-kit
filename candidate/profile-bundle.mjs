@@ -1,4 +1,4 @@
-import { readFile, realpath, stat } from "node:fs/promises";
+import { lstat, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -11,6 +11,7 @@ import {
   QUICKSTART_PROFILE_VERSION,
 } from "skill-family-contracts/candidate/quickstart-profile";
 import { digestBytes } from "skill-family-harness-node";
+import { verifyConsumerSchemaInventory } from "skill-family-harness-node/candidate/quickstart-profile";
 
 /**
  * Candidate Quickstart Profile v2 offline bundle builder (unstable).
@@ -47,6 +48,10 @@ const PROVENANCE_FILE = "foundation-projection.json";
 // survives into the final bundle bytes — rewriteGeneratedRequires replaces
 // every occurrence with a hoisted bundle-relative ESM import.
 const FORMAT_RUNTIME_SPECIFIER = "__SKILL_FAMILY_BUNDLE_FORMAT_RUNTIME__";
+// Ajv owns short generated bindings such as validate20 inside each standalone
+// module. Public exports therefore live in a Foundation-reserved namespace
+// that is independent of Ajv's current counter values and internal prefixes.
+const STANDALONE_EXPORT_PREFIX = "__skillFamilyFoundationValidator_";
 
 // The Ajv `_` codegen tag serializes interpolated values, so the formats
 // require below is written literally; this guard keeps the literal and the
@@ -60,6 +65,8 @@ const FOUNDATION_SCHEMA_FILES = Object.freeze([
   ["resource.schema.json", "schemas/foundation/resource.schema.json"],
   ["task.schema.json", "schemas/foundation/task.schema.json"],
   ["result.schema.json", "schemas/foundation/result.schema.json"],
+  ["consumer-schema-inventory.schema.json", "schemas/foundation/consumer-schema-inventory.schema.json"],
+  ["harness-surface-inventory.schema.json", "schemas/foundation/harness-surface-inventory.schema.json"],
 ]);
 
 const HARNESS_IMPORT_MAP = new Map([
@@ -67,6 +74,27 @@ const HARNESS_IMPORT_MAP = new Map([
   ["skill-family-contracts/candidate/quickstart-profile", "../contracts-candidate/index.mjs"],
   ["../src/closure.mjs", "./closure.mjs"],
   ["../src/errors.mjs", "./errors.mjs"],
+  ["../src/paths.mjs", "./paths.mjs"],
+]);
+
+const HARNESS_CLI_IMPORT_MAP = new Map([
+  ["./quickstart-profile.mjs", "./runner.mjs"],
+]);
+
+const HARNESS_ATOMIC_IMPORT_MAP = new Map([
+  ["./errors.mjs", "./errors.mjs"],
+  ["./paths.mjs", "./paths.mjs"],
+]);
+
+const HARNESS_TOKEN_LOCK_IMPORT_MAP = new Map([
+  ["./atomic.mjs", "./atomic.mjs"],
+  ["./errors.mjs", "./errors.mjs"],
+  ["./paths.mjs", "./paths.mjs"],
+]);
+
+const ADOPTION_IMPORT_MAP = new Map([
+  ["../src/migration.mjs", "./runtime/kit/migration.mjs"],
+  ["skill-family-harness-node/candidate/quickstart-profile", "./runtime/harness/quickstart-profile.mjs"],
 ]);
 
 const DIALECT_URIS = Object.freeze({
@@ -75,6 +103,20 @@ const DIALECT_URIS = Object.freeze({
 });
 
 const SUPPORTED_FORMATS = Object.freeze(["date-time"]);
+
+const FIXED_SET_CANDIDATE_FILES = Object.freeze([
+  "NOTICE",
+  "loader.mjs",
+  "prebuild-manifest.json",
+  "prebuild-release-receipt.json",
+  "prebuild-sbom.json",
+  "rename-directory-no-replace.mjs",
+  "prebuilds/darwin-arm64/rename_directory_no_replace.darwin-arm64.node",
+  "prebuilds/darwin-x64/rename_directory_no_replace.darwin-x64.node",
+  "prebuilds/linux-arm64-gnu/rename_directory_no_replace.linux-arm64-gnu.node",
+  "prebuilds/linux-x64-gnu/rename_directory_no_replace.linux-x64-gnu.node",
+]);
+const FIXED_SET_BINARY_PREFIX = "prebuilds/";
 
 // These fragments are the exact case-sensitive words rejected by the
 // bundle-wide byte scan. Caller-provided source identities enter provenance
@@ -93,6 +135,13 @@ const requireFromKit = createRequire(import.meta.url);
 
 function buildError(message) {
   return new TypeError(`buildQuickstartProfileProjection: ${message}`);
+}
+
+function standaloneExportName(index) {
+  if (!Number.isSafeInteger(index) || index < 0) {
+    throw new TypeError("standalone export index must be a non-negative safe integer");
+  }
+  return `${STANDALONE_EXPORT_PREFIX}${String(index).padStart(5, "0")}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,6 +215,168 @@ async function foundationPackageRoots() {
 
 async function readSourceText(root, relPath) {
   return readFile(path.join(root, relPath), "utf8");
+}
+
+async function readCanonicalRegularFile(filePath, label) {
+  if (typeof filePath !== "string" || !path.isAbsolute(filePath) || path.normalize(filePath) !== filePath) {
+    throw buildError(`${label} must be a normalized absolute path`);
+  }
+  const before = await lstat(filePath);
+  if (before.isSymbolicLink() || !before.isFile() || before.nlink !== 1) {
+    throw buildError(`${label} must be one ordinary non-symlink file`);
+  }
+  if (await realpath(filePath) !== filePath) {
+    throw buildError(`${label} must already be its canonical realpath`);
+  }
+  const bytes = await readFile(filePath);
+  const after = await lstat(filePath);
+  if (
+    before.dev !== after.dev || before.ino !== after.ino || before.mode !== after.mode ||
+    before.size !== after.size || before.nlink !== after.nlink
+  ) {
+    throw buildError(`${label} changed while it was read`);
+  }
+  return { bytes, mode: before.mode & 0o777, sha256: digestBytes(bytes) };
+}
+
+async function readFixedSetCandidate(input, harnessVersion) {
+  if (
+    input === null || typeof input !== "object" || Array.isArray(input) ||
+    Object.keys(input).sort().join(",") !== "releaseReceiptPath,root"
+  ) {
+    throw buildError("fixedSetCandidate must carry exactly releaseReceiptPath and root");
+  }
+  const receiptRecord = await readCanonicalRegularFile(
+    input.releaseReceiptPath,
+    "fixedSetCandidate.releaseReceiptPath",
+  );
+  let releaseReceipt;
+  try {
+    releaseReceipt = JSON.parse(receiptRecord.bytes.toString("utf8"));
+  } catch {
+    throw buildError("fixedSetCandidate release receipt is not valid JSON");
+  }
+  if (
+    releaseReceipt?.kind !== "skill-family.release-artifacts-manifest" ||
+    releaseReceipt?.schemaVersion !== 1 || !Array.isArray(releaseReceipt.tarballs)
+  ) {
+    throw buildError("fixedSetCandidate release receipt has an unexpected contract");
+  }
+  const harnessTarballs = releaseReceipt.tarballs.filter(
+    (entry) => entry?.package === "skill-family-harness-node",
+  );
+  if (
+    harnessTarballs.length !== 1 || harnessTarballs[0].version !== harnessVersion ||
+    !/^[0-9a-f]{64}$/u.test(harnessTarballs[0].sha256 ?? "") ||
+    typeof harnessTarballs[0].filename !== "string" ||
+    path.basename(harnessTarballs[0].filename) !== harnessTarballs[0].filename ||
+    !Number.isSafeInteger(harnessTarballs[0].size) || harnessTarballs[0].size < 1
+  ) {
+    throw buildError("fixedSetCandidate release receipt does not bind the exact Harness tarball");
+  }
+  const tarballPath = path.join(path.dirname(input.releaseReceiptPath), harnessTarballs[0].filename);
+  const tarball = await readCanonicalRegularFile(tarballPath, "fixedSetCandidate Harness tarball");
+  if (tarball.sha256 !== harnessTarballs[0].sha256 || tarball.bytes.length !== harnessTarballs[0].size) {
+    throw buildError("fixedSetCandidate Harness tarball differs from the release receipt");
+  }
+
+  if (typeof input.root !== "string" || !path.isAbsolute(input.root) || path.normalize(input.root) !== input.root) {
+    throw buildError("fixedSetCandidate.root must be a normalized absolute path");
+  }
+  const rootBefore = await lstat(input.root);
+  if (rootBefore.isSymbolicLink() || !rootBefore.isDirectory() || await realpath(input.root) !== input.root) {
+    throw buildError("fixedSetCandidate.root must be a canonical real directory");
+  }
+  const files = new Map();
+  for (const relative of FIXED_SET_CANDIDATE_FILES) {
+    const record = await readCanonicalRegularFile(
+      path.join(input.root, ...relative.split("/")),
+      `fixedSetCandidate member ${relative}`,
+    );
+    files.set(relative, record);
+  }
+  const parse = (relative) => {
+    try { return JSON.parse(files.get(relative).bytes.toString("utf8")); }
+    catch { throw buildError(`fixedSetCandidate ${relative} is not valid JSON`); }
+  };
+  const manifest = parse("prebuild-manifest.json");
+  const prebuildReceipt = parse("prebuild-release-receipt.json");
+  const sbom = parse("prebuild-sbom.json");
+  const platformKeys = ["darwin-arm64", "darwin-x64", "linux-arm64-gnu", "linux-x64-gnu"];
+  const platformFacts = [
+    ["darwin-arm64", "darwin", "arm64", "none"],
+    ["darwin-x64", "darwin", "x64", "none"],
+    ["linux-arm64-gnu", "linux", "arm64", "glibc"],
+    ["linux-x64-gnu", "linux", "x64", "glibc"],
+  ];
+  const nativeExports = [
+    "closeParentDirectory",
+    "openParentDirectory",
+    "platform",
+    "renameDirectoryNoReplace",
+  ];
+  if (
+    manifest?.kind !== "skill-family.rename-directory-no-replace-prebuild-manifest" ||
+    manifest?.status !== "candidate" || manifest?.schemaVersion !== 2 ||
+    JSON.stringify(manifest.entries?.map((entry) => entry.platformKey)) !== JSON.stringify(platformKeys)
+  ) {
+    throw buildError("fixedSetCandidate prebuild manifest is not the fixed candidate matrix");
+  }
+  if (
+    prebuildReceipt?.kind !== "skill-family.rename-directory-no-replace-prebuild-release-receipt" ||
+    prebuildReceipt?.status !== "candidate" || prebuildReceipt?.node?.napi !== 10 ||
+    prebuildReceipt.manifestSha256 !== files.get("prebuild-manifest.json").sha256
+  ) {
+    throw buildError("fixedSetCandidate prebuild release receipt does not bind the manifest");
+  }
+  if (
+    sbom?.kind !== "skill-family.rename-directory-no-replace-prebuild-sbom" ||
+    sbom?.status !== "candidate"
+  ) {
+    throw buildError("fixedSetCandidate SBOM has an unexpected contract");
+  }
+  if (
+    JSON.stringify(prebuildReceipt.inputs?.map((entry) => entry.platformKey)) !== JSON.stringify(platformKeys) ||
+    JSON.stringify(sbom.files?.map((entry) => entry.platformKey)) !== JSON.stringify(platformKeys)
+  ) {
+    throw buildError("fixedSetCandidate receipt/SBOM platform matrix differs from the manifest");
+  }
+  for (const [index, entry] of manifest.entries.entries()) {
+    const [platformKey, os, arch, libc] = platformFacts[index];
+    const binary = files.get(entry.binary);
+    const receiptInput = prebuildReceipt.inputs?.find((item) => item.platformKey === entry.platformKey);
+    const sbomInput = sbom.files?.find((item) => item.platformKey === entry.platformKey);
+    if (
+      entry.platformKey !== platformKey || entry.os !== os || entry.arch !== arch || entry.libc !== libc ||
+      JSON.stringify(entry.exports) !== JSON.stringify(nativeExports) ||
+      !binary || entry.mode !== binary.mode || entry.sha256 !== binary.sha256 || entry.napi !== 10 ||
+      receiptInput?.binarySha256 !== binary.sha256 || sbomInput?.binary !== entry.binary ||
+      sbomInput?.sha256 !== binary.sha256
+    ) {
+      throw buildError(`fixedSetCandidate prebuild binding mismatch: ${entry.platformKey}`);
+    }
+  }
+  return {
+    files,
+    provenance: {
+      status: "candidate",
+      stableRegistry: false,
+      releaseReceiptSha256: receiptRecord.sha256,
+      harnessTarball: {
+        filename: harnessTarballs[0].filename,
+        sha256: tarball.sha256,
+        size: tarball.bytes.length,
+      },
+      prebuildManifestSha256: files.get("prebuild-manifest.json").sha256,
+      prebuildReleaseReceiptSha256: files.get("prebuild-release-receipt.json").sha256,
+      files: FIXED_SET_CANDIDATE_FILES.map((relative) => ({
+        path: relative,
+        type: "regular",
+        mode: files.get(relative).mode,
+        sha256: files.get(relative).sha256,
+      })),
+    },
+  };
 }
 
 /**
@@ -478,6 +689,7 @@ async function generateStandaloneModule({
   codegenTemplate,
   standaloneCode,
   isValidDateTime,
+  schemaIds,
 }) {
   // Both supported dialects register the same mechanically projected
   // date-time implementation; the generated ESM references the same
@@ -494,7 +706,15 @@ async function generateStandaloneModule({
       throw new Error(`standalone generation failed to compile schema: ${schema.$id}`);
     }
   }
-  const moduleMap = Object.fromEntries(ordered.map((schema, index) => [`validate${index}`, schema.$id]));
+  const ids = [...(schemaIds ?? ordered.map((schema) => schema.$id))].sort();
+  for (const schemaId of ids) {
+    if (!ajv.getSchema(schemaId)) {
+      throw new Error(`standalone generation failed to compile schema: ${schemaId}`);
+    }
+  }
+  const moduleMap = Object.fromEntries(
+    ids.map((schemaId, index) => [standaloneExportName(index), schemaId]),
+  );
   const raw = standaloneCode(ajv, moduleMap);
   return rewriteGeneratedRequires(raw, runtimeDependencyMap);
 }
@@ -598,21 +818,95 @@ function formatsSource(candidateIndexSourceText) {
   ].join("\n");
 }
 
+function migrationWorkspaceSource(workspaceSourceText) {
+  return [
+    'import { readFile } from "node:fs/promises";',
+    'import path from "node:path";',
+    "",
+    `export async ${extractFunctionBlock(workspaceSourceText, "readOptionalFile")}`,
+    "",
+    `export async ${extractFunctionBlock(workspaceSourceText, "readOptionalJson")}`,
+    "",
+    `export ${extractFunctionBlock(workspaceSourceText, "normalizeRelPath")}`,
+    "",
+  ].join("\n");
+}
+
+function projectMigrationSource(sourceText, migrationSchemaId) {
+  let projected = sourceText;
+  const applyOnce = (anchor, replacement, label) => {
+    const hits = projected.split(anchor).length - 1;
+    if (hits !== 1) {
+      throw new Error(
+        `migration bundle projection failed: the ${label} anchor matched ${hits} times (expected exactly 1)`,
+      );
+    }
+    projected = projected.replace(anchor, () => replacement);
+  };
+  applyOnce(
+    'import { findSchemaByObject } from "skill-family-contracts";\n',
+    "",
+    "contracts registry import",
+  );
+  applyOnce(
+    'import { HarnessError, readFileContained, resolveContained, validateContractDocument } from "skill-family-harness-node";',
+    [
+      'import { HarnessError } from "../harness/errors.mjs";',
+      'import { readFileContained, resolveContained } from "../harness/paths.mjs";',
+      'import { validateBySchemaId } from "../../validators.mjs";',
+    ].join("\n"),
+    "harness import",
+  );
+  applyOnce(
+    'export const MIGRATION_MANIFEST_SCHEMA_ID = findSchemaByObject("migration-manifest").$id;',
+    `export const MIGRATION_MANIFEST_SCHEMA_ID = ${JSON.stringify(migrationSchemaId)};`,
+    "migration schema id",
+  );
+  const importBoundary = 'import { normalizeRelPath, readOptionalJson } from "./workspace.mjs";';
+  applyOnce(
+    importBoundary,
+    `${importBoundary}\n\nfunction validateContractDocument(document, { schemaId } = {}) {\n` +
+      `  const outcome = validateBySchemaId(schemaId, document);\n` +
+      `  return {\n` +
+      `    valid: outcome.valid,\n` +
+      `    errorCode: outcome.valid ? null : "SFC1001",\n` +
+      `    errors: outcome.errors,\n` +
+      `    data: outcome.valid ? structuredClone(document) : undefined,\n` +
+      `  };\n` +
+      `}`,
+    "standalone validation adapter",
+  );
+  for (const leftover of [
+    'from "skill-family-contracts"',
+    'from "skill-family-harness-node"',
+    "findSchemaByObject(",
+  ]) {
+    if (projected.includes(leftover)) {
+      throw new Error(`migration bundle projection left an external binding behind: ${leftover}`);
+    }
+  }
+  return projected;
+}
+
 // The standalone-validator binding transform replaces the frozen Ajv-backed
 // getCollection implementation. The digest pins every byte of that source
 // function: a rename, an added statement, or any other body drift fails the
 // projection closed instead of being silently discarded by the replacement.
 const GET_COLLECTION_AJV_SOURCE_SHA256 =
-  "21308a4660e3706ff4e9ce1a08ac98b3d1422d779867665a4d6f651b9ddc39ad";
+  "11ec924269b95b69924b1cb4935856551ee04793ed394cdac02df99b31bcdba2";
 
 const GET_COLLECTION_STANDALONE_BINDING = `function getCollection() {
   if (collection) return collection;
   const bound = {};
-  for (const kind of VALIDATE_KINDS) {
-    const validate = standaloneValidators[documents[kind].$id];
+  for (const [kind, schemaId] of [
+    ...[...VALIDATE_KINDS, INVENTORY_KIND, SURFACE_INVENTORY_KIND]
+      .map((kind) => [kind, documents[kind].$id]),
+    [SURFACE_DETECTORS_KIND, SURFACE_DETECTORS_SCHEMA_ID],
+  ]) {
+    const validate = standaloneValidators[schemaId];
     if (typeof validate !== "function") {
       throw new Error(
-        \`standalone validator is missing the quickstart profile schema: \${documents[kind].$id}\`,
+        \`standalone validator is missing the quickstart profile schema: \${schemaId}\`,
       );
     }
     bound[kind] = validate;
@@ -766,6 +1060,14 @@ function runnerSource() {
     "// mechanisms and the standalone-backed candidate validation entry.",
     'export * from "./runtime/harness/quickstart-profile.mjs";',
     'export { validateQuickstartProfileDocument } from "./runtime/contracts-candidate/index.mjs";',
+    'export { validateBySchemaId } from "./validators.mjs";',
+    'export { publishFileExclusive, publishFileOrReplace, replaceFileAtomic } from "./runtime/harness/atomic.mjs";',
+    'export { acquireFilesystemLock, inspectFilesystemLock, releaseFilesystemLock, recoverFilesystemLock } from "./runtime/harness/token-lock.mjs";',
+    'import { invokeFoundationMechanism as invokeHarnessMechanism } from "./runtime/harness/quickstart-profile.mjs";',
+    'import { validateBySchemaId } from "./validators.mjs";',
+    'export function invokeFoundationMechanism(request) {',
+    '  return invokeHarnessMechanism(request, { validateBySchemaId });',
+    '}',
     "",
   ].join("\n");
 }
@@ -823,6 +1125,7 @@ export async function buildQuickstartProfileProjection({
   consumerSchemaPaths,
   sourceRepository,
   sourceBaseCommit,
+  fixedSetCandidate,
 } = {}) {
   const prefix = assertContainedPosixPath(targetPrefix, "targetPrefix");
   if (typeof consumerSchemaRoot !== "string" || !path.isAbsolute(consumerSchemaRoot)) {
@@ -854,6 +1157,10 @@ export async function buildQuickstartProfileProjection({
   sources.errorCodes = await readSourceText(contractsRoot, "src/error-codes.json");
   sources.operationRequest = await readSourceText(contractsRoot, "src/schemas/operation-request.schema.json");
   sources.operationResult = await readSourceText(contractsRoot, "src/schemas/operation-result.schema.json");
+  sources.migrationManifestSchema = await readSourceText(
+    contractsRoot,
+    "src/schemas/migration-manifest.schema.json",
+  );
   sources.candidateIndex = await readSourceText(contractsRoot, "candidate/quickstart-profile/index.mjs");
   const candidateSchemaTexts = {};
   for (const [fileName] of FOUNDATION_SCHEMA_FILES) {
@@ -864,17 +1171,31 @@ export async function buildQuickstartProfileProjection({
   }
   sources.harnessIndex = await readSourceText(harnessRoot, "src/index.mjs");
   sources.harnessCandidate = await readSourceText(harnessRoot, "candidate/quickstart-profile.mjs");
+  sources.harnessMechanismsCli = await readSourceText(harnessRoot, "candidate/mechanisms-cli.mjs");
   sources.harnessClosure = await readSourceText(harnessRoot, "src/closure.mjs");
   sources.harnessErrors = await readSourceText(harnessRoot, "src/errors.mjs");
   sources.harnessPaths = await readSourceText(harnessRoot, "src/paths.mjs");
+  sources.harnessAtomic = await readSourceText(harnessRoot, "src/atomic.mjs");
+  sources.harnessTokenLock = await readSourceText(harnessRoot, "src/token-lock.mjs");
   // The package manifests are recorded as complete original bytes below, so
   // every provenance path digest recomputes from the real file.
   const contractsPackageJsonText = await readSourceText(contractsRoot, "package.json");
   const harnessPackageJsonText = await readSourceText(harnessRoot, "package.json");
   const kitPackageJsonText = await readSourceText(kitRoot, "package.json");
   const contractsVersion = JSON.parse(contractsPackageJsonText).version;
+  const harnessVersion = JSON.parse(harnessPackageJsonText).version;
+  const fixedSet = fixedSetCandidate === undefined
+    ? null
+    : await readFixedSetCandidate(fixedSetCandidate, harnessVersion);
   const kitBuilderSource = await readSourceText(kitRoot, "candidate/profile-bundle.mjs");
   const kitCliSource = await readSourceText(kitRoot, "candidate/projection-bundle-cli.mjs");
+  const kitAdoptionCliSource = await readSourceText(kitRoot, "candidate/adoption-cli.mjs");
+  const kitAdoptionMechanismsSource = await readSourceText(
+    kitRoot,
+    "candidate/adoption-mechanisms.mjs",
+  );
+  const kitMigrationSource = await readSourceText(kitRoot, "src/migration.mjs");
+  const kitWorkspaceSource = await readSourceText(kitRoot, "src/workspace.mjs");
 
   // --- Consumer schema intake (contained reads; the absolute root never
   // --- enters any output byte). ---
@@ -893,7 +1214,14 @@ export async function buildQuickstartProfileProjection({
   const foundationSchemaDocuments = [
     { name: "operation-request", text: sources.operationRequest },
     { name: "operation-result", text: sources.operationResult },
-    ...["resource.schema.json", "task.schema.json", "result.schema.json"].map((fileName) => ({
+    { name: "migration-manifest", text: sources.migrationManifestSchema },
+    ...[
+      "resource.schema.json",
+      "task.schema.json",
+      "result.schema.json",
+      "consumer-schema-inventory.schema.json",
+      "harness-surface-inventory.schema.json",
+    ].map((fileName) => ({
       name: fileName,
       text: candidateSchemaTexts[fileName],
     })),
@@ -938,6 +1266,10 @@ export async function buildQuickstartProfileProjection({
     codegenTemplate,
     standaloneCode,
     isValidDateTime,
+    schemaIds: [
+      ...schemas2020.map((schema) => schema.$id),
+      "https://contracts.skill-family.example/candidate/quickstart-profile/v2/harness-surface-detectors.json",
+    ],
   });
   const schemasDraft07 = graph["draft-07"].map((record) => record.document);
   const withDraft07 = schemasDraft07.length > 0;
@@ -973,14 +1305,55 @@ export async function buildQuickstartProfileProjection({
     if (files.has(relPath)) throw new Error(`duplicate bundle member: ${relPath}`);
     files.set(relPath, text);
   };
+  const setBytes = (relPath, bytes) => {
+    if (files.has(relPath)) throw new Error(`duplicate bundle member: ${relPath}`);
+    files.set(relPath, Buffer.from(bytes));
+  };
 
   setText("runner.mjs", runnerSource());
+  setText(
+    "mechanisms-cli.mjs",
+    projectModuleWithImportMap(
+      sources.harnessMechanismsCli,
+      HARNESS_CLI_IMPORT_MAP,
+      "harness candidate/mechanisms-cli.mjs",
+    ),
+  );
+  if (fixedSet) {
+    for (const [relative, record] of fixedSet.files) {
+      const bundlePath = `rename-directory-no-replace/${relative}`;
+      if (relative === "rename-directory-no-replace.mjs") {
+        setText(
+          bundlePath,
+          projectModuleWithImportMap(
+            record.bytes.toString("utf8"),
+            new Map([["skill-family-contracts", "../runtime/contracts/index.mjs"]]),
+            "fixed-set publication mechanism",
+          ),
+        );
+      } else if (relative.startsWith(FIXED_SET_BINARY_PREFIX)) {
+        setBytes(bundlePath, record.bytes);
+      } else {
+        setText(bundlePath, record.bytes.toString("utf8"));
+      }
+    }
+  }
+  setText("adoption-cli.mjs", kitAdoptionCliSource);
+  setText(
+    "adoption-mechanisms.mjs",
+    projectModuleWithImportMap(
+      kitAdoptionMechanismsSource,
+      ADOPTION_IMPORT_MAP,
+      "engineering kit candidate/adoption-mechanisms.mjs",
+    ),
+  );
   setText("validators.mjs", validatorsSource());
   for (const [fileName, bundlePath] of FOUNDATION_SCHEMA_FILES) {
     setText(bundlePath, candidateSchemaTexts[fileName]);
   }
   setText("schemas/foundation/operation-request.schema.json", sources.operationRequest);
   setText("schemas/foundation/operation-result.schema.json", sources.operationResult);
+  setText("schemas/foundation/migration-manifest.schema.json", sources.migrationManifestSchema);
   for (const record of consumerRecords) {
     setText(`schemas/consumer/${record.path}`, `${JSON.stringify(record.document, null, 2)}\n`);
   }
@@ -994,6 +1367,20 @@ export async function buildQuickstartProfileProjection({
     projectModuleWithImportMap(sources.harnessErrors, new Map([["skill-family-contracts", "../contracts/index.mjs"]]), "harness src/errors.mjs"),
   );
   setText("runtime/harness/paths.mjs", projectModuleWithImportMap(sources.harnessPaths, new Map(), "harness src/paths.mjs"));
+  setText(
+    "runtime/harness/atomic.mjs",
+    projectModuleWithImportMap(sources.harnessAtomic, HARNESS_ATOMIC_IMPORT_MAP, "harness src/atomic.mjs"),
+  );
+  setText(
+    "runtime/harness/token-lock.mjs",
+    projectModuleWithImportMap(sources.harnessTokenLock, HARNESS_TOKEN_LOCK_IMPORT_MAP, "harness src/token-lock.mjs"),
+  );
+  const migrationManifestSchemaId = JSON.parse(sources.migrationManifestSchema).$id;
+  setText(
+    "runtime/kit/migration.mjs",
+    projectMigrationSource(kitMigrationSource, migrationManifestSchemaId),
+  );
+  setText("runtime/kit/workspace.mjs", migrationWorkspaceSource(kitWorkspaceSource));
   setText("runtime/contracts/index.mjs", contractsIndexSource());
   setText("runtime/contracts/errors.mjs", sources.contractsErrors);
   setText("runtime/contracts/error-codes.json", sources.errorCodes);
@@ -1005,12 +1392,15 @@ export async function buildQuickstartProfileProjection({
     setText("runtime/generated/validate-draft-07.mjs", generatedDraft07);
   }
   const sortById = (a, b) => (a.$id < b.$id ? -1 : 1);
-  const entries2020 = [...schemas2020]
-    .sort(sortById)
-    .map((schema, index) => ({ schemaId: schema.$id, exportName: `validate${index}` }));
+  const entries2020 = [
+    ...schemas2020.map((schema) => schema.$id),
+    "https://contracts.skill-family.example/candidate/quickstart-profile/v2/harness-surface-detectors.json",
+  ]
+    .sort()
+    .map((schemaId, index) => ({ schemaId, exportName: standaloneExportName(index) }));
   const entriesDraft07 = [...schemasDraft07]
     .sort(sortById)
-    .map((schema, index) => ({ schemaId: schema.$id, exportName: `validate${index}` }));
+    .map((schema, index) => ({ schemaId: schema.$id, exportName: standaloneExportName(index) }));
   setText("runtime/generated/standalone-map.mjs", standaloneMapSource({ entries2020, entriesDraft07 }));
   setText("runtime/generated/formats.mjs", formatsModuleSource);
   if (carriesUcs2length) {
@@ -1049,7 +1439,10 @@ export async function buildQuickstartProfileProjection({
 
   // --- Provenance (payload digest excludes the provenance file itself). ---
   const payloadFiles = [...files.entries()]
-    .map(([filePath, text]) => ({ path: filePath, sha256: digestBytes(Buffer.from(text, "utf8")) }))
+    .map(([filePath, content]) => ({
+      path: filePath,
+      sha256: digestBytes(Buffer.isBuffer(content) ? content : Buffer.from(content, "utf8")),
+    }))
     .sort((a, b) => (a.path < b.path ? -1 : 1));
   const sha256Of = (text) => digestBytes(Buffer.from(text, "utf8"));
   const foundationRecords = [
@@ -1057,6 +1450,7 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-contracts/src/index.mjs", sources.contractsIndex, "imported-surface"],
     ["packages/skill-family-contracts/src/schemas/operation-request.schema.json", sources.operationRequest, "projected"],
     ["packages/skill-family-contracts/src/schemas/operation-result.schema.json", sources.operationResult, "projected"],
+    ["packages/skill-family-contracts/src/schemas/migration-manifest.schema.json", sources.migrationManifestSchema, "projected"],
     ["packages/skill-family-contracts/src/errors.mjs", sources.contractsErrors, "projected"],
     ["packages/skill-family-contracts/src/error-codes.json", sources.errorCodes, "projected"],
     ["packages/skill-family-contracts/src/audit-surface.mjs", sources.auditSurface, "extraction-input"],
@@ -1064,16 +1458,25 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-contracts/candidate/quickstart-profile/resource.schema.json", candidateSchemaTexts["resource.schema.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/task.schema.json", candidateSchemaTexts["task.schema.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/result.schema.json", candidateSchemaTexts["result.schema.json"], "projected"],
+    ["packages/skill-family-contracts/candidate/quickstart-profile/consumer-schema-inventory.schema.json", candidateSchemaTexts["consumer-schema-inventory.schema.json"], "projected"],
+    ["packages/skill-family-contracts/candidate/quickstart-profile/harness-surface-inventory.schema.json", candidateSchemaTexts["harness-surface-inventory.schema.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/index.mjs", sources.candidateIndex, "extraction-input"],
     ["packages/skill-family-harness-node/package.json", harnessPackageJsonText, "identity"],
     ["packages/skill-family-harness-node/src/index.mjs", sources.harnessIndex, "imported-surface"],
     ["packages/skill-family-harness-node/candidate/quickstart-profile.mjs", sources.harnessCandidate, "projected"],
+    ["packages/skill-family-harness-node/candidate/mechanisms-cli.mjs", sources.harnessMechanismsCli, "projected"],
     ["packages/skill-family-harness-node/src/closure.mjs", sources.harnessClosure, "projected"],
     ["packages/skill-family-harness-node/src/errors.mjs", sources.harnessErrors, "projected"],
     ["packages/skill-family-harness-node/src/paths.mjs", sources.harnessPaths, "projected"],
+    ["packages/skill-family-harness-node/src/atomic.mjs", sources.harnessAtomic, "projected"],
+    ["packages/skill-family-harness-node/src/token-lock.mjs", sources.harnessTokenLock, "projected"],
     ["packages/skill-family-engineering-kit/package.json", kitPackageJsonText, "identity"],
     ["packages/skill-family-engineering-kit/candidate/profile-bundle.mjs", kitBuilderSource, "builder"],
     ["packages/skill-family-engineering-kit/candidate/projection-bundle-cli.mjs", kitCliSource, "builder"],
+    ["packages/skill-family-engineering-kit/candidate/adoption-cli.mjs", kitAdoptionCliSource, "projected"],
+    ["packages/skill-family-engineering-kit/candidate/adoption-mechanisms.mjs", kitAdoptionMechanismsSource, "projected"],
+    ["packages/skill-family-engineering-kit/src/migration.mjs", kitMigrationSource, "projected"],
+    ["packages/skill-family-engineering-kit/src/workspace.mjs", kitWorkspaceSource, "extraction-input"],
   ]
     .map(([recordPath, text, role]) => ({ path: recordPath, sha256: sha256Of(text), role }))
     .sort((a, b) => (a.path < b.path ? -1 : 1));
@@ -1105,6 +1508,7 @@ export async function buildQuickstartProfileProjection({
       baseCommit,
       foundation: foundationRecords,
       thirdParty: thirdPartyRecords,
+      ...(fixedSet ? { fixedSetCandidate: fixedSet.provenance } : {}),
       consumerSchemas: consumerRecords
         .map((record) => ({
           path: record.path,
@@ -1130,11 +1534,13 @@ export async function buildQuickstartProfileProjection({
   setText(PROVENANCE_FILE, `${JSON.stringify(provenance, null, 2)}\n`);
 
   const entries = [...files.entries()]
-    .map(([filePath, text]) => ({ path: `${prefix}/${filePath}`, text }))
+    .map(([filePath, content]) => ({ path: `${prefix}/${filePath}`, content }))
     .sort((a, b) => (a.path < b.path ? -1 : 1))
-    .map(({ path: entryPath, text }) => ({
+    .map(({ path: entryPath, content }) => ({
       path: entryPath,
-      content: { text },
+      content: Buffer.isBuffer(content)
+        ? { base64: content.toString("base64") }
+        : { text: content },
       expect: { state: "absent" },
     }));
   return {
@@ -1144,6 +1550,49 @@ export async function buildQuickstartProfileProjection({
       entries,
     },
     provenance,
+  };
+}
+
+/**
+ * Inventory-gated projection entry point.
+ *
+ * The inventory is the consumer's complete local Schema ownership statement.
+ * Only records assigned to `foundation-bundle` enter the offline validator;
+ * retained records remain consumer-owned but must carry an explicit reason and
+ * exit criterion. The returned ownership proof is deliberately outside the
+ * Bundle payload so consumer domain explanations never enter Foundation code.
+ */
+export async function buildQuickstartProfileProjectionFromInventory({
+  targetPrefix = DEFAULT_TARGET_PREFIX,
+  consumerRoot,
+  inventory,
+  sourceRepository,
+  sourceBaseCommit,
+  fixedSetCandidate,
+} = {}) {
+  if (typeof consumerRoot !== "string" || !path.isAbsolute(consumerRoot)) {
+    throw buildError("consumerRoot must be an absolute build-time directory");
+  }
+  const ownership = await verifyConsumerSchemaInventory({ root: consumerRoot, inventory });
+  if (ownership.bundleSchemaPaths.length === 0) {
+    throw buildError("inventory must assign at least one schema to foundation-bundle");
+  }
+  const projection = await buildQuickstartProfileProjection({
+    targetPrefix,
+    consumerSchemaRoot: consumerRoot,
+    consumerSchemaPaths: ownership.bundleSchemaPaths,
+    sourceRepository,
+    sourceBaseCommit,
+    fixedSetCandidate,
+  });
+  return {
+    ...projection,
+    consumerSchemaOwnership: Object.freeze({
+      inventoryDigest: digestBytes(Buffer.from(canonicalJson(inventory), "utf8")),
+      schemaPaths: Object.freeze([...ownership.schemaPaths]),
+      bundleSchemaPaths: Object.freeze([...ownership.bundleSchemaPaths]),
+      retainedSchemas: Object.freeze(ownership.retainedSchemas.map((record) => Object.freeze(record))),
+    }),
   };
 }
 

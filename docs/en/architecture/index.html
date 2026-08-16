@@ -1972,7 +1972,7 @@ Horizontal (attachment surfaces, no new vertical layers):
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>Structure, protocols, error codes, protocol-name registry; 18 top-level object kinds; 9 mandatory rules</td>
+<td>Structure, protocols, error codes, protocol-name registry; 20 top-level object kinds; 9 mandatory rules</td>
 <td>Business-field semantics, domain auditing, remote writes, model generation</td>
 </tr>
 <tr>
@@ -2024,7 +2024,7 @@ Horizontal (attachment surfaces, no new vertical layers):
 <li>Involves artifact relationships / version-lock → artifact-graph.</li>
 <li>Has only one consumer, or has not been proven to repeat across two real consumers → keep it with the consumer; do not expand Foundation.</li>
 </ol>
-<p>Step 8 is the expansion gate: a new component must justify that deleting it would force two or more real consumers to re-implement it, and this must be verified by an independent fixture. The machine-readable version is in <code>docs/agents/architecture-routing.md</code>.</p>
+<p>Step 8 is the expansion gate: a new component must justify that deleting it would force two or more real consumers to re-implement it, and this must be verified by an independent fixture; admission gate 1 additionally requires at least one existing real consumer plus one structurally isomorphic foreseeable consumer (the second consumer need not be live, but its need must be expressible with the same structure; adjustment record in FND-ADR-009). Step 9 is the finite-closed-semantics gate (FND-ADR-001 gate 8): a capability carrying limited domain semantics must satisfy either — its semantics are covered by a small stable closed enumeration, or it is a deterministic estimation primitive whose algorithm, scope, and bias direction are declared in the contract; this gate does not cancel gate 2's "semantics-free" veto. The machine-readable version is in <code>docs/agents/architecture-routing.md</code>.</p>
 <h2 id="Trust-and-Side-Effect-Boundaries">Trust and Side-Effect Boundaries<a class="headerlink" href="#Trust-and-Side-Effect-Boundaries" title="Permanent link">&para;</a></h2>
 <p>Foundation's trust assumptions and side-effect conventions are solidified per layer; callers judge risk accordingly:</p>
 <ul>
@@ -2050,6 +2050,14 @@ Involves tasks/retries/rework/acceptance? ──yes──▶ loop-agent
 Involves artifact relationships/version-lock? ──yes──▶ artifact-graph
         │no
 Only one consumer / not proven across two real consumers? ──yes──▶ keep with consumer, do not expand
+        │no
+Carries limited domain semantics? ──yes──▶ finite closed semantics: covered by a
+         │                stable closed enumeration, or a deterministic estimation
+         │                primitive (algorithm/scope/bias declared in the contract)
+         │                → admissible; otherwise keep with consumer
+         │                (FND-ADR-001 gate 8; does not cancel gate 2's veto)
+         │no
+        ──▶ admissible
 </code></pre>
 <h2 id="Routing-Relationships-with-External-Projects">Routing Relationships with External Projects<a class="headerlink" href="#Routing-Relationships-with-External-Projects" title="Permanent link">&para;</a></h2>
 <p>Foundation is not an all-powerful base. The following responsibilities are explicitly outside Foundation:</p>
@@ -2066,11 +2074,12 @@ Only one consumer / not proven across two real consumers? ──yes──▶ kee
 <li><strong>Host-access line</strong> (FND-FR-001/FND-FR-002, FND-ADR-003): Contracts registers descriptor/source/manifest/probe/plan/receipt; Harness implements generic source closure, atomic build/materialize, and probe classification; Kit injects the concrete Profile and trusted driver. Currently only describe/build/probe/plan are supported; <code>apply</code> is stably refused; install/uninstall/update are unimplemented.</li>
 <li><strong>Durable state-substrate line</strong> (FND-FR-003, FND-ADR-004): append-only events, hash chain, snapshots, and verification recovery; provides only the state substrate, not business semantics such as state machines, task nodes, retries, terminal states, or memory.</li>
 <li><strong>Human-report line</strong> (FND-FR-004, FND-ADR-005): a two-layer contract — machine results are the sole source of truth, and the human report is deterministically rendered from machine results (Markdown + digest binding + graded checks), not freely authored.</li>
+<li><strong>Finite-closed-semantics tools line</strong> (FND-ADR-009): baseline materialization + contentGuard (digest mismatch, mid-materialization change, and guard rejection all fail closed), generic read chokepoint (allowed-root set + optional identity predicate), strategy-driven surface scan (policy contract + injection self-test), token upper-bound estimation (deterministic estimation primitive with no model/network/tokenizer dependency), and a generic upper-bound guard (reusing the state-store event ledger and token-lock; the bound and over-limit policy are consumer-configured).</li>
 </ul>
 <p>The three-package structure is preserved and a fourth package is not split out (FND-ADR-007); artifact governance uses the artifact-graph CLI and version-lock (FND-ADR-006).</p>
 <h2 id="First-Version-Budget">First-Version Budget<a class="headerlink" href="#First-Version-Budget" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Top-level Contracts objects: 18 kinds (the complete list uses <code>packages/skill-family-contracts/src/registry.json</code> as the sole source of truth): project-manifest, profile-descriptor, managed-file-lock, operation-request, operation-result, migration-manifest, adapter-source, report-model, report-binding, host-descriptor, host-registry, host-capability-fact, host-probe-result, adapter-build-manifest, host-operation-plan, host-operation-receipt, state-event-envelope, state-snapshot-metadata;</li>
+<li>Top-level Contracts objects: 20 kinds (the complete list uses <code>packages/skill-family-contracts/src/registry.json</code> as the sole source of truth): project-manifest, profile-descriptor, managed-file-lock, operation-request, operation-result, migration-manifest, adapter-source, report-model, report-binding, host-descriptor, host-registry, host-capability-fact, host-probe-result, adapter-build-manifest, host-operation-plan, host-operation-receipt, state-event-envelope, state-snapshot-metadata, token-estimate-result, surface-scan-policy;</li>
 <li>Kit top-level commands: 4 (scaffold, adopt-plan, projection, check);</li>
 <li>Mandatory mechanical rules: currently 9, budget not exceeding 20, absolute ceiling 30; CR-001 uniformly compiles all Schemas within the registry;</li>
 <li>Leaf packages: 3 (skill-family-contracts, skill-family-harness-node, skill-family-engineering-kit);</li>

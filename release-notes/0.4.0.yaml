@@ -1,0 +1,23 @@
+version: 0.4.0
+date: 2026-08-16
+locales:
+  en:
+    summary: This release adds the candidate adoption CLI and adoption mechanisms to the Engineering Kit while preserving the stable four-command surface and the 0.3.0 offline bundle.
+    changes:
+      added:
+        - Adds the adoption-cli candidate, a stdin/stdout CLI that assesses adoption bindings, legacy exit lists, and legacy references through the migration manifest, and verifies managed-bundle identity and harness surface inventory.
+        - Adds the adoption-mechanisms candidate module as the shared implementation behind the adoption CLI.
+      changed:
+        - Keeps the stable scaffold, adopt-plan, projection, and check commands unchanged.
+        - Carries forward the 0.3.0 Quickstart Profile v2 offline bundle (standalone validators selected by schema $id, full provenance recording) and the candidate plugin skill naming checker.
+    upgradeNotes: Version 0.4.0 is released on npm and the public mirror. The adoption CLI is a candidate entry point; invoke it through its explicit candidate subpath and pin the package to exactly 0.4.0.
+  zh-CN:
+    summary: 本版为 Engineering Kit 新增候选 adoption CLI 与 adoption mechanisms，同时保持稳定四命令边界与 0.3.0 的离线 Bundle 不变。
+    changes:
+      added:
+        - 新增 adoption-cli 候选：基于 stdin/stdout 的 CLI，通过 migration manifest 评估 adoption 绑定、遗留 exit list 与遗留引用，并校验 managed-bundle 身份与 harness 表面清单。
+        - 新增 adoption-mechanisms 候选模块，作为 adoption CLI 的共享实现。
+      changed:
+        - 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
+        - 延续 0.3.0 的 Quickstart Profile v2 离线 Bundle（按 schema $id 选择的 standalone validator、完整 provenance 记录）与候选插件技能命名检查器。
+    upgradeNotes: 0.4.0 已发布到 npm 与 public 镜像仓。adoption CLI 是候选入口，须经显式 candidate 子路径调用，并把包精确锁定为 0.4.0。

@@ -1,7 +1,10 @@
-import { lstat } from "node:fs/promises";
+import { lstat, readFile } from "node:fs/promises";
+import { TextDecoder } from "node:util";
 import { findSchemaByObject } from "skill-family-contracts";
 import { HarnessError, readFileContained, resolveContained, validateContractDocument } from "skill-family-harness-node";
 import { normalizeRelPath, readOptionalJson } from "./workspace.mjs";
+
+const UTF8_STRICT_DECODER = new TextDecoder("utf-8", { fatal: true });
 
 /**
  * Migration closure facts for adopt-plan (FND-070, formalized by the
@@ -190,6 +193,112 @@ export async function assessLegacyExitList(root, legacyItems) {
 }
 
 /**
+ * Assesses the legacy reference exit list: for each declared reference,
+ * checks whether the exact literal `text` still appears in the retained file.
+ *
+ * Returns one entry per declared reference with:
+ *   status: "absent"   — the literal text is not found (0 occurrences); file
+ *                        missing also counts as absent (the text is gone);
+ *   status: "present"  — the literal text appears one or more times;
+ *   status: "invalid"  — path rejected by containment, file contains
+ *                        invalid UTF-8 bytes, unreadable, or is a directory.
+ *
+ * UTF-8 decoding is strict: any invalid byte sequence fails closed with
+ * `invalidKind: "invalid-utf8"` instead of silently replacing bad bytes
+ * with U+FFFD. This prevents false "absent" verdicts when the file
+ * contains corrupted text that would otherwise mask the literal search.
+ *
+ * The `occurrenceCount` field is reported for "present" and "absent" entries
+ * without leaking file contents. Paths are resolved through harness
+ * containment (fail-closed on escape).
+ */
+export async function assessLegacyReferences(root, legacyRefs) {
+  const list = [];
+  if (!Array.isArray(legacyRefs)) return list;
+  for (const ref of legacyRefs) {
+    if (!ref || typeof ref.path !== "string" || ref.path.trim() === "") {
+      list.push({ path: null, text: null, replacedBy: null, status: "invalid", invalidKind: "malformed-entry", occurrenceCount: 0 });
+      continue;
+    }
+    const rel = normalizeRelPath(ref.path);
+    const text = typeof ref.text === "string" ? ref.text : null;
+    if (text === null || text === "") {
+      list.push({ path: rel, text: null, replacedBy: null, status: "invalid", invalidKind: "empty-text", occurrenceCount: 0 });
+      continue;
+    }
+    const replacedBy = typeof ref.replacedBy === "string" && ref.replacedBy.trim() !== "" ? ref.replacedBy : null;
+    if (replacedBy === null) {
+      list.push({ path: rel, text, replacedBy: null, status: "invalid", invalidKind: "empty-replaced-by", occurrenceCount: 0 });
+      continue;
+    }
+    let resolved;
+    try {
+      resolved = await resolveContained(root, rel);
+    } catch (cause) {
+      list.push({
+        path: rel,
+        text,
+        replacedBy,
+        status: "invalid",
+        invalidKind: cause instanceof HarnessError && cause.details?.kind ? cause.details.kind : "containment-rejected",
+        occurrenceCount: 0,
+      });
+      continue;
+    }
+    let bytes;
+    try {
+      bytes = await readFile(resolved);
+    } catch (cause) {
+      if (cause && cause.code === "ENOENT") {
+        // File missing: the old text is absent by definition.
+        list.push({ path: rel, text, replacedBy, status: "absent", occurrenceCount: 0 });
+        continue;
+      }
+      // Directory, unreadable, or other failure: fail-closed as invalid.
+      list.push({
+        path: rel,
+        text,
+        replacedBy,
+        status: "invalid",
+        invalidKind: cause && cause.code === "EISDIR" ? "is-directory" : "unreadable",
+        occurrenceCount: 0,
+      });
+      continue;
+    }
+    // Strict UTF-8 decode: reject any invalid byte sequences instead of
+    // replacing them with U+FFFD. This prevents silent data corruption
+    // when assessing whether legacy text has truly exited a file.
+    let content;
+    try {
+      content = UTF8_STRICT_DECODER.decode(bytes);
+    } catch {
+      list.push({
+        path: rel,
+        text,
+        replacedBy,
+        status: "invalid",
+        invalidKind: "invalid-utf8",
+        occurrenceCount: 0,
+      });
+      continue;
+    }
+    // Strict UTF-8 decode succeeded. Exact literal match: count
+    // non-overlapping occurrences.
+    let count = 0;
+    let fromIndex = 0;
+    while (true) {
+      const idx = content.indexOf(text, fromIndex);
+      if (idx === -1) break;
+      count++;
+      fromIndex = idx + text.length;
+    }
+    const status = count === 0 ? "absent" : "present";
+    list.push({ path: rel, text, replacedBy, status, occurrenceCount: count });
+  }
+  return list;
+}
+
+/**
  * Migration state machine. States advance monotonically as facts
  * are proven; completion is the final state only. No tool ever advances a
  * state by writing — states are judgements over read-only evidence.
@@ -317,6 +426,9 @@ export async function assessVerificationEvidence(rootAbs, verification, plannedP
  * - every legacy implementation removed or provably absent — an invalid
  *   (containment-rejected or malformed) entry fails closed like a present
  *   one; dual-track wiring alone is not completion;
+ * - every declared legacy reference absent from its retained file — an
+ *   invalid (containment-rejected, unreadable, malformed) entry fails
+ *   closed like a present one;
  * - no incomplete/invalid/expired temporary exceptions;
  * - no unresolved adoption conflicts;
  * - all four verification evidence documents proven with matching identity.
@@ -329,6 +441,7 @@ export async function assessVerificationEvidence(rootAbs, verification, plannedP
 export function evaluateMigrationCompletion({
   manifestDeclared,
   legacyExitList,
+  legacyReferenceExitList,
   exceptionFindings,
   conflicts,
   binding,
@@ -383,6 +496,13 @@ export function evaluateMigrationCompletion({
       adoptionBlockers.push(`legacy implementation still present: ${item.path}`);
     } else if (item.status === "invalid") {
       adoptionBlockers.push(`legacy entry cannot be verified (fail-closed): ${item.path ?? "<malformed>"} (${item.invalidKind ?? "unknown"})`);
+    }
+  }
+  for (const ref of legacyReferenceExitList ?? []) {
+    if (ref.status === "present") {
+      adoptionBlockers.push(`legacy reference still present in ${ref.path}: ${ref.occurrenceCount} occurrence(s)`);
+    } else if (ref.status === "invalid") {
+      adoptionBlockers.push(`legacy reference cannot be verified (fail-closed): ${ref.path ?? "<malformed>"} (${ref.invalidKind ?? "unknown"})`);
     }
   }
   for (const finding of exceptionFindings ?? []) {

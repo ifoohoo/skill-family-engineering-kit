@@ -1,1564 +1,1748 @@
 {
-  "schemaVersion": 1,
-  "kind": "skill-family.documentation-capability-catalog",
-  "bundle": "locale-overlay",
-  "locale": "en",
-  "generatedFrom": [
-    "package.json",
-    "packages/skill-family-contracts/package.json",
-    "packages/skill-family-harness-node/package.json",
-    "packages/skill-family-engineering-kit/package.json",
-    "packages/skill-family-contracts/src/index.mjs",
-    "packages/skill-family-harness-node/src/index.mjs",
-    "packages/skill-family-engineering-kit/src/index.mjs",
-    "packages/skill-family-engineering-kit/src/cli.mjs",
-    "packages/skill-family-contracts/src/registry.json",
-    "profiles/README.md",
-    "docs/architecture.md",
-    "docs/status/current.md"
-  ],
-  "capabilities": [
-    {
-      "id": "foundation.contracts.object-validation",
-      "intent": "Compile and validate the 18 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
-      "useWhen": [
-        "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
-        "Need to detect the document dialect and select the strict or tolerant validation policy"
-      ],
-      "doNotUseWhen": [
-        "Need to validate consumer-owned business Schemas (which consumers should own themselves; Foundation does not replace them)",
-        "Need to mix domain semantic validation into the generic contract"
-      ],
-      "prerequisites": [
-        "The document to validate carries the $id of a registered contract object",
-        "Node >= 22.22.2"
-      ],
-      "inputs": [
-        "Contract document object (any JSON value)",
-        "Target contract object $id or schema",
-        "Validation policy (strict | tolerant, default strict)"
-      ],
-      "outputs": [
-        "Validation passes: returns {valid:true} (no errorCode field)",
-        "Validation fails: returns {valid:false, errorCode, errors}, without throwing",
-        "The first compilation result is written to the Ajv compile cache and reused for subsequent identical (schemaId,dialect,policy)"
-      ],
-      "sideEffects": [
-        "No filesystem, Git, network, or process side effects (pure function + in-memory cache)"
-      ],
-      "failureSemantics": [
-        "SFC1002: unknown contract object $id not registered (returns valid:false, without throwing)",
-        "SFC1001: document does not conform to a registered Schema (returns valid:false, errors include Ajv keyword details)",
-        "Callers judge success via the valid field of the return value, not via try/catch — validateDocument never throws",
-        "compileSchema throws ContractsError (SFC1012 SCHEMA_COMPILE_FAILED) for an uncompilable schema; detectDialect throws ContractsError (SFC1006) for an unknown dialect"
-      ],
-      "invariants": [
-        "The same (object, dialect, policy) reuses the compile cache; repeated validation does not recompile",
-        "Only Ajv 8.20.0 is accepted; no other validator is wired in"
-      ],
-      "ownedByCaller": [
-        "Semantic interpretation of concrete business fields",
-        "Domain-level validation rules"
-      ],
-      "routeElsewhere": [
-        "Consumer business Schema validation: stays with the caller",
-        "Remote publish writes: route to release-skill"
-      ]
-    },
-    {
-      "id": "foundation.contracts.registry-protocol",
-      "intent": "Register and look up contract object Schema $id and protocol names, serving as the single authority for protocol names and Schemas.",
-      "useWhen": [
-        "Need to find a registered Schema by object name or $id",
-        "Need to find a kernel protocol definition by protocol name"
-      ],
-      "doNotUseWhen": [
-        "Need to add a fourth class of registered object (the 18-object set must not be extended without an ADR)"
-      ],
-      "prerequisites": [
-        "registry.json is shipped with the package",
-        "Node >= 22.22.2"
-      ],
-      "inputs": [
-        "Object name, Schema $id, or protocol name"
-      ],
-      "outputs": [
-        "Registered Schema metadata or protocol definition",
-        "Returns undefined or throws on a cache miss"
-      ],
-      "sideEffects": [
-        "No filesystem, Git, network, or process side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "SFC1003: duplicate $id registration",
-        "SFC1004: duplicate protocol registration"
-      ],
-      "invariants": [
-        "registry.json's schemaVersion=1 and contractsVersion=1.4.0 are the single authority",
-        "The set of 18 top-level objects is fixed; additions require an ADR"
-      ],
-      "ownedByCaller": [
-        "Interpretation of an object's business meaning"
-      ],
-      "routeElsewhere": [
-        "Publish status: route to release-skill"
-      ]
-    },
-    {
-      "id": "foundation.contracts.kernel-protocol",
-      "intent": "Load and validate the skill-family.kernel.operation protocol (stable, Contracts 1.4.0), defining the operation request/result structure.",
-      "useWhen": [
-        "Need to parse or validate operation-request / operation-result structures",
-        "Need to look up a parameter contract by operation name"
-      ],
-      "doNotUseWhen": [
-        "Need to define business operation semantics (semantics are owned by the consumer)"
-      ],
-      "prerequisites": [
-        "kernel-protocol.json is shipped with the package"
-      ],
-      "inputs": [
-        "Protocol name, operation name, operation parameters"
-      ],
-      "outputs": [
-        "Protocol definition or operation parameter validation result"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "SFC2002: unknown operation",
-        "SFC2003: parameters violate the protocol"
-      ],
-      "invariants": [
-        "The kernel protocol version is bound to the Contracts version"
-      ],
-      "ownedByCaller": [
-        "Concrete business semantics of the operation"
-      ],
-      "routeElsewhere": [
-        "Business state machine / retries / terminal state: route to loop-agent"
-      ]
-    },
-    {
-      "id": "foundation.contracts.mandatory-checks",
-      "intent": "Run mechanical checks for the 9 classes of mandatory rule (budget cap 20, absolute cap 30), compiling all Schemas in the registry uniformly.",
-      "useWhen": [
-        "Need to confirm the contract set satisfies the mandatory mechanical rules",
-        "Need to collect unresolved references (unresolved refs)"
-      ],
-      "doNotUseWhen": [
-        "Need semantic-level review (belongs to external independent review; a second gate is not maintained in the repo)"
-      ],
-      "prerequisites": [
-        "registry and rules are loaded"
-      ],
-      "inputs": [
-        "The contract set to check, or a synthetic registry/fixtures"
-      ],
-      "outputs": [
-        "Check conclusion and list of unresolved references"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "SFC1002/1003/1004/1005/1006/1008/1009/1010: corresponding rule violated"
-      ],
-      "invariants": [
-        "CHECK_TYPES is a closed set of 9 classes",
-        "RULE_BUDGET bounds firstVersionMax and absoluteMax"
-      ],
-      "ownedByCaller": [
-        "Interpretation of the business rationale behind the rules"
-      ],
-      "routeElsewhere": [
-        "Semantic accept/reject: external independent review"
-      ]
-    },
-    {
-      "id": "foundation.contracts.fixture-verification",
-      "intent": "Enumerate and validate public/fictional fixtures, confirming they match the expect declaration of the corresponding contract object.",
-      "useWhen": [
-        "Need to prove a contract object is covered by a fixture",
-        "Need to run positive/negative/dialect-boundary class fixtures"
-      ],
-      "doNotUseWhen": [
-        "Need to treat a fixture as a business oracle (fixtures only prove structure, not semantics)"
-      ],
-      "prerequisites": [
-        "The fixtures directory holds public or entirely fictional data"
-      ],
-      "inputs": [
-        "A fixture class or a single fixture identifier"
-      ],
-      "outputs": [
-        "Per-fixture validation results"
-      ],
-      "sideEffects": [
-        "No side effects (read-only fixtures)"
-      ],
-      "failureSemantics": [
-        "SFC1010: a negative fixture failed to produce the expected failure"
-      ],
-      "invariants": [
-        "Fixtures and the auditor's expected results are not shared"
-      ],
-      "ownedByCaller": [
-        "The business intent behind a fixture"
-      ],
-      "routeElsewhere": [
-        "Domain audit semantics: route to an independent audit consumer"
-      ]
-    },
-    {
-      "id": "foundation.contracts.error-codes",
-      "intent": "Define and register a stable error-code system, provide validation and assertion entry points, and guarantee error codes do not drift.",
-      "useWhen": [
-        "Need to throw or classify a ContractsError carrying a stable error code",
-        "Need to assert that an error code is registered"
-      ],
-      "doNotUseWhen": [
-        "Need to define business error semantics outside the Foundation scope"
-      ],
-      "prerequisites": [
-        "error-codes.json is shipped with the package"
-      ],
-      "inputs": [
-        "Error-code string, error context"
-      ],
-      "outputs": [
-        "Error object carrying a stable error code and details"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "Assertion fails for an unregistered error code",
-        "Frozen-object immutability violation"
-      ],
-      "invariants": [
-        "The error-code registry is frozen and cannot be added to or removed from at runtime"
-      ],
-      "ownedByCaller": [
-        "Business attribution of an error code"
-      ],
-      "routeElsewhere": [
-        "Semantic review conclusion: external independent review"
-      ]
-    },
-    {
-      "id": "foundation.contracts.audit-surface",
-      "intent": "Serialize the contract surface deterministically (canonical JSON + sha256 digest) for read-only projection by audit consumers.",
-      "useWhen": [
-        "Need to generate a reproducible digest for the contract surface",
-        "Need to describe the audit surface structure"
-      ],
-      "doNotUseWhen": [
-        "Need to audit domain semantics (semantics and final accept/reject belong to external review)"
-      ],
-      "prerequisites": [
-        "AUDIT_SURFACE_VERSION=1、AUDIT_DIGEST_ALGORITHMS=[sha256]"
-      ],
-      "inputs": [
-        "Any JSON document"
-      ],
-      "outputs": [
-        "canonical string and sha256 digest"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "Non-JSON values, unknown algorithms, and freeze violations all throw"
-      ],
-      "invariants": [
-        "The digest algorithm is sha256 only; the version number is fixed"
-      ],
-      "ownedByCaller": [
-        "Audit semantic conclusion"
-      ],
-      "routeElsewhere": [
-        "Domain audit semantics: route to an independent audit consumer"
-      ]
-    },
-    {
-      "id": "foundation.harness.contract-validation",
-      "intent": "Resolve the contract context in the Node runtime and reuse the Contracts validator to validate contract documents and cache validator instances.",
-      "useWhen": [
-        "Need to validate Foundation contract documents inside Node",
-        "Need to reuse a validator cache keyed by schema"
-      ],
-      "doNotUseWhen": [
-        "Need to validate in a non-Node runtime (only a Node implementation exists currently)"
-      ],
-      "prerequisites": [
-        "skill-family-contracts is installed"
-      ],
-      "inputs": [
-        "Schema context, contract document"
-      ],
-      "outputs": [
-        "Validation result, reusing the cached Ajv instance"
-      ],
-      "sideEffects": [
-        "In-process in-memory validator cache (no file/Git/network)"
-      ],
-      "failureSemantics": [
-        "Counterexample matrices such as date-time trigger an SFC validation failure"
-      ],
-      "invariants": [
-        "The validator is cached keyed by (schema); the size is queryable"
-      ],
-      "ownedByCaller": [
-        "Semantics of contract business fields"
-      ],
-      "routeElsewhere": [
-        "Contract object definition: route to Contracts"
-      ]
-    },
-    {
-      "id": "foundation.harness.path-containment",
-      "intent": "Classify external path inputs and resolve them inside the containment root, rejecting path-traversal, symlink-escape, and realpath-escape.",
-      "useWhen": [
-        "Need to confine a user/caller-supplied path within a root directory",
-        "Need to safely read a contained file"
-      ],
-      "doNotUseWhen": [
-        "Need to put the business rules for file selection into Foundation (business rules are owned by the caller)"
-      ],
-      "prerequisites": [
-        "The caller supplies an explicit root directory (containment boundary)"
-      ],
-      "inputs": [
-        "Root directory, relative/absolute path to resolve"
-      ],
-      "outputs": [
-        "Contained absolute path or the read file content"
-      ],
-      "sideEffects": [
-        "Read-only filesystem access (read/resolve)"
-      ],
-      "failureSemantics": [
-        "SFC2004: path-traversal / symlink-escape / realpath-escape, carrying a stable kind",
-        "Windows drive-letter/UNC escapes are rejected as well"
-      ],
-      "invariants": [
-        "All resolution results must fall within the root directory"
-      ],
-      "ownedByCaller": [
-        "Which paths are business-permitted selection rules"
-      ],
-      "routeElsewhere": [
-        "Business file-selection semantics: stay with the caller"
-      ]
-    },
-    {
-      "id": "foundation.harness.atomic-write",
-      "intent": "Atomically write a regular file within an already-contained path via temp file + fsync + rename, rolling back on failure without leaving residue.",
-      "useWhen": [
-        "Need to update a regular text/binary file within a contained directory",
-        "Need to guarantee the write is either fully visible or invisible"
-      ],
-      "doNotUseWhen": [
-        "Need to write to a non-contained path (out-of-bounds is rejected by path-containment)"
-      ],
-      "prerequisites": [
-        "The target path is verified inside the root directory by path-containment"
-      ],
-      "inputs": [
-        "Contained target path, file content (string or Buffer)"
-      ],
-      "outputs": [
-        "The written file, byte-identical to the input"
-      ],
-      "sideEffects": [
-        "Create a temp file inside the root directory and finally rename to overwrite the target"
-      ],
-      "failureSemantics": [
-        "Out-of-bounds path or illegal data type throws and rolls back the temp file",
-        "Binary content is preserved byte-for-byte"
-      ],
-      "invariants": [
-        "fsync before rename, guaranteeing crash consistency"
-      ],
-      "ownedByCaller": [
-        "Business correctness of the written content"
-      ],
-      "routeElsewhere": [
-        "Content-selection business rules: stay with the caller"
-      ]
-    },
-    {
-      "id": "foundation.harness.temporary-workspace",
-      "intent": "Create and manage a temporary working directory, providing a safe lifecycle via a with syntax that cleans up on exit.",
-      "useWhen": [
-        "Need to build intermediate artifacts inside an isolated directory",
-        "Need to guarantee the temp directory is reclaimed on exceptions"
-      ],
-      "doNotUseWhen": [
-        "Need to persist artifacts (they should be explicitly materialized to a contained path)"
-      ],
-      "prerequisites": [
-        "The host provides a writable temp directory (e.g. os.tmpdir)"
-      ],
-      "inputs": [
-        "Optional prefix/label"
-      ],
-      "outputs": [
-        "Temporary working directory handle"
-      ],
-      "sideEffects": [
-        "Create a subdirectory in the system temp directory, deleted on exit"
-      ],
-      "failureSemantics": [
-        "Creation failure rejects; the temp directory is still cleaned up when the with callback throws"
-      ],
-      "invariants": [
-        "The temp directory path does not escape the host temp root"
-      ],
-      "ownedByCaller": [
-        "Final destination of the temp artifacts"
-      ],
-      "routeElsewhere": [
-        "Persistent state: route to state-store"
-      ]
-    },
-    {
-      "id": "foundation.harness.resource-closure",
-      "intent": "Compute a deterministic, deduplicated, ordered resource closure with a sha256 digest, for adapter text closure and build manifests.",
-      "useWhen": [
-        "Need to normalize a set of resources into a reproducible closure",
-        "Need to generate a digest for a build manifest"
-      ],
-      "doNotUseWhen": [
-        "Need to include binary resources (only text closures are supported currently)"
-      ],
-      "prerequisites": [
-        "Resources are serializable text entries"
-      ],
-      "inputs": [
-        "Resource list (path + content)"
-      ],
-      "outputs": [
-        "Deterministic closure object and sha256 digest"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "Illegal/duplicate resource declarations throw or reject"
-      ],
-      "invariants": [
-        "Deduplication and ordering are fixed; identical input always yields the same digest"
-      ],
-      "ownedByCaller": [
-        "Business meaning of resources"
-      ],
-      "routeElsewhere": [
-        "Binary projection: explicitly unsupported"
-      ]
-    },
-    {
-      "id": "foundation.harness.request-processing",
-      "intent": "Parse the operation-request and drive the operation-result pipeline, producing terminal states REJECTED / FAILED / SUCCESS.",
-      "useWhen": [
-        "Need to normalize an inbound request into a unified operation-request structure",
-        "Need to deterministically produce an operation result"
-      ],
-      "doNotUseWhen": [
-        "Need model calls or business orchestration (neither is in the Foundation scope)"
-      ],
-      "prerequisites": [
-        "The request conforms to the kernel protocol structure"
-      ],
-      "inputs": [
-        "Raw request payload"
-      ],
-      "outputs": [
-        "Normalized operation-request and terminal operation-result"
-      ],
-      "sideEffects": [
-        "No side effects (pure-function pipeline)"
-      ],
-      "failureSemantics": [
-        "Parse failure enters the REJECTED/FAILED terminal state carrying a stable error code"
-      ],
-      "invariants": [
-        "The terminal-state set is fixed to REJECTED/FAILED/SUCCESS"
-      ],
-      "ownedByCaller": [
-        "Concrete business semantics of the operation"
-      ],
-      "routeElsewhere": [
-        "Business state machine / retries: route to loop-agent"
-      ]
-    },
-    {
-      "id": "foundation.harness.report",
-      "intent": "Validate the report-model, render Markdown, bind digests, and run tiered checks deterministically; the human report is derived from machine results rather than freely authored.",
-      "useWhen": [
-        "Need to render machine results into a human-readable report",
-        "Need to bind the model/result/report triple-digest to prevent tampering"
-      ],
-      "doNotUseWhen": [
-        "Need to freely author a report from open business outputs (forbidden)"
-      ],
-      "prerequisites": [
-        "REPORT_RENDERER_NAME / VERSION come from their respective packages (currently 0.3.0)",
-        "SUPPORTED_REPORT_LOCALES = [zh-CN, en-US]"
-      ],
-      "inputs": [
-        "report-model, render options (locale/audience/style)"
-      ],
-      "outputs": [
-        "Markdown text, binding object, tiered-check findings"
-      ],
-      "sideEffects": [
-        "No file/Git/network side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "SFC3001/3002/3003: model validation/binding/check hard failure"
-      ],
-      "invariants": [
-        "Markdown is escaped deterministically; the dual outputs are written as a pair, and path aliases and input overwrites are rejected"
-      ],
-      "ownedByCaller": [
-        "Interpretation of the report's business conclusion"
-      ],
-      "routeElsewhere": [
-        "Report generation orchestration: Kit report sub-action"
-      ]
-    },
-    {
-      "id": "foundation.harness.host-adapter",
-      "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, materialize the build, probe the version vector (spawn disabled by default).",
-      "useWhen": [
-        "Need to turn a host adapter source into a reproducible text closure",
-        "Need to materialize build artifacts at a contained location",
-        "Need to probe the host version vector (without auto-executing the host binary)"
-      ],
-      "doNotUseWhen": [
-        "Need host apply/install/update/uninstall (explicitly unsupported)",
-        "Need a binary adapter source (only text closures are supported)"
-      ],
-      "prerequisites": [
-        "The adapter source is a declared text closure"
-      ],
-      "inputs": [
-        "adapter source, target path"
-      ],
-      "outputs": [
-        "Build closure, validated manifest, materialized artifacts"
-      ],
-      "sideEffects": [
-        "Create a sibling staging area at the contained target and a single rename",
-        "Probe does not spawn by default and does not use PATH"
-      ],
-      "failureSemantics": [
-        "Mismatched manifest digest, existing target, or untrusted executable all throw"
-      ],
-      "invariants": [
-        "materialize is an atomic sibling + rename"
-      ],
-      "ownedByCaller": [
-        "Concrete host business semantics"
-      ],
-      "routeElsewhere": [
-        "host apply: explicitly unsupported",
-        "Host diff declaration: route to Profile + Kit host sub-action"
-      ]
-    },
-    {
-      "id": "foundation.harness.state-store",
-      "intent": "Provide a persistent state foundation: append-only events, hash chain, derived snapshots, plus lock checks and explicit recovery; event meaning and reducer transitions are owned by the caller.",
-      "useWhen": [
-        "Need to persist an event log and guarantee order and integrity",
-        "Need to rebuild or validate derived snapshots",
-        "Need to check or recover a cooperative single-writer lock"
-      ],
-      "doNotUseWhen": [
-        "Need to define a workflow state machine in Foundation (forbidden)",
-        "Need to defend against same-privilege malicious processes (fencing does not promise this scenario)"
-      ],
-      "prerequisites": [
-        "STATE_GENESIS_DIGEST as the chain origin"
-      ],
-      "inputs": [
-        "Event payload, snapshot, lock token"
-      ],
-      "outputs": [
-        "Events, hash-chain validation result, snapshot"
-      ],
-      "sideEffects": [
-        "Read/write the event log and snapshot files at the contained path",
-        "Write a lock file for the cooperative single-writer"
-      ],
-      "failureSemantics": [
-        "Broken hash chain, lock fencing conflict, or recovery failure throws"
-      ],
-      "invariants": [
-        "The event log is the single authority; the snapshot is a derived cache",
-        "The local cooperative single-writer uses fencing and explicit recovery"
-      ],
-      "ownedByCaller": [
-        "Business meaning of events, reducer transitions, the confirmOwnerTerminated trust anchor"
-      ],
-      "routeElsewhere": [
-        "Business state machine / terminal state: route to loop-agent"
-      ]
-    },
-    {
-      "id": "foundation.harness.errors",
-      "intent": "Define the Harness mechanism error types and stable error classes, unifying error classification.",
-      "useWhen": [
-        "Need to throw a HarnessError carrying a stable kind"
-      ],
-      "doNotUseWhen": [
-        "Need to define business error semantics"
-      ],
-      "prerequisites": [],
-      "inputs": [
-        "Error kind, context"
-      ],
-      "outputs": [
-        "Error object carrying a stable kind"
-      ],
-      "sideEffects": [
-        "No side effects (pure function)"
-      ],
-      "failureSemantics": [
-        "Illegal kind invocation throws"
-      ],
-      "invariants": [
-        "HARNESS_EXCLUSIONS explicitly excludes release-state / remote-network-access / business-semantics / workflow-orchestration / model-calls / git-writes"
-      ],
-      "ownedByCaller": [
-        "Business attribution of the error"
-      ],
-      "routeElsewhere": [
-        "Business semantics: stay with the caller"
-      ]
-    },
-    {
-      "id": "foundation.kit.scaffold",
-      "intent": "Generate a precise set of hosted files in a new project skeleton (atomic + path containment), without overwriting a non-empty existing repo.",
-      "useWhen": [
-        "Need to generate a minimal verifiable skeleton for a new skill-family project",
-        "The target directory is empty or contains only containable content"
-      ],
-      "doNotUseWhen": [
-        "Need to overwrite an existing non-empty repo (use adopt-plan instead)"
-      ],
-      "prerequisites": [
-        "The target is a writable empty directory",
-        "Node >= 22.22.2"
-      ],
-      "inputs": [
-        "Target root, skeleton options (id, etc.)"
-      ],
-      "outputs": [
-        "The precise set of hosted skeleton files"
-      ],
-      "sideEffects": [
-        "Create files at the contained target (atomic + contained)"
-      ],
-      "failureSemantics": [
-        "Non-empty target or illegal kebab id throws"
-      ],
-      "invariants": [
-        "Only write to empty targets, atomic + contained",
-        "The skeleton set matches the scaffold-conformance fixture"
-      ],
-      "ownedByCaller": [
-        "Business project content"
-      ],
-      "routeElsewhere": [
-        "Existing-repo adoption: route to adopt-plan"
-      ]
-    },
-    {
-      "id": "foundation.kit.adopt-plan",
-      "intent": "Perform a strict read-only inventory of an existing repo (classification, nested-repo discovery, migration list, completion judgment), writing no files and migrating nothing automatically.",
-      "useWhen": [
-        "Need to classify an existing repo as direct-adoption / compatibility-layer / keep-business / foundation-gap",
-        "Need to generate a handoff draft or a completion judgment for migration"
-      ],
-      "doNotUseWhen": [
-        "Need to auto-rewrite the existing repo (writing files and auto-migration are forbidden)"
-      ],
-      "prerequisites": [
-        "The target repo exists and is read-only accessible"
-      ],
-      "inputs": [
-        "Target root, migration-list path"
-      ],
-      "outputs": [
-        "Adoption classification, completion judgment, handoff draft (output only, not written to disk)"
-      ],
-      "sideEffects": [
-        "No file writes (strictly read-only)",
-        "May trigger read-only git probes"
-      ],
-      "failureSemantics": [
-        "Missing fields in an exception, or not having exited the old implementation, makes the completion judgment false"
-      ],
-      "invariants": [
-        "No file writes, no auto-migration"
-      ],
-      "ownedByCaller": [
-        "Migration decisions for existing business code"
-      ],
-      "routeElsewhere": [
-        "Actual migration execution: the caller is responsible"
-      ]
-    },
-    {
-      "id": "foundation.kit.projection",
-      "intent": "Mechanically project managed facts to a target (e.g. a public mirror) per the projection manifest; write only after all checks pass, with zero-write/rollback on any failure.",
-      "useWhen": [
-        "Need to project authoritative data to a public snapshot or release mirror",
-        "Need to guarantee the projection matches the target"
-      ],
-      "doNotUseWhen": [
-        "Need to overwrite handwritten files (forbidden)"
-      ],
-      "prerequisites": [
-        "The projection manifest is registered"
-      ],
-      "inputs": [
-        "Projection manifest, target root"
-      ],
-      "outputs": [
-        "Projected files (only when all checks pass)"
-      ],
-      "sideEffects": [
-        "Write projected files at the contained target",
-        "Two-phase: write only after all checks pass, roll back on failure"
-      ],
-      "failureSemantics": [
-        "Unauthorized, handwritten conflict, out-of-bounds, or content conflict all throw without residue"
-      ],
-      "invariants": [
-        "Never overwrite handwritten files",
-        "Zero write on any check failure"
-      ],
-      "ownedByCaller": [
-        "Business meaning of the projected content"
-      ],
-      "routeElsewhere": [
-        "Remote publish: route to release-skill"
-      ]
-    },
-    {
-      "id": "foundation.kit.check",
-      "intent": "Diagnose only, do not fix: run the seven check classes contracts/drift/closure/version/docs/git/identity and output findings.",
-      "useWhen": [
-        "Need to surface engineering inconsistencies without auto-modifying",
-        "Need to narrow the check scope via --only"
-      ],
-      "doNotUseWhen": [
-        "Need auto-fix (forbidden; check writes no fixes)"
-      ],
-      "prerequisites": [],
-      "inputs": [
-        "--only values: contracts|drift|closure|version|docs|git|identity"
-      ],
-      "outputs": [
-        "Findings list; exit code findings=1, mechanism=2"
-      ],
-      "sideEffects": [
-        "No file writes (read-only diagnosis)"
-      ],
-      "failureSemantics": [
-        "findings exit code 1; mechanism rejection exit code 2"
-      ],
-      "invariants": [
-        "CHECK_CLASSES is a closed set of seven classes, not expanded"
-      ],
-      "ownedByCaller": [
-        "Business disposition of each finding"
-      ],
-      "routeElsewhere": [
-        "Auto-fix execution: the caller"
-      ]
-    },
-    {
-      "id": "foundation.kit.report",
-      "intent": "Orchestrate the human report as a CLI sub-action: projection report rendering, check report tiering, writing to stdout by default.",
-      "useWhen": [
-        "Need to produce report text from an already-rendered model",
-        "Need to run a tiered check on the report"
-      ],
-      "doNotUseWhen": [
-        "Need to freely author a report from open business outputs (forbidden)"
-      ],
-      "prerequisites": [
-        "A Harness report-model already exists"
-      ],
-      "inputs": [
-        "report-model, --out/--binding options"
-      ],
-      "outputs": [
-        "Markdown text; --out/--binding writes to disk"
-      ],
-      "sideEffects": [
-        "Writes to stdout by default; explicit --out/--binding writes the contained file"
-      ],
-      "failureSemantics": [
-        "Hard failure counts as a finding; illegal arguments reject"
-      ],
-      "invariants": [
-        "The report is rendered deterministically from machine results"
-      ],
-      "ownedByCaller": [
-        "Interpretation of the report conclusion"
-      ],
-      "routeElsewhere": [
-        "Report mechanism: route to Harness report"
-      ]
-    },
-    {
-      "id": "foundation.kit.git-probe",
-      "intent": "Probe Git status and facts via a read-only allowlist for diagnosis and adoption inventory, performing no Git write operations.",
-      "useWhen": [
-        "Need to read-only discover the current Git status (status/ls-files/check-ignore)",
-        "Need to provide Git facts for adoption inventory"
-      ],
-      "doNotUseWhen": [
-        "Need Git write operations (stage/commit/push/tag, explicitly forbidden)"
-      ],
-      "prerequisites": [],
-      "inputs": [
-        "Target root"
-      ],
-      "outputs": [
-        "Git status and facts (read-only)"
-      ],
-      "sideEffects": [
-        "Read-only calls to git status/ls-files/check-ignore (parameter vector frozen)"
-      ],
-      "failureSemantics": [
-        "Parameter vectors not in the allowlist are rejected"
-      ],
-      "invariants": [
-        "GIT_READ_ONLY_ALLOWLIST bounds the subcommands that may be called"
-      ],
-      "ownedByCaller": [
-        "Authorization for Git write operations"
-      ],
-      "routeElsewhere": [
-        "Git write operations: see the Git lifecycle guide; Foundation does not own them"
-      ]
-    },
-    {
-      "id": "foundation.kit.host",
-      "intent": "Inject a concrete host Profile and trusted driver, providing describe/build/probe/plan; apply is stably rejected, and install/update/uninstall are unimplemented.",
-      "useWhen": [
-        "Need to describe a registered host (claude/codex)",
-        "Need to probe, build, or plan host integration (read-only mechanism layer)"
-      ],
-      "doNotUseWhen": [
-        "Need host apply/install/update/uninstall (explicitly unsupported)",
-        "Need a full Qoder driver (that host is unsupported)"
-      ],
-      "prerequisites": [
-        "The host Profile is registered in profiles/hosts",
-        "Trusted drivers are only claude-version-v1 / codex-version-v1"
-      ],
-      "inputs": [
-        "Host identifier, probe/plan options"
-      ],
-      "outputs": [
-        "Host description, probe result, build artifacts, plan"
-      ],
-      "sideEffects": [
-        "build/materialize writes artifacts at the contained target",
-        "Probe does not spawn by default"
-      ],
-      "failureSemantics": [
-        "An unsupported host (e.g. qoder) throws",
-        "apply is stably rejected",
-        "Missing probe facts throws"
-      ],
-      "invariants": [
-        "HOST_DRIVER_IDS contains only the two trusted drivers",
-        "apply is stably rejected"
-      ],
-      "ownedByCaller": [
-        "Host business semantics"
-      ],
-      "routeElsewhere": [
-        "host apply: explicitly unsupported",
-        "Full Qoder driver: unsupported"
-      ]
-    },
-    {
-      "id": "foundation.kit.licensing",
-      "intent": "Load and validate Profile licensing data, generating license/notice/identity-record content.",
-      "useWhen": [
-        "Need to generate LICENSE/NOTICE/identity records per Profile",
-        "Need to validate the legitimacy of a licensing Profile"
-      ],
-      "doNotUseWhen": [
-        "Need to make business licensing decisions (semantics owned by the caller)"
-      ],
-      "prerequisites": [
-        "profiles/licensing/registry.json + schema.json exist"
-      ],
-      "inputs": [
-        "Profile identifier, variant selection"
-      ],
-      "outputs": [
-        "License/notice/identity-record text"
-      ],
-      "sideEffects": [
-        "No side effects (pure-function generation)"
-      ],
-      "failureSemantics": [
-        "Unspecified variant among many, or illegal Profile, throws"
-      ],
-      "invariants": [
-        "By default the first registry variant is taken; multiple variants must be explicitly selected"
-      ],
-      "ownedByCaller": [
-        "Licensing business semantics"
-      ],
-      "routeElsewhere": [
-        "Licensing decisions: stay with the caller"
-      ]
-    },
-    {
-      "id": "foundation.kit.identity-check",
-      "intent": "Load identity records and the manifest, check identity drift, and validate consistency against the Profile.",
-      "useWhen": [
-        "Need to detect package/identity drift",
-        "Need to validate identity against the Profile"
-      ],
-      "doNotUseWhen": [
-        "Need to auto-fix drift (check does not fix)"
-      ],
-      "prerequisites": [],
-      "inputs": [
-        "Target root, Profile identifier"
-      ],
-      "outputs": [
-        "Drift findings, validation conclusion"
-      ],
-      "sideEffects": [
-        "Read-only read of target files"
-      ],
-      "failureSemantics": [
-        "Drift or validation failure produces findings"
-      ],
-      "invariants": [
-        "Does not modify target files"
-      ],
-      "ownedByCaller": [
-        "Business disposition of drift"
-      ],
-      "routeElsewhere": [
-        "Auto-fix: the caller"
-      ]
-    },
-    {
-      "id": "foundation.kit.cli",
-      "intent": "Provide the skill-family-kit CLI entry point, dispatching the four top-level commands and sub-actions, and rejecting mutation flags at the entry point.",
-      "useWhen": [
-        "Need to run scaffold/adopt-plan/projection/check from the command line",
-        "Need to run report/host sub-actions"
-      ],
-      "doNotUseWhen": [
-        "Need a fifth top-level command (the command set is fixed at 4, not expanded)"
-      ],
-      "prerequisites": [
-        "Node >= 22.22.2"
-      ],
-      "inputs": [
-        "argv"
-      ],
-      "outputs": [
-        "Command result; exit code ok=0/findings=1/rejected=2"
-      ],
-      "sideEffects": [
-        "Produces contained file writes or read-only probes depending on the command"
-      ],
-      "failureSemantics": [
-        "Unknown command, or rejected flag (e.g. --apply), exit code 2"
-      ],
-      "invariants": [
-        "TOP_LEVEL_COMMANDS is fixed at 4",
-        "REFUSED_MUTATION_FLAGS is rejected at the parseOptions entry point"
-      ],
-      "ownedByCaller": [
-        "Business goal of the command"
-      ],
-      "routeElsewhere": [
-        "A fifth command: forbidden to add"
-      ]
-    },
-    {
-      "id": "foundation.profile.extension-spi",
-      "intent": "Declare the extension mechanism for host and project-shape differences: differences (adds/overrides/removes) and open extension points (host-projection/artifact-render/surface-scan), validating Profile legitimacy.",
-      "useWhen": [
-        "Need to declare project-shape differences without changing the common core",
-        "Need to inject extension-point data resources into the stable SPI"
-      ],
-      "doNotUseWhen": [
-        "Need to stuff business semantics into the common core (coreOwned targets are off-limits)",
-        "Need to place an executable script into the Profile (the entrypoint must be a JSON data resource)"
-      ],
-      "prerequisites": [
-        "The Profile is a declarative diff and does not depend back on the common core"
-      ],
-      "inputs": [
-        "profileRoot、descriptorRelPath"
-      ],
-      "outputs": [
-        "SPI result code (SPE0000/1001..1005)"
-      ],
-      "sideEffects": [
-        "No side effects (read-only Profile validation)"
-      ],
-      "failureSemantics": [
-        "SPE1004: an entrypoint with an executable extension is rejected before any bytes are read",
-        "Out-of-bounds target or illegal diff structure throws"
-      ],
-      "invariants": [
-        "coreOwned = packages/commands/namespacePrefixes are off-limits targets",
-        "The entrypoint must be a JSON data resource"
-      ],
-      "ownedByCaller": [
-        "Business semantics of the difference"
-      ],
-      "routeElsewhere": [
-        "Common-core changes: must go through Contracts/Harness/Kit"
-      ]
-    },
-    {
-      "id": "foundation.profile.public-plugin",
-      "intent": "Public sample Profile: declare three adds differences and three SPI data resources via public-plugin, as a readable example of the Profile shape.",
-      "useWhen": [
-        "Need a reference public Profile instance that conforms to the spec",
-        "Need to understand how the Profile descriptor and SPI resources are wired"
-      ],
-      "doNotUseWhen": [
-        "Need to put a private Profile or real business data into public docs (leakage forbidden)"
-      ],
-      "prerequisites": [
-        "base.contractsVersion = 1.4.0"
-      ],
-      "inputs": [
-        "Profile descriptor and each SPI data resource"
-      ],
-      "outputs": [
-        "A public Profile that passes verifyProfile"
-      ],
-      "sideEffects": [
-        "No side effects (declared data)"
-      ],
-      "failureSemantics": [
-        "Throws when the descriptor does not conform to the schema"
-      ],
-      "invariants": [
-        "Only public or entirely fictional samples are used"
-      ],
-      "ownedByCaller": [
-        "Profile business meaning"
-      ],
-      "routeElsewhere": [
-        "Private Profile: does not enter public docs"
-      ]
-    },
-    {
-      "id": "foundation.profile.licensing",
-      "intent": "Declare the licensing-data authority (registry + schema), executed by the Kit licensing entry through the contract validator, defaulting to the first variant.",
-      "useWhen": [
-        "Need to define licensing-data variants",
-        "Need to provide the data authority for Kit licensing"
-      ],
-      "doNotUseWhen": [
-        "Need to make business licensing decisions (semantics owned by the caller)"
-      ],
-      "prerequisites": [
-        "registry.json + schema.json exist"
-      ],
-      "inputs": [
-        "Licensing variant declaration"
-      ],
-      "outputs": [
-        "Licensing data for Kit to load"
-      ],
-      "sideEffects": [
-        "No side effects (declared data)"
-      ],
-      "failureSemantics": [
-        "Unspecified variant among many fails to load"
-      ],
-      "invariants": [
-        "All commercial payloads are currently disabled"
-      ],
-      "ownedByCaller": [
-        "Licensing business semantics"
-      ],
-      "routeElsewhere": [
-        "Licensing execution: the caller"
-      ]
-    },
-    {
-      "id": "foundation.profile.hosts",
-      "intent": "Register host diff declarations (claude/codex supported, qoder unsupported), providing the descriptor and registry for the Kit host sub-action.",
-      "useWhen": [
-        "Need to register diffs for supported hosts (claude/codex)",
-        "Need to provide declarative data for host integration"
-      ],
-      "doNotUseWhen": [
-        "Need to register a full Qoder driver (that host is unsupported)"
-      ],
-      "prerequisites": [
-        "The host descriptor is bound to a trusted driverId"
-      ],
-      "inputs": [
-        "Host identifier, descriptor fields"
-      ],
-      "outputs": [
-        "Host registry and descriptor"
-      ],
-      "sideEffects": [
-        "No side effects (declared data)"
-      ],
-      "failureSemantics": [
-        "qoder is marked unsupported and is rejected on reference"
-      ],
-      "invariants": [
-        "claude/codex have support=supported and are bound to a driverId; qoder has support=unsupported"
-      ],
-      "ownedByCaller": [
-        "Host business semantics"
-      ],
-      "routeElsewhere": [
-        "Full Qoder driver: unsupported"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.host-apply",
-      "intent": "Host apply (applying integration changes to the host runtime environment) is stably rejected in the read-only Phase D slice and is not implemented.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario that truly changes the host runtime environment (currently unavailable)"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "Throws: host apply is not implemented in the read-only Phase D slice"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Throws on call; the CLI-layer host-apply sub-action rejects as well"
-      ],
-      "invariants": [
-        "apply is stably rejected and is out of scope for the 0.2.x implementation"
-      ],
-      "ownedByCaller": [
-        "Final landing of host integration"
-      ],
-      "routeElsewhere": [
-        "Host application logic: the caller or a later version"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.host-install-update-uninstall",
-      "intent": "Host install/update/uninstall are all unimplemented and out of scope for Foundation 0.2.x.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring installation/update/uninstallation of host components"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (unimplemented)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "No corresponding entry point exists; calls should turn to external tools"
-      ],
-      "invariants": [
-        "Install/uninstall/update are all unimplemented"
-      ],
-      "ownedByCaller": [
-        "Host lifecycle management"
-      ],
-      "routeElsewhere": [
-        "Host lifecycle: external tools or a later version"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.qoder-driver",
-      "intent": "The full driver for the Qoder host is not frozen (No auditable non-interactive host driver is frozen), marked unsupported, referenced for structure only.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring actual execution on Qoder"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (unsupported)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Referencing the qoder driver throws"
-      ],
-      "invariants": [
-        "HOST_DRIVER_IDS contains only claude-version-v1 / codex-version-v1"
-      ],
-      "ownedByCaller": [
-        "Qoder integration"
-      ],
-      "routeElsewhere": [
-        "Qoder support: a later version or external"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.binary-adapter-source",
-      "intent": "The adapter source content supports only string (utf8 text closure); binary projection is out of scope.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Need to include binary resources in the adapter projection"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (binary explicitly unsupported)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Non-string content fails validation"
-      ],
-      "invariants": [
-        "The adapter source content type is fixed to string, utf8 only"
-      ],
-      "ownedByCaller": [
-        "Binary resource handling"
-      ],
-      "routeElsewhere": [
-        "Binary handling: external tools"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.remote-publish",
-      "intent": "Remote publish and all remote writes belong to release-skill; Foundation does not own them.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring publishing to npm/GitHub/Registry or remote writes"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (route to release-skill)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Foundation provides no remote-write entry point"
-      ],
-      "invariants": [
-        "contracts doesNotOwn remote writes; harness HARNESS_EXCLUSIONS contains remote-network-access; kit FORBIDDEN_SIDE_EFFECTS contains publish/remote-write"
-      ],
-      "ownedByCaller": [
-        "Publish process"
-      ],
-      "routeElsewhere": [
-        "Publish: release-skill"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.business-state-machine",
-      "intent": "Business state machines, task nodes, retries, terminal states, memory, and similar semantics are not part of Foundation; state-store only provides the foundation.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring a workflow state machine or business terminal state to be defined in Foundation"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (route to loop-agent)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Business state transitions should not be implemented within Foundation"
-      ],
-      "invariants": [
-        "Event meaning and reducer transitions remain consumer-owned"
-      ],
-      "ownedByCaller": [
-        "Business state machine semantics"
-      ],
-      "routeElsewhere": [
-        "Tasks/retries/rework/acceptance: loop-agent"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.model-orchestration",
-      "intent": "Model orchestration and workflow orchestration are out of the Foundation scope; only business-neutral mechanisms are provided.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring model calls or workflow orchestration"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (route to the corresponding orchestration layer)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Foundation contains no model calls or workflow engine"
-      ],
-      "invariants": [
-        "harness HARNESS_EXCLUSIONS contains workflow-orchestration / model-calls; contracts doesNotOwn generation"
-      ],
-      "ownedByCaller": [
-        "Orchestration semantics"
-      ],
-      "routeElsewhere": [
-        "Orchestration: the corresponding consumer or orchestration layer"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.domain-audit-semantics",
-      "intent": "Domain audit semantics and the final accept/reject conclusion belong to external independent review; Foundation only provides the audit surface (canonical + digest).",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring Foundation to own a domain audit oracle or semantic conclusion"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (route to an independent audit consumer)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Foundation does not carry domain audit semantics"
-      ],
-      "invariants": [
-        "audit-surface only performs deterministic serialization and contains no semantics"
-      ],
-      "ownedByCaller": [
-        "Audit semantic conclusion"
-      ],
-      "routeElsewhere": [
-        "Domain audit: independent audit consumer"
-      ]
-    },
-    {
-      "id": "foundation.unsupported.git-writes",
-      "intent": "Git write operations (stage/commit/push/tag/release) are out of the Foundation scope; only read-only probing is provided.",
-      "useWhen": [],
-      "doNotUseWhen": [
-        "Any scenario requiring Foundation to perform Git write operations"
-      ],
-      "prerequisites": [
-        "none"
-      ],
-      "inputs": [
-        "none"
-      ],
-      "outputs": [
-        "none (route to the Git lifecycle guide authorization flow)"
-      ],
-      "sideEffects": [
-        "none"
-      ],
-      "failureSemantics": [
-        "Foundation provides no Git write entry point"
-      ],
-      "invariants": [
-        "harness HARNESS_EXCLUSIONS contains git-writes; kit git-init/commit/push/tag are write-forbidden"
-      ],
-      "ownedByCaller": [
-        "Authorization for Git write operations"
-      ],
-      "routeElsewhere": [
-        "Git write operations: the Git lifecycle guide"
-      ]
-    },
-    {
-      "id": "foundation.contracts.quickstart-profile-candidate",
-      "intent": "Expose the Quickstart Profile v2 protocol and real-$id Resource, Task, and Result schema collection through skill-family-contracts/candidate/quickstart-profile for exact-version integration trials.",
-      "useWhen": [
-        "Need to inspect or validate the candidate Resource, Task, or Result shape before it is proposed for the frozen registry",
-        "The consumer can pin the exact skill-family-contracts package version and isolate candidate imports from its stable API"
-      ],
-      "doNotUseWhen": [
-        "Need a registry-listed or compatibility-frozen contract",
-        "Need Foundation to interpret domain audit semantics"
-      ],
-      "prerequisites": [
-        "Install an exact skill-family-contracts version that exports skill-family-contracts/candidate/quickstart-profile",
-        "Node >= 22.22.2"
-      ],
-      "inputs": [
-        "Document kind: resource, task, or result",
-        "Candidate document to validate"
-      ],
-      "outputs": [
-        "Cloned candidate schemas or a validation result containing valid, errors, and normalized data"
-      ],
-      "sideEffects": [
-        "No filesystem, Git, network, or process writes"
-      ],
-      "failureSemantics": [
-        "An unknown document kind throws TypeError",
-        "An invalid candidate document returns valid:false with Ajv findings"
-      ],
-      "invariants": [
-        "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
-        "Candidate schemas remain absent from src/registry.json and do not expand the 18 stable object classes",
-        "Stability is candidate: a later minor release may change or remove this subpath"
-      ],
-      "ownedByCaller": [
-        "Domain meaning of method, parameters, evidence, and domainResult",
-        "Decision to adopt or wrap the candidate API"
-      ],
-      "routeElsewhere": [
-        "Frozen production contracts: use the stable skill-family-contracts root export",
-        "Domain audit conclusions: route to an independent audit consumer"
-      ]
-    },
-    {
-      "id": "foundation.harness.quickstart-profile-candidate",
-      "intent": "Construct and verify an observation-bound candidate Task/Result exchange through skill-family-harness-node/candidate/quickstart-profile.",
-      "useWhen": [
-        "Need an early integration trial that binds a contained observation file to a candidate Task and terminal Result",
-        "Need a structured non-throwing verification result for an exact-version candidate exchange"
-      ],
-      "doNotUseWhen": [
-        "Need a domain auditor, method selector, retry orchestrator, or lifecycle owner",
-        "Need a compatibility-frozen Quickstart API"
-      ],
-      "prerequisites": [
-        "Install exact matching versions of skill-family-harness-node and skill-family-contracts",
-        "The observation path is contained under the supplied root"
-      ],
-      "inputs": [
-        "Contained root and observation path",
-        "Operation identity, method, parameters, and run/stage/attempt correlation",
-        "Candidate Task and Result documents for verification"
-      ],
-      "outputs": [
-        "Observation Resource, candidate Task, terminal Result, or structured exchange verification"
-      ],
-      "sideEffects": [
-        "Reads the contained observation file to compute or verify its sha256 digest",
-        "Does not write files or access Git or the network"
-      ],
-      "failureSemantics": [
-        "Throwing APIs fail closed with SFC2004 and details.kind=invalid-result when the profile or binding is invalid",
-        "verifyQuickstartExchange converts a failure into {valid:false, code, message, details}"
-      ],
-      "invariants": [
-        "The Result must bind the exact Task digest, real Resource bytes, globally unique Resource ids, operation identity, correlation fields, and the complete evidence-binding set",
-        "Stability is candidate: a later minor release may change or remove this subpath"
-      ],
-      "ownedByCaller": [
-        "Audit method semantics and domainResult interpretation",
-        "Retry, scheduling, and lifecycle decisions"
-      ],
-      "routeElsewhere": [
-        "Stable generic mechanisms: use the skill-family-harness-node root export",
-        "Business orchestration: route to the consumer or orchestration layer"
-      ]
-    },
-    {
-      "id": "foundation.kit.quickstart-profile-candidate",
-      "intent": "Build a deterministic Quickstart Profile v2 offline Bundle with standalone validators selected by schema $id through skill-family-engineering-kit/candidate/quickstart-profile.",
-      "useWhen": [
-        "Need to trial the candidate Quickstart schemas and runner in a target using the stable projection authorization boundary",
-        "Need complete source, consumer-schema, payload, tool-version, and license provenance for the generated Bundle"
-      ],
-      "doNotUseWhen": [
-        "Need a stable Quickstart API or a fifth top-level Kit command",
-        "Need to bypass target manifest authorization or handwritten-file protection"
-      ],
-      "prerequisites": [
-        "Install exact matching 0.3.0 versions of all three Foundation packages",
-        "The target prefix is a contained relative POSIX path"
-      ],
-      "inputs": [
-        "Contained targetPrefix, consumerSchemaRoot, and an explicit relative consumer-schema path set",
-        "Frozen sourceRepository and sourceBaseCommit identity",
-        "Exact installed Contracts, Harness, and Kit package bytes"
-      ],
-      "outputs": [
-        "A projection manifest and provenance record with Foundation sources, consumer schemas, payload digests, tool versions, and licenses"
-      ],
-      "sideEffects": [
-        "Builds the manifest in memory and reads installed package plus explicit consumer-schema files",
-        "Performs no writes; callers pass the manifest to stable runProjection for authorized writes"
-      ],
-      "failureSemantics": [
-        "An invalid targetPrefix throws TypeError",
-        "Duplicate schema ids, bad references, mixed dialects, unsupported formats, path escapes, or missing source identity reject the build; runProjection reports its own stable projection failures"
-      ],
-      "invariants": [
-        "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
-        "The helper adds no top-level Kit command and never bypasses runProjection",
-        "Stability is candidate: a later minor release may change or remove this subpath"
-      ],
-      "ownedByCaller": [
-        "Review and authorization of the returned manifest",
-        "Target file-registry and managed-file declarations"
-      ],
-      "routeElsewhere": [
-        "Ordinary managed projection: use runProjection from the stable Kit root export",
-        "Remote publication: route to release-skill"
-      ]
-    }
-  ]
+ "schemaVersion": 1,
+ "kind": "skill-family.documentation-capability-catalog",
+ "bundle": "locale-overlay",
+ "locale": "en",
+ "generatedFrom": [
+  "package.json",
+  "packages/skill-family-contracts/package.json",
+  "packages/skill-family-harness-node/package.json",
+  "packages/skill-family-engineering-kit/package.json",
+  "packages/skill-family-contracts/src/index.mjs",
+  "packages/skill-family-harness-node/src/index.mjs",
+  "packages/skill-family-engineering-kit/src/index.mjs",
+  "packages/skill-family-engineering-kit/src/cli.mjs",
+  "packages/skill-family-contracts/src/registry.json",
+  "profiles/README.md",
+  "docs/architecture.md",
+  "docs/status/current.md"
+ ],
+ "capabilities": [
+  {
+   "id": "foundation.contracts.object-validation",
+   "intent": "Compile and validate the 18 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+   "useWhen": [
+    "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
+    "Need to detect the document dialect and select the strict or tolerant validation policy"
+   ],
+   "doNotUseWhen": [
+    "Need to validate consumer-owned business Schemas (which consumers should own themselves; Foundation does not replace them)",
+    "Need to mix domain semantic validation into the generic contract"
+   ],
+   "prerequisites": [
+    "The document to validate carries the $id of a registered contract object",
+    "Node >= 22.22.2"
+   ],
+   "inputs": [
+    "Contract document object (any JSON value)",
+    "Target contract object $id or schema",
+    "Validation policy (strict | tolerant, default strict)"
+   ],
+   "outputs": [
+    "Validation passes: returns {valid:true} (no errorCode field)",
+    "Validation fails: returns {valid:false, errorCode, errors}, without throwing",
+    "The first compilation result is written to the Ajv compile cache and reused for subsequent identical (schemaId,dialect,policy)"
+   ],
+   "sideEffects": [
+    "No filesystem, Git, network, or process side effects (pure function + in-memory cache)"
+   ],
+   "failureSemantics": [
+    "SFC1002: unknown contract object $id not registered (returns valid:false, without throwing)",
+    "SFC1001: document does not conform to a registered Schema (returns valid:false, errors include Ajv keyword details)",
+    "Callers judge success via the valid field of the return value, not via try/catch — validateDocument never throws",
+    "compileSchema throws ContractsError (SFC1012 SCHEMA_COMPILE_FAILED) for an uncompilable schema; detectDialect throws ContractsError (SFC1006) for an unknown dialect"
+   ],
+   "invariants": [
+    "The same (object, dialect, policy) reuses the compile cache; repeated validation does not recompile",
+    "Only Ajv 8.20.0 is accepted; no other validator is wired in"
+   ],
+   "ownedByCaller": [
+    "Semantic interpretation of concrete business fields",
+    "Domain-level validation rules"
+   ],
+   "routeElsewhere": [
+    "Consumer business Schema validation: stays with the caller",
+    "Remote publish writes: route to release-skill"
+   ]
+  },
+  {
+   "id": "foundation.contracts.registry-protocol",
+   "intent": "Register and look up contract object Schema $id and protocol names, serving as the single authority for protocol names and Schemas.",
+   "useWhen": [
+    "Need to find a registered Schema by object name or $id",
+    "Need to find a kernel protocol definition by protocol name"
+   ],
+   "doNotUseWhen": [
+    "Need to add a fourth class of registered object (the 18-object set must not be extended without an ADR)"
+   ],
+   "prerequisites": [
+    "registry.json is shipped with the package",
+    "Node >= 22.22.2"
+   ],
+   "inputs": [
+    "Object name, Schema $id, or protocol name"
+   ],
+   "outputs": [
+    "Registered Schema metadata or protocol definition",
+    "Returns undefined or throws on a cache miss"
+   ],
+   "sideEffects": [
+    "No filesystem, Git, network, or process side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "SFC1003: duplicate $id registration",
+    "SFC1004: duplicate protocol registration"
+   ],
+   "invariants": [
+    "registry.json's schemaVersion=1 and contractsVersion=1.4.0 are the single authority",
+    "The set of 18 top-level objects is fixed; additions require an ADR"
+   ],
+   "ownedByCaller": [
+    "Interpretation of an object's business meaning"
+   ],
+   "routeElsewhere": [
+    "Publish status: route to release-skill"
+   ]
+  },
+  {
+   "id": "foundation.contracts.kernel-protocol",
+   "intent": "Load and validate the skill-family.kernel.operation protocol (stable, Contracts 1.4.0), defining the operation request/result structure.",
+   "useWhen": [
+    "Need to parse or validate operation-request / operation-result structures",
+    "Need to look up a parameter contract by operation name"
+   ],
+   "doNotUseWhen": [
+    "Need to define business operation semantics (semantics are owned by the consumer)"
+   ],
+   "prerequisites": [
+    "kernel-protocol.json is shipped with the package"
+   ],
+   "inputs": [
+    "Protocol name, operation name, operation parameters"
+   ],
+   "outputs": [
+    "Protocol definition or operation parameter validation result"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "SFC2002: unknown operation",
+    "SFC2003: parameters violate the protocol"
+   ],
+   "invariants": [
+    "The kernel protocol version is bound to the Contracts version"
+   ],
+   "ownedByCaller": [
+    "Concrete business semantics of the operation"
+   ],
+   "routeElsewhere": [
+    "Business state machine / retries / terminal state: route to loop-agent"
+   ]
+  },
+  {
+   "id": "foundation.contracts.mandatory-checks",
+   "intent": "Run mechanical checks for the 9 classes of mandatory rule (budget cap 20, absolute cap 30), compiling all Schemas in the registry uniformly.",
+   "useWhen": [
+    "Need to confirm the contract set satisfies the mandatory mechanical rules",
+    "Need to collect unresolved references (unresolved refs)"
+   ],
+   "doNotUseWhen": [
+    "Need semantic-level review (belongs to external independent review; a second gate is not maintained in the repo)"
+   ],
+   "prerequisites": [
+    "registry and rules are loaded"
+   ],
+   "inputs": [
+    "The contract set to check, or a synthetic registry/fixtures"
+   ],
+   "outputs": [
+    "Check conclusion and list of unresolved references"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "SFC1002/1003/1004/1005/1006/1008/1009/1010: corresponding rule violated"
+   ],
+   "invariants": [
+    "CHECK_TYPES is a closed set of 9 classes",
+    "RULE_BUDGET bounds firstVersionMax and absoluteMax"
+   ],
+   "ownedByCaller": [
+    "Interpretation of the business rationale behind the rules"
+   ],
+   "routeElsewhere": [
+    "Semantic accept/reject: external independent review"
+   ]
+  },
+  {
+   "id": "foundation.contracts.fixture-verification",
+   "intent": "Enumerate and validate public/fictional fixtures, confirming they match the expect declaration of the corresponding contract object.",
+   "useWhen": [
+    "Need to prove a contract object is covered by a fixture",
+    "Need to run positive/negative/dialect-boundary class fixtures"
+   ],
+   "doNotUseWhen": [
+    "Need to treat a fixture as a business oracle (fixtures only prove structure, not semantics)"
+   ],
+   "prerequisites": [
+    "The fixtures directory holds public or entirely fictional data"
+   ],
+   "inputs": [
+    "A fixture class or a single fixture identifier"
+   ],
+   "outputs": [
+    "Per-fixture validation results"
+   ],
+   "sideEffects": [
+    "No side effects (read-only fixtures)"
+   ],
+   "failureSemantics": [
+    "SFC1010: a negative fixture failed to produce the expected failure"
+   ],
+   "invariants": [
+    "Fixtures and the auditor's expected results are not shared"
+   ],
+   "ownedByCaller": [
+    "The business intent behind a fixture"
+   ],
+   "routeElsewhere": [
+    "Domain audit semantics: route to an independent audit consumer"
+   ]
+  },
+  {
+   "id": "foundation.contracts.error-codes",
+   "intent": "Define and register a stable error-code system, provide validation and assertion entry points, and guarantee error codes do not drift.",
+   "useWhen": [
+    "Need to throw or classify a ContractsError carrying a stable error code",
+    "Need to assert that an error code is registered"
+   ],
+   "doNotUseWhen": [
+    "Need to define business error semantics outside the Foundation scope"
+   ],
+   "prerequisites": [
+    "error-codes.json is shipped with the package"
+   ],
+   "inputs": [
+    "Error-code string, error context"
+   ],
+   "outputs": [
+    "Error object carrying a stable error code and details"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "Assertion fails for an unregistered error code",
+    "Frozen-object immutability violation"
+   ],
+   "invariants": [
+    "The error-code registry is frozen and cannot be added to or removed from at runtime"
+   ],
+   "ownedByCaller": [
+    "Business attribution of an error code"
+   ],
+   "routeElsewhere": [
+    "Semantic review conclusion: external independent review"
+   ]
+  },
+  {
+   "id": "foundation.contracts.audit-surface",
+   "intent": "Serialize the contract surface deterministically (canonical JSON + sha256 digest) for read-only projection by audit consumers.",
+   "useWhen": [
+    "Need to generate a reproducible digest for the contract surface",
+    "Need to describe the audit surface structure"
+   ],
+   "doNotUseWhen": [
+    "Need to audit domain semantics (semantics and final accept/reject belong to external review)"
+   ],
+   "prerequisites": [
+    "AUDIT_SURFACE_VERSION=1、AUDIT_DIGEST_ALGORITHMS=[sha256]"
+   ],
+   "inputs": [
+    "Any JSON document"
+   ],
+   "outputs": [
+    "canonical string and sha256 digest"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "Non-JSON values, unknown algorithms, and freeze violations all throw"
+   ],
+   "invariants": [
+    "The digest algorithm is sha256 only; the version number is fixed"
+   ],
+   "ownedByCaller": [
+    "Audit semantic conclusion"
+   ],
+   "routeElsewhere": [
+    "Domain audit semantics: route to an independent audit consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.contract-validation",
+   "intent": "Resolve the contract context in the Node runtime and reuse the Contracts validator to validate contract documents and cache validator instances.",
+   "useWhen": [
+    "Need to validate Foundation contract documents inside Node",
+    "Need to reuse a validator cache keyed by schema"
+   ],
+   "doNotUseWhen": [
+    "Need to validate in a non-Node runtime (only a Node implementation exists currently)"
+   ],
+   "prerequisites": [
+    "skill-family-contracts is installed"
+   ],
+   "inputs": [
+    "Schema context, contract document"
+   ],
+   "outputs": [
+    "Validation result, reusing the cached Ajv instance"
+   ],
+   "sideEffects": [
+    "In-process in-memory validator cache (no file/Git/network)"
+   ],
+   "failureSemantics": [
+    "Counterexample matrices such as date-time trigger an SFC validation failure"
+   ],
+   "invariants": [
+    "The validator is cached keyed by (schema); the size is queryable"
+   ],
+   "ownedByCaller": [
+    "Semantics of contract business fields"
+   ],
+   "routeElsewhere": [
+    "Contract object definition: route to Contracts"
+   ]
+  },
+  {
+   "id": "foundation.harness.path-containment",
+   "intent": "Classify external path inputs and resolve them inside the containment root, rejecting path-traversal, symlink-escape, and realpath-escape.",
+   "useWhen": [
+    "Need to confine a user/caller-supplied path within a root directory",
+    "Need to safely read a contained file"
+   ],
+   "doNotUseWhen": [
+    "Need to put the business rules for file selection into Foundation (business rules are owned by the caller)"
+   ],
+   "prerequisites": [
+    "The caller supplies an explicit root directory (containment boundary)"
+   ],
+   "inputs": [
+    "Root directory, relative/absolute path to resolve"
+   ],
+   "outputs": [
+    "Contained absolute path or the read file content"
+   ],
+   "sideEffects": [
+    "Read-only filesystem access (read/resolve)"
+   ],
+   "failureSemantics": [
+    "SFC2004: path-traversal / symlink-escape / realpath-escape, carrying a stable kind",
+    "Windows drive-letter/UNC escapes are rejected as well"
+   ],
+   "invariants": [
+    "All resolution results must fall within the root directory"
+   ],
+   "ownedByCaller": [
+    "Which paths are business-permitted selection rules"
+   ],
+   "routeElsewhere": [
+    "Business file-selection semantics: stay with the caller"
+   ]
+  },
+  {
+   "id": "foundation.harness.atomic-write",
+   "intent": "Atomically write a regular file within an already-contained path via temp file + fsync + rename, rolling back on failure without leaving residue.",
+   "useWhen": [
+    "Need to update a regular text/binary file within a contained directory",
+    "Need to guarantee the write is either fully visible or invisible"
+   ],
+   "doNotUseWhen": [
+    "Need to write to a non-contained path (out-of-bounds is rejected by path-containment)"
+   ],
+   "prerequisites": [
+    "The target path is verified inside the root directory by path-containment"
+   ],
+   "inputs": [
+    "Contained target path, file content (string or Buffer)"
+   ],
+   "outputs": [
+    "The written file, byte-identical to the input"
+   ],
+   "sideEffects": [
+    "Create a temp file inside the root directory and finally rename to overwrite the target"
+   ],
+   "failureSemantics": [
+    "Out-of-bounds path or illegal data type throws and rolls back the temp file",
+    "Binary content is preserved byte-for-byte"
+   ],
+   "invariants": [
+    "fsync before rename, guaranteeing crash consistency"
+   ],
+   "ownedByCaller": [
+    "Business correctness of the written content"
+   ],
+   "routeElsewhere": [
+    "Content-selection business rules: stay with the caller"
+   ]
+  },
+  {
+   "id": "foundation.harness.temporary-workspace",
+   "intent": "Create and manage a temporary working directory, providing a safe lifecycle via a with syntax that cleans up on exit.",
+   "useWhen": [
+    "Need to build intermediate artifacts inside an isolated directory",
+    "Need to guarantee the temp directory is reclaimed on exceptions"
+   ],
+   "doNotUseWhen": [
+    "Need to persist artifacts (they should be explicitly materialized to a contained path)"
+   ],
+   "prerequisites": [
+    "The host provides a writable temp directory (e.g. os.tmpdir)"
+   ],
+   "inputs": [
+    "Optional prefix/label"
+   ],
+   "outputs": [
+    "Temporary working directory handle"
+   ],
+   "sideEffects": [
+    "Create a subdirectory in the system temp directory, deleted on exit"
+   ],
+   "failureSemantics": [
+    "Creation failure rejects; the temp directory is still cleaned up when the with callback throws"
+   ],
+   "invariants": [
+    "The temp directory path does not escape the host temp root"
+   ],
+   "ownedByCaller": [
+    "Final destination of the temp artifacts"
+   ],
+   "routeElsewhere": [
+    "Persistent state: route to state-store"
+   ]
+  },
+  {
+   "id": "foundation.harness.resource-closure",
+   "intent": "Compute a deterministic, deduplicated, ordered resource closure with a sha256 digest, for adapter text closure and build manifests.",
+   "useWhen": [
+    "Need to normalize a set of resources into a reproducible closure",
+    "Need to generate a digest for a build manifest"
+   ],
+   "doNotUseWhen": [
+    "Need to include binary resources (only text closures are supported currently)"
+   ],
+   "prerequisites": [
+    "Resources are serializable text entries"
+   ],
+   "inputs": [
+    "Resource list (path + content)"
+   ],
+   "outputs": [
+    "Deterministic closure object and sha256 digest"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "Illegal/duplicate resource declarations throw or reject"
+   ],
+   "invariants": [
+    "Deduplication and ordering are fixed; identical input always yields the same digest"
+   ],
+   "ownedByCaller": [
+    "Business meaning of resources"
+   ],
+   "routeElsewhere": [
+    "Binary projection: explicitly unsupported"
+   ]
+  },
+  {
+   "id": "foundation.harness.request-processing",
+   "intent": "Parse the operation-request and drive the operation-result pipeline, producing terminal states REJECTED / FAILED / SUCCESS.",
+   "useWhen": [
+    "Need to normalize an inbound request into a unified operation-request structure",
+    "Need to deterministically produce an operation result"
+   ],
+   "doNotUseWhen": [
+    "Need model calls or business orchestration (neither is in the Foundation scope)"
+   ],
+   "prerequisites": [
+    "The request conforms to the kernel protocol structure"
+   ],
+   "inputs": [
+    "Raw request payload"
+   ],
+   "outputs": [
+    "Normalized operation-request and terminal operation-result"
+   ],
+   "sideEffects": [
+    "No side effects (pure-function pipeline)"
+   ],
+   "failureSemantics": [
+    "Parse failure enters the REJECTED/FAILED terminal state carrying a stable error code"
+   ],
+   "invariants": [
+    "The terminal-state set is fixed to REJECTED/FAILED/SUCCESS"
+   ],
+   "ownedByCaller": [
+    "Concrete business semantics of the operation"
+   ],
+   "routeElsewhere": [
+    "Business state machine / retries: route to loop-agent"
+   ]
+  },
+  {
+   "id": "foundation.harness.report",
+   "intent": "Validate the report-model, render Markdown, bind digests, and run tiered checks deterministically; the human report is derived from machine results rather than freely authored.",
+   "useWhen": [
+    "Need to render machine results into a human-readable report",
+    "Need to bind the model/result/report triple-digest to prevent tampering"
+   ],
+   "doNotUseWhen": [
+    "Need to freely author a report from open business outputs (forbidden)"
+   ],
+   "prerequisites": [
+    "REPORT_RENDERER_NAME / VERSION come from their respective packages (currently 0.3.0)",
+    "SUPPORTED_REPORT_LOCALES = [zh-CN, en-US]"
+   ],
+   "inputs": [
+    "report-model, render options (locale/audience/style)"
+   ],
+   "outputs": [
+    "Markdown text, binding object, tiered-check findings"
+   ],
+   "sideEffects": [
+    "No file/Git/network side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "SFC3001/3002/3003: model validation/binding/check hard failure"
+   ],
+   "invariants": [
+    "Markdown is escaped deterministically; the dual outputs are written as a pair, and path aliases and input overwrites are rejected"
+   ],
+   "ownedByCaller": [
+    "Interpretation of the report's business conclusion"
+   ],
+   "routeElsewhere": [
+    "Report generation orchestration: Kit report sub-action"
+   ]
+  },
+  {
+   "id": "foundation.harness.host-adapter",
+   "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, materialize the build, probe the version vector (spawn disabled by default).",
+   "useWhen": [
+    "Need to turn a host adapter source into a reproducible text closure",
+    "Need to materialize build artifacts at a contained location",
+    "Need to probe the host version vector (without auto-executing the host binary)"
+   ],
+   "doNotUseWhen": [
+    "Need host apply/install/update/uninstall (explicitly unsupported)",
+    "Need a binary adapter source (only text closures are supported)"
+   ],
+   "prerequisites": [
+    "The adapter source is a declared text closure"
+   ],
+   "inputs": [
+    "adapter source, target path"
+   ],
+   "outputs": [
+    "Build closure, validated manifest, materialized artifacts"
+   ],
+   "sideEffects": [
+    "Create a sibling staging area at the contained target and a single rename",
+    "Probe does not spawn by default and does not use PATH"
+   ],
+   "failureSemantics": [
+    "Mismatched manifest digest, existing target, or untrusted executable all throw"
+   ],
+   "invariants": [
+    "materialize is an atomic sibling + rename"
+   ],
+   "ownedByCaller": [
+    "Concrete host business semantics"
+   ],
+   "routeElsewhere": [
+    "host apply: explicitly unsupported",
+    "Host diff declaration: route to Profile + Kit host sub-action"
+   ]
+  },
+  {
+   "id": "foundation.harness.state-store",
+   "intent": "Provide a persistent state foundation: append-only events, hash chain, derived snapshots, plus lock checks and explicit recovery; event meaning and reducer transitions are owned by the caller.",
+   "useWhen": [
+    "Need to persist an event log and guarantee order and integrity",
+    "Need to rebuild or validate derived snapshots",
+    "Need to check or recover a cooperative single-writer lock"
+   ],
+   "doNotUseWhen": [
+    "Need to define a workflow state machine in Foundation (forbidden)",
+    "Need to defend against same-privilege malicious processes (fencing does not promise this scenario)"
+   ],
+   "prerequisites": [
+    "STATE_GENESIS_DIGEST as the chain origin"
+   ],
+   "inputs": [
+    "Event payload, snapshot, lock token"
+   ],
+   "outputs": [
+    "Events, hash-chain validation result, snapshot"
+   ],
+   "sideEffects": [
+    "Read/write the event log and snapshot files at the contained path",
+    "Write a lock file for the cooperative single-writer"
+   ],
+   "failureSemantics": [
+    "Broken hash chain, lock fencing conflict, or recovery failure throws"
+   ],
+   "invariants": [
+    "The event log is the single authority; the snapshot is a derived cache",
+    "The local cooperative single-writer uses fencing and explicit recovery"
+   ],
+   "ownedByCaller": [
+    "Business meaning of events, reducer transitions, the confirmOwnerTerminated trust anchor"
+   ],
+   "routeElsewhere": [
+    "Business state machine / terminal state: route to loop-agent"
+   ]
+  },
+  {
+   "id": "foundation.harness.baseline-materialization",
+   "intent": "Materialize a frozen baseline as a byte-faithful temporary copy with bidirectional digest verification; mid-materialization changes and guard rejections fail closed",
+   "useWhen": [
+    "Need a writable isolated copy of a baseline directory whose digest is frozen",
+    "Need to prove the copy is byte-identical to the source baseline"
+   ],
+   "doNotUseWhen": [
+    "Need to keep artifacts (persist them explicitly to a contained path)",
+    "The baseline directory contains symbolic links (the mechanism rejects them outright)"
+   ],
+   "prerequisites": [
+    "The caller holds the frozen 64-char sha256 digest of the baseline"
+   ],
+   "inputs": [
+    "Baseline directory, frozen digest, optional temporary-directory prefix"
+   ],
+   "outputs": [
+    "The materialized temporary workspace root path"
+   ],
+   "sideEffects": [
+    "Creates a subdirectory in the system temporary directory and cleans it up on failure",
+    "Reads the source baseline only"
+   ],
+   "failureSemantics": [
+    "Digest mismatch, mid-materialization source or copy change, or guard rejection throws baseline-mismatch or content-guard-rejected; no half-finished copy is delivered"
+   ],
+   "invariants": [
+    "The materialized copy is byte-identical to the frozen digest",
+    "Symbolic links inside the baseline are always rejected"
+   ],
+   "ownedByCaller": [
+    "Residual-content judgment (the contentGuard predicate) and the final destination of the copy"
+   ],
+   "routeElsewhere": [
+    "Persisting artifacts: route to state-store or the consumer's own persistence"
+   ]
+  },
+  {
+   "id": "foundation.harness.read-chokepoint",
+   "intent": "Concentrate every consumer read of a protected area into one admission check: an allowed-root set plus an optional identity predicate; out-of-bounds and unauthorized reads are stably refused",
+   "useWhen": [
+    "Need to guarantee reads of a protected area stay inside the declared allowed-root set",
+    "Need to concentrate identity judgment and path containment into a single entry point"
+   ],
+   "doNotUseWhen": [
+    "Need the mechanism to understand the business meaning of identities or paths (owned by the consumer predicate)"
+   ],
+   "prerequisites": [
+    "The caller declares a non-empty allowed-root set"
+   ],
+   "inputs": [
+    "An absolute path or { root, relPath }, optionally an identity object"
+   ],
+   "outputs": [
+    "The admitted { root, relPath, absolute } or the contained read result"
+   ],
+   "sideEffects": [
+    "Read-only filesystem access (realpath / contained read)"
+   ],
+   "failureSemantics": [
+    "Out-of-bounds targets, link escapes, and unauthorized identities throw read-chokepoint-rejected; missing resources throw missing-resource"
+   ],
+   "invariants": [
+    "String inputs and { root, relPath } inputs share the same containment classification",
+    "The mechanism never interprets private identity or path semantics"
+   ],
+   "ownedByCaller": [
+    "The allowed-root set, the identity predicate, and the semantics of admitted reads"
+   ],
+   "routeElsewhere": [
+    "Identity systems and authorization policy: keep with the consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.surface-scan",
+   "intent": "Scan a declared surface for path and content patterns according to a policy contract document; the first hit fails closed, and an invalid policy also fails closed",
+   "useWhen": [
+    "Need to scan a set of contained files for path or content patterns under a configurable policy",
+    "Need an injection self-test with byte-recoverable results to prove the scanner is stateless"
+   ],
+   "doNotUseWhen": [
+    "Need the mechanism to interpret allowed-use exemptions (implement them at the consumer layer)"
+   ],
+   "prerequisites": [
+    "A policy document that passes the surface-scan-policy contract validation"
+   ],
+   "inputs": [
+    "Scan root, relative-path list, policy document"
+   ],
+   "outputs": [
+    "A { scanned, bytes, policy } result object"
+   ],
+   "sideEffects": [
+    "Read-only filesystem access",
+    "Policy patterns are compiled as regular expressions in-process; no persistent state"
+   ],
+   "failureSemantics": [
+    "Path or content hits throw surface-scan-violation; invalid policy or uncompilable patterns throw scan-policy-invalid; missing files throw missing-resource"
+   ],
+   "invariants": [
+    "A hit fails closed and is never silently skipped",
+    "allowedUses is carried but never interpreted; a hit is never exempted"
+   ],
+   "ownedByCaller": [
+    "Policy content, allowed-use semantics, and post-hit disposition"
+   ],
+   "routeElsewhere": [
+    "Business forbidden words and exemption decisions: keep with the consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.token-estimation",
+   "intent": "Provide a deterministic upper-bound estimate for text: a pure UTF-8 byte-count function with no model, network, or tokenizer dependency",
+   "useWhen": [
+    "Need an upper bound on text consumption without calling a model",
+    "Need a contractual, verifiable, timestamp-free estimation result object"
+   ],
+   "doNotUseWhen": [
+    "Need real token counts or semantic estimates (the primitive does not promise precision)"
+   ],
+   "prerequisites": [
+    "Input is a JavaScript string"
+   ],
+   "inputs": [
+    "A text string"
+   ],
+   "outputs": [
+    "A token-estimate-result contract object (inputBytes equals upperBound)"
+   ],
+   "sideEffects": [
+    "None: pure function with zero dependencies"
+   ],
+   "failureSemantics": [
+    "Non-string input throws TypeError"
+   ],
+   "invariants": [
+    "Identical input produces identical output; deterministic byte counting",
+    "guarantees is a closed enumeration and the result carries no timestamp"
+   ],
+   "ownedByCaller": [
+    "Interpretation of the estimate and consumer-side conversion"
+   ],
+   "routeElsewhere": [
+    "Model calls and real token counting: not in Foundation"
+   ]
+  },
+  {
+   "id": "foundation.harness.upper-bound-guard",
+   "intent": "Implement a generic upper-bound guard over the state-store event ledger with explicit token-lock occupancy: over-limit events fail closed and are never written; the bound and over-limit policy are entirely consumer-configured",
+   "useWhen": [
+    "Need to impose a consumer-side upper bound on a reducible usage event ledger and guarantee over-limit events never land",
+    "Need to reuse the existing event ledger and lock mechanisms instead of inventing new state"
+   ],
+   "doNotUseWhen": [
+    "Need Foundation to understand usage categories or pricing semantics (injected by the consumer)"
+   ],
+   "prerequisites": [
+    "The consumer provides event payload schemas, a pure reduction function, and a non-negative upper bound"
+   ],
+   "inputs": [
+    "State root, lock root and lock path, events, consumer configuration"
+   ],
+   "outputs": [
+    "Append results, current usage reading, guard handle"
+   ],
+   "sideEffects": [
+    "Writes the event ledger and lock file at the contained path",
+    "Acquires the explicit lock on open and releases it on close"
+   ],
+   "failureSemantics": [
+    "Over-limit appends throw upper-bound-exceeded and are not written; a held lock throws store-locked; a broken chain throws chain-broken"
+   ],
+   "invariants": [
+    "The event ledger is the single authority; over-limit events never land",
+    "The module embeds no fixed amount or pricing vocabulary"
+   ],
+   "ownedByCaller": [
+    "Event meaning, the reduction function, the upper-bound value, and post-overrun business handling"
+   ],
+   "routeElsewhere": [
+    "Pricing and billing semantics: keep with the consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.errors",
+   "intent": "Define the Harness mechanism error types and stable error classes, unifying error classification.",
+   "useWhen": [
+    "Need to throw a HarnessError carrying a stable kind"
+   ],
+   "doNotUseWhen": [
+    "Need to define business error semantics"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Error kind, context"
+   ],
+   "outputs": [
+    "Error object carrying a stable kind"
+   ],
+   "sideEffects": [
+    "No side effects (pure function)"
+   ],
+   "failureSemantics": [
+    "Illegal kind invocation throws"
+   ],
+   "invariants": [
+    "HARNESS_EXCLUSIONS explicitly excludes release-state / remote-network-access / business-semantics / workflow-orchestration / model-calls / git-writes"
+   ],
+   "ownedByCaller": [
+    "Business attribution of the error"
+   ],
+   "routeElsewhere": [
+    "Business semantics: stay with the caller"
+   ]
+  },
+  {
+   "id": "foundation.kit.scaffold",
+   "intent": "Generate a precise set of hosted files in a new project skeleton (atomic + path containment), without overwriting a non-empty existing repo.",
+   "useWhen": [
+    "Need to generate a minimal verifiable skeleton for a new skill-family project",
+    "The target directory is empty or contains only containable content"
+   ],
+   "doNotUseWhen": [
+    "Need to overwrite an existing non-empty repo (use adopt-plan instead)"
+   ],
+   "prerequisites": [
+    "The target is a writable empty directory",
+    "Node >= 22.22.2"
+   ],
+   "inputs": [
+    "Target root, skeleton options (id, etc.)"
+   ],
+   "outputs": [
+    "The precise set of hosted skeleton files"
+   ],
+   "sideEffects": [
+    "Create files at the contained target (atomic + contained)"
+   ],
+   "failureSemantics": [
+    "Non-empty target or illegal kebab id throws"
+   ],
+   "invariants": [
+    "Only write to empty targets, atomic + contained",
+    "The skeleton set matches the scaffold-conformance fixture"
+   ],
+   "ownedByCaller": [
+    "Business project content"
+   ],
+   "routeElsewhere": [
+    "Existing-repo adoption: route to adopt-plan"
+   ]
+  },
+  {
+   "id": "foundation.kit.adopt-plan",
+   "intent": "Perform a strict read-only inventory of an existing repo (classification, nested-repo discovery, migration list, completion judgment), writing no files and migrating nothing automatically.",
+   "useWhen": [
+    "Need to classify an existing repo as direct-adoption / compatibility-layer / keep-business / foundation-gap",
+    "Need to generate a handoff draft or a completion judgment for migration"
+   ],
+   "doNotUseWhen": [
+    "Need to auto-rewrite the existing repo (writing files and auto-migration are forbidden)"
+   ],
+   "prerequisites": [
+    "The target repo exists and is read-only accessible"
+   ],
+   "inputs": [
+    "Target root, migration-list path"
+   ],
+   "outputs": [
+    "Adoption classification, completion judgment, handoff draft (output only, not written to disk)"
+   ],
+   "sideEffects": [
+    "No file writes (strictly read-only)",
+    "May trigger read-only git probes"
+   ],
+   "failureSemantics": [
+    "Missing fields in an exception, or not having exited the old implementation, makes the completion judgment false"
+   ],
+   "invariants": [
+    "No file writes, no auto-migration"
+   ],
+   "ownedByCaller": [
+    "Migration decisions for existing business code"
+   ],
+   "routeElsewhere": [
+    "Actual migration execution: the caller is responsible"
+   ]
+  },
+  {
+   "id": "foundation.kit.projection",
+   "intent": "Mechanically project managed facts to a target (e.g. a public mirror) per the projection manifest; write only after all checks pass, with zero-write/rollback on any failure.",
+   "useWhen": [
+    "Need to project authoritative data to a public snapshot or release mirror",
+    "Need to guarantee the projection matches the target"
+   ],
+   "doNotUseWhen": [
+    "Need to overwrite handwritten files (forbidden)"
+   ],
+   "prerequisites": [
+    "The projection manifest is registered"
+   ],
+   "inputs": [
+    "Projection manifest, target root"
+   ],
+   "outputs": [
+    "Projected files (only when all checks pass)"
+   ],
+   "sideEffects": [
+    "Write projected files at the contained target",
+    "Two-phase: write only after all checks pass, roll back on failure"
+   ],
+   "failureSemantics": [
+    "Unauthorized, handwritten conflict, out-of-bounds, or content conflict all throw without residue"
+   ],
+   "invariants": [
+    "Never overwrite handwritten files",
+    "Zero write on any check failure"
+   ],
+   "ownedByCaller": [
+    "Business meaning of the projected content"
+   ],
+   "routeElsewhere": [
+    "Remote publish: route to release-skill"
+   ]
+  },
+  {
+   "id": "foundation.kit.check",
+   "intent": "Diagnose only, do not fix: run the seven check classes contracts/drift/closure/version/docs/git/identity and output findings.",
+   "useWhen": [
+    "Need to surface engineering inconsistencies without auto-modifying",
+    "Need to narrow the check scope via --only"
+   ],
+   "doNotUseWhen": [
+    "Need auto-fix (forbidden; check writes no fixes)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "--only values: contracts|drift|closure|version|docs|git|identity"
+   ],
+   "outputs": [
+    "Findings list; exit code findings=1, mechanism=2"
+   ],
+   "sideEffects": [
+    "No file writes (read-only diagnosis)"
+   ],
+   "failureSemantics": [
+    "findings exit code 1; mechanism rejection exit code 2"
+   ],
+   "invariants": [
+    "CHECK_CLASSES is a closed set of seven classes, not expanded"
+   ],
+   "ownedByCaller": [
+    "Business disposition of each finding"
+   ],
+   "routeElsewhere": [
+    "Auto-fix execution: the caller"
+   ]
+  },
+  {
+   "id": "foundation.kit.report",
+   "intent": "Orchestrate the human report as a CLI sub-action: projection report rendering, check report tiering, writing to stdout by default.",
+   "useWhen": [
+    "Need to produce report text from an already-rendered model",
+    "Need to run a tiered check on the report"
+   ],
+   "doNotUseWhen": [
+    "Need to freely author a report from open business outputs (forbidden)"
+   ],
+   "prerequisites": [
+    "A Harness report-model already exists"
+   ],
+   "inputs": [
+    "report-model, --out/--binding options"
+   ],
+   "outputs": [
+    "Markdown text; --out/--binding writes to disk"
+   ],
+   "sideEffects": [
+    "Writes to stdout by default; explicit --out/--binding writes the contained file"
+   ],
+   "failureSemantics": [
+    "Hard failure counts as a finding; illegal arguments reject"
+   ],
+   "invariants": [
+    "The report is rendered deterministically from machine results"
+   ],
+   "ownedByCaller": [
+    "Interpretation of the report conclusion"
+   ],
+   "routeElsewhere": [
+    "Report mechanism: route to Harness report"
+   ]
+  },
+  {
+   "id": "foundation.kit.git-probe",
+   "intent": "Probe Git status and facts via a read-only allowlist for diagnosis and adoption inventory, performing no Git write operations.",
+   "useWhen": [
+    "Need to read-only discover the current Git status (status/ls-files/check-ignore)",
+    "Need to provide Git facts for adoption inventory"
+   ],
+   "doNotUseWhen": [
+    "Need Git write operations (stage/commit/push/tag, explicitly forbidden)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Target root"
+   ],
+   "outputs": [
+    "Git status and facts (read-only)"
+   ],
+   "sideEffects": [
+    "Read-only calls to git status/ls-files/check-ignore (parameter vector frozen)"
+   ],
+   "failureSemantics": [
+    "Parameter vectors not in the allowlist are rejected"
+   ],
+   "invariants": [
+    "GIT_READ_ONLY_ALLOWLIST bounds the subcommands that may be called"
+   ],
+   "ownedByCaller": [
+    "Authorization for Git write operations"
+   ],
+   "routeElsewhere": [
+    "Git write operations: see the Git lifecycle guide; Foundation does not own them"
+   ]
+  },
+  {
+   "id": "foundation.kit.host",
+   "intent": "Inject a concrete host Profile and trusted driver, providing describe/build/probe/plan; apply is stably rejected, and install/update/uninstall are unimplemented.",
+   "useWhen": [
+    "Need to describe a registered host (claude/codex)",
+    "Need to probe, build, or plan host integration (read-only mechanism layer)"
+   ],
+   "doNotUseWhen": [
+    "Need host apply/install/update/uninstall (explicitly unsupported)",
+    "Need a full Qoder driver (that host is unsupported)"
+   ],
+   "prerequisites": [
+    "The host Profile is registered in profiles/hosts",
+    "Trusted drivers are only claude-version-v1 / codex-version-v1"
+   ],
+   "inputs": [
+    "Host identifier, probe/plan options"
+   ],
+   "outputs": [
+    "Host description, probe result, build artifacts, plan"
+   ],
+   "sideEffects": [
+    "build/materialize writes artifacts at the contained target",
+    "Probe does not spawn by default"
+   ],
+   "failureSemantics": [
+    "An unsupported host (e.g. qoder) throws",
+    "apply is stably rejected",
+    "Missing probe facts throws"
+   ],
+   "invariants": [
+    "HOST_DRIVER_IDS contains only the two trusted drivers",
+    "apply is stably rejected"
+   ],
+   "ownedByCaller": [
+    "Host business semantics"
+   ],
+   "routeElsewhere": [
+    "host apply: explicitly unsupported",
+    "Full Qoder driver: unsupported"
+   ]
+  },
+  {
+   "id": "foundation.kit.licensing",
+   "intent": "Load and validate Profile licensing data, generating license/notice/identity-record content.",
+   "useWhen": [
+    "Need to generate LICENSE/NOTICE/identity records per Profile",
+    "Need to validate the legitimacy of a licensing Profile"
+   ],
+   "doNotUseWhen": [
+    "Need to make business licensing decisions (semantics owned by the caller)"
+   ],
+   "prerequisites": [
+    "profiles/licensing/registry.json + schema.json exist"
+   ],
+   "inputs": [
+    "Profile identifier, variant selection"
+   ],
+   "outputs": [
+    "License/notice/identity-record text"
+   ],
+   "sideEffects": [
+    "No side effects (pure-function generation)"
+   ],
+   "failureSemantics": [
+    "Unspecified variant among many, or illegal Profile, throws"
+   ],
+   "invariants": [
+    "By default the first registry variant is taken; multiple variants must be explicitly selected"
+   ],
+   "ownedByCaller": [
+    "Licensing business semantics"
+   ],
+   "routeElsewhere": [
+    "Licensing decisions: stay with the caller"
+   ]
+  },
+  {
+   "id": "foundation.kit.identity-check",
+   "intent": "Load identity records and the manifest, check identity drift, and validate consistency against the Profile.",
+   "useWhen": [
+    "Need to detect package/identity drift",
+    "Need to validate identity against the Profile"
+   ],
+   "doNotUseWhen": [
+    "Need to auto-fix drift (check does not fix)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Target root, Profile identifier"
+   ],
+   "outputs": [
+    "Drift findings, validation conclusion"
+   ],
+   "sideEffects": [
+    "Read-only read of target files"
+   ],
+   "failureSemantics": [
+    "Drift or validation failure produces findings"
+   ],
+   "invariants": [
+    "Does not modify target files"
+   ],
+   "ownedByCaller": [
+    "Business disposition of drift"
+   ],
+   "routeElsewhere": [
+    "Auto-fix: the caller"
+   ]
+  },
+  {
+   "id": "foundation.kit.cli",
+   "intent": "Provide the skill-family-kit CLI entry point, dispatching the four top-level commands and sub-actions, and rejecting mutation flags at the entry point.",
+   "useWhen": [
+    "Need to run scaffold/adopt-plan/projection/check from the command line",
+    "Need to run report/host sub-actions"
+   ],
+   "doNotUseWhen": [
+    "Need a fifth top-level command (the command set is fixed at 4, not expanded)"
+   ],
+   "prerequisites": [
+    "Node >= 22.22.2"
+   ],
+   "inputs": [
+    "argv"
+   ],
+   "outputs": [
+    "Command result; exit code ok=0/findings=1/rejected=2"
+   ],
+   "sideEffects": [
+    "Produces contained file writes or read-only probes depending on the command"
+   ],
+   "failureSemantics": [
+    "Unknown command, or rejected flag (e.g. --apply), exit code 2"
+   ],
+   "invariants": [
+    "TOP_LEVEL_COMMANDS is fixed at 4",
+    "REFUSED_MUTATION_FLAGS is rejected at the parseOptions entry point"
+   ],
+   "ownedByCaller": [
+    "Business goal of the command"
+   ],
+   "routeElsewhere": [
+    "A fifth command: forbidden to add"
+   ]
+  },
+  {
+   "id": "foundation.profile.extension-spi",
+   "intent": "Declare the extension mechanism for host and project-shape differences: differences (adds/overrides/removes) and open extension points (host-projection/artifact-render/surface-scan), validating Profile legitimacy.",
+   "useWhen": [
+    "Need to declare project-shape differences without changing the common core",
+    "Need to inject extension-point data resources into the stable SPI"
+   ],
+   "doNotUseWhen": [
+    "Need to stuff business semantics into the common core (coreOwned targets are off-limits)",
+    "Need to place an executable script into the Profile (the entrypoint must be a JSON data resource)"
+   ],
+   "prerequisites": [
+    "The Profile is a declarative diff and does not depend back on the common core"
+   ],
+   "inputs": [
+    "profileRoot、descriptorRelPath"
+   ],
+   "outputs": [
+    "SPI result code (SPE0000/1001..1005)"
+   ],
+   "sideEffects": [
+    "No side effects (read-only Profile validation)"
+   ],
+   "failureSemantics": [
+    "SPE1004: an entrypoint with an executable extension is rejected before any bytes are read",
+    "Out-of-bounds target or illegal diff structure throws"
+   ],
+   "invariants": [
+    "coreOwned = packages/commands/namespacePrefixes are off-limits targets",
+    "The entrypoint must be a JSON data resource"
+   ],
+   "ownedByCaller": [
+    "Business semantics of the difference"
+   ],
+   "routeElsewhere": [
+    "Common-core changes: must go through Contracts/Harness/Kit"
+   ]
+  },
+  {
+   "id": "foundation.profile.public-plugin",
+   "intent": "Public sample Profile: declare three adds differences and three SPI data resources via public-plugin, as a readable example of the Profile shape.",
+   "useWhen": [
+    "Need a reference public Profile instance that conforms to the spec",
+    "Need to understand how the Profile descriptor and SPI resources are wired"
+   ],
+   "doNotUseWhen": [
+    "Need to put a private Profile or real business data into public docs (leakage forbidden)"
+   ],
+   "prerequisites": [
+    "base.contractsVersion = 1.4.0"
+   ],
+   "inputs": [
+    "Profile descriptor and each SPI data resource"
+   ],
+   "outputs": [
+    "A public Profile that passes verifyProfile"
+   ],
+   "sideEffects": [
+    "No side effects (declared data)"
+   ],
+   "failureSemantics": [
+    "Throws when the descriptor does not conform to the schema"
+   ],
+   "invariants": [
+    "Only public or entirely fictional samples are used"
+   ],
+   "ownedByCaller": [
+    "Profile business meaning"
+   ],
+   "routeElsewhere": [
+    "Private Profile: does not enter public docs"
+   ]
+  },
+  {
+   "id": "foundation.profile.licensing",
+   "intent": "Declare the licensing-data authority (registry + schema), executed by the Kit licensing entry through the contract validator, defaulting to the first variant.",
+   "useWhen": [
+    "Need to define licensing-data variants",
+    "Need to provide the data authority for Kit licensing"
+   ],
+   "doNotUseWhen": [
+    "Need to make business licensing decisions (semantics owned by the caller)"
+   ],
+   "prerequisites": [
+    "registry.json + schema.json exist"
+   ],
+   "inputs": [
+    "Licensing variant declaration"
+   ],
+   "outputs": [
+    "Licensing data for Kit to load"
+   ],
+   "sideEffects": [
+    "No side effects (declared data)"
+   ],
+   "failureSemantics": [
+    "Unspecified variant among many fails to load"
+   ],
+   "invariants": [
+    "All commercial payloads are currently disabled"
+   ],
+   "ownedByCaller": [
+    "Licensing business semantics"
+   ],
+   "routeElsewhere": [
+    "Licensing execution: the caller"
+   ]
+  },
+  {
+   "id": "foundation.profile.hosts",
+   "intent": "Register host diff declarations (claude/codex supported, qoder unsupported), providing the descriptor and registry for the Kit host sub-action.",
+   "useWhen": [
+    "Need to register diffs for supported hosts (claude/codex)",
+    "Need to provide declarative data for host integration"
+   ],
+   "doNotUseWhen": [
+    "Need to register a full Qoder driver (that host is unsupported)"
+   ],
+   "prerequisites": [
+    "The host descriptor is bound to a trusted driverId"
+   ],
+   "inputs": [
+    "Host identifier, descriptor fields"
+   ],
+   "outputs": [
+    "Host registry and descriptor"
+   ],
+   "sideEffects": [
+    "No side effects (declared data)"
+   ],
+   "failureSemantics": [
+    "qoder is marked unsupported and is rejected on reference"
+   ],
+   "invariants": [
+    "claude/codex have support=supported and are bound to a driverId; qoder has support=unsupported"
+   ],
+   "ownedByCaller": [
+    "Host business semantics"
+   ],
+   "routeElsewhere": [
+    "Full Qoder driver: unsupported"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.host-apply",
+   "intent": "Host apply (applying integration changes to the host runtime environment) is stably rejected in the read-only Phase D slice and is not implemented.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario that truly changes the host runtime environment (currently unavailable)"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "Throws: host apply is not implemented in the read-only Phase D slice"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Throws on call; the CLI-layer host-apply sub-action rejects as well"
+   ],
+   "invariants": [
+    "apply is stably rejected and is out of scope for the 0.2.x implementation"
+   ],
+   "ownedByCaller": [
+    "Final landing of host integration"
+   ],
+   "routeElsewhere": [
+    "Host application logic: the caller or a later version"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.host-install-update-uninstall",
+   "intent": "Host install/update/uninstall are all unimplemented and out of scope for Foundation 0.2.x.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring installation/update/uninstallation of host components"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (unimplemented)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "No corresponding entry point exists; calls should turn to external tools"
+   ],
+   "invariants": [
+    "Install/uninstall/update are all unimplemented"
+   ],
+   "ownedByCaller": [
+    "Host lifecycle management"
+   ],
+   "routeElsewhere": [
+    "Host lifecycle: external tools or a later version"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.qoder-driver",
+   "intent": "The full driver for the Qoder host is not frozen (No auditable non-interactive host driver is frozen), marked unsupported, referenced for structure only.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring actual execution on Qoder"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (unsupported)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Referencing the qoder driver throws"
+   ],
+   "invariants": [
+    "HOST_DRIVER_IDS contains only claude-version-v1 / codex-version-v1"
+   ],
+   "ownedByCaller": [
+    "Qoder integration"
+   ],
+   "routeElsewhere": [
+    "Qoder support: a later version or external"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.binary-adapter-source",
+   "intent": "The adapter source content supports only string (utf8 text closure); binary projection is out of scope.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Need to include binary resources in the adapter projection"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (binary explicitly unsupported)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Non-string content fails validation"
+   ],
+   "invariants": [
+    "The adapter source content type is fixed to string, utf8 only"
+   ],
+   "ownedByCaller": [
+    "Binary resource handling"
+   ],
+   "routeElsewhere": [
+    "Binary handling: external tools"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.remote-publish",
+   "intent": "Remote publish and all remote writes belong to release-skill; Foundation does not own them.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring publishing to npm/GitHub/Registry or remote writes"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (route to release-skill)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Foundation provides no remote-write entry point"
+   ],
+   "invariants": [
+    "contracts doesNotOwn remote writes; harness HARNESS_EXCLUSIONS contains remote-network-access; kit FORBIDDEN_SIDE_EFFECTS contains publish/remote-write"
+   ],
+   "ownedByCaller": [
+    "Publish process"
+   ],
+   "routeElsewhere": [
+    "Publish: release-skill"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.business-state-machine",
+   "intent": "Business state machines, task nodes, retries, terminal states, memory, and similar semantics are not part of Foundation; state-store only provides the foundation.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring a workflow state machine or business terminal state to be defined in Foundation"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (route to loop-agent)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Business state transitions should not be implemented within Foundation"
+   ],
+   "invariants": [
+    "Event meaning and reducer transitions remain consumer-owned"
+   ],
+   "ownedByCaller": [
+    "Business state machine semantics"
+   ],
+   "routeElsewhere": [
+    "Tasks/retries/rework/acceptance: loop-agent"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.model-orchestration",
+   "intent": "Model orchestration and workflow orchestration are out of the Foundation scope; only business-neutral mechanisms are provided.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring model calls or workflow orchestration"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (route to the corresponding orchestration layer)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Foundation contains no model calls or workflow engine"
+   ],
+   "invariants": [
+    "harness HARNESS_EXCLUSIONS contains workflow-orchestration / model-calls; contracts doesNotOwn generation"
+   ],
+   "ownedByCaller": [
+    "Orchestration semantics"
+   ],
+   "routeElsewhere": [
+    "Orchestration: the corresponding consumer or orchestration layer"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.domain-audit-semantics",
+   "intent": "Domain audit semantics and the final accept/reject conclusion belong to external independent review; Foundation only provides the audit surface (canonical + digest).",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring Foundation to own a domain audit oracle or semantic conclusion"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (route to an independent audit consumer)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Foundation does not carry domain audit semantics"
+   ],
+   "invariants": [
+    "audit-surface only performs deterministic serialization and contains no semantics"
+   ],
+   "ownedByCaller": [
+    "Audit semantic conclusion"
+   ],
+   "routeElsewhere": [
+    "Domain audit: independent audit consumer"
+   ]
+  },
+  {
+   "id": "foundation.unsupported.git-writes",
+   "intent": "Git write operations (stage/commit/push/tag/release) are out of the Foundation scope; only read-only probing is provided.",
+   "useWhen": [],
+   "doNotUseWhen": [
+    "Any scenario requiring Foundation to perform Git write operations"
+   ],
+   "prerequisites": [
+    "none"
+   ],
+   "inputs": [
+    "none"
+   ],
+   "outputs": [
+    "none (route to the Git lifecycle guide authorization flow)"
+   ],
+   "sideEffects": [
+    "none"
+   ],
+   "failureSemantics": [
+    "Foundation provides no Git write entry point"
+   ],
+   "invariants": [
+    "harness HARNESS_EXCLUSIONS contains git-writes; kit git-init/commit/push/tag are write-forbidden"
+   ],
+   "ownedByCaller": [
+    "Authorization for Git write operations"
+   ],
+   "routeElsewhere": [
+    "Git write operations: the Git lifecycle guide"
+   ]
+  },
+  {
+   "id": "foundation.contracts.quickstart-profile-candidate",
+   "intent": "Expose the Quickstart Profile v2 protocol and real-$id Resource, Task, and Result schema collection through skill-family-contracts/candidate/quickstart-profile for exact-version integration trials.",
+   "useWhen": [
+    "Need to inspect or validate the candidate Resource, Task, or Result shape before it is proposed for the frozen registry",
+    "The consumer can pin the exact skill-family-contracts package version and isolate candidate imports from its stable API"
+   ],
+   "doNotUseWhen": [
+    "Need a registry-listed or compatibility-frozen contract",
+    "Need Foundation to interpret domain audit semantics"
+   ],
+   "prerequisites": [
+    "Install an exact skill-family-contracts version that exports skill-family-contracts/candidate/quickstart-profile",
+    "Node >= 22.22.2"
+   ],
+   "inputs": [
+    "Document kind: resource, task, or result",
+    "Candidate document to validate"
+   ],
+   "outputs": [
+    "Cloned candidate schemas or a validation result containing valid, errors, and normalized data"
+   ],
+   "sideEffects": [
+    "No filesystem, Git, network, or process writes"
+   ],
+   "failureSemantics": [
+    "An unknown document kind throws TypeError",
+    "An invalid candidate document returns valid:false with Ajv findings"
+   ],
+   "invariants": [
+    "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
+    "Candidate schemas remain absent from src/registry.json and do not expand the 18 stable object classes",
+    "Stability is candidate: a later minor release may change or remove this subpath"
+   ],
+   "ownedByCaller": [
+    "Domain meaning of method, parameters, evidence, and domainResult",
+    "Decision to adopt or wrap the candidate API"
+   ],
+   "routeElsewhere": [
+    "Frozen production contracts: use the stable skill-family-contracts root export",
+    "Domain audit conclusions: route to an independent audit consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.quickstart-profile-candidate",
+   "intent": "Construct and verify an observation-bound candidate Task/Result exchange through skill-family-harness-node/candidate/quickstart-profile.",
+   "useWhen": [
+    "Need an early integration trial that binds a contained observation file to a candidate Task and terminal Result",
+    "Need a structured non-throwing verification result for an exact-version candidate exchange"
+   ],
+   "doNotUseWhen": [
+    "Need a domain auditor, method selector, retry orchestrator, or lifecycle owner",
+    "Need a compatibility-frozen Quickstart API"
+   ],
+   "prerequisites": [
+    "Install exact matching versions of skill-family-harness-node and skill-family-contracts",
+    "The observation path is contained under the supplied root"
+   ],
+   "inputs": [
+    "Contained root and observation path",
+    "Operation identity, method, parameters, and run/stage/attempt correlation",
+    "Candidate Task and Result documents for verification"
+   ],
+   "outputs": [
+    "Observation Resource, candidate Task, terminal Result, or structured exchange verification"
+   ],
+   "sideEffects": [
+    "Reads the contained observation file to compute or verify its sha256 digest",
+    "Does not write files or access Git or the network"
+   ],
+   "failureSemantics": [
+    "Throwing APIs fail closed with SFC2004 and details.kind=invalid-result when the profile or binding is invalid",
+    "verifyQuickstartExchange converts a failure into {valid:false, code, message, details}"
+   ],
+   "invariants": [
+    "The Result must bind the exact Task digest, real Resource bytes, globally unique Resource ids, operation identity, correlation fields, and the complete evidence-binding set",
+    "Stability is candidate: a later minor release may change or remove this subpath"
+   ],
+   "ownedByCaller": [
+    "Audit method semantics and domainResult interpretation",
+    "Retry, scheduling, and lifecycle decisions"
+   ],
+   "routeElsewhere": [
+    "Stable generic mechanisms: use the skill-family-harness-node root export",
+    "Business orchestration: route to the consumer or orchestration layer"
+   ]
+  },
+  {
+   "id": "foundation.kit.quickstart-profile-candidate",
+   "intent": "Build a deterministic Quickstart Profile v2 offline Bundle with standalone validators selected by schema $id through skill-family-engineering-kit/candidate/quickstart-profile.",
+   "useWhen": [
+    "Need to trial the candidate Quickstart schemas and runner in a target using the stable projection authorization boundary",
+    "Need complete source, consumer-schema, payload, tool-version, and license provenance for the generated Bundle"
+   ],
+   "doNotUseWhen": [
+    "Need a stable Quickstart API or a fifth top-level Kit command",
+    "Need to bypass target manifest authorization or handwritten-file protection"
+   ],
+   "prerequisites": [
+    "Install exact matching 0.3.0 versions of all three Foundation packages",
+    "The target prefix is a contained relative POSIX path"
+   ],
+   "inputs": [
+    "Contained targetPrefix, consumerSchemaRoot, and an explicit relative consumer-schema path set",
+    "Frozen sourceRepository and sourceBaseCommit identity",
+    "Exact installed Contracts, Harness, and Kit package bytes"
+   ],
+   "outputs": [
+    "A projection manifest and provenance record with Foundation sources, consumer schemas, payload digests, tool versions, and licenses"
+   ],
+   "sideEffects": [
+    "Builds the manifest in memory and reads installed package plus explicit consumer-schema files",
+    "Performs no writes; callers pass the manifest to stable runProjection for authorized writes"
+   ],
+   "failureSemantics": [
+    "An invalid targetPrefix throws TypeError",
+    "Duplicate schema ids, bad references, mixed dialects, unsupported formats, path escapes, or missing source identity reject the build; runProjection reports its own stable projection failures"
+   ],
+   "invariants": [
+    "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
+    "The helper adds no top-level Kit command and never bypasses runProjection",
+    "Stability is candidate: a later minor release may change or remove this subpath"
+   ],
+   "ownedByCaller": [
+    "Review and authorization of the returned manifest",
+    "Target file-registry and managed-file declarations"
+   ],
+   "routeElsewhere": [
+    "Ordinary managed projection: use runProjection from the stable Kit root export",
+    "Remote publication: route to release-skill"
+   ]
+  }
+ ]
 }

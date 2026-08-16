@@ -5,29 +5,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.3.0 -->
+<!-- release-skill:release-version: 0.4.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.3.0** (2026-08-12)
+**0.4.0** (2026-08-16)
 
-本源码候选版构建确定性的 Quickstart Profile v2 Bundle，运行时不依赖 Foundation 包、node_modules 或 Ajv。
+本版为 Engineering Kit 新增候选 adoption CLI 与 adoption mechanisms，同时保持稳定四命令边界与 0.3.0 的离线 Bundle 不变。
 
 **新增**
 
-- 接收显式消费者 Schema 文件与来源身份，生成按 Schema $id 选择的 standalone validator。
-- 完整记录来源与 payload provenance、包管理器身份，以及实际进入 Bundle 的第三方代码许可证。
-- 新增候选插件技能命名检查器（policy JSON 加构建期 CLI）：扫描插件 skills 根目录，对前缀命名、description 领域信号与路由入口范围三条规则逐项输出 PASS/FAIL。
+- 新增 adoption-cli 候选：基于 stdin/stdout 的 CLI，通过 migration manifest 评估 adoption 绑定、遗留 exit list 与遗留引用，并校验 managed-bundle 身份与 harness 表面清单。
+- 新增 adoption-mechanisms 候选模块，作为 adoption CLI 的共享实现。
 
 **变更**
 
-- 替换与 0.2.1 不兼容的依赖闭包 Bundle；仍依赖 v1 的消费者必须继续精确锁定 0.2.1。
-- 机械投影 Contracts 与 Harness 运行代码，同时保持 Kit 稳定的四命令边界。
+- 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
+- 延续 0.3.0 的 Quickstart Profile v2 离线 Bundle（按 schema $id 选择的 standalone validator、完整 provenance 记录）与候选插件技能命名检查器。
 
 **升级说明**
 
-0.3.0 当前只是本地、未发布的源码候选。采用 v2 时，应从冻结输入重新生成受管 Bundle，并把 builder 精确锁定为 0.3.0。
+0.4.0 已发布到 npm 与 public 镜像仓。adoption CLI 是候选入口，须经显式 candidate 子路径调用，并把包精确锁定为 0.4.0。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -48,7 +47,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.3.0
+npm install --save-dev skill-family-engineering-kit@0.4.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -56,7 +55,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.3.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.4.0 -- skill-family-kit --help`。
 
 ### 报告子动作
 
@@ -80,7 +79,7 @@ import {
 
 生成的 Bundle 按 Schema `$id` 选择 standalone validator，离线运行时不依赖 Foundation 包、`node_modules` 或 Ajv。provenance 绑定 Foundation 来源、消费者 Schema、payload 字节、工具版本，以及实际进入 Bundle 的代码许可证。
 
-以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**；使用 v2 时应精确锁定 `0.3.0`，仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
+以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**；使用 v2 时应精确锁定 `0.4.0`，仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
 
 ### 宿主子动作
 

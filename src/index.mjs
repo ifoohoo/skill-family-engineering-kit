@@ -22,6 +22,7 @@ import {
 import {
   assessAdoptionBinding,
   assessLegacyExitList,
+  assessLegacyReferences,
   assessVerificationEvidence,
   evaluateMigrationCompletion,
   EXCEPTION_REQUIRED_FIELDS,
@@ -50,7 +51,7 @@ import {
   listLicensingProfiles,
   loadLicensingProfile,
 } from "./licensing.mjs";
-import { runProjection, loadProjectionManifest } from "./projection.mjs";
+import { compileProjectionPlan, runProjection, loadProjectionManifest } from "./projection.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
 import { scaffoldTarget } from "./scaffold.mjs";
 import {
@@ -119,7 +120,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   projection: Object.freeze({
     summary: "投影受管生成物。",
     sideEffect:
-      "writes only manifest-authorized managed artifacts; the report sub-action (projection report) writes only the explicitly named --out/--binding paths contained in --root (Markdown goes to stdout when no --out is given); unauthorized, handwritten, escaping, or conflicting paths are refused with zero writes",
+      "writes or deletes only explicitly owned, manifest-authorized managed artifacts; the report sub-action (projection report) writes only the explicitly named --out/--binding paths contained in --root (Markdown goes to stdout when no --out is given); unauthorized, handwritten, escaping, or conflicting paths are refused before mutation",
     exitCodes: "0 成功；2 拒绝/用法/机制错误",
   }),
   check: Object.freeze({
@@ -191,6 +192,7 @@ export {
   planAdoption,
   buildHandoffDraft,
   HANDOFF_FIELDS,
+  compileProjectionPlan,
   runProjection,
   loadProjectionManifest,
   renderReportAction,
@@ -259,5 +261,6 @@ export {
   assessAdoptionBinding,
   assessVerificationEvidence,
   assessLegacyExitList,
+  assessLegacyReferences,
   evaluateMigrationCompletion,
 };

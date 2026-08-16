@@ -1972,7 +1972,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>结构、协议、错误码、协议名登记；18 类顶层对象；9 条 mandatory rule</td>
+<td>结构、协议、错误码、协议名登记；20 类顶层对象；9 条 mandatory rule</td>
 <td>业务字段语义、领域审计、远端写入、模型生成</td>
 </tr>
 <tr>
@@ -2024,7 +2024,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <li>涉及制品关系/版本锁 → artifact-graph。</li>
 <li>只有一个消费者或尚未证明跨两个真实消费者重复 → 留在消费者，不扩张 Foundation。</li>
 </ol>
-<p>第 8 步是扩张闸门：新增组件必须说明删除它会让两个以上真实消费者重复实现，并经独立 fixture 验证。机器可读版见 <code>docs/agents/architecture-routing.md</code>。</p>
+<p>第 8 步是扩张闸门：新增组件必须说明删除它会让两个以上真实消费者重复实现，并经独立 fixture 验证；进入门 1 另要求至少一个现有真实消费者加一个结构同型的可预见消费者（第二消费者不要求已上线，但需求必须能用同一结构表达，调整记录见 FND-ADR-009）。第 9 步是有限封闭语义闸门（对应 FND-ADR-001 门 8）：能力若携带少量领域语义，必须满足语义能被少数稳定封闭枚举覆盖，或为确定性估算原语——算法、适用范围与偏差方向已在契约中声明；本闸门不取消门 2「语义无关」一票否决。机器可读版见 <code>docs/agents/architecture-routing.md</code>。</p>
 <h2 id="信任与副作用边界">信任与副作用边界<a class="headerlink" href="#信任与副作用边界" title="Permanent link">&para;</a></h2>
 <p>Foundation 的信任前提与副作用约定按层固化，调用方据此判断风险：</p>
 <ul>
@@ -2050,6 +2050,12 @@ Contracts（结构、协议、错误码、协议名登记）
 涉及制品关系/版本锁? ──是──▶ artifact-graph
         │否
 只有一个消费者/未证明跨两个真实消费者? ──是──▶ 留在消费者，不扩张
+        │否
+携带少量领域语义? ──是──▶ 有限封闭语义：稳定闭枚举可覆盖，或为确定性
+         │               估算原语（算法/适用范围/偏差方向已契约声明）→ 可纳入；
+         │               否则留在消费者（FND-ADR-001 门 8，不取消门 2 一票否决）
+         │否
+        ──▶ 可纳入
 </code></pre>
 <h2 id="与外部项目的路由关系">与外部项目的路由关系<a class="headerlink" href="#与外部项目的路由关系" title="Permanent link">&para;</a></h2>
 <p>Foundation 不是全能底座。下列职责明确在 Foundation 之外：</p>
@@ -2066,11 +2072,12 @@ Contracts（结构、协议、错误码、协议名登记）
 <li><strong>宿主接入线</strong>（FND-FR-001/FND-FR-002，FND-ADR-003）：Contracts 登记 descriptor/source/manifest/probe/plan/receipt；Harness 实现通用 source closure、原子 build/materialize 和 probe 分类；Kit 注入具体 Profile 与受信 driver。当前只支持 describe/build/probe/plan，<code>apply</code> 稳定拒绝，安装/卸载/更新均未实现。</li>
 <li><strong>持久状态底座线</strong>（FND-FR-003，FND-ADR-004）：append-only 事件、hash chain、快照与校验恢复；只提供状态底座，状态机、任务节点、重试、终态、记忆等业务语义不纳入 Foundation。</li>
 <li><strong>人类报告线</strong>（FND-FR-004，FND-ADR-005）：双层合同——机器结果是唯一真源，人类报告由机器结果确定性渲染（Markdown + digest 绑定 + 分级检查），不自由撰写。</li>
+<li><strong>有限封闭语义工具线</strong>（FND-ADR-009）：基线物化 + contentGuard（摘要不符、物化中途变化、守卫检出均失败关闭）、通用只读 chokepoint（允许根集合 + 可选身份谓词）、策略化表面扫描（策略契约 + 注入式自测）、token 上界估算（确定性领域估算原语，无模型/网络/tokenizer 依赖）、通用上限守卫（复用 state-store 事件账与 token-lock，上限与超限策略由消费者配置）。</li>
 </ul>
 <p>三包结构保持、不拆第四包（FND-ADR-007）；制品治理采用 artifact-graph CLI 与版本锁（FND-ADR-006）。</p>
 <h2 id="首版预算">首版预算<a class="headerlink" href="#首版预算" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象：18 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata；</li>
+<li>顶层 Contracts 对象：20 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy；</li>
 <li>Kit 顶层命令：4 个（scaffold、adopt-plan、projection、check）；</li>
 <li>强制机械规则：当前 9 条，预算不超过 20 条，绝对上限 30 条；CR-001 对登记表内全部 Schema 做统一编译；</li>
 <li>叶子包：3 个（skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit）；</li>

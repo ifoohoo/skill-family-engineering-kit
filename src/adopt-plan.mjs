@@ -6,6 +6,7 @@ import { probeGitFacts, probeGitState } from "./gitprobe.mjs";
 import {
   assessAdoptionBinding,
   assessLegacyExitList,
+  assessLegacyReferences,
   assessVerificationEvidence,
   evaluateMigrationCompletion,
   findNestedRepositories,
@@ -89,6 +90,7 @@ export function buildHandoffDraft({
   conflicts,
   risks,
   legacyExitList,
+  legacyReferenceExitList,
   verificationFacts,
   migrationState,
   entries,
@@ -137,8 +139,17 @@ export function buildHandoffDraft({
   });
 
   // 5. The validator/builder/docs-pipeline/git-preflight slated for exit.
+  //    Includes both whole-file exits (legacyInfra) and reference-level
+  //    exits (legacyReferences) for retained files.
   push(5, HANDOFF_FIELDS[4], "derived", {
     exits: legacyExitList.map((item) => ({ path: item.path, replacedBy: item.replacedBy, status: item.status })),
+    referenceExits: (legacyReferenceExitList ?? []).map((ref) => ({
+      path: ref.path,
+      text: ref.text,
+      replacedBy: ref.replacedBy,
+      status: ref.status,
+      occurrenceCount: ref.occurrenceCount,
+    })),
   });
 
   // 6. Business logic that must be kept: never derivable from repo facts.
@@ -420,6 +431,17 @@ export async function planAdoption({
       });
     }
   }
+  const legacyReferenceExitList = await assessLegacyReferences(rootAbs, migrationManifest?.legacyReferences ?? []);
+  for (const ref of legacyReferenceExitList) {
+    if (ref.status === "invalid") {
+      conflicts.push({
+        path: MIGRATION_MANIFEST_PATH,
+        kind: "legacy-path-containment",
+        code: "SFC2004",
+        detail: `legacy reference path rejected by harness containment, fail-closed: ${ref.path ?? "<malformed>"} (${ref.invalidKind ?? "unknown"}); user paths are only ever read inside the target root`,
+      });
+    }
+  }
   const exceptionFindings = [];
   const declaredExceptions = Array.isArray(migrationManifest?.exceptions) ? migrationManifest.exceptions : [];
   for (const [index, exception] of declaredExceptions.entries()) {
@@ -481,6 +503,7 @@ export async function planAdoption({
   const completion = evaluateMigrationCompletion({
     manifestDeclared,
     legacyExitList,
+    legacyReferenceExitList,
     exceptionFindings,
     conflicts,
     binding,
@@ -512,6 +535,7 @@ export async function planAdoption({
     conflicts,
     risks,
     legacyExitList,
+    legacyReferenceExitList,
     verificationFacts,
     migrationState: completion.state,
     entries,
@@ -555,6 +579,7 @@ export async function planAdoption({
       manifestStatus: manifestState.status,
       manifestPath: MIGRATION_MANIFEST_PATH,
       legacyExitList,
+      legacyReferenceExitList,
       exceptions: { declared: declaredExceptions.length, findings: exceptionFindings },
       binding,
       adoptionProof,
@@ -589,6 +614,6 @@ export async function planAdoption({
       },
     ],
     policy:
-      "strictly read-only: this plan changes nothing in the target (no files, no temp files, no git); every listed byte is computed from describeSkeletonFiles, the same source scaffold consumes; the kit never renames repositories or directories and never touches remotes — infrastructure adoption and repository renaming are separate decisions; migration completion additionally requires every legacy implementation to have exited (dual-track wiring alone is not completion)",
+      "strictly read-only: this plan changes nothing in the target (no files, no temp files, no git); every listed byte is computed from describeSkeletonFiles, the same source scaffold consumes; the kit never renames repositories or directories and never touches remotes — infrastructure adoption and repository renaming are separate decisions; migration completion additionally requires every legacy implementation to have exited and every declared legacy reference to be absent from its retained file (dual-track wiring alone is not completion)",
   };
 }

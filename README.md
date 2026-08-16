@@ -4,29 +4,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.3.0 -->
+<!-- release-skill:release-version: 0.4.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.3.0** (2026-08-12)
+**0.4.0** (2026-08-16)
 
-This source candidate builds a deterministic Quickstart Profile v2 bundle that runs offline without Foundation packages, node_modules, or runtime Ajv.
+This release adds the candidate adoption CLI and adoption mechanisms to the Engineering Kit while preserving the stable four-command surface and the 0.3.0 offline bundle.
 
 **Added**
 
-- Accepts explicit consumer schema files and source identity, then generates standalone validators selected by schema $id.
-- Records complete source and payload provenance, package-manager identity, and the licenses for third-party code that enters the bundle.
-- Adds a candidate plugin skill naming checker (policy JSON plus build-time CLI) that scans a plugin skills root and reports per-rule PASS/FAIL for the prefixed-name, description-signal, and routing-scope rules.
+- Adds the adoption-cli candidate, a stdin/stdout CLI that assesses adoption bindings, legacy exit lists, and legacy references through the migration manifest, and verifies managed-bundle identity and harness surface inventory.
+- Adds the adoption-mechanisms candidate module as the shared implementation behind the adoption CLI.
 
 **Changed**
 
-- Replaces the incompatible 0.2.1 dependency-closure bundle; consumers that still require v1 must remain pinned to exactly 0.2.1.
-- Projects the Contracts and Harness runtime mechanically while preserving the stable four-command Kit surface.
+- Keeps the stable scaffold, adopt-plan, projection, and check commands unchanged.
+- Carries forward the 0.3.0 Quickstart Profile v2 offline bundle (standalone validators selected by schema $id, full provenance recording) and the candidate plugin skill naming checker.
 
 **Upgrade Notes**
 
-Version 0.3.0 is a local, unpublished source candidate. Regenerate managed bundles from frozen inputs and pin the builder to exactly 0.3.0 when adopting v2.
+Version 0.4.0 is released on npm and the public mirror. The adoption CLI is a candidate entry point; invoke it through its explicit candidate subpath and pin the package to exactly 0.4.0.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -47,7 +46,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.3.0
+npm install --save-dev skill-family-engineering-kit@0.4.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -55,7 +54,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.3.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.4.0 -- skill-family-kit --help`.
 
 ### Report sub-action
 
@@ -79,7 +78,7 @@ import {
 
 The generated Bundle selects standalone validators by schema `$id` and runs offline without Foundation packages, `node_modules`, or runtime Ajv. Its provenance binds Foundation sources, consumer schemas, payload bytes, tool versions, and the licenses of code that actually enters the Bundle.
 
-Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. This subpath is public but **not stable**. Pin exactly `0.3.0` for v2; integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
+Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. This subpath is public but **not stable**. Pin exactly `0.4.0` for v2; integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
 
 ### Host sub-action
 
