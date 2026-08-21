@@ -573,22 +573,22 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#十字段-hand-off-草案" class="md-nav__link">
+  <a href="#Profile-草稿" class="md-nav__link">
     <span class="md-ellipsis">
 
-        十字段 hand-off 草案
+        Profile 草稿
 
     </span>
   </a>
 
-    <nav class="md-nav" aria-label="十字段 hand-off 草案">
+    <nav class="md-nav" aria-label="Profile 草稿">
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#INCOMPLETE-阻断规则" class="md-nav__link">
+  <a href="#不完整阻断规则" class="md-nav__link">
     <span class="md-ellipsis">
 
-        INCOMPLETE 阻断规则
+        不完整阻断规则
 
     </span>
   </a>
@@ -607,10 +607,10 @@
 </li>
 
           <li class="md-nav__item">
-  <a href="#渲染边界" class="md-nav__link">
+  <a href="#边界" class="md-nav__link">
     <span class="md-ellipsis">
 
-        渲染边界
+        边界
 
     </span>
   </a>
@@ -1923,22 +1923,22 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#十字段-hand-off-草案" class="md-nav__link">
+  <a href="#Profile-草稿" class="md-nav__link">
     <span class="md-ellipsis">
 
-        十字段 hand-off 草案
+        Profile 草稿
 
     </span>
   </a>
 
-    <nav class="md-nav" aria-label="十字段 hand-off 草案">
+    <nav class="md-nav" aria-label="Profile 草稿">
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#INCOMPLETE-阻断规则" class="md-nav__link">
+  <a href="#不完整阻断规则" class="md-nav__link">
     <span class="md-ellipsis">
 
-        INCOMPLETE 阻断规则
+        不完整阻断规则
 
     </span>
   </a>
@@ -1957,10 +1957,10 @@
 </li>
 
           <li class="md-nav__item">
-  <a href="#渲染边界" class="md-nav__link">
+  <a href="#边界" class="md-nav__link">
     <span class="md-ellipsis">
 
-        渲染边界
+        边界
 
     </span>
   </a>
@@ -2196,83 +2196,28 @@
 <li><strong>回滚以证据为准</strong>：采用落盘前必须先有 <code>adoptionProof</code> 与 <code>foundationPlanDigest</code> 双摘要绑定；回滚时以计划写集的 <code>expect.sha256</code> 前置状态还原，未声明前置状态的覆盖动作在 <code>projection</code> 阶段即拒绝。</li>
 <li><strong>fail-closed 默认</strong>：任何不可解析、越界、身份不符或证据缺失的输入，都使对应判定为未证明，不假设成功。</li>
 </ul>
-<h2 id="十字段-hand-off-草案">十字段 hand-off 草案<a class="headerlink" href="#十字段-hand-off-草案" title="Permanent link">&para;</a></h2>
-<p><code>adopt-plan</code> 输出携带 <code>handoffDraft</code> 子块（kind=<code>skill-family.handoff-draft</code>，schemaVersion=1），为 planner 侧的十字段 hand-off 提供结构化数据草案。字段来源只有两种：<code>derived</code>（可由只读证据机械推导）与 <code>INCOMPLETE</code>（不可机械推导，绝不猜测）。十字段与源码常量 <code>HANDOFF_FIELDS</code> 逐一对应：</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>字段名</th>
-<th>来源</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><code>project-identity</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>2</td>
-<td><code>repository-state</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>3</td>
-<td><code>foundation-binding</code></td>
-<td>derived（清单已声明绑定）／INCOMPLETE（无清单声明）</td>
-</tr>
-<tr>
-<td>4</td>
-<td><code>write-set-policy</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>5</td>
-<td><code>legacy-exits</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>6</td>
-<td><code>business-logic-to-keep</code></td>
-<td>恒 INCOMPLETE</td>
-</tr>
-<tr>
-<td>7</td>
-<td><code>plan-summary</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>8</td>
-<td><code>verification-entries</code></td>
-<td>derived（四类证据全部 proven）／INCOMPLETE（任一未证明）</td>
-</tr>
-<tr>
-<td>9</td>
-<td><code>legacy-removal-recovery</code></td>
-<td>恒 INCOMPLETE</td>
-</tr>
-<tr>
-<td>10</td>
-<td><code>authorization-status</code></td>
-<td>derived（commit/push/tag/publish 恒为 false）</td>
-</tr>
-</tbody>
-</table>
-<h3 id="INCOMPLETE-阻断规则">INCOMPLETE 阻断规则<a class="headerlink" href="#INCOMPLETE-阻断规则" title="Permanent link">&para;</a></h3>
+<h2 id="Profile-草稿">Profile 草稿<a class="headerlink" href="#Profile-草稿" title="Permanent link">&para;</a></h2>
+<p><code>adopt-plan</code> 输出携带 <code>profileDraft</code> 子块（kind=<code>skill-family.profile-draft</code>，schemaVersion=1）：一份预填的 profile.json 描述符草稿（<code>descriptorRelPath</code>=<code>profile.json</code>）。adoption-lock 概念与其工件形态已废弃（整改交接 D-8）：轻量采用证明就是描述符自身的采用声明，由 <code>verifyProfile</code>（Profile SPI v2）机械核验——字段完整性与 pin 形态在描述符 Schema 步把关（SPE1001），pin 摘要按 GK-4 纪律对写集内真实工件字节逐一比对（SPE1006），overrides 只收紧策略独立裁决（SPE1007）。</p>
+<p>草稿预填一切可由只读事实机械推导的内容：</p>
 <ul>
-<li>任何 INCOMPLETE 字段都使 <code>ready=false</code>：草案带缺口就不得进入 hand-off。</li>
-<li>工具绝不猜测不可机械推导的字段：</li>
-<li><code>business-logic-to-keep</code> 与 <code>legacy-removal-recovery</code> <strong>恒 INCOMPLETE</strong>，必须由人类负责人给出，工具无推导依据；</li>
-<li><code>foundation-binding</code> 在无迁移清单声明（<code>foundationPackages</code>）时 INCOMPLETE，只计清单声明的绑定；</li>
-<li><code>verification-entries</code> 在四类证据（unit/integration/consumer/independentAudit）任一未达 proven 时 INCOMPLETE。</li>
+<li>描述符身份与基线：<code>profile.id</code>/<code>profile.name</code> 来自计划输入，<code>base.contractsVersion</code> 为已加载的冻结 Contracts 版本；<code>differences</code>/<code>spi</code> 为空数组起点。</li>
+<li>采用声明（D-8 最小字段集，权威定义在 <code>profiles/spi/extension-spi.json</code> 的 <code>adoptionDeclaration</code>）：</li>
+<li><code>foundation_profile.id</code> 为计划采用的 Foundation Profile id；<code>version</code>/<code>stability</code> 属人类决策，保持 null。</li>
+<li><code>foundation_pin.algorithm</code> 恒为 <code>sha256</code>；三个 Foundation 包的 <code>version</code> 按「迁移清单声明优先，其次加载常量」预填；<code>path</code>/<code>sha256</code> 在真实工件放入 Profile 写集之前保持 null（摘要只能来自真实字节，绝不猜测）。</li>
+<li><code>adopted_at</code> 在采用时刻才产生，规划期保持 null。</li>
+<li><code>overrides</code> 为空数组（空示例）：覆盖是可选的自收紧声明，Kit 不枚举规则示例（核心不导入 Profile 层）；草稿附带 <code>overridesGuidance</code> 说明只收紧语义。</li>
+</ul>
+<h3 id="不完整阻断规则">不完整阻断规则<a class="headerlink" href="#不完整阻断规则" title="Permanent link">&para;</a></h3>
+<ul>
+<li>任何不可机械推导的字段保持 null 并列入 <code>incompleteFields</code>；只要 <code>incompleteFields</code> 非空即 <code>ready=false</code>：带缺口的草稿不得直接落盘为采用声明。</li>
+<li>工具绝不猜测：人工需补齐 <code>foundation_profile.version</code>/<code>stability</code>、各包工件的 <code>path</code>/<code>sha256</code>、<code>adopted_at</code> 与 <code>profile.version</code>。</li>
 </ul>
 <h3 id="绑定">绑定<a class="headerlink" href="#绑定" title="Permanent link">&para;</a></h3>
-<p>草案携带双 sha256 摘要（<code>binding</code> 块）：<code>targetSetDigest</code> 汇总目标仓文件集合，<code>foundationPlanDigest</code> 汇总 Foundation 计划写集。同一目标两次计划得到相同摘要，草案与计划时刻的目标状态精确绑定。</p>
-<h3 id="渲染边界">渲染边界<a class="headerlink" href="#渲染边界" title="Permanent link">&para;</a></h3>
+<p>草稿携带双 sha256 摘要（<code>binding</code> 块）：<code>targetSetDigest</code> 汇总目标仓文件集合，<code>foundationPlanDigest</code> 汇总 Foundation 计划写集。同一目标两次计划得到相同摘要，草稿与计划时刻的目标状态精确绑定。</p>
+<h3 id="边界">边界<a class="headerlink" href="#边界" title="Permanent link">&para;</a></h3>
 <ul>
-<li>渲染器只写 planner 侧的 hand-off 草案，<strong>绝不写消费者仓</strong>；</li>
-<li>不新增第五个 Kit 顶层命令：Kit 顶层命令恒为 scaffold、adopt-plan、projection、check 四个，<code>handoffDraft</code> 只是 <code>adopt-plan</code> 输出的子块。</li>
+<li><code>adopt-plan</code> 严格只读：草稿只随计划输出到 stdout，<strong>绝不写消费者仓</strong>；</li>
+<li>不新增第五个 Kit 顶层命令：Kit 顶层命令恒为 scaffold、adopt-plan、projection、check 四个，<code>profileDraft</code> 只是 <code>adopt-plan</code> 输出的子块。</li>
 </ul>
 <h2 id="危害类-fixture">危害类 fixture<a class="headerlink" href="#危害类-fixture" title="Permanent link">&para;</a></h2>
 <p><code>fixtures/adoption/cases/</code> 覆盖七个危害类：dirty 仓、嵌套仓、tracked-but-ignored、符号链接占位、生成物漂移、旧实现退出门禁、临时例外字段。每个案例以字节级前后快照证明计划只读；案例说明见仓内 <code>fixtures/adoption/README.md</code>。</p>

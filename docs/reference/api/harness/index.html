@@ -1081,6 +1081,28 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#estimateTokens--isCjkCodePoint--估算器常量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        estimateTokens / isCjkCodePoint / 估算器常量
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#CLIskill-family-token-estimate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CLI：skill-family-token-estimate
+
+    </span>
+  </a>
+
+</li>
+
       </ul>
     </nav>
 
@@ -2502,6 +2524,28 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#estimateTokens--isCjkCodePoint--估算器常量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        estimateTokens / isCjkCodePoint / 估算器常量
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#CLIskill-family-token-estimate" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        CLI：skill-family-token-estimate
+
+    </span>
+  </a>
+
+</li>
+
       </ul>
     </nav>
 
@@ -2576,7 +2620,7 @@
 
 <h1 id="skill-family-harness-node-公共-API-参考">skill-family-harness-node 公共 API 参考<a class="headerlink" href="#skill-family-harness-node-公共-API-参考" title="Permanent link">&para;</a></h1>
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
-<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（16 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
+<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（19 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#契约校验-foundationharnesscontract-validation">契约校验</a> → <code>validateContractDocument</code> / <code>getValidator</code></li>
@@ -2591,7 +2635,7 @@
 <li><a href="#基线物化-foundationharnessbaseline-materialization">基线物化</a> → <code>computeDirectoryDigest</code> / <code>materializeBaseline</code>（FND-ADR-009）</li>
 <li><a href="#只读-chokepoint-foundationharnessread-chokepoint">只读 chokepoint</a> → <code>createReadChokepoint</code>（FND-ADR-009）</li>
 <li><a href="#策略化表面扫描-foundationharnesssurface-scan">策略化表面扫描</a> → <code>scanSurface</code>（FND-ADR-009）</li>
-<li><a href="#token-上界估算-foundationharnesstoken-estimation">token 上界估算</a> → <code>estimateTokenUpperBound</code>（FND-ADR-009）</li>
+<li><a href="#token-上界估算-foundationharnesstoken-estimation">token 上界估算</a> → <code>estimateTokenUpperBound</code> / <code>estimateTokens</code>（FND-ADR-009）</li>
 <li><a href="#通用上限守卫-foundationharnessupper-bound-guard">通用上限守卫</a> → <code>openUsageGuard</code> / <code>appendUsageEvent</code> / <code>readUsage</code> / <code>closeUsageGuard</code>（FND-ADR-009）</li>
 <li><a href="#机制错误-foundationharnesserrors">机制错误</a> → <code>HarnessError</code> / <code>mechanismError</code> / <code>HARNESS_ERROR_KINDS</code></li>
 </ul>
@@ -2924,7 +2968,7 @@
 <p>注入式自测约定：扫描器无状态——注入模式并扫描后移除注入，再次扫描结果字节一致（自测见测试文件，不冒充独立复核）。</p>
 <hr />
 <h2 id="token-上界估算-foundationharnesstoken-estimation">token 上界估算 (foundation.harness.token-estimation)<a class="headerlink" href="#token-上界估算-foundationharnesstoken-estimation" title="Permanent link">&para;</a></h2>
-<p>FND-ADR-009。确定性领域估算原语：UTF-8 字节数纯函数，无模型、无网络、无 tokenizer 依赖、无持久状态导入；结果符合 <code>token-estimate-result</code> 契约（无时间戳，<code>guarantees</code> 为封闭枚举）。</p>
+<p>FND-ADR-009。确定性领域估算原语，两个互相独立的估算器：UTF-8 字节数上界（<code>estimateTokenUpperBound</code>）与按 CJK 码位/空白切分的词元数估算（<code>estimateTokens</code>，算法 <code>cjk-char-whitespace-split</code>）。两者均为无模型、无网络、无 tokenizer 依赖、无持久状态导入的纯函数；字节上界结果符合 <code>token-estimate-result</code> 契约（无时间戳，<code>guarantees</code> 为封闭枚举）。每条词元估算记录携带估算器 id 与版本（SFA-CONTEXT-028：消费方必须能回答结果出自哪个估算器），两个估算器的结果不得静默混用、不得互相替代。</p>
 <h3 id="estimateTokenUpperBound">estimateTokenUpperBound<a class="headerlink" href="#estimateTokenUpperBound" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：<code>estimateTokenUpperBound(text)</code>（纯函数）</li>
@@ -2938,6 +2982,42 @@
 <li>源文件：<code>packages/skill-family-harness-node/src/token-estimate.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/token-estimate.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：估算结果的解释与消费侧换算（模型调用与真实 token 计数不在 Foundation）。</li>
+</ul>
+<h3 id="estimateTokens--isCjkCodePoint--估算器常量">estimateTokens / isCjkCodePoint / 估算器常量<a class="headerlink" href="#estimateTokens--isCjkCodePoint--估算器常量" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>estimateTokens(text)</code>（纯函数）</li>
+<li><code>isCjkCodePoint(codePoint)</code>（纯函数）</li>
+<li>常量：<code>TOKEN_ESTIMATOR_ID</code>（<code>skill-family.token-estimator</code>）、<code>TOKEN_ESTIMATOR_VERSION</code>（<code>1.0.0</code>）、<code>TOKEN_ESTIMATION_ALGORITHM</code>（<code>cjk-char-whitespace-split</code>）、<code>CJK_CODE_POINT_RANGES</code>（冻结码位区间表）</li>
+<li>输入：文本字符串；<code>isCjkCodePoint</code> 接收整数码位。</li>
+<li>输出：冻结的词元估算记录（<code>kind: skill-family.token-estimate-record</code>，<code>schemaVersion: 1</code>），携带 <code>estimator.id</code> / <code>estimator.version</code> / <code>algorithm</code>、输入统计（<code>codePoints</code> / <code>inputBytes</code>）、切分统计（<code>cjkCharacters</code> / <code>whitespaceSeparators</code> / <code>otherRuns</code>）与 <code>tokens</code>；<code>unit</code> 为 <code>tokens</code>，<code>precision</code> 为 <code>deterministic-heuristic</code>，<code>scope</code> 为 <code>content-text-only</code>。</li>
+<li>算法（<code>cjk-char-whitespace-split</code>，逐码位单遍扫描）：</li>
+<li>CJK 码位区间（冻结）：U+3400–U+4DBF（扩展 A）、U+4E00–U+9FFF（统一表意文字）、U+F900–U+FAFF（兼容表意文字）、U+20000–U+3134F（扩展 B–G）。</li>
+<li>每个 CJK 码位计 1 词元，并立即终结其前尚未闭合的 OTHER 段。</li>
+<li>连续的非 CJK、非空白码位构成 OTHER 段，被空白或 CJK 码位分隔时每段计 1 词元。</li>
+<li>空白（ECMAScript <code>\s</code> 类）只起分隔作用，不贡献词元。</li>
+<li>恒等式：<code>tokens === cjkCharacters + otherRuns</code>；中英混排、纯 CJK、纯 ASCII、空串（0 词元）全部适用。</li>
+<li>纯函数：是；零依赖、零 import（模块纯度由测试复检）。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：非字符串输入抛 <code>TypeError</code>（无 SFC 码）。</li>
+<li>前置条件与信任锚：估算是对目标 tokenizer 的确定性启发式近似，不承诺与任何具体模型 tokenizer 相等；比较阈值时同一批次必须使用同一估算器（记录内的 <code>estimator</code> 与 <code>algorithm</code> 即裁决依据）。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.6.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/token-estimate.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/token-estimator.test.mjs</code>（中英混排、纯 CJK、纯 ASCII、空串与空白串、扩展 B 码位、区间边界、记录封闭键集、恒等式、确定性、CLI 子进程行为）。</li>
+<li>调用方仍拥有的业务语义：阈值策略与超限处置；把启发式词元数换算为目标模型的真实消耗。</li>
+</ul>
+<h3 id="CLIskill-family-token-estimate">CLI：skill-family-token-estimate<a class="headerlink" href="#CLIskill-family-token-estimate" title="Permanent link">&para;</a></h3>
+<ul>
+<li>入口：harness 包 bin <code>skill-family-token-estimate</code>（<code>src/token-estimate-cli.mjs</code>）；与工程 Kit 的四命令互不混用。</li>
+<li>用法：<code>skill-family-token-estimate (--text &lt;s&gt; | --file &lt;p&gt; | --stdin) [--estimator tokens|upper-bound|both]</code>；默认 <code>--estimator tokens</code>。<code>both</code> 输出 <code>{ tokens, upperBound }</code> 两个键，明示两个估算器并存而非混合。</li>
+<li>输出：stdout 打印 JSON 估算记录（<code>tokens</code> 为估算记录，<code>upper-bound</code> 为 <code>token-estimate-result</code>），换行结尾。</li>
+<li>副作用：只读取命令行参数、<code>--file</code> 指定文件或 stdin；只写 stdout。</li>
+<li>稳定退出码：<code>0</code> 成功；<code>2</code> 用法错误（输入源缺失或互斥、未知参数、<code>--file</code> 目标不是普通文件等，stderr 给出原因）；<code>--help</code> 打印用法后退出 0。</li>
+<li>前置条件与信任锚：<code>--file</code> 按调用方给定的路径原样读取，CLI 不做路径收容；需要收容时在库内用 <code>readFileContained</code>。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.6.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/token-estimate-cli.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/token-estimator.test.mjs</code>（子进程 CLI 用例：确定性、<code>--file</code>/<code>--stdin</code>/<code>both</code>、用法错误退出码 2、<code>--help</code>）。</li>
+<li>调用方仍拥有的业务语义：输入文本的采集与裁剪策略、输出记录的归档位置。</li>
 </ul>
 <hr />
 <h2 id="通用上限守卫-foundationharnessupper-bound-guard">通用上限守卫 (foundation.harness.upper-bound-guard)<a class="headerlink" href="#通用上限守卫-foundationharnessupper-bound-guard" title="Permanent link">&para;</a></h2>

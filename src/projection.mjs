@@ -17,6 +17,7 @@ import {
   classifyPathInput,
   computeResourceClosure,
   digestBytes,
+  readFileStrict,
   resolveContained,
   writeFileAtomic,
 } from "skill-family-harness-node";
@@ -154,6 +155,48 @@ function normalizeRootBinding(rootBinding) {
   return rootBinding;
 }
 
+/**
+ * Single per-resource normalization fact for plan closures: validates path,
+ * type, sha256, and mode exactly once and returns the canonical member shape
+ * {path, type, sha256, mode}. Shared by the compiler's closure re-verification
+ * (normalizePlanClosure), the public builder (buildProjectionClosure), and the
+ * candidate-root re-derivation (canonicalCandidateClosure); no second
+ * normalization algorithm exists. typeDefault lets the builder accept members
+ * without an explicit type and normalize them to "file".
+ */
+function normalizePlanResource(resource, resourceLabel, { typeDefault } = {}) {
+  if (!resource || typeof resource !== "object" || Array.isArray(resource)) {
+    projectionPlanInputError(`${resourceLabel} must be an object`);
+  }
+  const rel = validatePlanPath(resource.path, `${resourceLabel}.path`);
+  const type = resource.type === undefined ? typeDefault : resource.type;
+  if (type === "symlink") {
+    projectionPlanInputError(`${resourceLabel} may not represent a symlink`, { path: rel });
+  }
+  if (type !== "file") {
+    projectionPlanInputError(`${resourceLabel}.type must be file`, { path: rel, type: resource.type ?? null });
+  }
+  if (!SHA256_HEX_PATTERN.test(resource.sha256 ?? "")) {
+    projectionPlanInputError(`${resourceLabel}.sha256 must be a lowercase sha256 hex digest`, { path: rel });
+  }
+  return { path: rel, type: "file", sha256: resource.sha256, mode: validatePlanMode(resource.mode, `${resourceLabel}.mode`) };
+}
+
+/**
+ * Single canonicalization fact for plan closures: deterministic
+ * path.localeCompare ordering, duplicate-path and portable-collision refusal,
+ * and the sha256(JSON.stringify(normalizedResources)) digest byte contract.
+ * Returns {digestAlgorithm, digest, resourceCount, resources}.
+ */
+function canonicalPlanClosure(normalizedResources, label) {
+  const resources = [...normalizedResources].sort((a, b) => a.path.localeCompare(b.path));
+  const paths = resources.map((resource) => resource.path);
+  if (new Set(paths).size !== paths.length) projectionPlanInputError(`${label} contains a duplicate path`);
+  assertNoPortableCollisions(paths, label);
+  const digest = canonicalDigest(resources);
+  return { digestAlgorithm: "sha256", digest, resourceCount: resources.length, resources };
+}
+
 function normalizePlanClosure(rawClosure, label) {
   if (!rawClosure || typeof rawClosure !== "object" || Array.isArray(rawClosure)) {
     projectionPlanInputError(`${label} must be an object`);
@@ -164,31 +207,36 @@ function normalizePlanClosure(rawClosure, label) {
   if (!Array.isArray(rawClosure.resources)) {
     projectionPlanInputError(`${label}.resources must be an array`);
   }
-  const resources = rawClosure.resources.map((resource, index) => {
-    const resourceLabel = `${label}.resources[${index}]`;
-    if (!resource || typeof resource !== "object" || Array.isArray(resource)) {
-      projectionPlanInputError(`${resourceLabel} must be an object`);
-    }
-    const rel = validatePlanPath(resource.path, `${resourceLabel}.path`);
-    if (resource.type === "symlink") {
-      projectionPlanInputError(`${resourceLabel} may not represent a symlink`, { path: rel });
-    }
-    if (resource.type !== "file") {
-      projectionPlanInputError(`${resourceLabel}.type must be file`, { path: rel, type: resource.type ?? null });
-    }
-    if (!SHA256_HEX_PATTERN.test(resource.sha256 ?? "")) {
-      projectionPlanInputError(`${resourceLabel}.sha256 must be a lowercase sha256 hex digest`, { path: rel });
-    }
-    return { path: rel, type: "file", sha256: resource.sha256, mode: validatePlanMode(resource.mode, `${resourceLabel}.mode`) };
-  }).sort((a, b) => a.path.localeCompare(b.path));
-  const paths = resources.map((resource) => resource.path);
-  if (new Set(paths).size !== paths.length) projectionPlanInputError(`${label} contains a duplicate path`);
-  assertNoPortableCollisions(paths, label);
-  const digest = canonicalDigest(resources);
-  if (digest !== rawClosure.digest) {
-    projectionPlanInputError(`${label} digest does not match its normalized resources`, { expected: rawClosure.digest, actual: digest });
+  const resources = rawClosure.resources.map((resource, index) => normalizePlanResource(resource, `${label}.resources[${index}]`));
+  const closure = canonicalPlanClosure(resources, label);
+  if (closure.digest !== rawClosure.digest) {
+    projectionPlanInputError(`${label} digest does not match its normalized resources`, { expected: rawClosure.digest, actual: closure.digest });
   }
-  return { digestAlgorithm: "sha256", digest, resourceCount: resources.length, resources };
+  return closure;
+}
+
+/**
+ * Public canonical projection (plan) closure builder (FG-4). Pure: no
+ * filesystem access. Accepts an array of {path, sha256, mode} members (an
+ * explicit type "file" is also accepted) and returns the canonical closure
+ * {digestAlgorithm: "sha256", digest, resourceCount, resources} that
+ * compileProjectionPlan accepts verbatim as previousOwnedClosure or
+ * externalCandidateClosure. Members are normalized to {path, type: "file",
+ * sha256, mode}, ordered by path.localeCompare, and digested with the
+ * sha256(JSON.stringify(normalizedResources)) byte contract — the single
+ * source of truth shared with the compiler's closure re-verification.
+ *
+ * This is a PLAN closure: it declares owned file identities for projection
+ * planning. It differs in shape and purpose from the harness resource closure
+ * (computeResourceClosure, {path, role, exists, sha256} members with an
+ * envelope digest) — the two are not interchangeable.
+ */
+export function buildProjectionClosure(resources) {
+  if (!Array.isArray(resources)) {
+    projectionPlanInputError("projectionClosure resources must be an array");
+  }
+  const normalized = resources.map((resource, index) => normalizePlanResource(resource, `projectionClosure.resources[${index}]`, { typeDefault: "file" }));
+  return canonicalPlanClosure(normalized, "projectionClosure");
 }
 
 function normalizeAuthoritySources(rawSources, candidatePaths) {
@@ -221,10 +269,144 @@ function normalizeAuthoritySources(rawSources, candidatePaths) {
 }
 
 /**
+ * Authority binding kinds for projections whose authority does not live in
+ * the target root (FG-3). "external-root" re-reads each authority source from
+ * a separate frozen directory using the strict no-follow reader; "caller-bytes"
+ * binds caller-provided base64 authority bytes to the declared sha256 digests
+ * with no authority filesystem access at all. Both keep the target root free
+ * of forged local authority facts.
+ */
+export const PROJECTION_AUTHORITY_BINDING_KINDS = Object.freeze(["external-root", "caller-bytes"]);
+
+const BASE64_PATTERN = /^[A-Za-z0-9+/]*={0,2}$/;
+
+function normalizeAuthorityRoot(rawRoot, rootBinding) {
+  if (typeof rawRoot !== "string" || !path.isAbsolute(rawRoot) || rawRoot.includes("\0")) {
+    projectionPlanInputError("authorityBinding.authorityRoot must be a canonical absolute path");
+  }
+  const normalized = path.normalize(rawRoot);
+  if (normalized !== rawRoot) {
+    projectionPlanInputError("authorityBinding.authorityRoot must already be normalized", {
+      authorityRoot: rawRoot,
+      normalized,
+    });
+  }
+  if (normalized === rootBinding) {
+    projectionPlanInputError("authorityBinding.authorityRoot must be external to the target rootBinding");
+  }
+  const rootFromAuthority = path.relative(normalized, rootBinding);
+  const authorityFromRoot = path.relative(rootBinding, normalized);
+  if (
+    rootFromAuthority === "" || authorityFromRoot === ""
+    || !rootFromAuthority.startsWith("..") || !authorityFromRoot.startsWith("..")
+  ) {
+    projectionPlanInputError("authorityBinding.authorityRoot must be external to the target rootBinding", {
+      authorityRoot: normalized,
+      rootBinding,
+    });
+  }
+  return normalized;
+}
+
+function normalizeCallerBytes(rawBytes, authority) {
+  if (!rawBytes || typeof rawBytes !== "object" || Array.isArray(rawBytes)) {
+    projectionPlanInputError("authorityBinding.bytes must map every authority source id to base64 bytes");
+  }
+  const provided = new Set(Object.keys(rawBytes));
+  for (const source of authority.sources) {
+    if (!provided.has(source.id)) {
+      projectionPlanInputError("authorityBinding.bytes must provide bytes for every authority source", { id: source.id });
+    }
+  }
+  for (const id of provided) {
+    if (!authority.ids.has(id)) {
+      projectionPlanInputError("authorityBinding.bytes names an unknown authority source id", { id });
+    }
+  }
+  const normalized = {};
+  for (const source of authority.sources) {
+    const base64 = rawBytes[source.id];
+    if (typeof base64 !== "string" || !BASE64_PATTERN.test(base64)) {
+      projectionPlanInputError("authorityBinding.bytes entries must be base64 strings", { id: source.id });
+    }
+    const bytes = Buffer.from(base64, "base64");
+    if (bytes.toString("base64") !== base64) {
+      projectionPlanInputError("authorityBinding.bytes entries must be canonical base64", { id: source.id });
+    }
+    if (digestBytes(bytes) !== source.sha256) {
+      projectionPlanInputError("authorityBinding.bytes digest differs from the declared authority source digest", {
+        id: source.id,
+        expected: source.sha256,
+        actual: digestBytes(bytes),
+      });
+    }
+    normalized[source.id] = base64;
+  }
+  return normalized;
+}
+
+/**
+ * Validates and normalizes the optional authority binding (FG-3). Pure: no
+ * filesystem access. Returns null when no binding is supplied (legacy
+ * target-local authority). The normalized binding is embedded in the plan so
+ * the prepared run can re-verify authority outside the target root.
+ */
+function normalizeAuthorityBinding(rawBinding, { rootBinding, authority, previous }) {
+  if (rawBinding === undefined) return null;
+  if (!rawBinding || typeof rawBinding !== "object" || Array.isArray(rawBinding)) {
+    projectionPlanInputError("authorityBinding must be an object");
+  }
+  const kind = rawBinding.kind;
+  if (!PROJECTION_AUTHORITY_BINDING_KINDS.includes(kind)) {
+    projectionPlanInputError(`authorityBinding.kind must be one of: ${PROJECTION_AUTHORITY_BINDING_KINDS.join(", ")}`);
+  }
+  const freshRoot = rawBinding.freshRoot === undefined ? false : rawBinding.freshRoot;
+  if (typeof freshRoot !== "boolean") {
+    projectionPlanInputError("authorityBinding.freshRoot must be a boolean");
+  }
+  if (freshRoot && previous.resourceCount !== 0) {
+    projectionPlanInputError("authorityBinding.freshRoot requires an empty previousOwnedClosure");
+  }
+  if (kind === "external-root") {
+    const extra = Object.keys(rawBinding).filter((key) => !["kind", "authorityRoot", "freshRoot"].includes(key));
+    if (extra.length > 0) projectionPlanInputError("authorityBinding declares unknown fields", { fields: extra.sort() });
+    const authorityRoot = normalizeAuthorityRoot(rawBinding.authorityRoot, rootBinding);
+    return Object.freeze({ kind, authorityRoot, freshRoot });
+  }
+  const extra = Object.keys(rawBinding).filter((key) => !["kind", "bytes", "freshRoot"].includes(key));
+  if (extra.length > 0) projectionPlanInputError("authorityBinding declares unknown fields", { fields: extra.sort() });
+  const bytes = normalizeCallerBytes(rawBinding.bytes, authority);
+  return Object.freeze({ kind, bytes, freshRoot });
+}
+
+function assertExternalRoots(firstReal, secondReal, message) {
+  const firstFromSecond = path.relative(secondReal, firstReal);
+  const secondFromFirst = path.relative(firstReal, secondReal);
+  if (
+    firstFromSecond === "" || secondFromFirst === ""
+    || !firstFromSecond.startsWith("..") || !secondFromFirst.startsWith("..")
+  ) {
+    throw invalidManifest(message, { first: firstReal, second: secondReal });
+  }
+}
+
+/**
  * Purely compiles frozen consumer authority into target-fact and projection
  * descriptions. It performs no filesystem access. runProjection reloads the
  * target-owned facts by default, or accepts this complete canonical result
  * after independently binding it to the live target and candidate closures.
+ *
+ * Authority binding (FG-3): by default authority sources must live inside the
+ * target root (verified live at run time). The optional `authorityBinding`
+ * input declares that authority is frozen OUTSIDE the target root:
+ *   - { kind: "external-root", authorityRoot, freshRoot? } — authority is
+ *     re-read from a separate frozen directory (strict, no-follow);
+ *   - { kind: "caller-bytes", bytes, freshRoot? } — the caller supplies the
+ *     authority bytes and the plan binds them to the declared digests.
+ * freshRoot declares a completely fresh payload root and requires an empty
+ * previousOwnedClosure. With either binding the projection never reads or
+ * forges target-local authority facts. Legacy inputs without authorityBinding
+ * compile to byte-identical plans.
  */
 export function compileProjectionPlan({
   rootBinding,
@@ -233,6 +415,7 @@ export function compileProjectionPlan({
   handwrittenPolicy,
   previousOwnedClosure,
   externalCandidateClosure,
+  authorityBinding,
 } = {}) {
   const canonicalRootBinding = normalizeRootBinding(rootBinding);
   const previous = normalizePlanClosure(previousOwnedClosure, "previousOwnedClosure");
@@ -240,6 +423,11 @@ export function compileProjectionPlan({
   const previousByPath = new Map(previous.resources.map((resource) => [resource.path, resource]));
   const candidateByPath = new Map(candidate.resources.map((resource) => [resource.path, resource]));
   const authority = normalizeAuthoritySources(authoritySources, new Set(candidateByPath.keys()));
+  const binding = normalizeAuthorityBinding(authorityBinding, {
+    rootBinding: canonicalRootBinding,
+    authority,
+    previous,
+  });
 
   if (!handwrittenPolicy || typeof handwrittenPolicy !== "object" || Array.isArray(handwrittenPolicy)) {
     projectionPlanInputError("handwrittenPolicy must be an object");
@@ -400,6 +588,7 @@ export function compileProjectionPlan({
       digestAlgorithm: authority.digestAlgorithm,
       digest: authority.digest,
       handwrittenPolicySource: handwrittenPolicy.authoritySource,
+      ...(binding === null ? {} : { binding }),
     },
     handwrittenPolicy: {
       authoritySource: handwrittenPolicy.authoritySource,
@@ -455,6 +644,7 @@ function preparedPlanInput(prepared) {
     }),
     previousOwnedClosure: prepared.previousOwnedClosure,
     externalCandidateClosure: prepared.externalCandidateClosure,
+    authorityBinding: prepared.authority.binding,
   };
 }
 
@@ -479,22 +669,79 @@ function protectedPreparedPaths(prepared) {
   ].map(portableKey));
 }
 
-async function verifyPreparedAuthority(rootAbs, prepared) {
+async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
+  const binding = prepared.authority.binding;
+  if (binding === undefined) {
+    for (const source of prepared.authority.sources) {
+      const rel = normalizeRelPath(source.path);
+      try {
+        await resolveContained(rootAbs, rel);
+      } catch (cause) {
+        throw invalidManifest("preparedProjection authority source escapes the target root", { path: rel, cause: cause?.message ?? "unknown" });
+      }
+      const state = await readRegularState(rootAbs, rel);
+      if (state.state !== source.type || state.sha256 !== source.sha256 || state.mode !== source.mode) {
+        throw invalidManifest("preparedProjection authority source differs from the live target", {
+          path: rel,
+          expectedSha256: source.sha256,
+          expectedType: source.type,
+          expectedMode: source.mode,
+          actual: publicState(state),
+        });
+      }
+    }
+    return;
+  }
+  if (binding.kind === "caller-bytes") {
+    for (const source of prepared.authority.sources) {
+      const bytes = Buffer.from(binding.bytes[source.id], "base64");
+      if (digestBytes(bytes) !== source.sha256) {
+        throw invalidManifest("preparedProjection caller-provided authority bytes differ from the frozen digest binding", {
+          id: source.id,
+          expectedSha256: source.sha256,
+          actualSha256: digestBytes(bytes),
+        });
+      }
+    }
+    return;
+  }
+  // external-root binding: authority is frozen outside the target root and is
+  // re-read strictly (no-follow, regular-file identity, digest) from there.
+  let authorityReal;
+  try {
+    authorityReal = await realpath(binding.authorityRoot);
+  } catch {
+    throw invalidManifest("preparedProjection authority root does not resolve to an existing path", {
+      authorityRoot: binding.authorityRoot,
+    });
+  }
+  const authorityStats = await stat(authorityReal);
+  if (!authorityStats.isDirectory()) {
+    throw invalidManifest("preparedProjection authority root must be a directory", { authorityRoot: authorityReal });
+  }
+  const targetReal = await realpath(rootAbs);
+  assertExternalRoots(authorityReal, targetReal, "preparedProjection authority root must be external to the target root");
+  if (candidateAbs !== null) {
+    assertExternalRoots(authorityReal, candidateAbs, "preparedProjection authority root must be external to the candidate root");
+  }
   for (const source of prepared.authority.sources) {
     const rel = normalizeRelPath(source.path);
+    let receipt;
     try {
-      await resolveContained(rootAbs, rel);
+      receipt = await readFileStrict(authorityReal, rel);
     } catch (cause) {
-      throw invalidManifest("preparedProjection authority source escapes the target root", { path: rel, cause: cause?.message ?? "unknown" });
+      throw invalidManifest("preparedProjection authority source differs from the frozen external authority root", {
+        path: rel,
+        cause: cause?.details?.kind ?? cause?.message ?? "unknown",
+      });
     }
-    const state = await readRegularState(rootAbs, rel);
-    if (state.state !== source.type || state.sha256 !== source.sha256 || state.mode !== source.mode) {
-      throw invalidManifest("preparedProjection authority source differs from the live target", {
+    if (receipt.sha256 !== source.sha256 || receipt.mode !== source.mode) {
+      throw invalidManifest("preparedProjection authority source differs from the frozen external authority root", {
         path: rel,
         expectedSha256: source.sha256,
-        expectedType: source.type,
         expectedMode: source.mode,
-        actual: publicState(state),
+        actualSha256: receipt.sha256,
+        actualMode: receipt.mode,
       });
     }
   }
@@ -521,15 +768,12 @@ async function verifyPreparedPreviousClosure(rootAbs, prepared) {
 }
 
 function canonicalCandidateClosure(candidate) {
-  const resources = [...candidate.byPath.values()]
-    .map(({ path: rel, sha256, mode }) => ({ path: rel, type: "file", sha256, mode }))
-    .sort((a, b) => a.path.localeCompare(b.path));
-  return {
-    digestAlgorithm: "sha256",
-    digest: canonicalDigest(resources),
-    resourceCount: resources.length,
-    resources,
-  };
+  const resources = [...candidate.byPath.values()].map((record, index) => normalizePlanResource(
+    record,
+    `externalCandidateClosure.resources[${index}]`,
+    { typeDefault: "file" },
+  ));
+  return canonicalPlanClosure(resources, "externalCandidateClosure");
 }
 
 async function validatePreparedProjection({ prepared, rootAbs, loaded, candidateRoot }) {
@@ -556,9 +800,18 @@ async function validatePreparedProjection({ prepared, rootAbs, loaded, candidate
       throw invalidManifest("preparedProjection candidate may not supply an authority or target-facts path", { path: operation.source });
     }
   }
-  await verifyPreparedAuthority(rootAbs, canonical);
-  await verifyPreparedPreviousClosure(rootAbs, canonical);
+  const binding = canonical.authority.binding;
+  if (binding && binding.freshRoot) {
+    const existing = await readdir(rootAbs);
+    if (existing.length > 0) {
+      throw invalidManifest("preparedProjection freshRoot requires a completely empty target root", {
+        found: existing.sort(),
+      });
+    }
+  }
   const candidate = await verifyCandidateRoot(candidateRoot, rootAbs, loaded.manifest);
+  await verifyPreparedAuthority(rootAbs, canonical, candidate.rootAbs);
+  await verifyPreparedPreviousClosure(rootAbs, canonical);
   if (!isDeepStrictEqual(canonicalCandidateClosure(candidate), canonical.externalCandidateClosure)) {
     throw invalidManifest("preparedProjection external candidate closure differs from candidateRoot");
   }
@@ -1051,9 +1304,9 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
 
   try {
     for (const [executionIndex, action] of actions.entries()) {
-      if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection);
+      if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection, candidate.rootAbs);
       await invokeFault(faultInjector, "beforeMutation", { index: executionIndex, operation: action.publicOperation });
-      if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection);
+      if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection, candidate.rootAbs);
       const current = await readRegularState(rootAbs, action.rel);
       if (!stateEquals(current, action.before)) {
         throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `optimistic concurrency drift before ${action.rel}`, { path: action.rel, executionIndex });

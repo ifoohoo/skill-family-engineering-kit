@@ -1,0 +1,25 @@
+version: 0.6.0
+date: 2026-08-21
+locales:
+  en:
+    summary: This release extends the check command with the entry contract gate and the controlled relock transaction sub-actions, adds external frozen authority projection bindings (FG-3), and carries the nine-class check diagnostics (audit remediation C2).
+    changes:
+      added:
+        - Adds the check entries sub-action - runEntryContractCheck and checkEntriesAction run the shared entry contract gate (SFA-ENTRY-003/004/005/007 and SFA-CONTEXT-001/002) over skill-family.entry-contract.json and SKILL.md bytes; diagnosis only, zero writes.
+        - Adds the check relock sub-action - runRelock and relockAction are the one controlled exception to the no-write rule - a fail-closed transaction writing exactly the two contained state documents (.foundation/file-registry.json and skill-family.managed-file-lock.json), with drift validation before the first write and zero writes on any refusal.
+        - Adds external frozen authority projection bindings (FG-3) - PROJECTION_AUTHORITY_BINDING_KINDS freezes external-root and caller-bytes; external-root re-reads each authority source from a separate frozen directory through the strict no-follow reader, and caller-bytes binds caller-provided base64 authority bytes to declared sha256 digests with no authority filesystem access at all, keeping the target root free of forged local authority facts.
+      changed:
+        - Extends check diagnostics to nine classes (adds version single-source consistency, public boundary validation, and platform subset declaration validation); COMMAND_SIDE_EFFECTS now documents the entries and relock sub-action semantics.
+        - Keeps the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; entries and relock are check sub-actions, not new commands.
+    upgradeNotes: Version 0.6.0 is the Kit gate completion line. Projections whose authority does not live in the target root must declare an authorityBinding of kind external-root or caller-bytes and pin exactly 0.6.0.
+  zh-CN:
+    summary: 本版为 check 命令新增入口契约门禁与受控 relock 事务子动作，新增外部冻结权威投影绑定（FG-3），并承载九类 check 诊断（审计整改 C2）。
+    changes:
+      added:
+        - 新增 check entries 子动作：runEntryContractCheck 与 checkEntriesAction 运行共享入口契约门禁（SFA-ENTRY-003/004/005/007 与 SFA-CONTEXT-001/002），作用于 skill-family.entry-contract.json 与 SKILL.md 字节；只诊断、零写入。
+        - 新增 check relock 子动作：runRelock 与 relockAction 是零写入规则的唯一受控例外——一次失败关闭事务，精确写入两个受收容状态文档（.foundation/file-registry.json 与 skill-family.managed-file-lock.json），首次写入前做漂移校验，任何拒绝下零写入。
+        - 新增外部冻结权威投影绑定（FG-3）：PROJECTION_AUTHORITY_BINDING_KINDS 冻结 external-root 与 caller-bytes；external-root 经严格不跟随读取器从独立的冻结目录重读每个权威源，caller-bytes 将调用方提供的 base64 权威字节绑定到声明的 sha256 摘要、完全不访问权威文件系统，使目标根内不存在伪造的本地权威事实。
+      changed:
+        - check 诊断扩展为九类（新增版本单源一致性、公开边界校验、平台子集限制声明校验）；COMMAND_SIDE_EFFECTS 现记录 entries 与 relock 子动作语义。
+        - 四个顶层命令（scaffold、adopt-plan、projection、check）保持不变；entries 与 relock 是 check 子动作，不是新命令。
+    upgradeNotes: 0.6.0 是 Kit 门禁补齐线。权威不在目标根内的投影必须声明 kind 为 external-root 或 caller-bytes 的 authorityBinding，并精确锁定 0.6.0。

@@ -46,6 +46,19 @@ export const PROJECTION_MANIFEST_PATH = "skill-family.projection.json";
 export const IDENTITY_RECORD_PATH = "skill-family.identity-record.json";
 export const RELEASE_INTEGRATION_PATH = "skill-family.release-integration.json";
 export const FILE_REGISTRY_PATH = ".foundation/file-registry.json";
+/** SG-10: the single-source-of-truth declaration file of a target workspace. */
+export const SOURCE_OF_TRUTH_PATH = "SOURCE-OF-TRUTH.md";
+/** D-8/D-6: the project profile template (adoption declaration + overrides). */
+export const PROJECT_PROFILE_PATH = "profile.json";
+/**
+ * C2 check extensions (audit remediation): target-held declaration documents
+ * the check command mechanically verifies when present. The skeleton does not
+ * seed them — their completeness is a semantic decision (VRG-005 / SFA-PLAT-002);
+ * once a project declares a boundary or a platform subset, the declaration
+ * must be mechanically correct.
+ */
+export const PUBLIC_BOUNDARY_DECLARATION_PATH = "skill-family.public-boundary-declaration.json";
+export const PLATFORM_SUBSET_DECLARATION_PATH = "skill-family.platform-subset-declaration.json";
 
 /**
  * Exact tool versions of the generated workspace. These are engineering
@@ -205,6 +218,10 @@ function renderGitIgnore({ projectId }) {
   // site/.qoder/.artifacts are root-only (`/site/`, `/.qoder/`,
   // `/.artifacts/`), identical to the foundation root project: a nested
   // packages/site/** (or any non-root occurrence) must stay tracked.
+  // /.runs/ and /.evidence/ are the SG-11 run/evidence separation baseline:
+  // machine-local run records and evidence artifacts live ONLY in these
+  // root-anchored ignored directories and never enter the tracked source
+  // surface (the convention is declared in SOURCE-OF-TRUTH.md).
   return [
     `# ${PROJEN_MARKER}`,
     "!/.gitattributes",
@@ -222,6 +239,8 @@ function renderGitIgnore({ projectId }) {
     ".env.*",
     "!.env.example",
     "/.artifacts/",
+    "/.runs/",
+    "/.evidence/",
     "!/package.json",
     "!/pnpm-workspace.yaml",
     "!/.npmrc",
@@ -289,6 +308,115 @@ function renderReleaseIntegration({ projectId }) {
   });
 }
 
+/**
+ * SG-10: the single-source-of-truth declaration seed. The file is the ONE
+ * declaration point of a workspace's truth sources and generation lineage;
+ * every other document may only link here, never re-declare (no double
+ * headers). It also carries the SG-11 run/evidence directory convention.
+ * Seeded once by the scaffold; afterwards it is handwritten source material
+ * that no tool ever overwrites.
+ */
+function renderSourceOfTruth({ projectId, projectName }) {
+  const leafDir = `packages/${projectId}`;
+  return [
+    "# 单一真源声明",
+    "",
+    `本文件是 ${projectName} 工作区单一真源事实的**唯一声明点**。`,
+    "README、AGENTS、help/quickstart 等其它文档只能链接本文件，不得重复声明同一事实的权威来源（禁止双头声明）。",
+    "",
+    "## 真源清单",
+    "",
+    "| 事实 | 唯一真源 | 说明 |",
+    "| --- | --- | --- |",
+    "| 工作区版本 | `package.json` 的 `version` | projen 受管：只改 `.projenrc.js` 后 `pnpm synth` |",
+    `| 包版本 | \`${leafDir}/package.json\` 的 \`version\` | projen 受管，与工作区版本同源投影 |`,
+    "| 文件分类 | `.foundation/file-registry.json` | 闭世界登记：受管/手写/生成物各归一类 |",
+    "| 受管文件字节 | `skill-family.managed-file-lock.json` | kit 受管文件的摘要锁 |",
+    "| 采用声明与自加严覆盖 | `profile.json` | 机器可校验；只许更严、不许放松 |",
+    "",
+    "## 生成谱系",
+    "",
+    "| 生成器 | 生成物 | 规则 |",
+    "| --- | --- | --- |",
+    "| `.projenrc.js`（projen） | `package.json`、`pnpm-workspace.yaml`、`.npmrc`、`.node-version`、`.gitignore`、`" + leafDir + "/package.json` | 只改生成器后 `pnpm synth`；生成物禁止手改 |",
+    "| engineering kit scaffold | 骨架受管契约文件（见 `skill-family.managed-file-lock.json`） | 经 scaffold/重新锁定更新；锁外文件永不覆盖 |",
+    "",
+    "## 运行与证据目录约定",
+    "",
+    "- 运行记录只放根级 `/.runs/`；证据只放根级 `/.evidence/`。两者均被 `.gitignore` 根锚定忽略，绝不进入受跟踪源面。",
+    "- 工具自带运行目录（如发布/审计工具的运行态）同样只允许根锚定忽略，不得与源码混居顶层未隔离。",
+    "- 嵌套同名目录（如 `packages/.runs/`）不属于本约定，不被忽略，须按文件分类显式处置。",
+    "",
+    "本文件由 scaffold 种子化，之后是手写源事实：任何工具永不覆盖。",
+    "",
+  ].join("\n");
+}
+
+/**
+ * D-8/D-6: the project profile template seed.
+ *
+ * The adoption/overrides sections reuse, field-by-field, the SPI v2
+ * authoritative definitions: profiles/spi/profile-adoption.schema.json
+ * ($defs.adoption / $defs.overrides) frozen by extension-spi.json's
+ * adoptionDeclaration/overridesPolicy (on conflict the SPI definition
+ * wins). Kind decision: this file is the scaffolded workspace's
+ * project-level declaration (kind skill-family.project-profile) — the
+ * scaffold target is a project, not a Profile, so it is NOT a Profile SPI
+ * descriptor (skill-family.profile-descriptor); the section shapes are
+ * identical to the SPI v2 definitions so a completed declaration stays
+ * byte-compatible with the sections verifyProfile mechanically verifies.
+ *
+ * The seed pre-fills everything mechanically derivable and seeds null for
+ * every non-derivable field (the same never-guess discipline as the
+ * adopt-plan profile draft):
+ * - foundation_profile.id comes from the plan inputs; version/stability are
+ *   human decisions and stay null;
+ * - foundation_pin versions are pre-filled from the loaded package constants
+ *   where the kit owns them (contracts, engineering-kit); each package's
+ *   path/sha256 stays null until the project places the real pinned
+ *   artifacts inside its own write set — a digest is computed from real
+ *   artifact bytes, never guessed (GK-4 discipline, SPE1006);
+ * - adopted_at stays null until adoption actually takes place: the skeleton
+ *   is deterministic and embeds no timestamps.
+ * The overrides section carries one tightening example registered in the
+ * frozen rule baseline catalog (SFA-CONTEXT-001 warnLimitTokens, strictly
+ * below the 2000 baseline); relaxation is refused (SPE1007).
+ *
+ * Seeded once by the scaffold; afterwards it is target-held data that no
+ * tool ever overwrites (same discipline as the migration manifest).
+ */
+function renderProjectProfile({ projectId, profileId }) {
+  return jsonString({
+    schemaVersion: 1,
+    kind: "skill-family.project-profile",
+    project: {
+      id: projectId,
+      workspace: workspaceName(projectId),
+    },
+    adoption: {
+      foundation_profile: { id: profileId, version: null, stability: null },
+      foundation_pin: {
+        algorithm: "sha256",
+        packages: {
+          "skill-family-contracts": { version: CONTRACTS_VERSION, path: null, sha256: null },
+          "skill-family-engineering-kit": { version: KIT_VERSION, path: null, sha256: null },
+          "skill-family-harness-node": { version: null, path: null, sha256: null },
+        },
+      },
+      adopted_at: null,
+    },
+    overrides: [
+      {
+        ruleId: "SFA-CONTEXT-001",
+        parameter: "warnLimitTokens",
+        value: 1600,
+        note: "示例覆盖：项目自加严词元告警阈值（基线 2000，取值必须严格小于基线）。覆盖只允许更严、不允许放松；每条覆盖都是可机器校验的声明，按冻结的规则基线目录（rule-baseline-catalog.json）核验。",
+      },
+    ],
+    note: "采用声明与自加严覆盖由项目自行维护；engineering kit 只种子化模板，永不覆盖。null 字段必须由项目以真实事实补齐后才构成有效声明：foundation_profile.version/stability 是人的决策；foundation_pin.packages.*.path/sha256 必须从项目写集内真实钉扎工件的字节计算（GK-4 摘要纪律）；adopted_at 是完成采用的 RFC 3339 时间。本文件是项目级声明（kind skill-family.project-profile），不是 Profile SPI descriptor；adoption/overrides 段的形状与 SPI v2 权威定义（profiles/spi/profile-adoption.schema.json）逐字段一致。",
+  });
+}
+
 function renderFileRegistry({ projectId, projenManaged, kitManaged, handwritten }) {
   return jsonString({
     schemaVersion: 1,
@@ -309,8 +437,8 @@ function renderFileRegistry({ projectId, projenManaged, kitManaged, handwritten 
         note: "由人维护的源事实；任何工具永不覆盖。",
       },
       artifacts: {
-        patterns: ["node_modules/", "/site/", ".cache/", "/.qoder/", "*.log", ".DS_Store", ".env", ".env.*", "/.artifacts/"],
-        note: "可再生构建物/缓存/运行证据；经 .gitignore 忽略，绝不跟踪。",
+        patterns: ["node_modules/", "/site/", ".cache/", "/.qoder/", "*.log", ".DS_Store", ".env", ".env.*", "/.artifacts/", "/.runs/", "/.evidence/"],
+        note: "可再生构建物/缓存/运行证据；经 .gitignore 忽略，绝不跟踪。/.runs/ 与 /.evidence/ 是运行/证据目录基线（SG-11），只允许根锚定忽略。",
       },
     },
     lockfileDecision: {
@@ -381,7 +509,7 @@ function renderDocsDeployWorkflow() {
 function renderCheckCoreScript() {
   // Thin generated shim. ALL mechanics — safe tree enumeration, entry-type
   // rejection (symlink / FIFO / special entries), file-registry closed-world
-  // classification, path containment, the seven check classes, and the
+  // classification, path containment, the nine check classes, and the
   // stable finding/exit mapping — live in the kit's single shared production
   // entry (runCoreCheck). This file must never grow a local tree scan,
   // entry-type classifier, glob matcher, or closed-world algorithm of its own.
@@ -392,7 +520,7 @@ function renderCheckCoreScript() {
     "// prints the structured findings, and maps the stable exit code.",
     "// No local algorithm duplication: safe tree enumeration, symlink/FIFO/",
     "// special-entry rejection, closed-world classification, path containment,",
-    "// and the seven check classes all live in skill-family-engineering-kit.",
+    "// and the nine check classes all live in skill-family-engineering-kit.",
     'import { runCoreCheck } from "skill-family-engineering-kit";',
     "",
     "const report = await runCoreCheck({ root: process.cwd(), allowGitSpawn: true });",
@@ -468,6 +596,12 @@ function renderAgents({ projectId }) {
     "- File classification lives in `.foundation/file-registry.json` (closed world).",
     "- Run `pnpm check` before handing work over.",
     "",
+    "## Truth sources and run state",
+    "",
+    "- Single-source-of-truth declarations and generation lineage live only in `SOURCE-OF-TRUTH.md`; no double headers.",
+    "- Adoption declaration (foundation_profile/foundation_pin) and self-tightening overrides live in `profile.json`.",
+    "- Run records and evidence stay in the root-anchored ignored directories `/.runs/` and `/.evidence/`; they never enter the tracked source surface.",
+    "",
     "## Git safety baseline (the full process lives in docs/git-lifecycle.md)",
     "",
     "Without an explicit human authorization for the current task, no tool or",
@@ -516,6 +650,8 @@ function renderProjenrc({ projectId, projectName, licensingProfile }) {
     '    this.addGitIgnore(".env.*");',
     '    this.addGitIgnore("!.env.example");',
     '    this.addGitIgnore("/.artifacts/");',
+    '    this.addGitIgnore("/.runs/");',
+    '    this.addGitIgnore("/.evidence/");',
     `    new JsonFile(this, "package.json", { obj: ${JSON.stringify(rootPkg)}, marker: true, readonly: true });`,
     `    new YamlFile(this, "pnpm-workspace.yaml", { obj: { packages: ["packages/*"] }, marker: true, readonly: true });`,
     `    new TextFile(this, ".npmrc", { lines: ["save-exact=true", "shared-workspace-lockfile=true", "strict-peer-dependencies=true"], marker: true, readonly: true });`,
@@ -709,6 +845,14 @@ export async function describeSkeletonFiles(inputs) {
     `${leafDir}/src/**`,
     `${leafDir}/test/**`,
     MIGRATION_MANIFEST_PATH,
+    SOURCE_OF_TRUTH_PATH,
+    PROJECT_PROFILE_PATH,
+    // C2 audit remediation: the public boundary and platform subset
+    // declarations are handwritten source facts (absence is data, never a
+    // finding); the closed-world registry admits them before any project
+    // declares, so declaring never breaks the core check.
+    PUBLIC_BOUNDARY_DECLARATION_PATH,
+    PLATFORM_SUBSET_DECLARATION_PATH,
   ];
   if (noticeContent) handwritten.push("NOTICE");
 
@@ -822,6 +966,20 @@ export async function describeSkeletonFiles(inputs) {
     // target-held data: the lock never binds it and adoption never
     // overwrites it — its validity is judged by the migration contract.
     { path: MIGRATION_MANIFEST_PATH, fileClass: "handwritten", content: renderMigrationManifest() },
+    // SOURCE-OF-TRUTH.md (SG-10) and profile.json (D-8/D-6) are seeded by
+    // the skeleton and then become target-held data with the same
+    // discipline: handwritten class, never bound by the managed lock,
+    // never overwritten by adoption.
+    {
+      path: SOURCE_OF_TRUTH_PATH,
+      fileClass: "handwritten",
+      content: renderSourceOfTruth({ projectId, projectName }),
+    },
+    {
+      path: PROJECT_PROFILE_PATH,
+      fileClass: "handwritten",
+      content: renderProjectProfile({ projectId, profileId }),
+    },
     { path: RELEASE_INTEGRATION_PATH, fileClass: "managed", content: renderReleaseIntegration({ projectId }) },
   ];
   if (noticeContent) {

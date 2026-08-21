@@ -4,6 +4,8 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { readFileContained, resolveContained } from "skill-family-harness-node";
 import { bundledProfilesRoot } from "./licensing.mjs";
+import { checkEntriesAction } from "./entry-check.mjs";
+import { relockAction } from "./relock.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
 import {
   COMMAND_SIDE_EFFECTS,
@@ -56,6 +58,13 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                报告子动作: check report 对一份已渲染报告做分级诊断：
                硬失败（SFC3001/3002/3003）计为发现（退出码 1）；
                风格告警只报告、绝不阻塞机器正确的报告。
+               入口契约子动作: check entries 运行共享入口契约门禁
+               （SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002），
+               读取 skill-family.entry-contract.json 声明；声明缺失是数据、不是发现。
+               受控重锁子动作: check relock 运行受控 relock 事务（SG-36）：
+               把新手写文件登记进 .foundation/file-registry.json，并以当前字节
+               重算 skill-family.managed-file-lock.json（单次 fail-closed 事务；
+               只写这两个收容状态文档，任何拒绝都零写入）。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -119,7 +128,7 @@ function commandHelp(command) {
     check: [
       "选项:",
       "  --root <dir>          目标工作区（默认当前目录）",
-      "  --only <class>        只运行一个诊断类: contracts|drift|closure|version|docs|git|identity",
+      "  --only <class>        只运行一个诊断类: contracts|drift|closure|version|docs|git|identity|boundary|platform",
       "  --profiles-root <dir> 许可证 Profile 根目录",
       "  --no-git-spawn        禁用只读 git status 探测，仅用文件系统事实",
       "",
@@ -232,6 +241,17 @@ const COMMAND_SPECS = {
       "--binding": { key: "binding", value: true },
     },
   },
+  "check entries": {
+    flags: {
+      "--root": { key: "root", value: true },
+    },
+  },
+  "check relock": {
+    flags: {
+      "--root": { key: "root", value: true },
+      "--files": { key: "files", value: true },
+    },
+  },
   "scaffold host-build": {
     flags: {
       "--root": { key: "root", value: true },
@@ -342,6 +362,53 @@ async function runReportSubAction(command, rest) {
   }
 }
 
+async function runEntriesSubAction(rest) {
+  const specName = "check entries";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const { status, output } = await checkEntriesAction({ root: options.root });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    if (status === "ok") return KIT_EXIT_CODES.ok;
+    if (status === "findings") return KIT_EXIT_CODES.findings;
+    return KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runRelockSubAction(rest) {
+  const specName = "check relock";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    // --files is one comma-separated relative-path list; absent means the
+    // auto-discovery mode of the closed-world stage (mirrors runRelock).
+    const files =
+      options.files === undefined
+        ? null
+        : options.files
+            .split(",")
+            .map((rel) => rel.trim())
+            .filter((rel) => rel.length > 0);
+    const { status, output } = await relockAction({ root: options.root, files });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    // Relock has no findings state: it either commits the whole transaction
+    // or throws (exit 2). Any status other than "ok" is a mechanism error.
+    return status === "ok" ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 export async function cliMain(argv) {
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
     process.stdout.write(HELP_TEXT);
@@ -358,6 +425,18 @@ export async function cliMain(argv) {
   // four-command vocabulary and runCommand stay untouched.
   if ((command === "projection" || command === "check") && argv[1] === "report") {
     return runReportSubAction(command, argv.slice(2));
+  }
+  // Positional entry-contract sub-action (SG-34): `check entries` runs the
+  // shared entry contract gate (SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002).
+  // It hangs under the existing check command; no fifth command is created.
+  if (command === "check" && argv[1] === "entries") {
+    return runEntriesSubAction(argv.slice(2));
+  }
+  // Positional controlled-relock sub-action (SG-36): `check relock` runs the
+  // fail-closed registration + lock-recompute transaction. It hangs under the
+  // existing check command, parallel to `check entries`; no fifth command.
+  if (command === "check" && argv[1] === "relock") {
+    return runRelockSubAction(argv.slice(2));
   }
   if (command === "scaffold" && argv[1] === "host-build") {
     return runHostSubAction(command, "host-build", argv.slice(2));

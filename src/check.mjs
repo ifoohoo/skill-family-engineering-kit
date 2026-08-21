@@ -5,13 +5,16 @@ import {
   readFileContained,
   validateContractDocument,
 } from "skill-family-harness-node";
+import { readFileSync } from "node:fs";
 import { invalidParamsError, KIT_ERROR_KINDS } from "./errors.mjs";
 import { probeGitState } from "./gitprobe.mjs";
 import {
   KIT_TOOL_NAME,
   KIT_VERSION,
   MANAGED_LOCK_PATH,
+  PLATFORM_SUBSET_DECLARATION_PATH,
   PROJECT_MANIFEST_PATH,
+  PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import {
   listTargetEntries,
@@ -31,14 +34,44 @@ import {
 /**
  * check — diagnosis only, never auto-fix.
  *
- * Seven diagnosis classes, exactly as the FND-030 and FND-045 hand-offs bound them:
+ * Nine diagnosis classes. The first seven are exactly as the FND-030 and
+ * FND-045 hand-offs bound them; the audit remediation C2 delivery extends
+ * the closed set to nine (boundary, platform) and extends the version class
+ * with the version single-source consistency facts:
  *   contracts — discovered contract documents against registered schemas;
- *   drift     — managed-file-lock entries vs actual bytes on disk;
+ *   drift     — managed-file-lock entries vs actual bytes on disk (the
+ *               managed-artifact drift check; C2 "生成物漂移" is carried by
+ *               this existing class, aligned, not duplicated; SG-37: on a
+ *               fresh checkout the build outputs simply do not exist yet, so
+ *               when EVERY well-formed lock entry is absent on disk the
+ *               target is diagnosed as never-built — one dedicated
+ *               NEVER_BUILT finding carrying build-first guidance, kept
+ *               distinct from both content drift and partial loss; the
+ *               fail-closed semantics are unchanged: it remains a finding);
  *   closure   — harness resource closure over declared inputs/outputs;
- *   version   — declared contracts version vs the frozen contracts version;
+ *   version   — declared contracts version vs the frozen contracts version,
+ *               plus version single-source consistency (SG-13/14, VRG-001/002:
+ *               package.json is the single version authority; no double-headed
+ *               VERSION authority; every workspace package.json carries the
+ *               same single-source version);
  *   docs      — documentation facts (README presence, identity consistency);
  *   git       — read-only Git pre-state (never a git write);
- *   identity  — licensing and identity drift checks (FND-045).
+ *   identity  — licensing and identity drift checks (FND-045);
+ *   boundary  — public release boundary declaration (SG-17, VRG-005): when a
+ *               public-boundary-declaration document is present it is schema-
+ *               verified and mechanically reconciled against the actual file
+ *               set (required paths present, forbidden paths absent, no
+ *               undeclared file under a public root); absence is data, not a
+ *               finding — whether a project owes a boundary declaration is a
+ *               semantic/release decision;
+ *   platform  — platform subset restriction declaration (SFA-PLAT-002 / B3):
+ *               when a platform-subset-declaration document is present it is
+ *               verified against the frozen four-field template with the
+ *               controlled platform vocabulary of the observation-scope
+ *               contract, and its declared version is reconciled against the
+ *               single-source package.json version; absence is data, not a
+ *               finding (declaration completeness is carried by semantic
+ *               review until a project declares).
  *
  * Every class is independently complete: it loads its own inputs and never
  * consumes another class's cache, so a full run and a `--only <class>` run
@@ -55,7 +88,17 @@ import {
  * signal (0 clean, 1 findings, 2 rejected/usage/mechanism error).
  */
 
-const CHECK_CLASSES = Object.freeze(["contracts", "drift", "closure", "version", "docs", "git", "identity"]);
+const CHECK_CLASSES = Object.freeze([
+  "contracts",
+  "drift",
+  "closure",
+  "version",
+  "docs",
+  "git",
+  "identity",
+  "boundary",
+  "platform",
+]);
 
 export { CHECK_CLASSES };
 
@@ -199,29 +242,35 @@ async function checkDrift(rootAbs, findings) {
     return null;
   }
   const entries = Array.isArray(lock?.entries) ? lock.entries : [];
+  // SG-37: classify every well-formed lock entry before emitting findings, so
+  // a target whose managed build outputs were NEVER built is diagnosed with
+  // the dedicated never-built finding (plus build-first guidance) instead of
+  // N per-file missing findings that are indistinguishable from content
+  // drift or partial loss. Fail-closed semantics are unchanged: every branch
+  // below remains a finding (exit code 1), never a silent pass.
+  const missingPaths = [];
+  const driftFindings = [];
+  let wellFormed = 0;
+  let escaped = 0;
   for (const entry of entries) {
     const rel = typeof entry?.path === "string" ? normalizeRelPath(entry.path) : null;
     const declaredHash = entry?.hash?.value;
     if (!rel || typeof declaredHash !== "string" || !/^[0-9a-f]{64}$/.test(declaredHash)) {
       continue; // malformed entries are reported by the contracts class
     }
+    wellFormed += 1;
     const text = await readManagedCandidate(rootAbs, rel, findings);
     if (text === null) {
-      findings.push(
-        finding(
-          "drift",
-          KIT_ERROR_KINDS.MANAGED_FILE_MISSING,
-          "SFC2004",
-          `managed file declared in the lock does not exist: ${rel}`,
-          { path: rel },
-        ),
-      );
+      missingPaths.push(rel);
       continue;
     }
-    if (typeof text !== "string") continue; // escaping path already reported
+    if (typeof text !== "string") {
+      escaped += 1; // escaping path already reported by readManagedCandidate
+      continue;
+    }
     const actual = digestBytes(Buffer.from(text, "utf8"));
     if (actual !== declaredHash) {
-      findings.push(
+      driftFindings.push(
         finding(
           "drift",
           KIT_ERROR_KINDS.MANAGED_FILE_DRIFT,
@@ -232,6 +281,32 @@ async function checkDrift(rootAbs, findings) {
       );
     }
   }
+  if (wellFormed > 0 && escaped === 0 && missingPaths.length === wellFormed) {
+    // Every managed output declared in the lock is absent on disk: the build
+    // was never run. This is the fresh-checkout state, not content drift.
+    findings.push(
+      finding(
+        "drift",
+        KIT_ERROR_KINDS.NEVER_BUILT,
+        "SFC2004",
+        `managed build outputs have never been built: all ${wellFormed} managed file(s) declared in the lock are absent on disk; this is a never-built target, not content drift — run the project's build first, then re-run verify/check`,
+        { neverBuilt: true, absentPaths: [...missingPaths].sort() },
+      ),
+    );
+  } else {
+    for (const rel of missingPaths) {
+      findings.push(
+        finding(
+          "drift",
+          KIT_ERROR_KINDS.MANAGED_FILE_MISSING,
+          "SFC2004",
+          `managed file declared in the lock does not exist: ${rel}`,
+          { path: rel },
+        ),
+      );
+    }
+  }
+  findings.push(...driftFindings);
   return lock;
 }
 
@@ -291,7 +366,70 @@ async function checkClosure(rootAbs, findings) {
   }
 }
 
+/**
+ * Version single-source consistency (SG-13/14; audit VRG-001/VRG-002).
+ *
+ * The version truth source of a release unit is the `version` field of its
+ * package.json. Two mechanical facts follow:
+ * - VRG-001: a VERSION file alongside package.json is a double-headed
+ *   version authority; the authority must converge on package.json;
+ * - VRG-002: the version value is declared once; every other occurrence is
+ *   mechanically synchronized — here: every nested workspace package.json
+ *   must carry exactly the root package.json version.
+ *
+ * When no root package.json version exists there is no single source to
+ * compare against and the sub-check reports nothing (never guesses).
+ * Returns { rootVersion, versionFilePresent, drifted }.
+ */
+async function checkVersionSingleSource(rootAbs, findings) {
+  const facts = { rootVersion: null, versionFilePresent: false, drifted: [] };
+  const packageDocument = await loadDocument(rootAbs, "package.json");
+  if (packageDocument.state !== "ok" || typeof packageDocument.value?.version !== "string") {
+    return facts;
+  }
+  facts.rootVersion = packageDocument.value.version;
+
+  const versionFile = await readOptionalFile(rootAbs, "VERSION");
+  if (versionFile !== null) {
+    facts.versionFilePresent = true;
+    findings.push(
+      finding(
+        "version",
+        KIT_ERROR_KINDS.VERSION_AUTHORITY_DUAL,
+        "SFC2004",
+        "VERSION file exists alongside package.json; version authority must converge on the package.json version field as the single source (VRG-001)",
+        { path: "VERSION" },
+      ),
+    );
+  }
+
+  const entries = await listTargetEntries(rootAbs);
+  for (const entry of entries) {
+    if (entry.kind !== "file" || entry.path === "package.json" || !entry.path.endsWith("package.json")) {
+      continue;
+    }
+    const nested = await loadDocument(rootAbs, entry.path);
+    if (nested.state !== "ok" || typeof nested.value?.version !== "string") continue;
+    if (nested.value.version !== facts.rootVersion) {
+      facts.drifted.push({ path: entry.path, version: nested.value.version });
+      findings.push(
+        finding(
+          "version",
+          KIT_ERROR_KINDS.VERSION_SINGLE_SOURCE_DRIFT,
+          "SFC2004",
+          `${entry.path} declares version ${nested.value.version}; the single version source is the root package.json version ${facts.rootVersion} (VRG-002)`,
+          { path: entry.path, declared: nested.value.version, expected: facts.rootVersion },
+        ),
+      );
+    }
+  }
+  return facts;
+}
+
 async function checkVersion(rootAbs, findings) {
+  // The single-source consistency facts do not depend on the project manifest;
+  // they are computed on every run (class independence).
+  const singleSource = await checkVersionSingleSource(rootAbs, findings);
   // Loads its own manifest without schema validation: schema conformance is
   // the contracts class's finding, the version class only needs the fact.
   const document = await loadDocument(rootAbs, PROJECT_MANIFEST_PATH, {
@@ -307,7 +445,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null };
+    return { contractsVersion: null, singleSource };
   }
   if (document.state === "parse-failed") {
     findings.push(
@@ -319,7 +457,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null };
+    return { contractsVersion: null, singleSource };
   }
   if (document.state === "incomplete") {
     findings.push(
@@ -331,7 +469,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null };
+    return { contractsVersion: null, singleSource };
   }
   const declared = document.value.contracts.version;
   if (declared !== CONTRACTS_VERSION) {
@@ -345,7 +483,7 @@ async function checkVersion(rootAbs, findings) {
       ),
     );
   }
-  return { contractsVersion: declared };
+  return { contractsVersion: declared, singleSource };
 }
 
 async function checkDocs(rootAbs, findings) {
@@ -490,6 +628,284 @@ async function checkIdentity(rootAbs, findings, profilesRoot) {
 }
 
 /**
+ * Public boundary verification (SG-17; audit VRG-005, carrier of the C5
+ * public-boundary-declaration contract).
+ *
+ * When the target holds a public-boundary-declaration document it is
+ * verified in two steps: (1) the document must pass the registered
+ * public-boundary-declaration schema; (2) the declaration is mechanically
+ * reconciled against the actual regular file set — every required path must
+ * exist, every forbidden path must be absent, every declared public file
+ * must exist and live under a declared public root, and every regular file
+ * under a public root must be declared (an undeclared file is a leak).
+ *
+ * Absence of the declaration is data, never a finding: whether a project
+ * owes a boundary declaration depends on its release surface and is decided
+ * by semantic review / the release process (VRG-005). Returns
+ * { declared, declarationId, declaredVersion, documentState }.
+ */
+async function checkBoundary(rootAbs, findings) {
+  const data = { declared: false, declarationId: null, declaredVersion: null, documentState: "missing" };
+  const document = await loadDocument(rootAbs, PUBLIC_BOUNDARY_DECLARATION_PATH, {
+    schemaObject: "public-boundary-declaration",
+  });
+  data.documentState = document.state;
+  if (document.state === "missing") return data;
+  data.declared = true;
+  if (document.state === "parse-failed") {
+    findings.push(
+      finding(
+        "boundary",
+        KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
+        "SFC2004",
+        `${PUBLIC_BOUNDARY_DECLARATION_PATH} is not valid JSON`,
+        { path: PUBLIC_BOUNDARY_DECLARATION_PATH, documentState: document.state },
+      ),
+    );
+    return data;
+  }
+  if (document.state === "schema-invalid") {
+    findings.push(
+      finding(
+        "boundary",
+        "schema-validation-failed",
+        "SFC1001",
+        `${PUBLIC_BOUNDARY_DECLARATION_PATH} fails the registered public-boundary-declaration schema: ${document.outcome.errors
+          .slice(0, 3)
+          .map((entry) => `${entry.instancePath || "/"} ${entry.message}`)
+          .join("; ")}`,
+        {
+          path: PUBLIC_BOUNDARY_DECLARATION_PATH,
+          schemaId: findSchemaByObject("public-boundary-declaration").$id,
+          documentState: document.state,
+        },
+      ),
+    );
+    return data;
+  }
+
+  const declaration = document.value;
+  data.declarationId = declaration.declarationId;
+  data.declaredVersion = declaration.declaredVersion;
+  const violation = (message, extra) =>
+    findings.push(
+      finding("boundary", KIT_ERROR_KINDS.PUBLIC_BOUNDARY_VIOLATION, "SFC2004", message, {
+        path: PUBLIC_BOUNDARY_DECLARATION_PATH,
+        ...(extra ?? {}),
+      }),
+    );
+
+  const entries = await listTargetEntries(rootAbs);
+  const regularFiles = new Set(entries.filter((entry) => entry.kind === "file").map((entry) => entry.path));
+  const publicFiles = new Set(declaration.publicFiles);
+  const underPublicRoot = (rel) =>
+    declaration.publicRoots.some((root) => rel.startsWith(`${root}/`));
+
+  for (const required of declaration.requiredPaths) {
+    if (!regularFiles.has(required)) {
+      violation(`required public path is missing from the release set: ${required}`, {
+        subject: required,
+        rule: "requiredPaths",
+      });
+    }
+  }
+  for (const forbidden of declaration.forbiddenPaths) {
+    if (regularFiles.has(forbidden)) {
+      violation(`forbidden path is present in the release set: ${forbidden}`, {
+        subject: forbidden,
+        rule: "forbiddenPaths",
+      });
+    }
+  }
+  for (const declared of declaration.publicFiles) {
+    if (!regularFiles.has(declared)) {
+      violation(`declared public file does not exist on disk: ${declared}`, {
+        subject: declared,
+        rule: "publicFiles",
+      });
+    }
+    if (!underPublicRoot(declared)) {
+      violation(`declared public file is outside every declared public root: ${declared}`, {
+        subject: declared,
+        rule: "publicRoots",
+      });
+    }
+  }
+  for (const actual of regularFiles) {
+    if (underPublicRoot(actual) && !publicFiles.has(actual)) {
+      violation(`file under a public root is not declared in publicFiles (undeclared leak): ${actual}`, {
+        subject: actual,
+        rule: "publicFiles",
+      });
+    }
+  }
+  return data;
+}
+
+/** Kind of the kit-owned platform subset restriction declaration template. */
+export const PLATFORM_SUBSET_DECLARATION_KIND = "skill-family.platform-subset-declaration";
+
+const SEMVER_PATTERN = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+
+/**
+ * Loads the controlled platform vocabulary frozen by the observation-scope
+ * contract (standardPlatforms enum). Derived mechanically from the
+ * registered schema document of skill-family-contracts — the kit never
+ * restates the vocabulary as a second owned copy. Throws when the contract
+ * cannot be located (a mechanism failure of the platform class).
+ */
+function loadStandardPlatformVocabulary() {
+  const registration = findSchemaByObject("observation-scope");
+  const contractsIndexUrl = import.meta.resolve("skill-family-contracts");
+  const packageRootUrl = new URL("..", contractsIndexUrl);
+  const schemaUrl = new URL(registration.file, packageRootUrl);
+  const schema = JSON.parse(readFileSync(schemaUrl, "utf8"));
+  const vocabulary = schema?.properties?.standardPlatforms?.items?.enum;
+  if (!Array.isArray(vocabulary) || vocabulary.length === 0) {
+    throw new Error("observation-scope schema does not freeze a standardPlatforms vocabulary");
+  }
+  return Object.freeze([...vocabulary]);
+}
+
+/**
+ * Platform subset restriction declaration verification (SFA-PLAT-002 / B3;
+ * audit OC-3, decision D-9). Platform coverage is optional; the obligation
+ * is an honest, machine-checkable declaration of the released platform
+ * subset. The frozen four-field template:
+ *   project / released_platform_subset / missing_platforms / declared_version.
+ *
+ * When the target holds a platform-subset-declaration document it is
+ * verified mechanically: the template shape, platform ids restricted to the
+ * controlled observation-scope vocabulary, no duplicate or overlapping
+ * entries, and the declared version reconciled against the single-source
+ * root package.json version. Absence is data, never a finding: declaration
+ * completeness is carried by semantic review until a project declares.
+ * Returns { declared, project, released, missing, declaredVersion, documentState }.
+ */
+async function checkPlatform(rootAbs, findings) {
+  const data = {
+    declared: false,
+    project: null,
+    released: [],
+    missing: [],
+    declaredVersion: null,
+    documentState: "missing",
+  };
+  const loaded = await readOptionalJson(rootAbs, PLATFORM_SUBSET_DECLARATION_PATH);
+  if (loaded.reason === "missing") return data;
+  data.declared = true;
+  const invalid = (message, extra) =>
+    findings.push(
+      finding("platform", KIT_ERROR_KINDS.PLATFORM_SUBSET_INVALID, "SFC2004", message, {
+        path: PLATFORM_SUBSET_DECLARATION_PATH,
+        ...(extra ?? {}),
+      }),
+    );
+  if (!loaded.ok) {
+    data.documentState = "parse-failed";
+    findings.push(
+      finding(
+        "platform",
+        KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED,
+        "SFC2004",
+        `${PLATFORM_SUBSET_DECLARATION_PATH} is not valid JSON`,
+        { path: PLATFORM_SUBSET_DECLARATION_PATH, documentState: data.documentState },
+      ),
+    );
+    return data;
+  }
+  data.documentState = "ok";
+  const declaration = loaded.value;
+  if (declaration?.schemaVersion !== 1) {
+    invalid(`schemaVersion must be exactly 1 (got ${JSON.stringify(declaration?.schemaVersion ?? null)})`, {
+      field: "schemaVersion",
+    });
+  }
+  if (declaration?.kind !== PLATFORM_SUBSET_DECLARATION_KIND) {
+    invalid(`kind must be "${PLATFORM_SUBSET_DECLARATION_KIND}" (got ${JSON.stringify(declaration?.kind ?? null)})`, {
+      field: "kind",
+    });
+  }
+  if (typeof declaration?.project !== "string" || declaration.project.length === 0) {
+    invalid("project must be a non-empty string (template field 1/4)", { field: "project" });
+  } else {
+    data.project = declaration.project;
+  }
+
+  const vocabulary = loadStandardPlatformVocabulary();
+  const verifyPlatformList = (fieldName) => {
+    const value = declaration?.[fieldName];
+    if (!Array.isArray(value)) {
+      invalid(`${fieldName} must be an array of platform ids (got ${JSON.stringify(value ?? null)})`, {
+        field: fieldName,
+      });
+      return [];
+    }
+    const seen = new Set();
+    for (const platform of value) {
+      if (typeof platform !== "string" || platform.length === 0) {
+        invalid(`${fieldName} entries must be non-empty strings`, { field: fieldName });
+        continue;
+      }
+      if (seen.has(platform)) {
+        invalid(`${fieldName} contains a duplicate platform id: ${platform}`, { field: fieldName, subject: platform });
+        continue;
+      }
+      seen.add(platform);
+      if (!vocabulary.includes(platform)) {
+        invalid(
+          `${fieldName} entry is outside the controlled platform vocabulary of the observation-scope contract: ${platform}`,
+          { field: fieldName, subject: platform },
+        );
+      }
+    }
+    return [...seen];
+  };
+  data.released = verifyPlatformList("released_platform_subset");
+  data.missing = verifyPlatformList("missing_platforms");
+
+  const overlap = data.released.filter((platform) => data.missing.includes(platform));
+  if (overlap.length > 0) {
+    invalid(
+      `released_platform_subset and missing_platforms must be disjoint; overlap: ${overlap.join(", ")}`,
+      { field: "released_platform_subset/missing_platforms", subject: overlap },
+    );
+  }
+
+  if (typeof declaration?.declared_version !== "string" || !SEMVER_PATTERN.test(declaration.declared_version)) {
+    invalid(
+      `declared_version must be a semantic version string X.Y.Z (got ${JSON.stringify(declaration?.declared_version ?? null)})`,
+      { field: "declared_version" },
+    );
+  } else {
+    data.declaredVersion = declaration.declared_version;
+    // The declared version is reconciled against the single version source
+    // (root package.json); without one there is nothing to compare.
+    const packageDocument = await loadDocument(rootAbs, "package.json");
+    if (
+      packageDocument.state === "ok" &&
+      typeof packageDocument.value?.version === "string" &&
+      packageDocument.value.version !== declaration.declared_version
+    ) {
+      findings.push(
+        finding(
+          "platform",
+          KIT_ERROR_KINDS.PLATFORM_SUBSET_VERSION_DRIFT,
+          "SFC2004",
+          `platform subset declaration declares version ${declaration.declared_version}; the single version source (package.json) is ${packageDocument.value.version}`,
+          {
+            path: PLATFORM_SUBSET_DECLARATION_PATH,
+            declared: declaration.declared_version,
+            expected: packageDocument.value.version,
+          },
+        ),
+      );
+    }
+  }
+  return data;
+}
+
+/**
  * Runs all check classes over one target.
  * Options: { root, allowGitSpawn, only, profilesRoot }.
  * Returns the report document. Never writes anywhere; throws KitError only
@@ -518,13 +934,17 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
     docs: () => checkDocs(rootAbs, findings),
     git: () => checkGit(rootAbs, findings, allowGitSpawn),
     identity: () => checkIdentity(rootAbs, findings, profilesRoot),
+    boundary: () => checkBoundary(rootAbs, findings),
+    platform: () => checkPlatform(rootAbs, findings),
   };
 
   const classData = {
     closure: { digest: null, note: "not-selected" },
     git: null,
-    version: { contractsVersion: null },
+    version: { contractsVersion: null, singleSource: null },
     identity: null,
+    boundary: { declared: false, declarationId: null, declaredVersion: null, documentState: "missing" },
+    platform: { declared: false, project: null, released: [], missing: [], declaredVersion: null, documentState: "missing" },
   };
 
   for (const name of CHECK_CLASSES) {
@@ -535,6 +955,8 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
       if (name === "closure") classData.closure = result;
       if (name === "git") classData.git = result;
       if (name === "version") classData.version = result;
+      if (name === "boundary") classData.boundary = result;
+      if (name === "platform") classData.platform = result;
       if (name === "identity") {
         classData.identity = result
           ? { record: result, licensing: result.licensing, authors: result.authors }
@@ -597,6 +1019,8 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
       version: classData.version,
       managedDeclarations,
       identity: classData.identity,
+      boundary: classData.boundary,
+      platform: classData.platform,
     },
     policy:
       "check is diagnosis only: it never writes, never fixes, and never calls git write commands; findings must be resolved by a human or an authorized generator",

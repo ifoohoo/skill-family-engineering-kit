@@ -52,6 +52,10 @@ export const KIT_ERROR_KINDS = Object.freeze({
   CHECK_CLASS_FAILED: "check-class-failed",
   MANAGED_FILE_MISSING: "managed-file-missing",
   MANAGED_FILE_DRIFT: "managed-file-drift",
+  // never-built distinction (SG-37): every well-formed managed entry declared
+  // in the lock is absent on disk — the build outputs were never produced.
+  // Distinguished from content drift; carries build-first guidance.
+  NEVER_BUILT: "never-built",
   SYMLINK_AT_MANAGED_PATH: "symlink-at-managed-path",
   NOT_A_REGULAR_FILE: "not-a-regular-file",
   CLOSURE_INPUT_MISSING: "closure-input-missing",
@@ -67,10 +71,27 @@ export const KIT_ERROR_KINDS = Object.freeze({
   SYMLINK_ENTRY: "symlink-entry",
   SPECIAL_ENTRY: "special-entry",
   UNCONTAINED_DECLARATION: "uncontained-declaration",
+  // check extensions (audit remediation C2: SG-13/14, SG-17, SFA-PLAT-002)
+  VERSION_AUTHORITY_DUAL: "version-authority-dual",
+  VERSION_SINGLE_SOURCE_DRIFT: "version-single-source-drift",
+  PUBLIC_BOUNDARY_VIOLATION: "public-boundary-violation",
+  PLATFORM_SUBSET_INVALID: "platform-subset-declaration-invalid",
+  PLATFORM_SUBSET_VERSION_DRIFT: "platform-subset-version-drift",
+  // entry contract gate sub-action (SG-34: SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002)
+  ENTRY_CONTRACT_INVALID: "entry-contract-declaration-invalid",
+  ENTRY_CONTRACT_VERSION_DRIFT: "entry-contract-version-drift",
+  ENTRY_PHYSICAL_MISSING: "entry-physical-missing",
+  ENTRY_NAME_INCONSISTENT: "entry-name-inconsistent",
+  ENTRY_HUMAN_REGISTERED: "entry-human-registered",
+  ENTRY_SIDE_EFFECT_VIOLATION: "entry-side-effect-violation",
+  ENTRY_TOKEN_BUDGET_EXCEEDED: "entry-token-budget-exceeded",
   // report sub-actions (projection report / check report, FND-ADR-005)
   REPORT_INPUT_MISSING: "report-input-missing",
   REPORT_PATH_CONFLICT: "report-path-conflict",
   REPORT_WRITE_FAILED: "report-write-failed",
+  // controlled relock channel (SG-36; audit friction F5): `check relock`
+  RELOCK_REGISTRATION_REFUSED: "relock-registration-refused",
+  RELOCK_LOCK_DRIFT: "relock-lock-drift",
   // read-only host integration slice
   HOST_CONTRACT_INVALID: "host-contract-invalid",
   HOST_PROBE_FAILED: "host-probe-failed",

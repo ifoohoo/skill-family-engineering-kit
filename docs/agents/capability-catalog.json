@@ -181,6 +181,30 @@
    ]
   },
   {
+   "id": "foundation.contracts.token-estimate-consumption",
+   "package": "skill-family-contracts",
+   "layer": "contracts",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "TOKEN_ESTIMATE_CONSUMPTION (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
+    "TOKEN_ESTIMATE_CONSUMPTION_REASONS (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
+    "TOKEN_ESTIMATE_CONSUMPTION_ERROR_KIND (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
+    "consumeTokenEstimate (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
+    "consumeTokenEstimateStrict (packages/skill-family-contracts/src/token-estimate-consumption.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-contracts/src/token-estimate-consumption.mjs",
+    "packages/skill-family-contracts/src/schemas/token-estimate-record.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-contracts/test/token-estimate-consumption.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-contracts/test/token-estimate-consumption.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.harness.contract-validation",
    "package": "skill-family-harness-node",
    "layer": "harness",
@@ -486,16 +510,26 @@
    "since": "0.3.0",
    "stability": "stable",
    "entrypoints": [
-    "estimateTokenUpperBound (packages/skill-family-harness-node/src/token-estimate.mjs)"
+    "estimateTokenUpperBound (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "estimateTokens (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "isCjkCodePoint (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "CJK_CODE_POINT_RANGES (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "TOKEN_ESTIMATOR_ID (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "TOKEN_ESTIMATOR_VERSION (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "TOKEN_ESTIMATION_ALGORITHM (packages/skill-family-harness-node/src/token-estimate.mjs)",
+    "tokenEstimateCliMain (packages/skill-family-harness-node/src/token-estimate-cli.mjs)"
    ],
    "sourceRefs": [
-    "packages/skill-family-harness-node/src/token-estimate.mjs"
+    "packages/skill-family-harness-node/src/token-estimate.mjs",
+    "packages/skill-family-harness-node/src/token-estimate-cli.mjs"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-harness-node/test/token-estimate.test.mjs"
+    "packages/skill-family-harness-node/test/token-estimate.test.mjs",
+    "packages/skill-family-harness-node/test/token-estimator.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-harness-node/test/token-estimate.test.mjs"
+    "packages/skill-family-harness-node/test/token-estimate.test.mjs",
+    "packages/skill-family-harness-node/test/token-estimator.test.mjs"
    ]
   },
   {
@@ -518,6 +552,75 @@
    ],
    "negativeTestRefs": [
     "packages/skill-family-harness-node/test/budget-guard.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.harness.supervise-process",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "superviseProcess (packages/skill-family-harness-node/src/supervise-process.mjs)",
+    "validateTimeoutPolicy (packages/skill-family-harness-node/src/supervise-process.mjs)",
+    "WATCHDOG_REASONS (packages/skill-family-harness-node/src/supervise-process.mjs)",
+    "TERMINATION_REASONS (packages/skill-family-harness-node/src/supervise-process.mjs)",
+    "PROCESS_STATUSES (packages/skill-family-harness-node/src/supervise-process.mjs)",
+    "ENVELOPE_GUARANTEES (packages/skill-family-harness-node/src/supervise-process.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/supervise-process.mjs",
+    "packages/skill-family-contracts/src/schemas/watchdog-termination-envelope.schema.json",
+    "packages/skill-family-contracts/src/schemas/timeout-policy.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/supervise-process-lifecycle.test.mjs",
+    "packages/skill-family-harness-node/test/supervise-process-terminal.test.mjs",
+    "packages/skill-family-harness-node/test/supervise-process-validation.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/supervise-process-vanish.test.mjs",
+    "packages/skill-family-harness-node/test/supervise-process-evidence.test.mjs",
+    "packages/skill-family-harness-node/test/supervise-process-purity.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.harness.strict-read",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "readFileStrict (packages/skill-family-harness-node/src/strict-read.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/strict-read.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/strict-read.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/strict-read.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.harness.url-credential-redaction",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "redactUrlCredentials (packages/skill-family-harness-node/src/url-redaction.mjs)",
+    "REDACTED_URL_PLACEHOLDER (packages/skill-family-harness-node/src/url-redaction.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/url-redaction.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/url-redaction.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/url-redaction.test.mjs"
    ]
   },
   {
@@ -574,7 +677,7 @@
    "stability": "stable",
    "entrypoints": [
     "planAdoption (packages/skill-family-engineering-kit/src/adopt-plan.mjs)",
-    "buildHandoffDraft (packages/skill-family-engineering-kit/src/adopt-plan.mjs)",
+    "buildProfileDraft (packages/skill-family-engineering-kit/src/adopt-plan.mjs)",
     "evaluateMigrationCompletion (packages/skill-family-engineering-kit/src/migration.mjs)",
     "validateException (packages/skill-family-engineering-kit/src/migration.mjs)",
     "assessLegacyExitList (packages/skill-family-engineering-kit/src/migration.mjs)",
@@ -600,17 +703,23 @@
    "since": "0.2.0",
    "stability": "stable",
    "entrypoints": [
+    "buildProjectionClosure (packages/skill-family-engineering-kit/src/projection.mjs)",
     "runProjection (packages/skill-family-engineering-kit/src/projection.mjs)",
-    "loadProjectionManifest (packages/skill-family-engineering-kit/src/projection.mjs)"
+    "loadProjectionManifest (packages/skill-family-engineering-kit/src/projection.mjs)",
+    "PROJECTION_AUTHORITY_BINDING_KINDS (packages/skill-family-engineering-kit/src/projection.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/projection.mjs"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-engineering-kit/test/projection.test.mjs"
+    "packages/skill-family-engineering-kit/test/projection.test.mjs",
+    "packages/skill-family-engineering-kit/test/projection-external-authority.test.mjs",
+    "packages/skill-family-engineering-kit/test/projection-closure-builder.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/projection.test.mjs"
+    "packages/skill-family-engineering-kit/test/projection.test.mjs",
+    "packages/skill-family-engineering-kit/test/projection-external-authority.test.mjs",
+    "packages/skill-family-engineering-kit/test/projection-closure-builder.test.mjs"
    ]
   },
   {
@@ -621,7 +730,8 @@
    "stability": "stable",
    "entrypoints": [
     "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
-    "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)"
+    "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
+    "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/check.mjs",
@@ -685,6 +795,7 @@
    "stability": "unstable",
    "entrypoints": [
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
+    "loadHostRegistry (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "probeHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "buildHostAdapter (packages/skill-family-engineering-kit/src/host.mjs)",
     "materializeHostBuild (packages/skill-family-engineering-kit/src/host.mjs)",
@@ -715,6 +826,7 @@
     "loadLicensingProfile (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "listLicensingProfiles (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "validateLicensingProfile (packages/skill-family-engineering-kit/src/licensing.mjs)",
+    "bundledProfilesRoot (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "generateLicenseContent (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "generateNoticeContent (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "generateIdentityRecord (packages/skill-family-engineering-kit/src/licensing.mjs)"
@@ -753,6 +865,50 @@
    ]
   },
   {
+   "id": "foundation.kit.entry-check",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "runEntryContractCheck (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+    "checkEntriesAction (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+    "ENTRY_CONTRACT_DECLARATION_PATH (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+    "ENTRY_CONTRACT_DECLARATION_KIND (packages/skill-family-engineering-kit/src/entry-check.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/entry-check.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/entry-check.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/entry-check.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.relock",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.6.0",
+   "stability": "stable",
+   "entrypoints": [
+    "runRelock (packages/skill-family-engineering-kit/src/relock.mjs)",
+    "relockAction (packages/skill-family-engineering-kit/src/relock.mjs)",
+    "RELOCK_LOCK_PATH_PATTERN (packages/skill-family-engineering-kit/src/relock.mjs)",
+    "RELOCK_REPORT_KIND (packages/skill-family-engineering-kit/src/relock.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/relock.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/relock.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/relock.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.kit.cli",
    "package": "skill-family-engineering-kit",
    "layer": "engineering-kit",
@@ -781,17 +937,27 @@
    "since": "0.2.0",
    "stability": "stable",
    "entrypoints": [
-    "verifyProfile (profiles/spi/index.mjs)"
+    "verifyProfile (profiles/spi/index.mjs)",
+    "skill-family-engineering-kit/profile-spi (packages/skill-family-engineering-kit/profile-spi/index.mjs)"
    ],
    "sourceRefs": [
     "profiles/spi/index.mjs",
-    "profiles/spi/extension-spi.json"
+    "profiles/spi/extension-spi.json",
+    "profiles/spi/profile-adoption.schema.json",
+    "profiles/spi/rule-baseline-catalog.json",
+    "packages/skill-family-engineering-kit/profile-spi/index.mjs",
+    "packages/skill-family-engineering-kit/profile-spi/extension-spi.json",
+    "packages/skill-family-engineering-kit/profile-spi/profile-adoption.schema.json",
+    "packages/skill-family-engineering-kit/profile-spi/profile-descriptor.schema.json",
+    "packages/skill-family-engineering-kit/profile-spi/rule-baseline-catalog.json"
    ],
    "positiveTestRefs": [
-    "fixtures/generic-profile-extension-conformance/verify.mjs"
+    "fixtures/generic-profile-extension-conformance/verify.mjs",
+    "packages/skill-family-engineering-kit/test/profile-spi-public.test.mjs"
    ],
    "negativeTestRefs": [
-    "fixtures/generic-profile-extension-conformance/verify.mjs"
+    "fixtures/generic-profile-extension-conformance/verify.mjs",
+    "packages/skill-family-engineering-kit/test/profile-spi-public.test.mjs"
    ]
   },
   {

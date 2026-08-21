@@ -5,7 +5,9 @@ import { CHECK_CLASSES, runChecks } from "./check.mjs";
 import {
   IDENTITY_RECORD_PATH,
   MANAGED_LOCK_PATH,
+  PLATFORM_SUBSET_DECLARATION_PATH,
   PROJECT_MANIFEST_PATH,
+  PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import {
   listTargetEntries,
@@ -23,7 +25,7 @@ import {
  * ONLY import this function: safe file-tree enumeration, lstat/symlink/FIFO
  * and special-entry rejection, file-registry classification (managed /
  * handwritten / artifact closed world), declaration path containment, the
- * seven check classes, and the stable finding/exit mapping all live here and
+ * nine check classes, and the stable finding/exit mapping all live here and
  * nowhere else. No generated string may re-derive a recursive walk, an lstat
  * classification, a glob match, or a local closed-world algorithm.
  *
@@ -35,7 +37,7 @@ import {
  *   3. tree enumeration — every symlink and special entry fails closed;
  *      every regular file must belong to the registered closed world
  *      (managed, handwritten, artifact, or a tracked tool lock);
- *   4. the seven check classes through runChecks — skipped whenever an
+ *   4. the nine check classes through runChecks — skipped whenever an
  *      unsafe path (symlink/special at a managed or class-read path) would
  *      be opened by them: FIFOs must never be read (they block), symlinks
  *      must never be followed.
@@ -68,7 +70,7 @@ export const CORE_CHECK_SECURITY_KINDS = Object.freeze([
 const CORE_CLASS = "core";
 
 /**
- * Paths the seven check classes open by name. They take part in the unsafe
+ * Paths the nine check classes open by name. They take part in the unsafe
  * read-set even when they are not declared managed (README.md is handwritten
  * in the skeleton), so a symlink/FIFO there can never hang or escape a read.
  */
@@ -79,6 +81,8 @@ const CLASS_READ_PATHS = Object.freeze([
   MANAGED_LOCK_PATH,
   IDENTITY_RECORD_PATH,
   "identity-record.json",
+  PUBLIC_BOUNDARY_DECLARATION_PATH,
+  PLATFORM_SUBSET_DECLARATION_PATH,
 ]);
 
 /** Lexical containment of a managed declaration; never touches the fs. */
@@ -189,7 +193,7 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
     );
   }
 
-  // ---- Stage 4: the seven check classes through the shared entry ---------
+  // ---- Stage 4: the nine check classes through the shared entry ---------
   let classReport = null;
   if (unsafeReadPaths.size === 0) {
     classReport = await runChecks({ root: rootAbs, allowGitSpawn, profilesRoot });

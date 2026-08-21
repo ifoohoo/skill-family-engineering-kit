@@ -762,10 +762,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
+  <a href="#planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
     <span class="md-ellipsis">
 
-        planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
+        planAdoption / buildProfileDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
 
     </span>
   </a>
@@ -794,6 +794,17 @@
     <span class="md-ellipsis">
 
         runProjection / loadProjectionManifest
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#buildProjectionClosure" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        buildProjectionClosure
 
     </span>
   </a>
@@ -990,6 +1001,34 @@
     <span class="md-ellipsis">
 
         runCommand / cliMain / 拒绝变更旗标
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Profile-SPI-公共投影" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Profile SPI 公共投影
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Profile SPI 公共投影">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#公共入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        公共入口
 
     </span>
   </a>
@@ -2016,10 +2055,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
+  <a href="#planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" class="md-nav__link">
     <span class="md-ellipsis">
 
-        planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
+        planAdoption / buildProfileDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories
 
     </span>
   </a>
@@ -2048,6 +2087,17 @@
     <span class="md-ellipsis">
 
         runProjection / loadProjectionManifest
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#buildProjectionClosure" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        buildProjectionClosure
 
     </span>
   </a>
@@ -2256,6 +2306,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Profile-SPI-公共投影" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Profile SPI 公共投影
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="Profile SPI 公共投影">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#公共入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        公共入口
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2301,7 +2379,7 @@
 <ul>
 <li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code></li>
 <li><a href="#adopt-plan-foundationkitadopt-plan">adopt-plan</a> → <code>planAdoption</code> / <code>evaluateMigrationCompletion</code></li>
-<li><a href="#projection-foundationkitprojection">projection</a> → <code>runProjection</code> / <code>loadProjectionManifest</code></li>
+<li><a href="#projection-foundationkitprojection">projection</a> → <code>buildProjectionClosure</code> / <code>runProjection</code> / <code>loadProjectionManifest</code></li>
 <li><a href="#check-foundationkitcheck">check</a> → <code>runChecks</code> / <code>runCoreCheck</code></li>
 <li><a href="#report-foundationkitreport">report</a> → <code>renderReportAction</code> / <code>checkReportAction</code></li>
 <li><a href="#git-probe-foundationkitgit-probe">git-probe</a> → <code>probeGitState</code> / <code>probeGitFacts</code></li>
@@ -2319,11 +2397,11 @@
 <li><code>describeSkeletonFiles(inputs)</code>（async）</li>
 <li><code>normalizeSkeletonInputs({ projectId, projectName, profileId, licensingProfile, licensingVariant, rootBasename })</code></li>
 <li>输入：目标根、骨架选项（<code>projectId</code> 等）。</li>
-<li>输出：精确集合的托管骨架文件（原子 + 路径收容）。</li>
+<li>输出：精确集合的托管骨架文件（原子 + 路径收容）。含两个目标侧手写种子（<code>handwritten</code> 类，adopt 永不覆写）：<code>SOURCE-OF-TRUTH.md</code>（唯一声明点、真源清单与生成谱系、运行与证据目录约定）与 <code>profile.json</code>（<code>foundation_profile</code> / <code>foundation_pin</code> 采用字段加只收紧方向的 overrides 示例）；<code>.gitignore</code> / <code>.projenrc.js</code> / file-registry 三处同步携带根级唯一忽略基线 <code>/site/</code>、<code>/.qoder/</code>、<code>/.artifacts/</code>、<code>/.runs/</code>、<code>/.evidence/</code>（嵌套同名目录不被忽略）。</li>
 <li>纯函数：<code>normalizeSkeletonInputs</code> 是；<code>scaffoldTarget</code> 落盘。</li>
 <li>副作用：在受收容目标创建文件（原子 + 收容）；目标非空则拒绝、不覆盖。</li>
 <li>稳定错误码与 <code>details.kind</code>：非法 kebab <code>projectId</code> / 非空目标抛 <code>KitError</code>（<code>KIT_ERROR_KINDS</code> 的 <code>invalid-params</code> / <code>rejected</code>）；非法参数 <code>+ INVALID_PARAMS</code>（<code>SFC2003</code>）。</li>
-<li>前置条件与信任锚：目标为可写空目录；Node &gt;= 22.22.2；骨架集合与 <code>scaffold-conformance</code> fixture 一致。</li>
+<li>前置条件与信任锚：目标为可写空目录；Node &gt;= 22.22.2；骨架集合与 <code>scaffold-conformance</code> fixture 一致（33 个计划文件）。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/scaffold.mjs</code>、<code>skeleton.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/scaffold.test.mjs</code>、<code>skeleton-contract.test.mjs</code>。</li>
@@ -2331,17 +2409,17 @@
 </ul>
 <hr />
 <h2 id="adopt-plan-foundationkitadopt-plan">adopt-plan (foundation.kit.adopt-plan)<a class="headerlink" href="#adopt-plan-foundationkitadopt-plan" title="Permanent link">&para;</a></h2>
-<h3 id="planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories">planAdoption / buildHandoffDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories<a class="headerlink" href="#planAdoption--buildHandoffDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" title="Permanent link">&para;</a></h3>
+<h3 id="planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories">planAdoption / buildProfileDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories<a class="headerlink" href="#planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名（节选）：</li>
 <li><code>planAdoption({ root, manifest, ... } = {})</code>（async）</li>
-<li><code>buildHandoffDraft({ ... })</code></li>
+<li><code>buildProfileDraft({ inputs, migrationManifest, writeSet, entries })</code></li>
 <li><code>evaluateMigrationCompletion({ ... })</code></li>
 <li><code>validateException(exception, index, nowMs)</code></li>
 <li><code>assessLegacyExitList(root, legacyItems)</code>（async）</li>
 <li><code>findNestedRepositories(entries)</code></li>
 <li>输入：目标根、迁移清单路径。</li>
-<li>输出：采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、handoff 草稿（仅输出，不落盘）。</li>
+<li>输出：采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、profile 草稿（kind=<code>skill-family.profile-draft</code>：预填 D-8 最小采用声明 + 空 overrides 示例，仅输出，不落盘；adoption-lock 形态已废弃）。</li>
 <li>纯函数：分类与评估函数为纯函数；<code>planAdoption</code> 含只读探测。</li>
 <li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；可能触发只读 Git 探测。</li>
 <li>稳定错误码与 <code>details.kind</code>：例外缺字段 / 未退出旧实现则完成判定 <code>false</code>；硬失败抛 <code>KitError</code>（<code>CONTRACTS_VERSION</code> 不一致等）。</li>
@@ -2369,6 +2447,21 @@
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/projection.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：投影内容的业务含义（远端发布转 <code>release-skill</code>）。</li>
 </ul>
+<h3 id="buildProjectionClosure">buildProjectionClosure<a class="headerlink" href="#buildProjectionClosure" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>buildProjectionClosure(resources)</code></li>
+<li>输入：资源数组，成员为 <code>{path, sha256, mode}</code>（显式 <code>type: "file"</code> 被容忍）。</li>
+<li>输出：规范投影闭包 <code>{digestAlgorithm: "sha256", digest, resourceCount, resources}</code>（成员规范化为 <code>{path, type: "file", sha256, mode}</code>，按 path 确定性排序，<code>digest = sha256(JSON.stringify(resources))</code>），可原样作为 <code>compileProjectionPlan()</code> 的 <code>previousOwnedClosure</code> 或 <code>externalCandidateClosure</code>；空数组是合法空闭包。</li>
+<li>纯函数：是（无文件读写、无网络、无子进程；入参不被改写）。</li>
+<li>副作用：无。</li>
+<li>稳定错误码与 <code>details.kind</code>：非数组输入、重复路径、可移植路径碰撞、非法 path/type/sha256/mode 在既有 <code>projection plan input invalid</code> 错误域内失败关闭（<code>SFC2004</code>，<code>details.kind</code> 为 <code>invalid-manifest</code>）。</li>
+<li>边界：本函数构造的是投影/计划闭包，与 Harness <code>computeResourceClosure()</code> 的资源闭包（成员 <code>{path, role, exists, sha256}</code>、整体信封摘要）形状与用途不同，两者不可互换；与 <code>normalizePlanClosure()</code>、候选枚举闭包共享同一规范化与摘要事实源。</li>
+<li>前置条件与信任锚：无；结果直接满足 <code>compileProjectionPlan()</code> 的闭包合同，不新增第二个编译入口。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.7.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/projection.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/projection-closure-builder.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：投影内容的业务含义与资源字节的来源证明。</li>
+</ul>
 <hr />
 <h2 id="check-foundationkitcheck">check (foundation.kit.check)<a class="headerlink" href="#check-foundationkitcheck" title="Permanent link">&para;</a></h2>
 <h3 id="runChecks--runCoreCheck--isContainedDeclaration">runChecks / runCoreCheck / isContainedDeclaration<a class="headerlink" href="#runChecks--runCoreCheck--isContainedDeclaration" title="Permanent link">&para;</a></h3>
@@ -2377,11 +2470,11 @@
 <li><code>runChecks({ root, allowGitSpawn = true, only, profilesRoot } = {})</code>（async）</li>
 <li><code>runCoreCheck({ root, allowGitSpawn = true, profilesRoot } = {})</code>（async）</li>
 <li><code>isContainedDeclaration(rel)</code></li>
-<li>输入：<code>--only</code> 取值 <code>contracts|drift|closure|version|docs|git|identity</code>。</li>
+<li>输入：<code>--only</code> 取值 <code>contracts|drift|closure|version|docs|git|identity|boundary|platform</code>。</li>
 <li>输出：发现清单；退出码 <code>findings=1</code>（有发现）、<code>mechanism=2</code>（某类检查无法完成）、<code>ok=0</code>。</li>
 <li>纯函数：否（读取目标文件与只读 Git 状态）；但<strong>只诊断、不修复、不写</strong>。</li>
 <li>副作用：无文件写入；只读 Git 探测（至多一次冻结 <code>status</code> 查询）。</li>
-<li>稳定错误码与 <code>details.kind</code>：<code>CHECK_CLASSES</code> 为七类闭集，不扩张；机制失败抛 <code>KitError</code>（<code>mechanism</code> 类）。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>CHECK_CLASSES</code> 为九类闭集，不扩张（审计整改 C2 依裁决 SG-13/14、SG-17、SFA-PLAT-002 增设 <code>boundary</code>、<code>platform</code> 两类，并为 <code>version</code> 类加装版本单源一致性事实；扩类经治理批准，此后仍不扩张）；机制失败抛 <code>KitError</code>（<code>mechanism</code> 类）。</li>
 <li>前置条件与信任锚：<code>GIT_READ_ONLY_ALLOWLIST</code> 限定可调用子命令。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/check.mjs</code>、<code>core-check.mjs</code>。</li>
@@ -2509,6 +2602,18 @@
 </ul>
 <p>Kit 错误类型：<code>KitError extends ContractsError</code>（构造未登记码立即抛 <code>TypeError</code>）；<code>KIT_ERROR_KINDS</code> 为稳定 kind 枚举；<code>kitError</code> / <code>invalidParamsError</code> / <code>unknownCommandError</code> / <code>mutationModeError</code> / <code>refusalError</code> 为构造辅助。<code>REFUSED_MUTATION_FLAGS</code> 列出入口即拒的变更旗标（如 <code>--apply</code>）。</p>
 <hr />
+<h2 id="Profile-SPI-公共投影">Profile SPI 公共投影<a class="headerlink" href="#Profile-SPI-公共投影" title="Permanent link">&para;</a></h2>
+<p><code>skill-family-engineering-kit/profile-spi</code> 是 Profile SPI v2 的公共数据入口。它由 Profiles 源实现投影生成，包内同时携带三个 SPI JSON 资源与 Contracts 的 <code>profile-descriptor.schema.json</code>；投影脚本只替换两个公共包导入和一个本地 Schema URL，资源字节保持绑定。</p>
+<h3 id="公共入口">公共入口<a class="headerlink" href="#公共入口" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>loadSpiDefinition()</code>：读取 <code>extension-spi.json</code>，返回开放扩展点、核心所有权和 entrypoint 规则。</li>
+<li><code>loadExtendedDescriptorSchema()</code>：读取 <code>profile-descriptor.schema.json</code>，返回扩展 Profile descriptor Schema。</li>
+<li><code>loadRuleBaselineCatalog()</code>：读取 <code>rule-baseline-catalog.json</code>，返回 overrides-policy 的基线目录。</li>
+<li><code>verifyProfile({ profileRoot, descriptorRelPath = "profile.json" } = {})</code>（async）：只读校验 Profile descriptor、资源收容、核心反向依赖、采用 pin 与 overrides；返回 <code>SPE0000</code> 或 <code>SPE1001</code>–<code>SPE1007</code> 结果码，不执行 Profile entrypoint。</li>
+<li><code>verifyAdoptionDigests({ profileRoot, adoption })</code> 与 <code>assessOverridesPolicy(overrides)</code>：分别校验采用 pin 摘要和只收紧的 overrides。</li>
+</ul>
+<p>公共投影入口没有文件写入、Git、网络或进程副作用。<code>profileRoot</code> 必须是可读取目录，资源 entrypoint 必须留在该目录内且为 JSON 数据文件；符号链接和路径逃逸均失败关闭。Profile 的领域语义仍由调用方拥有。</p>
+<p><code>profiles/spi</code> 是唯一手写真源；<code>packages/skill-family-engineering-kit/profile-spi</code> 由 projen 机械生成，不得直接编辑投影文件。</p>
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
 <p><code>skill-family-engineering-kit/candidate/quickstart-profile</code> 导出 <code>buildQuickstartProfileProjection</code> 与 <code>QUICKSTART_PROFILE_TARGET_PREFIX</code>。builder 接收显式消费者 Schema 路径与冻结来源身份，生成按 Schema <code>$id</code> 查询的 standalone validator、机械投影的 Contracts/Harness runtime、许可证和完整 provenance。</p>
 <p>Bundle 离线运行时不需要 Foundation 包、<code>node_modules</code> 或 Ajv。builder 只返回稳定 projection manifest，不写目标文件，也不增加第五个 Kit 顶层命令；调用方仍需把 manifest 交给 <code>runProjection</code> 完成授权写入。0.3.0 的 v2 与 0.2.1 的依赖闭包 Bundle 不兼容，必须精确锁定版本。</p>

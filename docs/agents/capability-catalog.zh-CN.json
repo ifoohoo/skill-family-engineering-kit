@@ -283,6 +283,42 @@
    ]
   },
   {
+   "id": "foundation.contracts.token-estimate-consumption",
+   "intent": "定义 token 估算记录的最小消费合同：哪个字段承载数值估算、退化的裸整数形态与失败关闭的拒绝语义",
+   "useWhen": [
+    "需要从 token-estimate-record 提取数值估算并校验降级形态",
+    "需要拒绝估算器不可混用或目标字段缺失的记录"
+   ],
+   "doNotUseWhen": [
+    "需要生成估算记录（归 harness estimateTokens）",
+    "需要解释估算结果的业务含义"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "token-estimate-record 文档或其退化裸整数形态"
+   ],
+   "outputs": [
+    "消费结果（数值估算与来源标识）或失败关闭拒绝"
+   ],
+   "sideEffects": [
+    "纯函数，无文件系统、Git、网络或进程副作用"
+   ],
+   "failureSemantics": [
+    "估算器不匹配或字段缺失时以稳定错误种类失败关闭",
+    "拒绝结果携带 closed 枚举原因，不静默降级"
+   ],
+   "invariants": [
+    "不同估算器结果不得静默混用",
+    "消费合同不新增顶层对象类"
+   ],
+   "ownedByCaller": [
+    "估算的触发时机与结果的业务解释"
+   ],
+   "routeElsewhere": [
+    "估算记录生成：foundation.harness.token-estimation"
+   ]
+  },
+  {
    "id": "foundation.harness.contract-validation",
    "intent": "在 Node 运行时解析契约上下文并复用 Contracts 校验器，校验契约文档并缓存校验器实例",
    "useWhen": [
@@ -794,13 +830,14 @@
   },
   {
    "id": "foundation.harness.token-estimation",
-   "intent": "对文本内容给出确定性上界估算：UTF-8 字节数纯函数，无模型、无网络、无 tokenizer 依赖",
+   "intent": "对文本内容给出确定性估算：UTF-8 字节数上界与按 CJK 码位/空白切分的词元数估算；均为无模型、无网络、无 tokenizer 依赖的纯函数，结果携带估算器身份与版本",
    "useWhen": [
     "需要在不调用模型的前提下给文本内容的消耗上界",
-    "需要契约化、可校验、无时间戳的估算结果对象"
+    "需要中英混排、纯 CJK 或纯 ASCII 输入下确定性、可重放的词元数估算",
+    "需要契约化、可校验、无时间戳的估算结果对象，并要求记录结果出自哪个估算器"
    ],
    "doNotUseWhen": [
-    "需要真实 token 计数或语义估算（估算原语不承诺精度）"
+    "需要目标模型 tokenizer 的真实 token 计数或语义估算（估算原语不承诺精度）"
    ],
    "prerequisites": [
     "输入为 JavaScript 字符串"
@@ -809,16 +846,20 @@
     "文本字符串"
    ],
    "outputs": [
-    "token-estimate-result 契约对象（inputBytes 与 upperBound 相等）"
+    "token-estimate-result 契约对象（inputBytes 与 upperBound 相等）",
+    "词元估算记录（含估算器 id、版本、算法标识与切分统计；tokens 等于 CJK 字符数加 OTHER 段数）"
    ],
    "sideEffects": [
-    "无：纯函数，零依赖"
+    "无：纯函数，零依赖；CLI 仅读取命令行参数、文件或 stdin，仅写 stdout"
    ],
    "failureSemantics": [
-    "非字符串输入抛 TypeError"
+    "非字符串输入抛 TypeError",
+    "CLI 参数错误退出码 2，成功退出码 0"
    ],
    "invariants": [
-    "同输入同输出，确定性字节计数",
+    "同输入同输出，确定性字节计数与确定性切分",
+    "每个 CJK 码位计 1 词元并终结其前的 OTHER 段；空白字符不贡献词元",
+    "每条估算记录携带估算器 id 与版本（SFA-CONTEXT-028），不同估算器结果不得静默混用",
     "guarantees 为封闭枚举，结果无时间戳"
    ],
    "ownedByCaller": [
@@ -863,6 +904,117 @@
    ],
    "routeElsewhere": [
     "定价与计费语义：留在消费者"
+   ]
+  },
+  {
+   "id": "foundation.harness.supervise-process",
+   "intent": "监督单个有界子进程的完整生命周期：消费者提供超时策略，SIGTERM 至 SIGKILL 升级、终态进度观察与封闭枚举终止证据",
+   "useWhen": [
+    "需要让子进程在有硬上限与确定性终止证据的有界生命周期内运行",
+    "需要可直接机械映射的封闭枚举 watchdog/termination 原因"
+   ],
+   "doNotUseWhen": [
+    "需要监督器重试或重启进程（workflow-orchestration 排除）"
+   ],
+   "prerequisites": [
+    "消费者提供命令、cwd 与含 maxSeconds 和 killGraceSeconds 的超时策略"
+   ],
+   "inputs": [
+    "命令/参数/cwd、超时策略、可选的进度与终态进度路径、可选的预算与长工具钩子、可选的证据路径"
+   ],
+   "outputs": [
+    "每次调用恰好一个冻结的 watchdog-termination-envelope（单写者）"
+   ],
+   "sideEffects": [
+    "生成并终止被监督进程及其进程组",
+    "可选地在 evidencePath 持久化监督痕迹与最终信封"
+   ],
+   "failureSemantics": [
+    "策略形状错误抛出 SFC2004 + timeout-policy-invalid；机制失败以 SFC2004 + supervise-process-failed 拒绝并在 details 携带终止证据；外部进程消失按 no_terminal_result 失败关闭"
+   ],
+   "invariants": [
+    "机制不持有任何超时数值、预算阈值或重启策略",
+    "存活只由显式事件与进程组探测确认；ps 绝不用于存活猜测"
+   ],
+   "ownedByCaller": [
+    "命令本身、超时数值、预算阈值、终态记录语义与任何重启策略"
+   ],
+   "routeElsewhere": [
+    "重启/重试编排：workflow-orchestration 排除，留在上层编排层"
+   ]
+  },
+  {
+   "id": "foundation.harness.strict-read",
+   "intent": "以收容、不跟随符号链接、常规文件身份复核与 sha256 摘要回执读取一个已存在的权威文件",
+   "useWhen": [
+    "需要读取冻结权威文件并绑定其字节摘要",
+    "需要在交付前校验权威文件与已冻结摘要一致"
+   ],
+   "doNotUseWhen": [
+    "需要读取目录或符号链接目标",
+    "需要写入或替换文件（归严格写入路径）"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "收容根目录与相对路径；可选 expectedSha256 冻结摘要"
+   ],
+   "outputs": [
+    "文件内容与读取字节的 sha256 摘要回执"
+   ],
+   "sideEffects": [
+    "只读文件系统访问（lstat/open/read）"
+   ],
+   "failureSemantics": [
+    "符号链接、非常规文件或摘要不符时失败关闭且不交付内容",
+    "路径逃逸在任何读取之前被收容层拒绝"
+   ],
+   "invariants": [
+    "O_NOFOLLOW 打开，身份检查后交换的链接不会被跟随",
+    "回执摘要只覆盖实际读到的字节"
+   ],
+   "ownedByCaller": [
+    "冻结摘要的来源与信任锚",
+    "读取失败后的处置策略"
+   ],
+   "routeElsewhere": [
+    "写入与发布：foundation.harness.atomic-write"
+   ]
+  },
+  {
+   "id": "foundation.harness.url-credential-redaction",
+   "intent": "在任何 URL 数值到达磁盘或日志之前剥离其 userinfo 凭证部分",
+   "useWhen": [
+    "需要持久化或记录可能携带凭证的 URL",
+    "需要把不可解析输入安全退化为占位符"
+   ],
+   "doNotUseWhen": [
+    "需要保留或解析凭证本身（凭证不应进入 Foundation）",
+    "需要处理非 URL 形态的密钥材料"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "任意字符串输入（URL 或非 URL）"
+   ],
+   "outputs": [
+    "脱敏后的 URL 字符串或 REDACTED_URL_PLACEHOLDER 不透明占位符"
+   ],
+   "sideEffects": [
+    "纯函数，无副作用"
+   ],
+   "failureSemantics": [
+    "不可解析输入退化为不透明占位符，绝不泄漏原文",
+    "输出不携带任何 userinfo 字节"
+   ],
+   "invariants": [
+    "脱敏发生在任何落盘或日志写入之前",
+    "占位符是封闭常量，不携带输入信息"
+   ],
+   "ownedByCaller": [
+    "哪些输入值按 URL 处理",
+    "脱敏后数值的下游用途"
+   ],
+   "routeElsewhere": [
+    "凭据管理与轮换：调用方安全边界"
    ]
   },
   {
@@ -939,7 +1091,7 @@
    "intent": "对已存在的存量仓做严格只读盘点（分类、嵌套仓发现、迁移清单、完成判定），不写文件、不自动迁移",
    "useWhen": [
     "需要把存量仓分类为 direct-adoption / compatibility-layer / keep-business / foundation-gap",
-    "需要为迁移生成 handoff 草稿或完成判定"
+    "需要为迁移生成 profile 草稿（采用声明与 overrides）或完成判定"
    ],
    "doNotUseWhen": [
     "需要自动改写存量仓（禁止写文件、禁止自动迁移）"
@@ -951,7 +1103,7 @@
     "目标根、迁移清单路径"
    ],
    "outputs": [
-    "采用分类、完成判定、handoff 草稿（仅输出，不落盘）"
+    "采用分类、完成判定、profile 草稿（仅输出，不落盘）"
    ],
    "sideEffects": [
     "无文件写入（严格只读）",
@@ -984,7 +1136,8 @@
     "投影清单已登记"
    ],
    "inputs": [
-    "投影清单、目标根"
+    "投影清单、目标根",
+    "计划闭包（previousOwnedClosure / externalCandidateClosure）经公共入口 buildProjectionClosure 构造，不复刻 Kit 私有排序、序列化与摘要算法"
    ],
    "outputs": [
     "投影文件（仅在校验全部通过时）"
@@ -1009,7 +1162,7 @@
   },
   {
    "id": "foundation.kit.check",
-   "intent": "只诊断不修复：运行 contracts/drift/closure/version/docs/git/identity 七类检查，输出发现（findings）",
+   "intent": "只诊断不修复：运行 contracts/drift/closure/version/docs/git/identity/boundary/platform 九类检查，输出发现（findings）",
    "useWhen": [
     "需要发现工程不一致但不自动修改",
     "需要按 --only 缩小检查范围"
@@ -1019,7 +1172,7 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "--only 取值：contracts|drift|closure|version|docs|git|identity"
+    "--only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform"
    ],
    "outputs": [
     "发现清单；退出码 findings=1、mechanism=2"
@@ -1031,7 +1184,7 @@
     "findings 退出码 1；mechanism 拒绝退出码 2"
    ],
    "invariants": [
-    "CHECK_CLASSES 为七类闭集，不扩张"
+    "CHECK_CLASSES 为九类闭集，不扩张"
    ],
    "ownedByCaller": [
     "发现项的业务处置"
@@ -1219,6 +1372,77 @@
    ]
   },
   {
+   "id": "foundation.kit.entry-check",
+   "intent": "读取入口契约声明，并对每个入口执行物理存在、逻辑名一致、人工入口注册、副作用类别与令牌预算五项检查",
+   "useWhen": [
+    "需要校验入口契约声明与物理 SKILL.md 的一致性",
+    "需要检查入口逻辑名、副作用类别与令牌预算"
+   ],
+   "doNotUseWhen": [
+    "需要修复声明或入口（check 只诊断不修复）"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "项目根（携带 skill-family.entry-contract.json 与 package.json）"
+   ],
+   "outputs": [
+    "入口检查报告（kind skill-family.entry-check-report）与 findings"
+   ],
+   "sideEffects": [
+    "只读读取声明、package.json 与入口文件"
+   ],
+   "failureSemantics": [
+    "声明缺失时作为数据而非发现",
+    "各项检查失败产出不同 kind 的 finding"
+   ],
+   "invariants": [
+    "不修改任何文件",
+    "不新增第五个顶层命令，落在 check entries 子动作"
+   ],
+   "ownedByCaller": [
+    "声明与入口的整改"
+   ],
+   "routeElsewhere": [
+    "自动整改：调用方"
+   ]
+  },
+  {
+   "id": "foundation.kit.relock",
+   "intent": "运行受控 relock 事务：将新手写文件登记进 .foundation/file-registry.json，并以当前字节重算 skill-family.managed-file-lock.json，单次 fail-closed 操作",
+   "useWhen": [
+    "需要把新手写文件纳入闭域而不手改 registry",
+    "需要在登记后以当前字节重算受管文件锁"
+   ],
+   "doNotUseWhen": [
+    "需要合法化已漂移的受管字节（relock 拒绝漂移）",
+    "需要登记符号链接或非常规文件（拒绝）"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "携带 .foundation/file-registry.json 与 skill-family.managed-file-lock.json 的项目根"
+   ],
+   "outputs": [
+    "relock 报告（kind skill-family.relock-report）"
+   ],
+   "sideEffects": [
+    "只写两个受收容状态文档：registry 与受管文件锁"
+   ],
+   "failureSemantics": [
+    "每次拒绝都零写入，目标不被触碰",
+    "半更新状态绝不呈现为成功"
+   ],
+   "invariants": [
+    "不新增第五个顶层命令，落在 check relock 子动作",
+    "新锁先绑定新 registry 字节，再提交任一文档"
+   ],
+   "ownedByCaller": [
+    "relock 前对已漂移受管字节的对账"
+   ],
+   "routeElsewhere": [
+    "自动整改：调用方"
+   ]
+  },
+  {
    "id": "foundation.kit.cli",
    "intent": "提供 skill-family-kit CLI 入口，分派四个顶层命令与子动作，并在入口处拒绝变更旗标",
    "useWhen": [
@@ -1256,10 +1480,11 @@
   },
   {
    "id": "foundation.profile.extension-spi",
-   "intent": "声明宿主与项目形态差异的扩展机制：differences（adds/overrides/removes）与开放扩展点（host-projection/artifact-render/surface-scan），校验 Profile 合法性",
+   "intent": "声明宿主与项目形态差异的扩展机制，并消费 skill-family-engineering-kit/profile-spi 公共投影：把 differences（adds/overrides/removes）与开放扩展点（host-projection/artifact-render/surface-scan）作为纯数据 Profile 输入校验",
    "useWhen": [
     "需要声明项目形态差异而不改公共核心",
-    "需要把扩展点数据资源注入稳定 SPI"
+    "需要把扩展点数据资源注入稳定 SPI",
+    "需要从 skill-family-engineering-kit/profile-spi 加载公共 SPI Schema 并调用 verifyProfile"
    ],
    "doNotUseWhen": [
     "需要把业务语义塞进公共核心（coreOwned 目标禁入）",
@@ -1272,7 +1497,7 @@
     "profileRoot、descriptorRelPath"
    ],
    "outputs": [
-    "SPI 结果码（SPE0000/1001..1005）"
+    "SPI 结果码（SPE0000/1001..1007），以及公共 base/extended Schema 加载器"
    ],
    "sideEffects": [
     "无副作用（只读校验 Profile）"
@@ -1283,7 +1508,8 @@
    ],
    "invariants": [
     "coreOwned = packages/commands/namespacePrefixes 为禁入目标",
-    "entrypoint 必须为 JSON 数据资源"
+    "entrypoint 必须为 JSON 数据资源",
+    "公共投影中的三个 SPI JSON 资源与 Contracts base Schema 保持逐字节一致"
    ],
    "ownedByCaller": [
     "差异的业务语义"

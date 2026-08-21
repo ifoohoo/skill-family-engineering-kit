@@ -1,7 +1,21 @@
 import { ContractsError } from "skill-family-contracts";
-import { buildHandoffDraft, HANDOFF_FIELDS, planAdoption } from "./adopt-plan.mjs";
-import { CHECK_CLASSES, DOCUMENT_STATES, runChecks } from "./check.mjs";
+import { buildProfileDraft, planAdoption } from "./adopt-plan.mjs";
+import { CHECK_CLASSES, DOCUMENT_STATES, PLATFORM_SUBSET_DECLARATION_KIND, runChecks } from "./check.mjs";
 import { CORE_CHECK_SECURITY_KINDS, isContainedDeclaration, runCoreCheck } from "./core-check.mjs";
+import {
+  checkEntriesAction,
+  ENTRY_CONTRACT_DECLARATION_KIND,
+  ENTRY_CONTRACT_DECLARATION_PATH,
+  ENTRY_FORMS,
+  ENTRY_SIDE_EFFECT_CLASSES,
+  runEntryContractCheck,
+} from "./entry-check.mjs";
+import {
+  RELOCK_LOCK_PATH_PATTERN,
+  RELOCK_REPORT_KIND,
+  relockAction,
+  runRelock,
+} from "./relock.mjs";
 import {
   invalidParamsError,
   KitError,
@@ -51,7 +65,7 @@ import {
   listLicensingProfiles,
   loadLicensingProfile,
 } from "./licensing.mjs";
-import { compileProjectionPlan, runProjection, loadProjectionManifest } from "./projection.mjs";
+import { buildProjectionClosure, compileProjectionPlan, PROJECTION_AUTHORITY_BINDING_KINDS, runProjection, loadProjectionManifest } from "./projection.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
 import { scaffoldTarget } from "./scaffold.mjs";
 import {
@@ -70,8 +84,10 @@ import {
   KIT_VERSION,
   MANAGED_LOCK_PATH,
   normalizeSkeletonInputs,
+  PLATFORM_SUBSET_DECLARATION_PATH,
   PROJECT_MANIFEST_PATH,
   PROJECTION_MANIFEST_PATH,
+  PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import { matchAnyGlob } from "./workspace.mjs";
 
@@ -126,7 +142,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none — diagnosis only: never writes, never auto-fixes; git is probed read-only (one frozen status query at most); the report sub-action (check report) grades one rendered report against its bound machine result and writes nothing",
+      "none — diagnosis only: never writes, never auto-fixes; git is probed read-only (one frozen status query at most); the report sub-action (check report) grades one rendered report against its bound machine result and writes nothing; the entries sub-action (check entries) runs the shared entry contract gate (SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002) over skill-family.entry-contract.json and SKILL.md bytes and writes nothing; the relock sub-action (check relock) is the one controlled exception: one fail-closed transaction writing exactly the two contained state documents (.foundation/file-registry.json and skill-family.managed-file-lock.json), with drift validation before the first write and zero writes on any refusal",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -190,16 +206,28 @@ export {
 export {
   scaffoldTarget,
   planAdoption,
-  buildHandoffDraft,
-  HANDOFF_FIELDS,
+  buildProfileDraft,
+  buildProjectionClosure,
   compileProjectionPlan,
+  PROJECTION_AUTHORITY_BINDING_KINDS,
   runProjection,
   loadProjectionManifest,
   renderReportAction,
   checkReportAction,
+  runEntryContractCheck,
+  checkEntriesAction,
+  ENTRY_CONTRACT_DECLARATION_PATH,
+  ENTRY_CONTRACT_DECLARATION_KIND,
+  ENTRY_FORMS,
+  ENTRY_SIDE_EFFECT_CLASSES,
+  runRelock,
+  relockAction,
+  RELOCK_LOCK_PATH_PATTERN,
+  RELOCK_REPORT_KIND,
   runChecks,
   CHECK_CLASSES,
   DOCUMENT_STATES,
+  PLATFORM_SUBSET_DECLARATION_KIND,
   runCoreCheck,
   CORE_CHECK_SECURITY_KINDS,
   isContainedDeclaration,
@@ -217,6 +245,8 @@ export {
   MANAGED_LOCK_PATH,
   PROJECTION_MANIFEST_PATH,
   IDENTITY_RECORD_PATH,
+  PUBLIC_BOUNDARY_DECLARATION_PATH,
+  PLATFORM_SUBSET_DECLARATION_PATH,
   matchAnyGlob,
   describeHost,
   loadHostRegistry,

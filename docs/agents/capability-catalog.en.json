@@ -283,6 +283,42 @@
    ]
   },
   {
+   "id": "foundation.contracts.token-estimate-consumption",
+   "intent": "Defines the minimal consumption contract of the token estimate record - which field carries the numeric estimate, the degraded bare-integer shape, and the fail-closed refusal semantics",
+   "useWhen": [
+    "You need to extract the numeric estimate from a token-estimate-record and validate the degraded shape",
+    "You need to refuse records whose estimator or target field does not match"
+   ],
+   "doNotUseWhen": [
+    "You need to produce an estimate record (owned by the harness estimator)",
+    "You need to interpret the business meaning of an estimate"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "A token-estimate-record document or its degraded bare-integer shape"
+   ],
+   "outputs": [
+    "A consumption result carrying the numeric estimate and source identity, or a fail-closed refusal"
+   ],
+   "sideEffects": [
+    "Pure functions; no filesystem, Git, network, or process side effects"
+   ],
+   "failureSemantics": [
+    "Estimator mismatch or missing target field fails closed with a stable error kind",
+    "Refusals carry a closed-enum reason and never degrade silently"
+   ],
+   "invariants": [
+    "Results of different estimators are never mixed silently",
+    "The consumption contract adds no top-level object class"
+   ],
+   "ownedByCaller": [
+    "When to estimate and the business interpretation of results"
+   ],
+   "routeElsewhere": [
+    "Estimate record generation: foundation.harness.token-estimation"
+   ]
+  },
+  {
    "id": "foundation.harness.contract-validation",
    "intent": "Resolve the contract context in the Node runtime and reuse the Contracts validator to validate contract documents and cache validator instances.",
    "useWhen": [
@@ -794,13 +830,14 @@
   },
   {
    "id": "foundation.harness.token-estimation",
-   "intent": "Provide a deterministic upper-bound estimate for text: a pure UTF-8 byte-count function with no model, network, or tokenizer dependency",
+   "intent": "Provide deterministic estimates for text: a UTF-8 byte-count upper bound and a token count based on CJK code point / whitespace segmentation; both are pure functions with no model, network, or tokenizer dependency, and results carry estimator identity and version",
    "useWhen": [
     "Need an upper bound on text consumption without calling a model",
-    "Need a contractual, verifiable, timestamp-free estimation result object"
+    "Need a deterministic, replayable token count for mixed CJK/ASCII, pure CJK, or pure ASCII input",
+    "Need a contractual, verifiable, timestamp-free estimation result object that records which estimator produced it"
    ],
    "doNotUseWhen": [
-    "Need real token counts or semantic estimates (the primitive does not promise precision)"
+    "Need real token counts from a target model tokenizer or semantic estimates (the primitive does not promise precision)"
    ],
    "prerequisites": [
     "Input is a JavaScript string"
@@ -809,16 +846,20 @@
     "A text string"
    ],
    "outputs": [
-    "A token-estimate-result contract object (inputBytes equals upperBound)"
+    "A token-estimate-result contract object (inputBytes equals upperBound)",
+    "A token estimation record (estimator id, version, algorithm identifier, and segmentation statistics; tokens equals CJK characters plus OTHER runs)"
    ],
    "sideEffects": [
-    "None: pure function with zero dependencies"
+    "None: pure functions with zero dependencies; the CLI only reads command-line arguments, files, or stdin and only writes stdout"
    ],
    "failureSemantics": [
-    "Non-string input throws TypeError"
+    "Non-string input throws TypeError",
+    "The CLI exits 2 on argument errors and 0 on success"
    ],
    "invariants": [
-    "Identical input produces identical output; deterministic byte counting",
+    "Identical input produces identical output; deterministic byte counting and deterministic segmentation",
+    "Each CJK code point counts 1 token and terminates any open OTHER run before it; whitespace contributes no tokens",
+    "Every estimation record carries the estimator id and version (SFA-CONTEXT-028); results from different estimators are never mixed silently",
     "guarantees is a closed enumeration and the result carries no timestamp"
    ],
    "ownedByCaller": [
@@ -863,6 +904,117 @@
    ],
    "routeElsewhere": [
     "Pricing and billing semantics: keep with the consumer"
+   ]
+  },
+  {
+   "id": "foundation.harness.supervise-process",
+   "intent": "Supervise one bounded subprocess through a full lifecycle with consumer-supplied timeouts, SIGTERM-to-SIGKILL escalation, terminal-progress observation and closed-enum termination evidence.",
+   "useWhen": [
+    "Need to run a subprocess under a bounded lifecycle with a hard ceiling and deterministic termination evidence",
+    "Need closed-enum watchdog/termination reasons that consumers can map mechanically"
+   ],
+   "doNotUseWhen": [
+    "Need the supervisor to retry or restart the process (workflow-orchestration exclusion)"
+   ],
+   "prerequisites": [
+    "The consumer supplies the command, cwd, and a timeout policy with maxSeconds and killGraceSeconds"
+   ],
+   "inputs": [
+    "Command/args/cwd, timeout policy, optional progress and terminal progress paths, optional budget and long-tool hooks, optional evidence path"
+   ],
+   "outputs": [
+    "One frozen watchdog-termination-envelope per call (single writer)"
+   ],
+   "sideEffects": [
+    "Spawns and terminates the supervised process and its process group",
+    "Optionally persists a supervision trace and the final envelope at evidencePath"
+   ],
+   "failureSemantics": [
+    "Policy shape errors throw SFC2004 + timeout-policy-invalid; mechanism failures reject SFC2004 + supervise-process-failed with the termination evidence in details; external process disappearance fails closed as no_terminal_result"
+   ],
+   "invariants": [
+    "The mechanism holds no timeout values, budget thresholds or restart policy",
+    "Liveness is confirmed only by explicit events and process-group probes; ps is never used for liveness guessing"
+   ],
+   "ownedByCaller": [
+    "The command, the timeout numbers, budget thresholds, terminal-record semantics and any restart strategy"
+   ],
+   "routeElsewhere": [
+    "Restart/retry orchestration: workflow-orchestration exclusion, stays with the upper orchestration layer"
+   ]
+  },
+  {
+   "id": "foundation.harness.strict-read",
+   "intent": "Reads one existing authority file with containment, no-follow symlink refusal, regular-file identity re-assertion, and a sha256 digest receipt",
+   "useWhen": [
+    "You need to read a frozen authority file and bind its byte digest",
+    "You need to verify an authority file against a frozen digest before delivery"
+   ],
+   "doNotUseWhen": [
+    "You need to read directories or symlink targets",
+    "You need to write or replace files (owned by the strict write path)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "A contained root and a relative path; optionally an expectedSha256 frozen digest"
+   ],
+   "outputs": [
+    "The file content plus a sha256 digest receipt of the exact bytes read"
+   ],
+   "sideEffects": [
+    "Read-only filesystem access (lstat/open/read)"
+   ],
+   "failureSemantics": [
+    "Symlinks, non-regular files, or digest mismatches fail closed without delivering content",
+    "Path escape is refused by the containment layer before any read"
+   ],
+   "invariants": [
+    "Opens with O_NOFOLLOW so a link swapped in after the identity check is never followed",
+    "The receipt digest covers exactly the bytes that were read"
+   ],
+   "ownedByCaller": [
+    "The provenance and trust anchor of the frozen digest",
+    "The remediation policy after a refused read"
+   ],
+   "routeElsewhere": [
+    "Writes and publication: foundation.harness.atomic-write"
+   ]
+  },
+  {
+   "id": "foundation.harness.url-credential-redaction",
+   "intent": "Strips the userinfo credential component from any URL value before it reaches disk or logs",
+   "useWhen": [
+    "You need to persist or log a URL that may carry credentials",
+    "You need unparseable input to degrade safely to a placeholder"
+   ],
+   "doNotUseWhen": [
+    "You need to keep or parse the credential itself (credentials never enter Foundation)",
+    "You need to handle non-URL secret material"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Any string input (URL or non-URL)"
+   ],
+   "outputs": [
+    "The redacted URL string or the opaque REDACTED_URL_PLACEHOLDER"
+   ],
+   "sideEffects": [
+    "Pure function; no side effects"
+   ],
+   "failureSemantics": [
+    "Unparseable input degrades to the opaque placeholder and never leaks the original",
+    "The output never carries userinfo bytes"
+   ],
+   "invariants": [
+    "Redaction happens before any persistence or logging",
+    "The placeholder is a frozen constant carrying no input information"
+   ],
+   "ownedByCaller": [
+    "Which input values are treated as URLs",
+    "The downstream use of redacted values"
+   ],
+   "routeElsewhere": [
+    "Credential management and rotation: caller security boundary"
    ]
   },
   {
@@ -939,7 +1091,7 @@
    "intent": "Perform a strict read-only inventory of an existing repo (classification, nested-repo discovery, migration list, completion judgment), writing no files and migrating nothing automatically.",
    "useWhen": [
     "Need to classify an existing repo as direct-adoption / compatibility-layer / keep-business / foundation-gap",
-    "Need to generate a handoff draft or a completion judgment for migration"
+    "Need to generate a profile draft (adoption declaration and overrides) or a completion judgment for migration"
    ],
    "doNotUseWhen": [
     "Need to auto-rewrite the existing repo (writing files and auto-migration are forbidden)"
@@ -951,7 +1103,7 @@
     "Target root, migration-list path"
    ],
    "outputs": [
-    "Adoption classification, completion judgment, handoff draft (output only, not written to disk)"
+    "Adoption classification, completion judgment, profile draft (output only, not written to disk)"
    ],
    "sideEffects": [
     "No file writes (strictly read-only)",
@@ -984,7 +1136,8 @@
     "The projection manifest is registered"
    ],
    "inputs": [
-    "Projection manifest, target root"
+    "Projection manifest, target root",
+    "Plan closures (previousOwnedClosure / externalCandidateClosure) built through the public buildProjectionClosure entry instead of re-implementing the Kit-private ordering, serialization, and digest algorithms"
    ],
    "outputs": [
     "Projected files (only when all checks pass)"
@@ -1009,7 +1162,7 @@
   },
   {
    "id": "foundation.kit.check",
-   "intent": "Diagnose only, do not fix: run the seven check classes contracts/drift/closure/version/docs/git/identity and output findings.",
+   "intent": "Diagnose only, do not fix: run the nine check classes contracts/drift/closure/version/docs/git/identity/boundary/platform and output findings.",
    "useWhen": [
     "Need to surface engineering inconsistencies without auto-modifying",
     "Need to narrow the check scope via --only"
@@ -1019,7 +1172,7 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "--only values: contracts|drift|closure|version|docs|git|identity"
+    "--only values: contracts|drift|closure|version|docs|git|identity|boundary|platform"
    ],
    "outputs": [
     "Findings list; exit code findings=1, mechanism=2"
@@ -1031,7 +1184,7 @@
     "findings exit code 1; mechanism rejection exit code 2"
    ],
    "invariants": [
-    "CHECK_CLASSES is a closed set of seven classes, not expanded"
+    "CHECK_CLASSES is a closed set of nine classes, not expanded"
    ],
    "ownedByCaller": [
     "Business disposition of each finding"
@@ -1219,6 +1372,77 @@
    ]
   },
   {
+   "id": "foundation.kit.entry-check",
+   "intent": "Read the entry-contract declaration and run five checks per entry: physical existence, logical-name consistency, human-entry registration, side-effect class, and token budget.",
+   "useWhen": [
+    "Need to verify the entry-contract declaration against the physical SKILL.md",
+    "Need to check entry logical names, side-effect classes, and token budgets"
+   ],
+   "doNotUseWhen": [
+    "Need to fix the declaration or entries (check only diagnoses, it does not fix)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Project root (carrying skill-family.entry-contract.json and package.json)"
+   ],
+   "outputs": [
+    "Entry-check report (kind skill-family.entry-check-report) and findings"
+   ],
+   "sideEffects": [
+    "Read-only read of the declaration, package.json, and entry files"
+   ],
+   "failureSemantics": [
+    "A missing declaration is data, never a finding",
+    "Each failed check produces a finding of a distinct kind"
+   ],
+   "invariants": [
+    "Does not modify any file",
+    "Adds no fifth top-level command; it runs as the check entries sub-action"
+   ],
+   "ownedByCaller": [
+    "Remediation of the declaration and entries"
+   ],
+   "routeElsewhere": [
+    "Auto-remediation: the caller"
+   ]
+  },
+  {
+   "id": "foundation.kit.relock",
+   "intent": "Run the controlled relock transaction: register newly handwritten files into .foundation/file-registry.json and recompute skill-family.managed-file-lock.json from the current bytes in one fail-closed operation.",
+   "useWhen": [
+    "Need to admit a newly handwritten file into the closed world without hand-editing the registry",
+    "Need to recompute the managed-file lock from current bytes after registration"
+   ],
+   "doNotUseWhen": [
+    "Need to legitimize drifted managed bytes (relock refuses drift)",
+    "Need to register symlinks or non-regular files (refused)"
+   ],
+   "prerequisites": [],
+   "inputs": [
+    "Project root carrying .foundation/file-registry.json and skill-family.managed-file-lock.json"
+   ],
+   "outputs": [
+    "Relock report (kind skill-family.relock-report)"
+   ],
+   "sideEffects": [
+    "Writes exactly two contained state documents: the registry and the managed-file lock"
+   ],
+   "failureSemantics": [
+    "Every refusal leaves the target untouched (zero writes)",
+    "A half-updated state is never presented as success"
+   ],
+   "invariants": [
+    "Adds no fifth top-level command; it runs as the check relock sub-action",
+    "The new lock binds the new registry bytes before either document is committed"
+   ],
+   "ownedByCaller": [
+    "Reconciliation of drifted managed bytes before relocking"
+   ],
+   "routeElsewhere": [
+    "Auto-remediation: the caller"
+   ]
+  },
+  {
    "id": "foundation.kit.cli",
    "intent": "Provide the skill-family-kit CLI entry point, dispatching the four top-level commands and sub-actions, and rejecting mutation flags at the entry point.",
    "useWhen": [
@@ -1256,10 +1480,11 @@
   },
   {
    "id": "foundation.profile.extension-spi",
-   "intent": "Declare the extension mechanism for host and project-shape differences: differences (adds/overrides/removes) and open extension points (host-projection/artifact-render/surface-scan), validating Profile legitimacy.",
+   "intent": "Declare the extension mechanism for host and project-shape differences, and consume the public skill-family-engineering-kit/profile-spi projection: differences (adds/overrides/removes) and open extension points (host-projection/artifact-render/surface-scan) are validated as data-only Profile input.",
    "useWhen": [
     "Need to declare project-shape differences without changing the common core",
-    "Need to inject extension-point data resources into the stable SPI"
+    "Need to inject extension-point data resources into the stable SPI",
+    "Need to load the public SPI schema and verifyProfile entry from skill-family-engineering-kit/profile-spi"
    ],
    "doNotUseWhen": [
     "Need to stuff business semantics into the common core (coreOwned targets are off-limits)",
@@ -1272,7 +1497,7 @@
     "profileRoot、descriptorRelPath"
    ],
    "outputs": [
-    "SPI result code (SPE0000/1001..1005)"
+    "SPI result code (SPE0000/1001..1007), plus the public base and extended schema loaders"
    ],
    "sideEffects": [
     "No side effects (read-only Profile validation)"
@@ -1283,7 +1508,8 @@
    ],
    "invariants": [
     "coreOwned = packages/commands/namespacePrefixes are off-limits targets",
-    "The entrypoint must be a JSON data resource"
+    "The entrypoint must be a JSON data resource",
+    "The public projection keeps the three SPI JSON resources and Contracts base schema byte-identical"
    ],
    "ownedByCaller": [
     "Business semantics of the difference"

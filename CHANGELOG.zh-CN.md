@@ -1,5 +1,48 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.7.0 locale=zh-CN baseline=sha256:e6070267ab3db289caf998c4539055c3d39dfa16fb5bc7db44689b305fde2e81 -->
+## [0.7.0] - 2026-08-21
+
+本版导出公共规范投影闭包 builder buildProjectionClosure（FG-4），调用方经一个公共入口即可构造 compileProjectionPlan 可直接接受的计划闭包，不再复刻 Kit 私有的排序、序列化与摘要算法。
+
+### 新增
+
+- 新增公共 skill-family-engineering-kit/profile-spi 子路径。它投影三个 Profile SPI JSON 资源与 Contracts canonical profile-descriptor.schema.json，导出 Schema 加载器、verifyProfile、采用 pin 校验和只收紧 overrides 检查。纯数据校验器遇到 pin 缺失、符号链接或路径越界时失败关闭，绝不执行 Profile entrypoint。
+- 新增 buildProjectionClosure：纯函数公共 builder，接受 {path, sha256, mode} 成员数组（可接受显式 type file），返回规范计划闭包 {digestAlgorithm sha256, digest, resourceCount, resources}，可原样作为 compileProjectionPlan 的 previousOwnedClosure 或 externalCandidateClosure；空数组返回合法的空闭包。
+- builder 与编译器闭包复验共享同一规范化与摘要事实源：确定性 path.localeCompare 排序、重复路径与便携路径冲突拒绝、sha256(JSON.stringify(normalizedResources)) 字节合同；全部拒绝在既有 projection plan input invalid 领域内失败关闭（SFC2004 invalid-manifest）。
+
+### 变更
+
+- compileProjectionPlan 入参合同不变，四个顶层命令（scaffold、adopt-plan、projection、check）不变；全部 0.6.0 既有输入仍编译为字节不变的计划。包版本随 Foundation 线锁步，Contracts 机器合同保持 1.6.0。
+
+### 升级说明
+
+0.7.0 是投影闭包 builder 线。此前在本地组装计划闭包的调用方必须导入 buildProjectionClosure 并精确锁定 0.7.0。计划闭包（成员 {path, type, sha256, mode}）不是 harness computeResourceClosure 的资源闭包（成员 {path, role, exists, sha256}）——两者形状与用途不同，不能互换。
+<!-- release-skill:changelog:end version=0.7.0 locale=zh-CN -->
+
+
+<!-- release-skill:changelog:start version=0.6.0 locale=zh-CN baseline=sha256:e48a11bcbdffb317068cb751f914809360aa8f2e2b852b1e436696601f6a2a47 -->
+## [0.6.0] - 2026-08-21
+
+本版为 check 命令新增入口契约门禁与受控 relock 事务子动作，新增外部冻结权威投影绑定（FG-3），并承载九类 check 诊断（审计整改 C2）。
+
+### 新增
+
+- 新增 check entries 子动作：runEntryContractCheck 与 checkEntriesAction 运行共享入口契约门禁（SFA-ENTRY-003/004/005/007 与 SFA-CONTEXT-001/002），作用于 skill-family.entry-contract.json 与 SKILL.md 字节；只诊断、零写入。
+- 新增 check relock 子动作：runRelock 与 relockAction 是零写入规则的唯一受控例外——一次失败关闭事务，精确写入两个受收容状态文档（.foundation/file-registry.json 与 skill-family.managed-file-lock.json），首次写入前做漂移校验，任何拒绝下零写入。
+- 新增外部冻结权威投影绑定（FG-3）：PROJECTION_AUTHORITY_BINDING_KINDS 冻结 external-root 与 caller-bytes；external-root 经严格不跟随读取器从独立的冻结目录重读每个权威源，caller-bytes 将调用方提供的 base64 权威字节绑定到声明的 sha256 摘要、完全不访问权威文件系统，使目标根内不存在伪造的本地权威事实。
+
+### 变更
+
+- check 诊断扩展为九类（新增版本单源一致性、公开边界校验、平台子集限制声明校验）；COMMAND_SIDE_EFFECTS 现记录 entries 与 relock 子动作语义。
+- 四个顶层命令（scaffold、adopt-plan、projection、check）保持不变；entries 与 relock 是 check 子动作，不是新命令。
+
+### 升级说明
+
+0.6.0 是 Kit 门禁补齐线。权威不在目标根内的投影必须声明 kind 为 external-root 或 caller-bytes 的 authorityBinding，并精确锁定 0.6.0。
+<!-- release-skill:changelog:end version=0.6.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.5.0 locale=zh-CN baseline=sha256:bdeefb2e456f6e9d1348152b464c701e96a739e514c5a08ca3576e9982e9b7e0 -->
 ## [0.5.0] - 2026-08-16
 

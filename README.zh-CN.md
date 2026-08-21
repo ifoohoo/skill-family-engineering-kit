@@ -5,27 +5,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.5.0 -->
+<!-- release-skill:release-version: 0.7.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.5.0** (2026-08-16)
+**0.7.0** (2026-08-21)
 
-本版保持 Kit 稳定四命令边界不变，并把离线消费者验证门加固为覆盖三个 Foundation 包的完整第三方生产闭包。
+本版导出公共规范投影闭包 builder buildProjectionClosure（FG-4），调用方经一个公共入口即可构造 compileProjectionPlan 可直接接受的计划闭包，不再复刻 Kit 私有的排序、序列化与摘要算法。
 
 **新增**
 
-- 加固离线消费者验证门：candidate-profile-bundle 与 tarball-source-binding 测试中的第三方闭包推导从单包闭包扩展为三个 Foundation 包的完整生产闭包（真实身份去重、npm: 别名感知、range-scoped override selector、对 pnpm 真实本地存储目录的字节身份），使 harness 运行时依赖评审决策（FND-ADR-011）持续对着真实安装字节被验证。
+- 新增公共 skill-family-engineering-kit/profile-spi 子路径。它投影三个 Profile SPI JSON 资源与 Contracts canonical profile-descriptor.schema.json，导出 Schema 加载器、verifyProfile、采用 pin 校验和只收紧 overrides 检查。纯数据校验器遇到 pin 缺失、符号链接或路径越界时失败关闭，绝不执行 Profile entrypoint。
+- 新增 buildProjectionClosure：纯函数公共 builder，接受 {path, sha256, mode} 成员数组（可接受显式 type file），返回规范计划闭包 {digestAlgorithm sha256, digest, resourceCount, resources}，可原样作为 compileProjectionPlan 的 previousOwnedClosure 或 externalCandidateClosure；空数组返回合法的空闭包。
+- builder 与编译器闭包复验共享同一规范化与摘要事实源：确定性 path.localeCompare 排序、重复路径与便携路径冲突拒绝、sha256(JSON.stringify(normalizedResources)) 字节合同；全部拒绝在既有 projection plan input invalid 领域内失败关闭（SFC2004 invalid-manifest）。
 
 **变更**
 
-- 稳定四命令（scaffold、adopt-plan、projection、check）保持不变。
-- 延续 0.4.0 的 adoption CLI 候选与 Quickstart Profile v2 离线 Bundle；0.5.0 未新增或移除任何 Kit 边界或候选入口。
+- compileProjectionPlan 入参合同不变，四个顶层命令（scaffold、adopt-plan、projection、check）不变；全部 0.6.0 既有输入仍编译为字节不变的计划。包版本随 Foundation 线锁步，Contracts 机器合同保持 1.6.0。
 
 **升级说明**
 
-0.5.0 已发布到 npm 与 public 镜像仓。Kit 公开面与 0.4.0 相同；面向新的契约规格 1.5.0 线请把包精确锁定为 0.5.0。
+0.7.0 是投影闭包 builder 线。此前在本地组装计划闭包的调用方必须导入 buildProjectionClosure 并精确锁定 0.7.0。计划闭包（成员 {path, type, sha256, mode}）不是 harness computeResourceClosure 的资源闭包（成员 {path, role, exists, sha256}）——两者形状与用途不同，不能互换。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -46,7 +47,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.5.0
+npm install --save-dev skill-family-engineering-kit@0.7.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,7 +55,15 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.5.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.7.0 -- skill-family-kit --help`。
+
+### 公共 Profile SPI
+
+`skill-family-engineering-kit/profile-spi` 子路径提供稳定的 Profile SPI v2 数据表面，导出 `verifyProfile`、`verifyAdoptionDigests`、`assessOverridesPolicy`、`loadSpiDefinition`、`loadExtendedDescriptorSchema` 与 `loadRuleBaselineCatalog`。
+
+包内携带三个 SPI JSON 资源与 Contracts canonical `profile-descriptor.schema.json`。`profiles/spi` 是唯一手写真源；projen 将这些资源和模块机械投影到该子路径。投影只修改两个公共包导入和一个本地 Schema URL。
+
+`verifyProfile({ profileRoot })` 只读处理纯数据。遇到 descriptor 错误、资源缺失、可执行 entrypoint、符号链接或路径越界、反向依赖公共核心、未验证的采用 pin、未收紧的 overrides 时，以稳定 `SPE0000` / `SPE1001`–`SPE1007` 结果码失败关闭；它不会执行 Profile 提供的文件。Profile 的领域含义仍由调用方负责。
 
 ### 报告子动作
 
@@ -159,7 +168,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 - `foundation.kit.scaffold`：空目录生成精确骨架，原子 + 收容。
 - `foundation.kit.adopt-plan`：存量仓严格只读盘点与完成判定。
 - `foundation.kit.projection`：受管投影，全校验后才写，失败零写。
-- `foundation.kit.check`：七类检查只诊断不修复。
+- `foundation.kit.check`：九类检查只诊断不修复。
 - `foundation.kit.report`：projection/check report 子动作编排。
 - `foundation.kit.git-probe`：只读白名单 Git 状态探测。
 - `foundation.kit.host`：describe/build/probe/plan，apply 稳定拒绝。

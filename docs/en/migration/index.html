@@ -1194,22 +1194,22 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Ten-Field-Hand-off-Draft" class="md-nav__link">
+  <a href="#Profile-Draft" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Ten-Field Hand-off Draft
+        Profile Draft
 
     </span>
   </a>
 
-    <nav class="md-nav" aria-label="Ten-Field Hand-off Draft">
+    <nav class="md-nav" aria-label="Profile Draft">
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#INCOMPLETE-Blocking-Rules" class="md-nav__link">
+  <a href="#Incompleteness-Blocking-Rules" class="md-nav__link">
     <span class="md-ellipsis">
 
-        INCOMPLETE Blocking Rules
+        Incompleteness Blocking Rules
 
     </span>
   </a>
@@ -1228,10 +1228,10 @@
 </li>
 
           <li class="md-nav__item">
-  <a href="#Rendering-Boundary" class="md-nav__link">
+  <a href="#Boundary" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Rendering Boundary
+        Boundary
 
     </span>
   </a>
@@ -1923,22 +1923,22 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Ten-Field-Hand-off-Draft" class="md-nav__link">
+  <a href="#Profile-Draft" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Ten-Field Hand-off Draft
+        Profile Draft
 
     </span>
   </a>
 
-    <nav class="md-nav" aria-label="Ten-Field Hand-off Draft">
+    <nav class="md-nav" aria-label="Profile Draft">
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#INCOMPLETE-Blocking-Rules" class="md-nav__link">
+  <a href="#Incompleteness-Blocking-Rules" class="md-nav__link">
     <span class="md-ellipsis">
 
-        INCOMPLETE Blocking Rules
+        Incompleteness Blocking Rules
 
     </span>
   </a>
@@ -1957,10 +1957,10 @@
 </li>
 
           <li class="md-nav__item">
-  <a href="#Rendering-Boundary" class="md-nav__link">
+  <a href="#Boundary" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Rendering Boundary
+        Boundary
 
     </span>
   </a>
@@ -2196,83 +2196,28 @@
 <li><strong>Rollback relies on evidence</strong>: before adoption writes to disk, a dual-digest binding of <code>adoptionProof</code> and <code>foundationPlanDigest</code> must exist first; on rollback, the plan write set's <code>expect.sha256</code> pre-state is used to restore; an overwrite action that does not declare its pre-state is refused at the <code>projection</code> stage.</li>
 <li><strong>fail-closed default</strong>: any unparseable, out-of-bounds, identity-mismatched, or evidence-missing input makes the corresponding judgment unproven; success is not assumed.</li>
 </ul>
-<h2 id="Ten-Field-Hand-off-Draft">Ten-Field Hand-off Draft<a class="headerlink" href="#Ten-Field-Hand-off-Draft" title="Permanent link">&para;</a></h2>
-<p><code>adopt-plan</code> output carries a <code>handoffDraft</code> sub-block (kind=<code>skill-family.handoff-draft</code>, schemaVersion=1), providing structured data draft for the planner-side ten-field hand-off. Field sources are only two kinds: <code>derived</code> (mechanically derivable from read-only evidence) and <code>INCOMPLETE</code> (not mechanically derivable, never guessed). The ten fields correspond one-to-one with the source constant <code>HANDOFF_FIELDS</code>:</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>Field name</th>
-<th>Source</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><code>project-identity</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>2</td>
-<td><code>repository-state</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>3</td>
-<td><code>foundation-binding</code></td>
-<td>derived (manifest declared binding) / INCOMPLETE (no manifest declared)</td>
-</tr>
-<tr>
-<td>4</td>
-<td><code>write-set-policy</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>5</td>
-<td><code>legacy-exits</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>6</td>
-<td><code>business-logic-to-keep</code></td>
-<td>always INCOMPLETE</td>
-</tr>
-<tr>
-<td>7</td>
-<td><code>plan-summary</code></td>
-<td>derived</td>
-</tr>
-<tr>
-<td>8</td>
-<td><code>verification-entries</code></td>
-<td>derived (all four classes of evidence proven) / INCOMPLETE (any unproven)</td>
-</tr>
-<tr>
-<td>9</td>
-<td><code>legacy-removal-recovery</code></td>
-<td>always INCOMPLETE</td>
-</tr>
-<tr>
-<td>10</td>
-<td><code>authorization-status</code></td>
-<td>derived (commit/push/tag/publish always false)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="INCOMPLETE-Blocking-Rules">INCOMPLETE Blocking Rules<a class="headerlink" href="#INCOMPLETE-Blocking-Rules" title="Permanent link">&para;</a></h3>
+<h2 id="Profile-Draft">Profile Draft<a class="headerlink" href="#Profile-Draft" title="Permanent link">&para;</a></h2>
+<p><code>adopt-plan</code> output carries a <code>profileDraft</code> sub-block (kind=<code>skill-family.profile-draft</code>, schemaVersion=1): a pre-filled profile.json descriptor draft (<code>descriptorRelPath</code>=<code>profile.json</code>). The adoption-lock concept and its artifact form are deprecated (remediation handoff D-8): the lightweight adoption proof is the descriptor's own adoption declaration, machine-verified by <code>verifyProfile</code> (Profile SPI v2) — field completeness and pin format are schema-checked at the descriptor step (SPE1001), pin digests are compared against the real artifact bytes inside the write set per GK-4 discipline (SPE1006), and the tightening-only overrides policy is adjudicated separately (SPE1007).</p>
+<p>The draft pre-fills everything mechanically derivable from read-only facts:</p>
 <ul>
-<li>Any INCOMPLETE field makes <code>ready=false</code>: a draft with gaps must not enter the hand-off.</li>
-<li>The tool never guesses mechanically-undeterminable fields:</li>
-<li><code>business-logic-to-keep</code> and <code>legacy-removal-recovery</code> are <strong>always INCOMPLETE</strong> and must be provided by a human owner; the tool has no basis to derive them;</li>
-<li><code>foundation-binding</code> is INCOMPLETE when no migration manifest declares (<code>foundationPackages</code>) it, counting only the manifest-declared binding;</li>
-<li><code>verification-entries</code> is INCOMPLETE when any of the four classes of evidence (unit/integration/consumer/independentAudit) is not proven.</li>
+<li>Descriptor identity and base: <code>profile.id</code>/<code>profile.name</code> come from the plan inputs, <code>base.contractsVersion</code> is the loaded frozen contracts version; <code>differences</code>/<code>spi</code> start as empty arrays.</li>
+<li>The adoption declaration (D-8 minimal field set, authoritative definition in <code>adoptionDeclaration</code> of <code>profiles/spi/extension-spi.json</code>):</li>
+<li><code>foundation_profile.id</code> is the adopted foundation profile id from the plan inputs; <code>version</code>/<code>stability</code> are human decisions and stay null.</li>
+<li><code>foundation_pin.algorithm</code> is always <code>sha256</code>; the three foundation packages' <code>version</code> values are pre-filled manifest-declaration-first, then from loaded constants; <code>path</code>/<code>sha256</code> stay null until real artifacts are placed in the profile write set (a digest comes only from real bytes, never guessed).</li>
+<li><code>adopted_at</code> is fixed at adoption time, never at planning time, and stays null.</li>
+<li><code>overrides</code> is an empty array (the empty example): overrides are opt-in self-tightening declarations, and the kit never enumerates rule examples (the core never imports the profile layer); the draft carries <code>overridesGuidance</code> explaining the tightening-only semantics.</li>
+</ul>
+<h3 id="Incompleteness-Blocking-Rules">Incompleteness Blocking Rules<a class="headerlink" href="#Incompleteness-Blocking-Rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Any non-derivable field stays null and is listed in <code>incompleteFields</code>; as long as <code>incompleteFields</code> is non-empty, <code>ready=false</code>: a draft with gaps must not be written as an adoption declaration as-is.</li>
+<li>The tool never guesses: a human completes <code>foundation_profile.version</code>/<code>stability</code>, each package artifact's <code>path</code>/<code>sha256</code>, <code>adopted_at</code>, and <code>profile.version</code>.</li>
 </ul>
 <h3 id="Binding">Binding<a class="headerlink" href="#Binding" title="Permanent link">&para;</a></h3>
-<p>The draft carries a dual sha256 digest (the <code>binding</code> block): <code>targetSetDigest</code> summarizes the target repository's file set, and <code>foundationPlanDigest</code> summarizes the Foundation plan write set. Two plans for the same target yield the same digest, precisely binding the draft and the target state at plan time.</p>
-<h3 id="Rendering-Boundary">Rendering Boundary<a class="headerlink" href="#Rendering-Boundary" title="Permanent link">&para;</a></h3>
+<p>The draft carries a dual sha256 digest (the <code>binding</code> block): <code>targetSetDigest</code> summarizes the target repository's file set, and <code>foundationPlanDigest</code> summarizes the Foundation plan write set. Two plans for the same target yield the same digest, precisely binding the draft to the target state at plan time.</p>
+<h3 id="Boundary">Boundary<a class="headerlink" href="#Boundary" title="Permanent link">&para;</a></h3>
 <ul>
-<li>The renderer writes only the planner-side hand-off draft, <strong>never the consumer repository</strong>;</li>
-<li>No fifth Kit top-level command is added: Kit top-level commands are permanently the four — scaffold, adopt-plan, projection, check — and <code>handoffDraft</code> is only a sub-block of <code>adopt-plan</code> output.</li>
+<li><code>adopt-plan</code> is strictly read-only: the draft is only printed with the plan to stdout, <strong>never written into the consumer repository</strong>;</li>
+<li>No fifth Kit top-level command is added: Kit top-level commands are permanently the four — scaffold, adopt-plan, projection, check — and <code>profileDraft</code> is only a sub-block of <code>adopt-plan</code> output.</li>
 </ul>
 <h2 id="Hazard-Class-Fixtures">Hazard-Class Fixtures<a class="headerlink" href="#Hazard-Class-Fixtures" title="Permanent link">&para;</a></h2>
 <p><code>fixtures/adoption/cases/</code> covers seven hazard classes: dirty repository, nested repository, tracked-but-ignored, symlink placeholder, generated-artifact drift, legacy-implementation exit gate, and temporary-exception fields. Each case proves the plan is read-only via byte-level before/after snapshots; see the in-repo <code>fixtures/adoption/README.md</code> for case descriptions.</p>

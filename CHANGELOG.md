@@ -1,5 +1,48 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.7.0 locale=en baseline=sha256:ed1c59e7cee6e7280d2569e554b07d3b3513f4f3318bf30e374e2d480320f2b7 -->
+## [0.7.0] - 2026-08-21
+
+This release exports the public canonical projection closure builder buildProjectionClosure (FG-4), so callers construct compileProjectionPlan-ready plan closures through one public entry instead of re-implementing the Kit-private ordering, serialization, and digest algorithms.
+
+### Added
+
+- Adds the public skill-family-engineering-kit/profile-spi subpath. It projects the three Profile SPI JSON resources together with the Contracts canonical profile-descriptor.schema.json, and exports schema loaders, verifyProfile, adoption-pin verification, and tightening-only override checks. The data-only verifier fails closed on missing pins and symlink/path escapes and never executes Profile entrypoints.
+- Adds buildProjectionClosure - a pure public builder accepting an array of {path, sha256, mode} members (an explicit type file is also accepted) and returning the canonical plan closure {digestAlgorithm sha256, digest, resourceCount, resources} that compileProjectionPlan accepts verbatim as previousOwnedClosure or externalCandidateClosure; an empty array yields the legal empty closure.
+- The builder shares one normalization and digest source of truth with the compiler closure re-verification - deterministic path.localeCompare ordering, duplicate-path and portable-collision refusal, and the sha256(JSON.stringify(normalizedResources)) byte contract; every refusal fails closed in the existing projection plan input invalid domain (SFC2004 invalid-manifest).
+
+### Changed
+
+- Keeps the compileProjectionPlan input contract unchanged and the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; every 0.6.0 input still compiles to byte-identical plans. The package version moves in lockstep with the Foundation line while the contracts machine contract stays at 1.6.0.
+
+### Upgrade Notes
+
+Version 0.7.0 is the projection closure builder line. Callers that previously assembled plan closures locally must import buildProjectionClosure and pin exactly 0.7.0. A plan closure ({path, type, sha256, mode} members) is not the harness computeResourceClosure resource closure ({path, role, exists, sha256} members) - the two shapes and purposes differ and are not interchangeable.
+<!-- release-skill:changelog:end version=0.7.0 locale=en -->
+
+
+<!-- release-skill:changelog:start version=0.6.0 locale=en baseline=sha256:e84a44b51d513c123ce3c5e91c9e50374c6e899aa021adabe8e44c3ad86eb2b2 -->
+## [0.6.0] - 2026-08-21
+
+This release extends the check command with the entry contract gate and the controlled relock transaction sub-actions, adds external frozen authority projection bindings (FG-3), and carries the nine-class check diagnostics (audit remediation C2).
+
+### Added
+
+- Adds the check entries sub-action - runEntryContractCheck and checkEntriesAction run the shared entry contract gate (SFA-ENTRY-003/004/005/007 and SFA-CONTEXT-001/002) over skill-family.entry-contract.json and SKILL.md bytes; diagnosis only, zero writes.
+- Adds the check relock sub-action - runRelock and relockAction are the one controlled exception to the no-write rule - a fail-closed transaction writing exactly the two contained state documents (.foundation/file-registry.json and skill-family.managed-file-lock.json), with drift validation before the first write and zero writes on any refusal.
+- Adds external frozen authority projection bindings (FG-3) - PROJECTION_AUTHORITY_BINDING_KINDS freezes external-root and caller-bytes; external-root re-reads each authority source from a separate frozen directory through the strict no-follow reader, and caller-bytes binds caller-provided base64 authority bytes to declared sha256 digests with no authority filesystem access at all, keeping the target root free of forged local authority facts.
+
+### Changed
+
+- Extends check diagnostics to nine classes (adds version single-source consistency, public boundary validation, and platform subset declaration validation); COMMAND_SIDE_EFFECTS now documents the entries and relock sub-action semantics.
+- Keeps the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; entries and relock are check sub-actions, not new commands.
+
+### Upgrade Notes
+
+Version 0.6.0 is the Kit gate completion line. Projections whose authority does not live in the target root must declare an authorityBinding of kind external-root or caller-bytes and pin exactly 0.6.0.
+<!-- release-skill:changelog:end version=0.6.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.5.0 locale=en baseline=sha256:f83b9c3442e5391149531b198be25131cf45728ff945d4ffc531342996e4e6f3 -->
 ## [0.5.0] - 2026-08-16
 

@@ -1,0 +1,23 @@
+version: 0.7.0
+date: 2026-08-21
+locales:
+  en:
+    summary: This release exports the public canonical projection closure builder buildProjectionClosure (FG-4), so callers construct compileProjectionPlan-ready plan closures through one public entry instead of re-implementing the Kit-private ordering, serialization, and digest algorithms.
+    changes:
+      added:
+        - Adds the public skill-family-engineering-kit/profile-spi subpath. It projects the three Profile SPI JSON resources together with the Contracts canonical profile-descriptor.schema.json, and exports schema loaders, verifyProfile, adoption-pin verification, and tightening-only override checks. The data-only verifier fails closed on missing pins and symlink/path escapes and never executes Profile entrypoints.
+        - Adds buildProjectionClosure - a pure public builder accepting an array of {path, sha256, mode} members (an explicit type file is also accepted) and returning the canonical plan closure {digestAlgorithm sha256, digest, resourceCount, resources} that compileProjectionPlan accepts verbatim as previousOwnedClosure or externalCandidateClosure; an empty array yields the legal empty closure.
+        - The builder shares one normalization and digest source of truth with the compiler closure re-verification - deterministic path.localeCompare ordering, duplicate-path and portable-collision refusal, and the sha256(JSON.stringify(normalizedResources)) byte contract; every refusal fails closed in the existing projection plan input invalid domain (SFC2004 invalid-manifest).
+      changed:
+        - Keeps the compileProjectionPlan input contract unchanged and the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; every 0.6.0 input still compiles to byte-identical plans. The package version moves in lockstep with the Foundation line while the contracts machine contract stays at 1.6.0.
+    upgradeNotes: Version 0.7.0 is the projection closure builder line. Callers that previously assembled plan closures locally must import buildProjectionClosure and pin exactly 0.7.0. A plan closure ({path, type, sha256, mode} members) is not the harness computeResourceClosure resource closure ({path, role, exists, sha256} members) - the two shapes and purposes differ and are not interchangeable.
+  zh-CN:
+    summary: 本版导出公共规范投影闭包 builder buildProjectionClosure（FG-4），调用方经一个公共入口即可构造 compileProjectionPlan 可直接接受的计划闭包，不再复刻 Kit 私有的排序、序列化与摘要算法。
+    changes:
+      added:
+        - 新增公共 skill-family-engineering-kit/profile-spi 子路径。它投影三个 Profile SPI JSON 资源与 Contracts canonical profile-descriptor.schema.json，导出 Schema 加载器、verifyProfile、采用 pin 校验和只收紧 overrides 检查。纯数据校验器遇到 pin 缺失、符号链接或路径越界时失败关闭，绝不执行 Profile entrypoint。
+        - 新增 buildProjectionClosure：纯函数公共 builder，接受 {path, sha256, mode} 成员数组（可接受显式 type file），返回规范计划闭包 {digestAlgorithm sha256, digest, resourceCount, resources}，可原样作为 compileProjectionPlan 的 previousOwnedClosure 或 externalCandidateClosure；空数组返回合法的空闭包。
+        - builder 与编译器闭包复验共享同一规范化与摘要事实源：确定性 path.localeCompare 排序、重复路径与便携路径冲突拒绝、sha256(JSON.stringify(normalizedResources)) 字节合同；全部拒绝在既有 projection plan input invalid 领域内失败关闭（SFC2004 invalid-manifest）。
+      changed:
+        - compileProjectionPlan 入参合同不变，四个顶层命令（scaffold、adopt-plan、projection、check）不变；全部 0.6.0 既有输入仍编译为字节不变的计划。包版本随 Foundation 线锁步，Contracts 机器合同保持 1.6.0。
+    upgradeNotes: 0.7.0 是投影闭包 builder 线。此前在本地组装计划闭包的调用方必须导入 buildProjectionClosure 并精确锁定 0.7.0。计划闭包（成员 {path, type, sha256, mode}）不是 harness computeResourceClosure 的资源闭包（成员 {path, role, exists, sha256}）——两者形状与用途不同，不能互换。

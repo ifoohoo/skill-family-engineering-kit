@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spi.profiles.skill-family.example/v2/profile-adoption.json",
+  "title": "ProfileAdoptionAndOverridesSections",
+  "description": "SPI v2 type definitions for the optional top-level `adoption` and `overrides` sections of a profile descriptor (skill-family.profile-descriptor). The adoption declaration is the lightweight adoption proof that replaces the deprecated adoption-lock concept (remediation handoff D-8); overrides carry self-tightening rule declarations that reuse the original rule ids with project-level numeric values (handoff D-6). profiles/spi/index.mjs composes these $defs onto the contracts profile-descriptor schema; the contracts package itself is not modified here.",
+  "type": "object",
+  "$defs": {
+    "pinnedPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "path", "sha256"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Exact pinned version of this Foundation package."
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$",
+          "description": "Relative POSIX path of the pinned artifact inside the profile write set; verifyProfile reads it through the containment layer and compares its real sha256 against the declared digest (GK-4 real-file discipline)."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Declared sha256 hex digest of the pinned artifact bytes."
+        }
+      }
+    },
+    "adoption": {
+      "type": "object",
+      "description": "Foundation adoption declaration (minimal D-8 field set). Presence is optional; when present every field is mandatory and mechanically verified by verifyProfile.",
+      "additionalProperties": false,
+      "required": ["foundation_profile", "foundation_pin", "adopted_at"],
+      "properties": {
+        "foundation_profile": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "version", "stability"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+              "description": "Stable kebab-case identifier of the adopted Foundation profile."
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Integer version of the adopted Foundation profile."
+            },
+            "stability": {
+              "enum": ["stable", "candidate-only"],
+              "description": "Stability class of the adopted Foundation profile at adoption time."
+            }
+          }
+        },
+        "foundation_pin": {
+          "type": "object",
+          "description": "Pin of all three Foundation packages (contracts, harness-node, engineering-kit) with exact versions and artifact sha256 digests.",
+          "additionalProperties": false,
+          "required": ["algorithm", "packages"],
+          "properties": {
+            "algorithm": {
+              "const": "sha256",
+              "description": "Digest algorithm; sha256 is the only admitted value."
+            },
+            "packages": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "skill-family-contracts",
+                "skill-family-harness-node",
+                "skill-family-engineering-kit"
+              ],
+              "properties": {
+                "skill-family-contracts": { "$ref": "#/$defs/pinnedPackage" },
+                "skill-family-harness-node": { "$ref": "#/$defs/pinnedPackage" },
+                "skill-family-engineering-kit": { "$ref": "#/$defs/pinnedPackage" }
+              }
+            }
+          }
+        },
+        "adopted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RFC 3339 date-time at which the adoption took place."
+        }
+      }
+    },
+    "overrides": {
+      "type": "array",
+      "description": "Self-tightening override declarations (handoff D-6): each entry reuses an existing rule id with a project-level numeric value. Overrides may only tighten the baseline, never relax it; every entry is machine-checked by verifyProfile against the frozen rule baseline catalog (profiles/spi/rule-baseline-catalog.json).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ruleId", "parameter", "value"],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "pattern": "^SFA-[A-Z0-9]+-[0-9]{3}$",
+            "description": "Canonical rule id being tightened (no new rule id is minted; the original id is reused)."
+          },
+          "parameter": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9]*$",
+            "description": "Named numeric parameter of the rule, as registered in the rule baseline catalog."
+          },
+          "value": {
+            "type": "number",
+            "description": "Project-level override value; must strictly tighten the catalog baseline in the parameter's declared direction."
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional human rationale; not consumed mechanically."
+          }
+        }
+      }
+    }
+  }
+}

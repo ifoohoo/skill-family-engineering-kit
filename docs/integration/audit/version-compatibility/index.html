@@ -1645,6 +1645,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#profile-行为变更纪律2026-08-19D6" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        profile 行为变更纪律（2026-08-19，D6）
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1739,6 +1750,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#profile-行为变更纪律2026-08-19D6" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        profile 行为变更纪律（2026-08-19，D6）
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1769,7 +1791,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 冻结版本（当前 <code>1.5.0</code>）</td>
+<td>Contracts 冻结版本（当前 <code>1.6.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -1784,7 +1806,7 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.5.0.pin.json</code>）比对。</p>
+<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.6.0.pin.json</code>）比对。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -1840,9 +1862,50 @@
 <li><strong>Contracts 1.2.0（2026-08-09）</strong>：报告能力线增量，不是描述补丁：新增 <code>report-model</code>、<code>report-binding</code> 两个顶层契约和 SFC3001～SFC3003 报告错误码，改变了公开机器合同与审计事实。</li>
 <li><strong>Contracts 1.3.0（2026-08-09）</strong>：宿主接入能力线增量，不是描述补丁：新增 <code>host-descriptor</code>、<code>host-capability-fact</code>、<code>adapter-build-manifest</code>、<code>host-operation-plan</code>、<code>host-operation-receipt</code> 五个顶层契约，改变了公开机器合同与审计事实。</li>
 <li><strong>Contracts 1.4.0（2026-08-09）</strong>：持久状态能力线增量，不是描述补丁：新增 <code>state-event-envelope</code>、<code>state-snapshot-metadata</code> 两个顶层契约，改变了公开机器合同与审计事实。</li>
-<li><strong>Contracts 1.5.0（2026-08-16）</strong>：FND-ADR-010/011 能力线增量，不是描述补丁：新增 <code>declared-read-surface-result</code>、<code>structured-scan-policy</code> 两个顶层契约（顶层对象集合 20 → 22），改变了公开机器合同与审计事实。<code>contracts-1.5.0.pin.json</code> 是当前现行基线；1.4.0 及更早 pin 保留为只读兼容存档。该 pin 的摘要与事实均从当前 <code>describeAuditSurface()/digestAuditSurface()</code> 机械投影，provenance 仍为 <code>product-compatibility-fixture</code>。</li>
+<li><strong>Contracts 1.5.0（2026-08-16）</strong>：FND-ADR-010/011 能力线增量，不是描述补丁：新增 <code>declared-read-surface-result</code>、<code>structured-scan-policy</code> 两个顶层契约（顶层对象集合 20 → 22），改变了公开机器合同与审计事实。该 pin 的摘要与事实均从当前 <code>describeAuditSurface()/digestAuditSurface()</code> 机械投影，provenance 仍为 <code>product-compatibility-fixture</code>。</li>
+<li><strong>Contracts 1.6.0（2026-08-18）</strong>：审计整改 C5 能力线增量，不是描述补丁：新增 <code>public-boundary-declaration</code>、<code>platform-difference-registry</code>、<code>observation-scope</code>、<code>profile-adoption-declaration</code>、<code>audit-baseline-pin</code>、<code>token-estimate-record</code> 六个顶层契约（顶层对象集合 24 → 30），改变了公开机器合同与审计事实；未新增 SFC 错误码，规则与 kernel 协议仅随 <code>contractsVersion</code> 字段更新。<code>contracts-1.6.0.pin.json</code> 是当前现行基线（经 <code>scripts/baseline-pin-gen.mjs --update</code> 由 <code>describeAuditSurface()/describeBaselinePin()</code> 机械生成，落盘前经 audit-baseline-pin 合同校验与 <code>verifyBaselinePin()</code> 自校验）；1.5.0 及更早 pin 保留为只读兼容存档。pin 合同本身（<code>audit-baseline-pin</code>）与消费面校验函数 <code>verifyBaselinePin()</code>（AUD-BASE-001 / AUD-LOCK-001 编码）在本版本落地（GAP-5 / SG-28）。</li>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
+<h2 id="profile-行为变更纪律2026-08-19D6">profile 行为变更纪律（2026-08-19，D6）<a class="headerlink" href="#profile-行为变更纪律2026-08-19D6" title="Permanent link">&para;</a></h2>
+<p>Foundation 对外暴露的 profile 机制面是消费方 pin 的行为契约，包括 <code>FOUNDATION_MECHANISM_OPERATIONS</code> 8 个 operations 与 <code>runner.mjs</code> 直接导出（含 <code>publishFileExclusive</code> 等函数的选项面）。<strong>profile 行为变更 = profile 版本变更</strong>：行为语义漂移不得在不升版本的前提下发生。stability 维持 candidate-only（D6）期间同样适用——candidate profile 的字节一致性由 pin digest 约束，行为语义变更必须走版本坐标，不因 candidate 状态而豁免。</p>
+<table>
+<thead>
+<tr>
+<th>变更</th>
+<th>分级</th>
+<th>需要的动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8 个 operations 之一的分派语义变化（参数、结果、错误 kind）</td>
+<td>profile 行为变更</td>
+<td>包版本递增（candidate 阶段为 candidate 版本递增）+ 本文件更新</td>
+</tr>
+<tr>
+<td>runner 直接导出面变化（新增/删除/改变导出，含 publish 函数族）</td>
+<td>profile 行为变更</td>
+<td>包版本递增 + 本文件更新</td>
+</tr>
+<tr>
+<td>publish 选项面变化（2026-08-19 D5 为 <code>publishFileExclusive</code> 新增 <code>createParents</code> 选项即此类；选项是 Foundation 侧契约，消费面只传参）</td>
+<td>profile 行为变更</td>
+<td>包版本递增 + 本文件更新</td>
+</tr>
+<tr>
+<td>不改变行为的字节变更（注释、格式化）</td>
+<td>无影响</td>
+<td>无需版本动作（pin digest 仍按既有机制变化）</td>
+</tr>
+</tbody>
+</table>
+<p>消费方响应动作：</p>
+<ol>
+<li><strong>pin 升级</strong>：消费方把 foundation-pin（或等价钉扎）升级到含该行为变更的版本；禁止在旧 pin 上假设新行为。</li>
+<li><strong>adoption-lock 重生成</strong>：受影响消费方重新生成 adoption-lock（或等价声明载体），使 <code>declared_foundation_surface</code> 与 <code>foundation_versions</code> 反映新 pin 字节。</li>
+<li><strong>先建后删</strong>：行为变更以 Foundation 侧行为测试（含 bundle 字节对象测试）落地为先，消费方删除自身重验测试在后（D2 顺序）。</li>
+</ol>
+<p><strong>行为归属记录（2026-08-19）</strong>：「宿主运行时（node）不可用 → 无回退、fail-closed」的触发面（node 解析/env 检查）属于消费方调用边界（SFA 侧为 D3 已裁决接受的残余风险，仅保留调用点声明检查）；Foundation 侧等价语义 = 写入环节失败时 fail-closed（无部分产物、错误码正确、无本地回退），由 atomic 行为测试承接，不在 Foundation 建宿主 spawn 测试。</p>
 
 
 

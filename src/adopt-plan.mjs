@@ -12,8 +12,8 @@ import {
   findNestedRepositories,
   loadMigrationManifestState,
   MIGRATION_MANIFEST_PATH,
+  REQUIRED_FOUNDATION_PACKAGES,
   validateException,
-  VERIFICATION_EVIDENCE_KINDS,
 } from "./migration.mjs";
 import {
   describeSkeletonFiles,
@@ -54,147 +54,67 @@ async function readExistingBytes(rootAbs, relPath) {
 }
 
 /**
- * The ten-field per-repository adoption hand-off draft.
+ * The per-adoption profile draft (SPI v2; remediation handoff C3/D-8).
  *
- * adopt-plan must carry enough structured data to draft the planner's
- * ten-field hand-off. Fields that cannot be derived mechanically from
- * read-only evidence are marked INCOMPLETE and block the draft — the kit
- * never guesses. The draft binds the target file-set digest and the
- * Foundation plan digest; rendering is a separate read-only planner task
- * that only ever writes the planner-side draft, never the consumer repo.
+ * Replaces the deprecated ten-field hand-off draft of the adoption-lock
+ * era: the adoption-lock concept and its artifact form are abolished, and
+ * the lightweight adoption proof is the profile.json descriptor's own
+ * adoption declaration, machine-verified by verifyProfile (SPI v2):
+ * descriptor-schema completeness of the minimal adoption field set, GK-4
+ * real-file digest discipline (SPE1006), and the tightening-only overrides
+ * policy (SPE1007).
+ *
+ * The draft pre-fills everything derivable from read-only facts:
+ * - descriptor identity (profile id/name from the plan inputs) and the
+ *   frozen contracts base;
+ * - the D-8 minimal adoption field set (foundation_profile, foundation_pin,
+ *   adopted_at) with pin versions pre-filled manifest-declaration-first,
+ *   then from the loaded package constants;
+ * - an empty overrides array — the empty example. Overrides are opt-in
+ *   self-tightening declarations; the kit never enumerates rule examples
+ *   (the core never imports the profile layer).
+ * Every non-derivable field stays null and is listed in incompleteFields —
+ * the kit never guesses. The draft binds the target file-set digest and the
+ * Foundation plan digest.
  */
-export const HANDOFF_FIELDS = Object.freeze([
-  "project-identity",
-  "repository-state",
-  "foundation-binding",
-  "write-set-policy",
-  "legacy-exits",
-  "business-logic-to-keep",
-  "plan-summary",
-  "verification-entries",
-  "legacy-removal-recovery",
-  "authorization-status",
-]);
+export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries }) {
+  const incompleteFields = [];
 
-export function buildHandoffDraft({
-  projectId,
-  rootAbs,
-  agentsFiles,
-  git,
-  gitFacts,
-  unregisteredPaths,
-  nestedRepositories,
-  inputs,
-  migrationManifest,
-  writeSet,
-  conflicts,
-  risks,
-  legacyExitList,
-  legacyReferenceExitList,
-  verificationFacts,
-  migrationState,
-  entries,
-}) {
-  const fields = [];
-  const push = (id, name, status, value) => fields.push({ id, name, status, value });
+  // foundation_profile (D-8 minimal set): the adopted foundation profile id
+  // is derivable from the plan inputs; its version and stability are human
+  // decisions the kit never guesses.
+  const foundationProfile = { id: inputs.profileId, version: null, stability: null };
+  incompleteFields.push("adoption.foundation_profile.version", "adoption.foundation_profile.stability");
 
-  // 1. Project identity, absolute path, project-level AGENTS files.
-  push(1, HANDOFF_FIELDS[0], "derived", {
-    projectId,
-    root: rootAbs,
-    agentsFiles: agentsFiles ?? [],
-  });
-
-  // 2. dirty / untracked / nested-repository state — facts or not-proven,
-  // never fabricated.
-  push(2, HANDOFF_FIELDS[1], "derived", {
-    repository: git.repository,
-    headCommit: git.headCommit,
-    cleanState: git.cleanState,
-    dirty: git.cleanState === false,
-    unregisteredContent: git.repository ? null : unregisteredPaths ?? [],
-    nestedRepositories: nestedRepositories ?? [],
-    trackedButIgnored: gitFacts?.status === "proven" ? gitFacts.trackedButIgnored : null,
-    gitFactsStatus: gitFacts?.status ?? "not-proven",
-  });
-
-  // 3. Profile plus exact Foundation versions and digests: only the
-  // manifest-declared binding counts; an undeclared binding is INCOMPLETE.
+  // foundation_pin (D-8 minimal set): versions are manifest-declared
+  // bindings first, then loaded package constants; path and sha256 exist
+  // only once the real pinned artifacts have been placed inside the profile
+  // write set — until then they stay null (GK-4 digest discipline: a digest
+  // is computed from real artifact bytes, never guessed).
   const declaredPackages = Array.isArray(migrationManifest?.foundationPackages)
     ? migrationManifest.foundationPackages
-    : null;
-  push(3, HANDOFF_FIELDS[2], declaredPackages && declaredPackages.length > 0 ? "derived" : "INCOMPLETE", {
-    plannedProfile: inputs.profileId,
-    contractsVersion: CONTRACTS_VERSION,
-    foundationPackages: declaredPackages,
+    : [];
+  const declaredByName = new Map(
+    declaredPackages
+      .filter((pkg) => pkg && typeof pkg.name === "string")
+      .map((pkg) => [pkg.name, pkg]),
+  );
+  const loadedVersions = Object.freeze({
+    "skill-family-contracts": CONTRACTS_VERSION,
+    "skill-family-engineering-kit": KIT_VERSION,
   });
+  const packages = {};
+  for (const name of [...REQUIRED_FOUNDATION_PACKAGES].sort()) {
+    const version = declaredByName.get(name)?.version ?? loadedVersions[name] ?? null;
+    if (version === null) incompleteFields.push(`adoption.foundation_pin.packages.${name}.version`);
+    incompleteFields.push(
+      `adoption.foundation_pin.packages.${name}.path`,
+      `adoption.foundation_pin.packages.${name}.sha256`,
+    );
+    packages[name] = { version, path: null, sha256: null };
+  }
 
-  // 4. Allowed and forbidden write sets.
-  const creates = writeSet.filter((item) => item.action !== "unchanged").map((item) => item.path).sort();
-  push(4, HANDOFF_FIELDS[3], "derived", {
-    allowed: creates,
-    unchanged: writeSet.length - creates.length,
-    forbidden:
-      "nothing outside the listed write set is ever written; the kit never renames, deletes, rewrites handwritten files, or touches remotes; legacy removal is a human-performed exit step",
-  });
-
-  // 5. The validator/builder/docs-pipeline/git-preflight slated for exit.
-  //    Includes both whole-file exits (legacyInfra) and reference-level
-  //    exits (legacyReferences) for retained files.
-  push(5, HANDOFF_FIELDS[4], "derived", {
-    exits: legacyExitList.map((item) => ({ path: item.path, replacedBy: item.replacedBy, status: item.status })),
-    referenceExits: (legacyReferenceExitList ?? []).map((ref) => ({
-      path: ref.path,
-      text: ref.text,
-      replacedBy: ref.replacedBy,
-      status: ref.status,
-      occurrenceCount: ref.occurrenceCount,
-    })),
-  });
-
-  // 6. Business logic that must be kept: never derivable from repo facts.
-  push(6, HANDOFF_FIELDS[5], "INCOMPLETE", {
-    reason: "business-logic boundaries cannot be derived mechanically; a human owner must enumerate them before any hand-off starts",
-  });
-
-  // 7. adopt-plan summary.
-  push(7, HANDOFF_FIELDS[6], "derived", {
-    writeSetCreates: creates.length,
-    writeSetUnchanged: writeSet.length - creates.length,
-    conflicts: conflicts.length,
-    risks: risks.length,
-    migrationState,
-  });
-
-  // 8. Unit / integration / consumer / independent-audit entries: derived
-  // only when every evidence kind is proven. assessVerificationEvidence
-  // always returns one status-bearing fact per kind (undeclared/missing/
-  // invalid-path/unreadable/identity-mismatch/proven), so presence alone
-  // proves nothing — fail-closed, never guessed (FC-12).
-  const evidenceByKind = new Map((verificationFacts ?? []).map((fact) => [fact.kind, fact]));
-  const missingEvidence = VERIFICATION_EVIDENCE_KINDS.filter((kind) => evidenceByKind.get(kind)?.status !== "proven");
-  push(8, HANDOFF_FIELDS[7], missingEvidence.length === 0 ? "derived" : "INCOMPLETE", {
-    entries: (verificationFacts ?? []).map((fact) => ({ kind: fact.kind, path: fact.path ?? null, status: fact.status })),
-    missing: missingEvidence,
-  });
-
-  // 9. How removed legacy implementations can be recovered: never
-  // derivable mechanically (depends on the target's own history/backups).
-  push(9, HANDOFF_FIELDS[8], "INCOMPLETE", {
-    reason: "recovery paths for removed legacy implementations depend on the target's own history and backups; the kit never guesses them",
-  });
-
-  // 10. commit/push/tag/publish authorization: a fixed policy fact —
-  // adoption planning authorizes none of them.
-  push(10, HANDOFF_FIELDS[9], "derived", {
-    commit: false,
-    push: false,
-    tag: false,
-    publish: false,
-    note: "adoption authorizes no git write, tag, or release; each requires explicit per-task user authorization",
-  });
-
-  const incompleteFields = fields.filter((field) => field.status === "INCOMPLETE").map((field) => field.name);
+  incompleteFields.push("descriptor.profile.version", "adoption.adopted_at");
 
   // Binding digests: the target file-set summary and the Foundation plan.
   const targetSetDigest = digestBytes(
@@ -205,12 +125,30 @@ export function buildHandoffDraft({
   );
 
   return {
-    kind: "skill-family.handoff-draft",
+    kind: "skill-family.profile-draft",
     schemaVersion: 1,
-    fields,
+    descriptorRelPath: "profile.json",
+    descriptor: {
+      schemaVersion: 1,
+      kind: "skill-family.profile-descriptor",
+      profile: { id: inputs.projectId, name: inputs.projectName, version: null },
+      base: { contractsVersion: CONTRACTS_VERSION },
+      differences: [],
+      spi: [],
+      adoption: {
+        foundation_profile: foundationProfile,
+        foundation_pin: { algorithm: "sha256", packages },
+        adopted_at: null,
+      },
+      overrides: [],
+    },
+    overridesGuidance:
+      "overrides stays empty by default. An override is admissible only when it reuses an existing rule id with a project-level numeric value that strictly tightens the frozen rule baseline catalog in the parameter's declared direction (not-increase: strictly less; not-decrease: strictly greater). Equality and relaxation are refused (SPI v2 SPE1007); risk identification for misuse of tightening belongs to skill-failure-auditor, not to this mechanical check.",
     incompleteFields,
     ready: incompleteFields.length === 0,
     binding: { targetSetDigest, foundationPlanDigest },
+    policyNote:
+      "adoption-lock is deprecated (remediation handoff D-8): the kit no longer produces adoption-lock-form artifacts. The adoption proof is this descriptor's adoption declaration, completed with real artifact paths and digests inside the profile write set and machine-verified by verifyProfile (SPI v2: SPE1006 digest discipline, SPE1007 tightening-only overrides).",
   };
 }
 
@@ -515,29 +453,13 @@ export async function planAdoption({
 
   const existingManagedDeclarations = [...facts.managedSet].sort();
 
-  // The ten-field hand-off draft. Fields that cannot be derived
-  // mechanically stay INCOMPLETE and block readiness — never guessed.
-  const agentsFiles = entries
-    .filter((entry) => entry.kind === "file" && (entry.path === "AGENTS.md" || entry.path === "CLAUDE.md"))
-    .map((entry) => entry.path)
-    .sort();
-  const handoffDraft = buildHandoffDraft({
-    projectId: inputs.projectId,
-    rootAbs,
-    agentsFiles,
-    git,
-    gitFacts,
-    unregisteredPaths,
-    nestedRepositories,
+  // The profile draft: pre-filled adoption declaration (D-8 minimal set)
+  // plus the empty overrides example. Fields that cannot be derived
+  // mechanically stay null and block readiness — never guessed.
+  const profileDraft = buildProfileDraft({
     inputs,
     migrationManifest,
     writeSet,
-    conflicts,
-    risks,
-    legacyExitList,
-    legacyReferenceExitList,
-    verificationFacts,
-    migrationState: completion.state,
     entries,
   });
 
@@ -589,7 +511,7 @@ export async function planAdoption({
       state: completion.state,
       completion,
     },
-    handoffDraft,
+    profileDraft,
     traceability: {
       contractsVersion: CONTRACTS_VERSION,
       skeletonSource: "describeSkeletonFiles",

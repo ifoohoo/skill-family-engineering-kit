@@ -4,27 +4,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.5.0 -->
+<!-- release-skill:release-version: 0.7.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.5.0** (2026-08-16)
+**0.7.0** (2026-08-21)
 
-This release keeps the stable four-command Kit surface unchanged and strengthens the offline-consumer verification gates to cover the complete third-party production closure of the three Foundation packages.
+This release exports the public canonical projection closure builder buildProjectionClosure (FG-4), so callers construct compileProjectionPlan-ready plan closures through one public entry instead of re-implementing the Kit-private ordering, serialization, and digest algorithms.
 
 **Added**
 
-- Strengthens the offline-consumer verification gates: the third-party closure derivation in candidate-profile-bundle and tarball-source-binding tests is extended from a single-package closure to the complete production closure of the three Foundation packages (identity-deduplicated, npm: alias-aware, range-scoped override selectors, byte identity against the real store directory of pnpm), so the harness runtime-dependency review decision (FND-ADR-011) is continuously verified against the real installed bytes.
+- Adds the public skill-family-engineering-kit/profile-spi subpath. It projects the three Profile SPI JSON resources together with the Contracts canonical profile-descriptor.schema.json, and exports schema loaders, verifyProfile, adoption-pin verification, and tightening-only override checks. The data-only verifier fails closed on missing pins and symlink/path escapes and never executes Profile entrypoints.
+- Adds buildProjectionClosure - a pure public builder accepting an array of {path, sha256, mode} members (an explicit type file is also accepted) and returning the canonical plan closure {digestAlgorithm sha256, digest, resourceCount, resources} that compileProjectionPlan accepts verbatim as previousOwnedClosure or externalCandidateClosure; an empty array yields the legal empty closure.
+- The builder shares one normalization and digest source of truth with the compiler closure re-verification - deterministic path.localeCompare ordering, duplicate-path and portable-collision refusal, and the sha256(JSON.stringify(normalizedResources)) byte contract; every refusal fails closed in the existing projection plan input invalid domain (SFC2004 invalid-manifest).
 
 **Changed**
 
-- Keeps the stable scaffold, adopt-plan, projection, and check commands unchanged.
-- Carries forward the 0.4.0 adoption CLI candidate and the Quickstart Profile v2 offline bundle; no Kit surface or candidate entry point is added or removed in 0.5.0.
+- Keeps the compileProjectionPlan input contract unchanged and the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; every 0.6.0 input still compiles to byte-identical plans. The package version moves in lockstep with the Foundation line while the contracts machine contract stays at 1.6.0.
 
 **Upgrade Notes**
 
-Version 0.5.0 is released on npm and the public mirror. The Kit public surface is unchanged from 0.4.0; pin the package to exactly 0.5.0 for the new contract-spec 1.5.0 line.
+Version 0.7.0 is the projection closure builder line. Callers that previously assembled plan closures locally must import buildProjectionClosure and pin exactly 0.7.0. A plan closure ({path, type, sha256, mode} members) is not the harness computeResourceClosure resource closure ({path, role, exists, sha256} members) - the two shapes and purposes differ and are not interchangeable.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -45,7 +46,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.5.0
+npm install --save-dev skill-family-engineering-kit@0.7.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -53,7 +54,15 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.5.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.7.0 -- skill-family-kit --help`.
+
+### Public Profile SPI
+
+The `skill-family-engineering-kit/profile-spi` subpath exposes the stable Profile SPI v2 data surface. It exports `verifyProfile`, `verifyAdoptionDigests`, `assessOverridesPolicy`, `loadSpiDefinition`, `loadExtendedDescriptorSchema`, and `loadRuleBaselineCatalog`.
+
+The package carries three SPI JSON resources and the Contracts canonical `profile-descriptor.schema.json`. `profiles/spi` is the only handwritten source; projen mechanically projects those resources and the module into this subpath. The projection changes only the two public package imports and the local schema URL.
+
+`verifyProfile({ profileRoot })` is read-only and data-only. It refuses descriptor errors, missing resources, executable entrypoints, symlink/path escapes, core reverse dependencies, unverified adoption pins, and non-tightening overrides with stable `SPE0000` / `SPE1001`–`SPE1007` result codes. It never executes Profile-provided files. The Profile's domain meaning remains owned by the caller.
 
 ### Report sub-action
 
@@ -158,7 +167,7 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 - `foundation.kit.scaffold`: generate a precise skeleton in an empty directory, atomic + contained.
 - `foundation.kit.adopt-plan`: strictly read-only inventory and completion determination of an existing repo.
 - `foundation.kit.projection`: managed projection, write only after full validation, zero writes on failure.
-- `foundation.kit.check`: seven check classes, diagnosis only, no fix.
+- `foundation.kit.check`: nine check classes, diagnosis only, no fix.
 - `foundation.kit.report`: projection/check report sub-action orchestration.
 - `foundation.kit.git-probe`: read-only whitelisted Git status probe.
 - `foundation.kit.host`: describe/build/probe/plan, apply stably rejected.
