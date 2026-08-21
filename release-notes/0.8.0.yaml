@@ -1,0 +1,19 @@
+version: 0.8.0
+date: 2026-08-21
+locales:
+  en:
+    summary: Profile SPI v3 adds direct verification for scaffolded Project Profiles while descriptor verification remains stable.
+    changes:
+      added:
+        - Adds verifyProjectProfile({ projectRoot, profileRelPath? }) for skill-family.project-profile declarations.
+        - Keeps verifyProfile descriptor-only and reuses Contracts-owned adoption and overrides field definitions.
+        - Adds SPE1008 PROJECT_PROFILE_INVALID; SPE1006 and SPE1007 retain their existing meanings.
+    upgradeNotes: Project-root consumers must pin engineering-kit 0.8.0 and call verifyProjectProfile. Descriptor consumers continue to call verifyProfile; 0.7.0 remains available.
+  zh-CN:
+    summary: Profile SPI v3 新增 scaffold 项目 Profile 的直接校验，descriptor 校验保持兼容。
+    changes:
+      added:
+        - 新增 verifyProjectProfile({ projectRoot, profileRelPath? })，用于校验 skill-family.project-profile 声明。
+        - verifyProfile 继续只校验 descriptor，并复用 Contracts 拥有的 adoption 与 overrides 字段定义。
+        - 新增 SPE1008 PROJECT_PROFILE_INVALID；SPE1006 与 SPE1007 含义保持不变。
+    upgradeNotes: 项目根消费者必须锁定 engineering-kit 0.8.0 并调用 verifyProjectProfile；descriptor 消费者继续调用 verifyProfile，0.7.0 仍可使用。

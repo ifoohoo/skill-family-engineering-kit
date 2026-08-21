@@ -24,7 +24,7 @@ const SPI_DEFINITION = JSON.parse(
   await readFile(new URL("./extension-spi.json", import.meta.url), "utf8"),
 );
 
-// SPI v2 type definitions for the optional `adoption` and `overrides`
+// SPI v3 type definitions for the optional `adoption` and `overrides`
 // descriptor sections (remediation handoff D-8/D-6). The contracts package
 // stays untouched: the loader composes these $defs onto the contracts
 // profile-descriptor schema at load time and validates descriptors against
@@ -47,11 +47,24 @@ const BASE_DESCRIPTOR_SCHEMA = JSON.parse(
   ),
 );
 
+const PROJECT_PROFILE_SCHEMA = JSON.parse(
+  await readFile(
+    new URL("./project-profile.schema.json", import.meta.url),
+    "utf8",
+  ),
+);
+
+export const PROJECT_PROFILE_SCHEMA_ID = PROJECT_PROFILE_SCHEMA.$id;
+
+export function loadProjectProfileSchema() {
+  return structuredClone(PROJECT_PROFILE_SCHEMA);
+}
+
 /** $id of the SPI-composed descriptor schema (distinct from the contracts $id on purpose). */
 export const EXTENDED_DESCRIPTOR_SCHEMA_ID = SPI_DEFINITION.descriptor.extendedSchemaId;
 
 /**
- * Composes the SPI v2 extended descriptor schema: the frozen contracts
+ * Composes the SPI v3 extended descriptor schema: the frozen contracts
  * profile-descriptor schema plus the optional top-level `adoption` and
  * `overrides` sections defined by profiles/spi/profile-adoption.schema.json.
  * Returns a fresh document on every call; callers never mutate it.
@@ -70,7 +83,7 @@ export function loadRuleBaselineCatalog() {
   return RULE_BASELINE_CATALOG;
 }
 
-/** Frozen SPI result codes: SPE0000 plus SPE1001..SPE1007 (SPI v2). */
+/** Frozen SPI result codes: SPE0000 plus SPE1001..SPE1008. */
 export const SPI_RESULT_CODES = Object.freeze(
   Object.fromEntries(SPI_DEFINITION.resultCodes.map((entry) => [entry.code, entry.name])),
 );
@@ -283,7 +296,7 @@ export function assessOverridesPolicy(overrides) {
  * failing step decides the stable result code:
  *
  *   SPE1001 descriptor invalid (schema/parse; carries observedCode). Since
- *           SPI v2 the descriptor is validated against the SPI-composed
+ *           SPI v3 the descriptor is validated against the SPI-composed
  *           extended schema that admits the optional `adoption` and
  *           `overrides` sections; adoption field completeness and pin
  *           format are schema-checked here.
@@ -330,8 +343,8 @@ export async function verifyProfile({ profileRoot, descriptorRelPath } = {}) {
   }
   const validation = validateDocument(descriptor, {
     schema: loadExtendedDescriptorSchema(),
-    dialect: SPI_DEFINITION.descriptor.dialect,
-    policy: SPI_DEFINITION.descriptor.policy,
+    dialect: SPI_DEFINITION.projectProfile.dialect,
+    policy: SPI_DEFINITION.projectProfile.policy,
   });
   if (!validation.valid) {
     return result("SPE1001", {
@@ -459,7 +472,7 @@ export async function verifyProfile({ profileRoot, descriptorRelPath } = {}) {
     }
     const keys = Object.keys(exported).sort();
     const allowed = [...DECLARATION_SHAPE.allowedKeySet].sort();
-    if (keys.join(" ") !== allowed.join(" ")) {
+    if (keys.join("\0") !== allowed.join("\0")) {
       return result("SPE1002", {
         profileId,
         reason: "declaration-shape-keys",
@@ -565,6 +578,71 @@ export async function verifyProfile({ profileRoot, descriptorRelPath } = {}) {
       overrides: overrides.length,
     },
     steps,
+  });
+}
+
+/**
+ * Verifies the project-level adoption declaration emitted by scaffold.
+ * This intake is deliberately separate from verifyProfile: a project profile
+ * declares the adopting workspace, while a descriptor declares a provider.
+ */
+export async function verifyProjectProfile({ projectRoot, profileRelPath } = {}) {
+  if (typeof projectRoot !== "string" || projectRoot.length === 0) {
+    throw new TypeError("verifyProjectProfile: projectRoot must be a non-empty path string");
+  }
+  const relPath = profileRelPath ?? "profile.json";
+  const projectSteps = [];
+  let raw;
+  try {
+    raw = await readFileContained(projectRoot, relPath, { encoding: "utf8" });
+  } catch (cause) {
+    return result("SPE1008", { reason: "project-profile-unreadable", details: { kind: cause?.details?.kind ?? "unknown", profile: relPath }, steps: projectSteps });
+  }
+  let document;
+  try {
+    document = JSON.parse(raw);
+  } catch {
+    return result("SPE1008", { reason: "project-profile-parse-failed", details: { profile: relPath }, steps: projectSteps });
+  }
+  const validation = validateDocument(document, {
+    schema: loadProjectProfileSchema(),
+    dialect: SPI_DEFINITION.descriptor.dialect,
+    policy: SPI_DEFINITION.descriptor.policy,
+  });
+  if (!validation.valid) {
+    return result("SPE1008", {
+      reason: "project-profile-schema-invalid",
+      details: { observedCode: validation.errorCode, errors: validation.errors.slice(0, 5) },
+      steps: projectSteps,
+    });
+  }
+  projectSteps.push("project-profile-schema");
+  const projectProfile = validation.data;
+  let digestReport;
+  try {
+    digestReport = await verifyAdoptionDigests({ profileRoot: projectRoot, adoption: projectProfile.adoption });
+  } catch (cause) {
+    return result("SPE1008", { reason: "project-profile-adoption-invalid", details: { message: cause?.message ?? String(cause) }, steps: projectSteps });
+  }
+  if (!digestReport.ok) {
+    const failed = digestReport.results.find((entry) => entry.status !== "verified");
+    return result("SPE1006", {
+      reason: failed.status === "artifact-unreadable" ? "pin-artifact-unreadable" : "pin-digest-mismatch",
+      details: { package: failed.package, path: failed.path, declaredSha256: failed.declaredSha256, actualSha256: failed.actualSha256, containmentKind: failed.containmentKind ?? null },
+      steps: projectSteps,
+    });
+  }
+  projectSteps.push("adoption-pin-digests");
+  const assessment = assessOverridesPolicy(projectProfile.overrides);
+  if (!assessment.ok) {
+    const [finding] = assessment.findings;
+    return result("SPE1007", { reason: finding.kind, details: { ...finding }, steps: projectSteps });
+  }
+  projectSteps.push("overrides-policy");
+  return result("SPE0000", {
+    projectId: projectProfile.project.id,
+    details: { adoptionDeclared: true, overrides: projectProfile.overrides.length },
+    steps: projectSteps,
   });
 }
 

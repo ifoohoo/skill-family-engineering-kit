@@ -398,9 +398,9 @@ function renderProjectProfile({ projectId, profileId }) {
       foundation_pin: {
         algorithm: "sha256",
         packages: {
-          "skill-family-contracts": { version: CONTRACTS_VERSION, path: null, sha256: null },
+          "skill-family-contracts": { version: KIT_VERSION, path: null, sha256: null },
           "skill-family-engineering-kit": { version: KIT_VERSION, path: null, sha256: null },
-          "skill-family-harness-node": { version: null, path: null, sha256: null },
+          "skill-family-harness-node": { version: KIT_VERSION, path: null, sha256: null },
         },
       },
       adopted_at: null,
@@ -413,7 +413,7 @@ function renderProjectProfile({ projectId, profileId }) {
         note: "示例覆盖：项目自加严词元告警阈值（基线 2000，取值必须严格小于基线）。覆盖只允许更严、不允许放松；每条覆盖都是可机器校验的声明，按冻结的规则基线目录（rule-baseline-catalog.json）核验。",
       },
     ],
-    note: "采用声明与自加严覆盖由项目自行维护；engineering kit 只种子化模板，永不覆盖。null 字段必须由项目以真实事实补齐后才构成有效声明：foundation_profile.version/stability 是人的决策；foundation_pin.packages.*.path/sha256 必须从项目写集内真实钉扎工件的字节计算（GK-4 摘要纪律）；adopted_at 是完成采用的 RFC 3339 时间。本文件是项目级声明（kind skill-family.project-profile），不是 Profile SPI descriptor；adoption/overrides 段的形状与 SPI v2 权威定义（profiles/spi/profile-adoption.schema.json）逐字段一致。",
+    note: "采用声明与自加严覆盖由项目自行维护；engineering kit 只种子化模板，永不覆盖。null 字段必须由项目以真实事实补齐后才构成有效声明：foundation_profile.version/stability 是人的决策；foundation_pin.packages.*.path/sha256 必须从项目写集内真实钉扎工件的字节计算（GK-4 摘要纪律）；adopted_at 是完成采用的 RFC 3339 时间。本文件是项目级声明（kind skill-family.project-profile），不是 Profile SPI descriptor；adoption/overrides 段的形状与 SPI v3 权威定义（Contracts profile-adoption-declaration 的 $defs）逐字段一致。",
   });
 }
 

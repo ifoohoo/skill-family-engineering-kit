@@ -54,12 +54,12 @@ async function readExistingBytes(rootAbs, relPath) {
 }
 
 /**
- * The per-adoption profile draft (SPI v2; remediation handoff C3/D-8).
+ * The per-adoption project profile draft (SPI v3; remediation handoff C3/D-8).
  *
  * Replaces the deprecated ten-field hand-off draft of the adoption-lock
  * era: the adoption-lock concept and its artifact form are abolished, and
  * the lightweight adoption proof is the profile.json descriptor's own
- * adoption declaration, machine-verified by verifyProfile (SPI v2):
+ * adoption declaration, machine-verified by verifyProjectProfile:
  * descriptor-schema completeness of the minimal adoption field set, GK-4
  * real-file digest discipline (SPE1006), and the tightening-only overrides
  * policy (SPE1007).
@@ -100,7 +100,8 @@ export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries
       .map((pkg) => [pkg.name, pkg]),
   );
   const loadedVersions = Object.freeze({
-    "skill-family-contracts": CONTRACTS_VERSION,
+    "skill-family-contracts": KIT_VERSION,
+    "skill-family-harness-node": KIT_VERSION,
     "skill-family-engineering-kit": KIT_VERSION,
   });
   const packages = {};
@@ -114,7 +115,7 @@ export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries
     packages[name] = { version, path: null, sha256: null };
   }
 
-  incompleteFields.push("descriptor.profile.version", "adoption.adopted_at");
+  incompleteFields.push("adoption.adopted_at");
 
   // Binding digests: the target file-set summary and the Foundation plan.
   const targetSetDigest = digestBytes(
@@ -124,31 +125,30 @@ export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries
     Buffer.from(writeSet.map((item) => `${item.path}:${item.action}:${item.sha256}`).sort().join("\n"), "utf8"),
   );
 
-  return {
-    kind: "skill-family.profile-draft",
+  const projectProfile = {
     schemaVersion: 1,
-    descriptorRelPath: "profile.json",
-    descriptor: {
-      schemaVersion: 1,
-      kind: "skill-family.profile-descriptor",
-      profile: { id: inputs.projectId, name: inputs.projectName, version: null },
-      base: { contractsVersion: CONTRACTS_VERSION },
-      differences: [],
-      spi: [],
-      adoption: {
-        foundation_profile: foundationProfile,
-        foundation_pin: { algorithm: "sha256", packages },
-        adopted_at: null,
-      },
-      overrides: [],
+    kind: "skill-family.project-profile",
+    project: { id: inputs.projectId, workspace: `${inputs.projectId}-workspace` },
+    adoption: {
+      foundation_profile: foundationProfile,
+      foundation_pin: { algorithm: "sha256", packages },
+      adopted_at: null,
     },
+    overrides: [],
+  };
+
+  return {
+    kind: "skill-family.project-profile-draft",
+    schemaVersion: 1,
+    profileRelPath: "profile.json",
+    projectProfile,
     overridesGuidance:
-      "overrides stays empty by default. An override is admissible only when it reuses an existing rule id with a project-level numeric value that strictly tightens the frozen rule baseline catalog in the parameter's declared direction (not-increase: strictly less; not-decrease: strictly greater). Equality and relaxation are refused (SPI v2 SPE1007); risk identification for misuse of tightening belongs to skill-failure-auditor, not to this mechanical check.",
+      "overrides stays empty by default. An override is admissible only when it reuses an existing rule id with a project-level numeric value that strictly tightens the frozen rule baseline catalog in the parameter's declared direction (not-increase: strictly less; not-decrease: strictly greater). Equality and relaxation are refused (SPE1007); risk identification for misuse of tightening belongs to skill-failure-auditor, not to this mechanical check.",
     incompleteFields,
     ready: incompleteFields.length === 0,
     binding: { targetSetDigest, foundationPlanDigest },
     policyNote:
-      "adoption-lock is deprecated (remediation handoff D-8): the kit no longer produces adoption-lock-form artifacts. The adoption proof is this descriptor's adoption declaration, completed with real artifact paths and digests inside the profile write set and machine-verified by verifyProfile (SPI v2: SPE1006 digest discipline, SPE1007 tightening-only overrides).",
+      "adoption-lock is deprecated (remediation handoff D-8): the kit no longer produces adoption-lock-form artifacts. The adoption proof is this project's adoption declaration, completed with real artifact paths and digests inside the profile write set and machine-verified by verifyProjectProfile (SPE1006 digest discipline, SPE1007 tightening-only overrides).",
   };
 }
 

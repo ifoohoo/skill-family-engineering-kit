@@ -4,28 +4,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.7.0 -->
+<!-- release-skill:release-version: 0.8.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.7.0** (2026-08-21)
+**0.8.0** (2026-08-21)
 
-This release exports the public canonical projection closure builder buildProjectionClosure (FG-4), so callers construct compileProjectionPlan-ready plan closures through one public entry instead of re-implementing the Kit-private ordering, serialization, and digest algorithms.
+Profile SPI v3 adds direct verification for scaffolded Project Profiles while descriptor verification remains stable.
 
 **Added**
 
-- Adds the public skill-family-engineering-kit/profile-spi subpath. It projects the three Profile SPI JSON resources together with the Contracts canonical profile-descriptor.schema.json, and exports schema loaders, verifyProfile, adoption-pin verification, and tightening-only override checks. The data-only verifier fails closed on missing pins and symlink/path escapes and never executes Profile entrypoints.
-- Adds buildProjectionClosure - a pure public builder accepting an array of {path, sha256, mode} members (an explicit type file is also accepted) and returning the canonical plan closure {digestAlgorithm sha256, digest, resourceCount, resources} that compileProjectionPlan accepts verbatim as previousOwnedClosure or externalCandidateClosure; an empty array yields the legal empty closure.
-- The builder shares one normalization and digest source of truth with the compiler closure re-verification - deterministic path.localeCompare ordering, duplicate-path and portable-collision refusal, and the sha256(JSON.stringify(normalizedResources)) byte contract; every refusal fails closed in the existing projection plan input invalid domain (SFC2004 invalid-manifest).
-
-**Changed**
-
-- Keeps the compileProjectionPlan input contract unchanged and the four top-level commands (scaffold, adopt-plan, projection, check) unchanged; every 0.6.0 input still compiles to byte-identical plans. The package version moves in lockstep with the Foundation line while the contracts machine contract stays at 1.6.0.
+- Adds verifyProjectProfile({ projectRoot, profileRelPath? }) for skill-family.project-profile declarations.
+- Keeps verifyProfile descriptor-only and reuses Contracts-owned adoption and overrides field definitions.
+- Adds SPE1008 PROJECT_PROFILE_INVALID; SPE1006 and SPE1007 retain their existing meanings.
 
 **Upgrade Notes**
 
-Version 0.7.0 is the projection closure builder line. Callers that previously assembled plan closures locally must import buildProjectionClosure and pin exactly 0.7.0. A plan closure ({path, type, sha256, mode} members) is not the harness computeResourceClosure resource closure ({path, role, exists, sha256} members) - the two shapes and purposes differ and are not interchangeable.
+Project-root consumers must pin engineering-kit 0.8.0 and call verifyProjectProfile. Descriptor consumers continue to call verifyProfile; 0.7.0 remains available.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -46,7 +42,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.7.0
+npm install --save-dev skill-family-engineering-kit@0.8.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,15 +50,15 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.7.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.0 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
-The `skill-family-engineering-kit/profile-spi` subpath exposes the stable Profile SPI v2 data surface. It exports `verifyProfile`, `verifyAdoptionDigests`, `assessOverridesPolicy`, `loadSpiDefinition`, `loadExtendedDescriptorSchema`, and `loadRuleBaselineCatalog`.
+The `skill-family-engineering-kit/profile-spi` subpath exposes the stable Profile SPI v3 data surface. It exports `verifyProfile`, `verifyProjectProfile`, `verifyAdoptionDigests`, `assessOverridesPolicy`, `loadSpiDefinition`, `loadExtendedDescriptorSchema`, `loadProjectProfileSchema`, and `loadRuleBaselineCatalog`. Contracts `profile-adoption-declaration` owns the adoption and overrides field shapes; the SPI `profile-adoption.schema.json` path remains only as a compatibility forwarding path.
 
 The package carries three SPI JSON resources and the Contracts canonical `profile-descriptor.schema.json`. `profiles/spi` is the only handwritten source; projen mechanically projects those resources and the module into this subpath. The projection changes only the two public package imports and the local schema URL.
 
-`verifyProfile({ profileRoot })` is read-only and data-only. It refuses descriptor errors, missing resources, executable entrypoints, symlink/path escapes, core reverse dependencies, unverified adoption pins, and non-tightening overrides with stable `SPE0000` / `SPE1001`–`SPE1007` result codes. It never executes Profile-provided files. The Profile's domain meaning remains owned by the caller.
+`verifyProfile({ profileRoot })` is read-only and data-only for Profile descriptors. `verifyProjectProfile({ projectRoot, profileRelPath? })` is the corresponding entry for a project root declaration. Both refuse invalid input with stable result codes, never execute Profile-provided files, and leave Profile domain meaning to the caller.
 
 ### Report sub-action
 

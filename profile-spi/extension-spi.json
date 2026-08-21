@@ -1,18 +1,27 @@
 {
   "schemaVersion": 1,
   "kind": "skill-family.profile-extension-spi",
-  "spiVersion": 2,
+  "spiVersion": 3,
   "status": "stable",
-  "description": "Stable extension SPI for Skill Family profiles. A profile may only DECLARE its finite differences from the common core; it can never rewrite, patch, or inject core behavior. Enforcement is mechanical: a frozen pipeline of checks with stable result codes. SPI v2 adds two optional descriptor sections with machine verification: the Foundation adoption declaration (lightweight adoption proof replacing the deprecated adoption-lock concept, remediation handoff D-8) and self-tightening override declarations (remediation handoff D-6).",
-  "baseContracts": "1.1.1",
+  "description": "Stable extension SPI for Skill Family profiles and project adoption declarations. A profile may only DECLARE its finite differences from the common core; a project profile declares its adopting workspace. Enforcement is mechanical with stable result codes.",
+  "baseContracts": "1.7.0",
   "descriptor": {
     "schemaId": "https://contracts.skill-family.example/v1/profile-descriptor.json",
     "object": "profile-descriptor",
     "dialect": "2020-12",
     "policy": "strict",
     "file": "profile.json",
-    "note": "The descriptor is the only intake surface. It is plain validated data (additionalProperties: false at every level), so a profile cannot smuggle behavior in through the descriptor itself. Since SPI v2 the validator composes the two optional top-level sections `adoption` and `overrides` (defined by profiles/spi/profile-adoption.schema.json) onto the contracts profile-descriptor schema before validating; the contracts package stays untouched.",
+    "note": "The descriptor is the provider intake surface. It is plain validated data (additionalProperties: false at every level), so a profile cannot smuggle behavior in through the descriptor itself. SPI v3 also defines the separate project-profile intake; provider validation composes the optional top-level sections `adoption` and `overrides` onto the contracts profile-descriptor schema before validating; the contracts package stays untouched.",
     "extendedSchemaId": "https://spi.profiles.skill-family.example/v2/profile-descriptor-extended.json"
+  },
+  "projectProfile": {
+    "schemaId": "https://contracts.skill-family.example/v1/project-profile.json",
+    "object": "project-profile",
+    "dialect": "2020-12",
+    "policy": "strict",
+    "file": "profile.json",
+    "note": "The project profile is the scaffolded workspace adoption declaration and is never accepted by verifyProfile.",
+    "errorCode": "SPE1008"
   },
   "principles": [
     "declaration-only: differences are data declarations interpreted by the core's own fixed logic; a profile never supplies behavior that the core executes as core logic",
@@ -34,16 +43,21 @@
     "adoption-pin-digests",
     "overrides-policy"
   ],
+  "projectProfilePipeline": [
+    "project-profile-schema",
+    "adoption-pin-digests",
+    "overrides-policy"
+  ],
   "resultCodes": [
     {
       "code": "SPE0000",
       "name": "OK",
-      "meaning": "The profile descriptor and all declared SPI resources satisfy every SPI rule; the profile is admitted as a declaration-only extension."
+      "meaning": "The provider descriptor or project profile and all applicable declarations satisfy every SPI rule; the input is admitted as a declaration-only extension or project adoption declaration."
     },
     {
       "code": "SPE1001",
       "name": "DESCRIPTOR_INVALID",
-      "meaning": "The descriptor failed the profile-descriptor schema (since SPI v2 the SPI-composed extended schema that admits the optional adoption and overrides sections) under the declared dialect and strict policy, or could not be parsed as JSON. Adoption field completeness and pin format are schema-checked here. The observed contracts code (for example SFC1001) is carried in details.observedCode."
+      "meaning": "The descriptor failed the SPI-composed extended profile-descriptor schema under the declared dialect and strict policy, or could not be parsed as JSON. Adoption field completeness and pin format are schema-checked here. The observed contracts code (for example SFC1001) is carried in details.observedCode."
     },
     {
       "code": "SPE1002",
@@ -74,6 +88,11 @@
       "code": "SPE1007",
       "name": "OVERRIDE_POLICY_VIOLATION",
       "meaning": "An overrides entry violates the tightening-only policy: the rule id does not exist in the frozen rule baseline catalog, the parameter is not registered for that rule, the same rule/parameter pair is declared twice, or the numeric value does not strictly tighten the catalog baseline in the parameter's declared direction (relaxation and equality are both refused)."
+    },
+    {
+      "code": "SPE1008",
+      "name": "PROJECT_PROFILE_INVALID",
+      "meaning": "The project-level profile cannot be read, parsed, or validated against the project-profile contract. Pin and override failures retain SPE1006 and SPE1007."
     }
   ],
   "extensionPoints": [

@@ -1,5 +1,22 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.8.0 locale=en baseline=sha256:47377b52339e57d0087ffdff72ba04f88d8dd290f5a6e472fc67eb9a801007db -->
+## [0.8.0] - 2026-08-21
+
+Profile SPI v3 adds direct verification for scaffolded Project Profiles while descriptor verification remains stable.
+
+### Added
+
+- Adds verifyProjectProfile({ projectRoot, profileRelPath? }) for skill-family.project-profile declarations.
+- Keeps verifyProfile descriptor-only and reuses Contracts-owned adoption and overrides field definitions.
+- Adds SPE1008 PROJECT_PROFILE_INVALID; SPE1006 and SPE1007 retain their existing meanings.
+
+### Upgrade Notes
+
+Project-root consumers must pin engineering-kit 0.8.0 and call verifyProjectProfile. Descriptor consumers continue to call verifyProfile; 0.7.0 remains available.
+<!-- release-skill:changelog:end version=0.8.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.7.0 locale=en baseline=sha256:ed1c59e7cee6e7280d2569e554b07d3b3513f4f3318bf30e374e2d480320f2b7 -->
 ## [0.7.0] - 2026-08-21
 

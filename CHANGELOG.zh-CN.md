@@ -1,5 +1,22 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.8.0 locale=zh-CN baseline=sha256:0d8fb108ec3e89d5c6b6bea39fc6767a0e1c198546d243d86a963fc5855ed4a9 -->
+## [0.8.0] - 2026-08-21
+
+Profile SPI v3 新增 scaffold 项目 Profile 的直接校验，descriptor 校验保持兼容。
+
+### 新增
+
+- 新增 verifyProjectProfile({ projectRoot, profileRelPath? })，用于校验 skill-family.project-profile 声明。
+- verifyProfile 继续只校验 descriptor，并复用 Contracts 拥有的 adoption 与 overrides 字段定义。
+- 新增 SPE1008 PROJECT_PROFILE_INVALID；SPE1006 与 SPE1007 含义保持不变。
+
+### 升级说明
+
+项目根消费者必须锁定 engineering-kit 0.8.0 并调用 verifyProjectProfile；descriptor 消费者继续调用 verifyProfile，0.7.0 仍可使用。
+<!-- release-skill:changelog:end version=0.8.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.7.0 locale=zh-CN baseline=sha256:e6070267ab3db289caf998c4539055c3d39dfa16fb5bc7db44689b305fde2e81 -->
 ## [0.7.0] - 2026-08-21
 
