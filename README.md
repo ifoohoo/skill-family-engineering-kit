@@ -4,24 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.0 -->
+<!-- release-skill:release-version: 0.8.1 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.0** (2026-08-21)
+**0.8.1** (2026-08-22)
 
-Profile SPI v3 adds direct verification for scaffolded Project Profiles while descriptor verification remains stable.
+Engineering Kit now preserves its own package version when a host bundles it into a single-file adapter.
 
-**Added**
+**Changed**
 
-- Adds verifyProjectProfile({ projectRoot, profileRelPath? }) for skill-family.project-profile declarations.
-- Keeps verifyProfile descriptor-only and reuses Contracts-owned adoption and overrides field definitions.
-- Adds SPE1008 PROJECT_PROFILE_INVALID; SPE1006 and SPE1007 retain their existing meanings.
+- Moves Contracts, Harness, and Engineering Kit together to version 0.8.1; the Contracts 1.7.0 and Profile SPI v3 surfaces remain unchanged.
+
+**Fixed**
+
+- Replaces the runtime import.meta.url package-manifest lookup with a static JSON import, so source and installed-package execution still read the Kit manifest while esbuild inlines the same version into a host bundle.
+- Adds a regression test that bundles Engineering Kit as a third-party dependency into one host entry file, runs it outside the package tree, and verifies the reported version against the package manifest.
 
 **Upgrade Notes**
 
-Project-root consumers must pin engineering-kit 0.8.0 and call verifyProjectProfile. Descriptor consumers continue to call verifyProfile; 0.7.0 remains available.
+Host adapters that bundle Engineering Kit must pin 0.8.1. Source and ordinary installed-package consumers keep the existing API and require no migration.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -42,7 +45,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.0
+npm install --save-dev skill-family-engineering-kit@0.8.1
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -50,7 +53,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.1 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 

@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.8.1 locale=zh-CN baseline=sha256:67ed1129fc865709a1205d34c82521a6c7a7f6d9a914c0c400c21ad2767a841b -->
+## [0.8.1] - 2026-08-22
+
+宿主把 Engineering Kit 打包进单文件适配器后，Kit 仍能保留自身的包版本。
+
+### 变更
+
+- Contracts、Harness 与 Engineering Kit 一同升至 0.8.1；Contracts 1.7.0 与 Profile SPI v3 表面保持不变。
+
+### 修复
+
+- 用静态 JSON import 替换运行时基于 import.meta.url 的包清单查找。源码与普通安装包仍读取 Kit 自身清单，esbuild 则把同一版本值内联到宿主 bundle。
+- 新增回归测试：把 Engineering Kit 作为第三方依赖打包成单一宿主入口，在包目录之外运行，并用包清单复核其报告版本。
+
+### 升级说明
+
+把 Engineering Kit 打包进宿主适配器的消费者必须精确锁定 0.8.1；源码和普通安装包消费者沿用现有 API，不需要迁移。
+<!-- release-skill:changelog:end version=0.8.1 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.8.0 locale=zh-CN baseline=sha256:0d8fb108ec3e89d5c6b6bea39fc6767a0e1c198546d243d86a963fc5855ed4a9 -->
 ## [0.8.0] - 2026-08-21
 

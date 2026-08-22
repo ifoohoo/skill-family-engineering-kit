@@ -1,0 +1,21 @@
+version: 0.8.1
+date: 2026-08-22
+locales:
+  en:
+    summary: Engineering Kit now preserves its own package version when a host bundles it into a single-file adapter.
+    changes:
+      fixed:
+        - Replaces the runtime import.meta.url package-manifest lookup with a static JSON import, so source and installed-package execution still read the Kit manifest while esbuild inlines the same version into a host bundle.
+        - Adds a regression test that bundles Engineering Kit as a third-party dependency into one host entry file, runs it outside the package tree, and verifies the reported version against the package manifest.
+      changed:
+        - Moves Contracts, Harness, and Engineering Kit together to version 0.8.1; the Contracts 1.7.0 and Profile SPI v3 surfaces remain unchanged.
+    upgradeNotes: Host adapters that bundle Engineering Kit must pin 0.8.1. Source and ordinary installed-package consumers keep the existing API and require no migration.
+  zh-CN:
+    summary: 宿主把 Engineering Kit 打包进单文件适配器后，Kit 仍能保留自身的包版本。
+    changes:
+      fixed:
+        - 用静态 JSON import 替换运行时基于 import.meta.url 的包清单查找。源码与普通安装包仍读取 Kit 自身清单，esbuild 则把同一版本值内联到宿主 bundle。
+        - 新增回归测试：把 Engineering Kit 作为第三方依赖打包成单一宿主入口，在包目录之外运行，并用包清单复核其报告版本。
+      changed:
+        - Contracts、Harness 与 Engineering Kit 一同升至 0.8.1；Contracts 1.7.0 与 Profile SPI v3 表面保持不变。
+    upgradeNotes: 把 Engineering Kit 打包进宿主适配器的消费者必须精确锁定 0.8.1；源码和普通安装包消费者沿用现有 API，不需要迁移。

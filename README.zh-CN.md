@@ -5,24 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.0 -->
+<!-- release-skill:release-version: 0.8.1 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.0** (2026-08-21)
+**0.8.1** (2026-08-22)
 
-Profile SPI v3 新增 scaffold 项目 Profile 的直接校验，descriptor 校验保持兼容。
+宿主把 Engineering Kit 打包进单文件适配器后，Kit 仍能保留自身的包版本。
 
-**新增**
+**变更**
 
-- 新增 verifyProjectProfile({ projectRoot, profileRelPath? })，用于校验 skill-family.project-profile 声明。
-- verifyProfile 继续只校验 descriptor，并复用 Contracts 拥有的 adoption 与 overrides 字段定义。
-- 新增 SPE1008 PROJECT_PROFILE_INVALID；SPE1006 与 SPE1007 含义保持不变。
+- Contracts、Harness 与 Engineering Kit 一同升至 0.8.1；Contracts 1.7.0 与 Profile SPI v3 表面保持不变。
+
+**修复**
+
+- 用静态 JSON import 替换运行时基于 import.meta.url 的包清单查找。源码与普通安装包仍读取 Kit 自身清单，esbuild 则把同一版本值内联到宿主 bundle。
+- 新增回归测试：把 Engineering Kit 作为第三方依赖打包成单一宿主入口，在包目录之外运行，并用包清单复核其报告版本。
 
 **升级说明**
 
-项目根消费者必须锁定 engineering-kit 0.8.0 并调用 verifyProjectProfile；descriptor 消费者继续调用 verifyProfile，0.7.0 仍可使用。
+把 Engineering Kit 打包进宿主适配器的消费者必须精确锁定 0.8.1；源码和普通安装包消费者沿用现有 API，不需要迁移。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -43,7 +46,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.0
+npm install --save-dev skill-family-engineering-kit@0.8.1
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -51,7 +54,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.1 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 

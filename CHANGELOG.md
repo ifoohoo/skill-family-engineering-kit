@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.8.1 locale=en baseline=sha256:e22f9a90f4275671e77a23aeee6ee036ab5c4c5a041a9ed9a144d055ce886da5 -->
+## [0.8.1] - 2026-08-22
+
+Engineering Kit now preserves its own package version when a host bundles it into a single-file adapter.
+
+### Changed
+
+- Moves Contracts, Harness, and Engineering Kit together to version 0.8.1; the Contracts 1.7.0 and Profile SPI v3 surfaces remain unchanged.
+
+### Fixed
+
+- Replaces the runtime import.meta.url package-manifest lookup with a static JSON import, so source and installed-package execution still read the Kit manifest while esbuild inlines the same version into a host bundle.
+- Adds a regression test that bundles Engineering Kit as a third-party dependency into one host entry file, runs it outside the package tree, and verifies the reported version against the package manifest.
+
+### Upgrade Notes
+
+Host adapters that bundle Engineering Kit must pin 0.8.1. Source and ordinary installed-package consumers keep the existing API and require no migration.
+<!-- release-skill:changelog:end version=0.8.1 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.8.0 locale=en baseline=sha256:47377b52339e57d0087ffdff72ba04f88d8dd290f5a6e472fc67eb9a801007db -->
 ## [0.8.0] - 2026-08-21
 

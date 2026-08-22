@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 import { CONTRACTS_VERSION } from "skill-family-contracts";
 import { digestBytes } from "skill-family-harness-node";
 import { invalidParamsError, kitError, KIT_ERROR_KINDS } from "./errors.mjs";
@@ -11,6 +8,7 @@ import {
   loadLicensingProfile,
 } from "./licensing.mjs";
 import { MIGRATION_MANIFEST_PATH } from "./migration.mjs";
+import { KIT_VERSION } from "./version.mjs";
 
 /**
  * The planned skeleton of one Skill Family project.
@@ -34,10 +32,7 @@ import { MIGRATION_MANIFEST_PATH } from "./migration.mjs";
  */
 
 export const KIT_TOOL_NAME = "skill-family-engineering-kit";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const _kitPkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf8"));
-export const KIT_VERSION = _kitPkg.version;
+export { KIT_VERSION };
 
 /** Kit-owned document paths inside a target workspace. */
 export const PROJECT_MANIFEST_PATH = "skill-family.project-manifest.json";
