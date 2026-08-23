@@ -1,5 +1,21 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.8.3 locale=en baseline=sha256:93875982c9f941309d63e40d5758b0fe7b20d74242f71934c3fd3cd90fe6ba52 -->
+## [0.8.3] - 2026-08-23
+
+Lockstep patch release whose managed Bundle carries the bounded Harness containment fix.
+
+### Changed
+
+- Moves the package version to 0.8.3 together with Contracts and Harness; the four stable top-level Kit commands and Profile SPI remain unchanged.
+- Rebuilding a managed Bundle projects the updated Harness paths module, including its single ENOENT anchor recomputation and unchanged fail-closed boundaries.
+
+### Upgrade Notes
+
+Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.3 and rebuild the managed Bundle. No Kit API or Profile SPI migration is required.
+<!-- release-skill:changelog:end version=0.8.3 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.8.2 locale=en baseline=sha256:cebfcfd816f8fd5824135d2681f443e5b226d65096bb6f6a9360f6b3bba34fc1 -->
 ## [0.8.2] - 2026-08-23
 

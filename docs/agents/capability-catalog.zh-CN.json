@@ -1967,7 +1967,7 @@
     "需要兼容性已冻结的 Quickstart API"
    ],
    "prerequisites": [
-    "把 skill-family-contracts、skill-family-harness-node 与 skill-family-engineering-kit 精确锁定到 0.8.2，并重建受管 Bundle",
+    "把 skill-family-contracts、skill-family-harness-node 与 skill-family-engineering-kit 精确锁定到 0.8.3，并重建受管 Bundle",
     "observation 路径与 read-file-strict 路径受调用方提供的 root 收容"
    ],
    "inputs": [
@@ -2015,7 +2015,7 @@
     "需要绕过目标 manifest 授权或手写文件保护"
    ],
    "prerequisites": [
-    "安装精确匹配的三个 Foundation 0.8.2 包版本",
+    "安装精确匹配的三个 Foundation 0.8.3 包版本",
     "targetPrefix 是受收容的 POSIX 相对路径"
    ],
    "inputs": [
@@ -2037,7 +2037,7 @@
    ],
    "invariants": [
     "Bundle 不含 node_modules 或运行时 Ajv，不依赖已安装 Foundation 包或网络",
-    "受管 Bundle 从 0.8.2 的已安装包字节重建，不从 Foundation 工作树导入源码",
+    "受管 Bundle 从 0.8.3 的已安装包字节重建，不从 Foundation 工作树导入源码",
     "辅助函数不增加 Kit 顶层命令，也不绕过 runProjection",
     "稳定性为 candidate：后续小版本可以修改或移除该子路径"
    ],

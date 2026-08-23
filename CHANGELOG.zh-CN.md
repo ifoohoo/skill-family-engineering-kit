@@ -1,5 +1,21 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.8.3 locale=zh-CN baseline=sha256:3315d4594a7e28926b54dae3057c35d192b1e9293d07d22fd8856f44da2a7d80 -->
+## [0.8.3] - 2026-08-23
+
+随 Foundation 0.8.3 锁步升版；受管 Bundle 携带 Harness 的有界路径收容修复。
+
+### 变更
+
+- 包版本与 Contracts、Harness 一同升至 0.8.3；Kit 的四个稳定顶层命令与 Profile SPI 均保持不变。
+- 重建受管 Bundle 会投影更新后的 Harness paths 模块，包括仅一次 ENOENT 锚点重求和保持不变的失败关闭边界。
+
+### 升级说明
+
+消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.3，再重建受管 Bundle；无需迁移 Kit API 或 Profile SPI。
+<!-- release-skill:changelog:end version=0.8.3 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.8.2 locale=zh-CN baseline=sha256:620f03e3fc81c1ef06d23b99fb0e70e547d58f3c6e956691b9c4a05e1b517c3b -->
 ## [0.8.2] - 2026-08-23
 

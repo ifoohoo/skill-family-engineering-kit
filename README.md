@@ -4,27 +4,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.2 -->
+<!-- release-skill:release-version: 0.8.3 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.2** (2026-08-23)
+**0.8.3** (2026-08-23)
 
-Managed offline Bundles now carry the strict-read source required by the fixed candidate mechanism bridge.
-
-**Added**
-
-- Projects strict-read.mjs into the managed Bundle and maps its closure, errors, and paths dependencies to sibling runtime modules.
-- Records the real strict-read.mjs source in Foundation provenance and verifies the read-file-strict bridge in an offline runner.
+Lockstep patch release whose managed Bundle carries the bounded Harness containment fix.
 
 **Changed**
 
-- Moves the package version to 0.8.2 together with Contracts and Harness; the four stable top-level Kit commands remain unchanged.
+- Moves the package version to 0.8.3 together with Contracts and Harness; the four stable top-level Kit commands and Profile SPI remain unchanged.
+- Rebuilding a managed Bundle projects the updated Harness paths module, including its single ENOENT anchor recomputation and unchanged fail-closed boundaries.
 
 **Upgrade Notes**
 
-Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.2 and rebuild the managed Bundle. Existing Bundles do not gain read-file-strict by changing a worktree reference.
+Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.3 and rebuild the managed Bundle. No Kit API or Profile SPI migration is required.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -45,7 +41,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.2
+npm install --save-dev skill-family-engineering-kit@0.8.3
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -53,7 +49,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.2 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.3 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 

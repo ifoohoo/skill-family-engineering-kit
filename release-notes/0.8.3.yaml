@@ -1,0 +1,17 @@
+version: 0.8.3
+date: 2026-08-23
+locales:
+  en:
+    summary: Lockstep patch release whose managed Bundle carries the bounded Harness containment fix.
+    changes:
+      changed:
+        - Moves the package version to 0.8.3 together with Contracts and Harness; the four stable top-level Kit commands and Profile SPI remain unchanged.
+        - Rebuilding a managed Bundle projects the updated Harness paths module, including its single ENOENT anchor recomputation and unchanged fail-closed boundaries.
+    upgradeNotes: Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.3 and rebuild the managed Bundle. No Kit API or Profile SPI migration is required.
+  zh-CN:
+    summary: 随 Foundation 0.8.3 锁步升版；受管 Bundle 携带 Harness 的有界路径收容修复。
+    changes:
+      changed:
+        - 包版本与 Contracts、Harness 一同升至 0.8.3；Kit 的四个稳定顶层命令与 Profile SPI 均保持不变。
+        - 重建受管 Bundle 会投影更新后的 Harness paths 模块，包括仅一次 ENOENT 锚点重求和保持不变的失败关闭边界。
+    upgradeNotes: 消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.3，再重建受管 Bundle；无需迁移 Kit API 或 Profile SPI。

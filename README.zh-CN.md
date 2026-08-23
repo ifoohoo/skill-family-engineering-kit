@@ -5,27 +5,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.2 -->
+<!-- release-skill:release-version: 0.8.3 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.2** (2026-08-23)
+**0.8.3** (2026-08-23)
 
-受管离线 Bundle 现在携带固定候选机制桥接所需的 strict-read 源码。
-
-**新增**
-
-- 把 strict-read.mjs 投影进受管 Bundle，并把它的 closure、errors 和 paths 依赖映射到相邻运行时模块。
-- 在 Foundation provenance 中记录真实 strict-read.mjs 源码，并通过离线 runner 复验 read-file-strict。
+随 Foundation 0.8.3 锁步升版；受管 Bundle 携带 Harness 的有界路径收容修复。
 
 **变更**
 
-- 包版本与 Contracts、Harness 一同升至 0.8.2；Kit 的四个稳定顶层命令保持不变。
+- 包版本与 Contracts、Harness 一同升至 0.8.3；Kit 的四个稳定顶层命令与 Profile SPI 均保持不变。
+- 重建受管 Bundle 会投影更新后的 Harness paths 模块，包括仅一次 ENOENT 锚点重求和保持不变的失败关闭边界。
 
 **升级说明**
 
-消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.2，再重建受管 Bundle。修改工作树引用不会让已有 Bundle 获得 read-file-strict。
+消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.3，再重建受管 Bundle；无需迁移 Kit API 或 Profile SPI。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -46,7 +42,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.2
+npm install --save-dev skill-family-engineering-kit@0.8.3
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,7 +50,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.2 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.3 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 

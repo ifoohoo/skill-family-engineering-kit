@@ -1967,7 +1967,7 @@
     "Need a compatibility-frozen Quickstart API"
    ],
    "prerequisites": [
-    "Pin skill-family-contracts, skill-family-harness-node, and skill-family-engineering-kit to exactly 0.8.2 and rebuild the managed Bundle",
+    "Pin skill-family-contracts, skill-family-harness-node, and skill-family-engineering-kit to exactly 0.8.3 and rebuild the managed Bundle",
     "Observation and read-file-strict paths are contained under the caller-supplied root"
    ],
    "inputs": [
@@ -2015,7 +2015,7 @@
     "Need to bypass target manifest authorization or handwritten-file protection"
    ],
    "prerequisites": [
-    "Install exact matching 0.8.2 versions of all three Foundation packages",
+    "Install exact matching 0.8.3 versions of all three Foundation packages",
     "The target prefix is a contained relative POSIX path"
    ],
    "inputs": [
@@ -2037,7 +2037,7 @@
    ],
    "invariants": [
     "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
-    "The managed Bundle is rebuilt from installed 0.8.2 package bytes and never imports source from a Foundation worktree",
+    "The managed Bundle is rebuilt from installed 0.8.3 package bytes and never imports source from a Foundation worktree",
     "The helper adds no top-level Kit command and never bypasses runProjection",
     "Stability is candidate: a later minor release may change or remove this subpath"
    ],
