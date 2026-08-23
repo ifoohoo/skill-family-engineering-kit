@@ -1202,10 +1202,11 @@
    "since": "0.2.1",
    "stability": "candidate",
    "entrypoints": [
-    "skill-family-harness-node/candidate/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)"
+    "skill-family-harness-node/candidate/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, invokeFoundationMechanism[read-file-strict], canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)"
    ],
    "sourceRefs": [
-    "packages/skill-family-harness-node/candidate/quickstart-profile.mjs"
+    "packages/skill-family-harness-node/candidate/quickstart-profile.mjs",
+    "packages/skill-family-harness-node/src/strict-read.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/quickstart-profile.test.mjs"

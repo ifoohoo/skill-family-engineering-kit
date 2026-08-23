@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.8.2 locale=zh-CN baseline=sha256:620f03e3fc81c1ef06d23b99fb0e70e547d58f3c6e956691b9c4a05e1b517c3b -->
+## [0.8.2] - 2026-08-23
+
+受管离线 Bundle 现在携带固定候选机制桥接所需的 strict-read 源码。
+
+### 新增
+
+- 把 strict-read.mjs 投影进受管 Bundle，并把它的 closure、errors 和 paths 依赖映射到相邻运行时模块。
+- 在 Foundation provenance 中记录真实 strict-read.mjs 源码，并通过离线 runner 复验 read-file-strict。
+
+### 变更
+
+- 包版本与 Contracts、Harness 一同升至 0.8.2；Kit 的四个稳定顶层命令保持不变。
+
+### 升级说明
+
+消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.2，再重建受管 Bundle。修改工作树引用不会让已有 Bundle 获得 read-file-strict。
+<!-- release-skill:changelog:end version=0.8.2 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.8.1 locale=zh-CN baseline=sha256:67ed1129fc865709a1205d34c82521a6c7a7f6d9a914c0c400c21ad2767a841b -->
 ## [0.8.1] - 2026-08-22
 

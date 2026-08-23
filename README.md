@@ -4,27 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.1 -->
+<!-- release-skill:release-version: 0.8.2 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.1** (2026-08-22)
+**0.8.2** (2026-08-23)
 
-Engineering Kit now preserves its own package version when a host bundles it into a single-file adapter.
+Managed offline Bundles now carry the strict-read source required by the fixed candidate mechanism bridge.
+
+**Added**
+
+- Projects strict-read.mjs into the managed Bundle and maps its closure, errors, and paths dependencies to sibling runtime modules.
+- Records the real strict-read.mjs source in Foundation provenance and verifies the read-file-strict bridge in an offline runner.
 
 **Changed**
 
-- Moves Contracts, Harness, and Engineering Kit together to version 0.8.1; the Contracts 1.7.0 and Profile SPI v3 surfaces remain unchanged.
-
-**Fixed**
-
-- Replaces the runtime import.meta.url package-manifest lookup with a static JSON import, so source and installed-package execution still read the Kit manifest while esbuild inlines the same version into a host bundle.
-- Adds a regression test that bundles Engineering Kit as a third-party dependency into one host entry file, runs it outside the package tree, and verifies the reported version against the package manifest.
+- Moves the package version to 0.8.2 together with Contracts and Harness; the four stable top-level Kit commands remain unchanged.
 
 **Upgrade Notes**
 
-Host adapters that bundle Engineering Kit must pin 0.8.1. Source and ordinary installed-package consumers keep the existing API and require no migration.
+Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.2 and rebuild the managed Bundle. Existing Bundles do not gain read-file-strict by changing a worktree reference.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -45,7 +45,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.1
+npm install --save-dev skill-family-engineering-kit@0.8.2
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -53,7 +53,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.1 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.2 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 

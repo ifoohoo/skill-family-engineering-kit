@@ -5,27 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.1 -->
+<!-- release-skill:release-version: 0.8.2 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.1** (2026-08-22)
+**0.8.2** (2026-08-23)
 
-宿主把 Engineering Kit 打包进单文件适配器后，Kit 仍能保留自身的包版本。
+受管离线 Bundle 现在携带固定候选机制桥接所需的 strict-read 源码。
+
+**新增**
+
+- 把 strict-read.mjs 投影进受管 Bundle，并把它的 closure、errors 和 paths 依赖映射到相邻运行时模块。
+- 在 Foundation provenance 中记录真实 strict-read.mjs 源码，并通过离线 runner 复验 read-file-strict。
 
 **变更**
 
-- Contracts、Harness 与 Engineering Kit 一同升至 0.8.1；Contracts 1.7.0 与 Profile SPI v3 表面保持不变。
-
-**修复**
-
-- 用静态 JSON import 替换运行时基于 import.meta.url 的包清单查找。源码与普通安装包仍读取 Kit 自身清单，esbuild 则把同一版本值内联到宿主 bundle。
-- 新增回归测试：把 Engineering Kit 作为第三方依赖打包成单一宿主入口，在包目录之外运行，并用包清单复核其报告版本。
+- 包版本与 Contracts、Harness 一同升至 0.8.2；Kit 的四个稳定顶层命令保持不变。
 
 **升级说明**
 
-把 Engineering Kit 打包进宿主适配器的消费者必须精确锁定 0.8.1；源码和普通安装包消费者沿用现有 API，不需要迁移。
+消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.2，再重建受管 Bundle。修改工作树引用不会让已有 Bundle 获得 read-file-strict。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -46,7 +46,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.1
+npm install --save-dev skill-family-engineering-kit@0.8.2
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,7 +54,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.1 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.2 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 

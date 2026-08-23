@@ -75,6 +75,13 @@ const HARNESS_IMPORT_MAP = new Map([
   ["../src/closure.mjs", "./closure.mjs"],
   ["../src/errors.mjs", "./errors.mjs"],
   ["../src/paths.mjs", "./paths.mjs"],
+  ["../src/strict-read.mjs", "./strict-read.mjs"],
+]);
+
+const HARNESS_STRICT_READ_IMPORT_MAP = new Map([
+  ["./closure.mjs", "./closure.mjs"],
+  ["./errors.mjs", "./errors.mjs"],
+  ["./paths.mjs", "./paths.mjs"],
 ]);
 
 const HARNESS_CLI_IMPORT_MAP = new Map([
@@ -1175,6 +1182,7 @@ export async function buildQuickstartProfileProjection({
   sources.harnessClosure = await readSourceText(harnessRoot, "src/closure.mjs");
   sources.harnessErrors = await readSourceText(harnessRoot, "src/errors.mjs");
   sources.harnessPaths = await readSourceText(harnessRoot, "src/paths.mjs");
+  sources.harnessStrictRead = await readSourceText(harnessRoot, "src/strict-read.mjs");
   sources.harnessAtomic = await readSourceText(harnessRoot, "src/atomic.mjs");
   sources.harnessTokenLock = await readSourceText(harnessRoot, "src/token-lock.mjs");
   // The package manifests are recorded as complete original bytes below, so
@@ -1368,6 +1376,10 @@ export async function buildQuickstartProfileProjection({
   );
   setText("runtime/harness/paths.mjs", projectModuleWithImportMap(sources.harnessPaths, new Map(), "harness src/paths.mjs"));
   setText(
+    "runtime/harness/strict-read.mjs",
+    projectModuleWithImportMap(sources.harnessStrictRead, HARNESS_STRICT_READ_IMPORT_MAP, "harness src/strict-read.mjs"),
+  );
+  setText(
     "runtime/harness/atomic.mjs",
     projectModuleWithImportMap(sources.harnessAtomic, HARNESS_ATOMIC_IMPORT_MAP, "harness src/atomic.mjs"),
   );
@@ -1468,6 +1480,7 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-harness-node/src/closure.mjs", sources.harnessClosure, "projected"],
     ["packages/skill-family-harness-node/src/errors.mjs", sources.harnessErrors, "projected"],
     ["packages/skill-family-harness-node/src/paths.mjs", sources.harnessPaths, "projected"],
+    ["packages/skill-family-harness-node/src/strict-read.mjs", sources.harnessStrictRead, "projected"],
     ["packages/skill-family-harness-node/src/atomic.mjs", sources.harnessAtomic, "projected"],
     ["packages/skill-family-harness-node/src/token-lock.mjs", sources.harnessTokenLock, "projected"],
     ["packages/skill-family-engineering-kit/package.json", kitPackageJsonText, "identity"],

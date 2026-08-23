@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.8.2 locale=en baseline=sha256:cebfcfd816f8fd5824135d2681f443e5b226d65096bb6f6a9360f6b3bba34fc1 -->
+## [0.8.2] - 2026-08-23
+
+Managed offline Bundles now carry the strict-read source required by the fixed candidate mechanism bridge.
+
+### Added
+
+- Projects strict-read.mjs into the managed Bundle and maps its closure, errors, and paths dependencies to sibling runtime modules.
+- Records the real strict-read.mjs source in Foundation provenance and verifies the read-file-strict bridge in an offline runner.
+
+### Changed
+
+- Moves the package version to 0.8.2 together with Contracts and Harness; the four stable top-level Kit commands remain unchanged.
+
+### Upgrade Notes
+
+Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.2 and rebuild the managed Bundle. Existing Bundles do not gain read-file-strict by changing a worktree reference.
+<!-- release-skill:changelog:end version=0.8.2 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.8.1 locale=en baseline=sha256:e22f9a90f4275671e77a23aeee6ee036ab5c4c5a041a9ed9a144d055ce886da5 -->
 ## [0.8.1] - 2026-08-22
 

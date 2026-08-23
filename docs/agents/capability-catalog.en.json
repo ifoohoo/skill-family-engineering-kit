@@ -1956,37 +1956,42 @@
   },
   {
    "id": "foundation.harness.quickstart-profile-candidate",
-   "intent": "Construct and verify an observation-bound candidate Task/Result exchange through skill-family-harness-node/candidate/quickstart-profile.",
+   "intent": "Construct and verify a candidate Task/Result exchange and call registered generic mechanisms through the fixed skill-family-harness-node/candidate/quickstart-profile bridge.",
    "useWhen": [
     "Need an early integration trial that binds a contained observation file to a candidate Task and terminal Result",
-    "Need a structured non-throwing verification result for an exact-version candidate exchange"
+    "Need a structured non-throwing verification result for an exact-version candidate exchange",
+    "A host cannot import several Foundation modules directly and needs read-file-strict for a frozen authority file"
    ],
    "doNotUseWhen": [
     "Need a domain auditor, method selector, retry orchestrator, or lifecycle owner",
     "Need a compatibility-frozen Quickstart API"
    ],
    "prerequisites": [
-    "Install exact matching versions of skill-family-harness-node and skill-family-contracts",
-    "The observation path is contained under the supplied root"
+    "Pin skill-family-contracts, skill-family-harness-node, and skill-family-engineering-kit to exactly 0.8.2 and rebuild the managed Bundle",
+    "Observation and read-file-strict paths are contained under the caller-supplied root"
    ],
    "inputs": [
     "Contained root and observation path",
     "Operation identity, method, parameters, and run/stage/attempt correlation",
-    "Candidate Task and Result documents for verification"
+    "Candidate Task and Result documents for verification",
+    "A read-file-strict request with closed root, path, encoding?, and expectedSha256? parameters"
    ],
    "outputs": [
-    "Observation Resource, candidate Task, terminal Result, or structured exchange verification"
+    "Observation Resource, candidate Task, terminal Result, or structured exchange verification",
+    "A read-file-strict receipt with UTF-8 content as a string or binary content in the standard Buffer JSON shape"
    ],
    "sideEffects": [
-    "Reads the contained observation file to compute or verify its sha256 digest",
+    "Reads a contained observation or authority file to compute or verify its sha256 digest",
     "Does not write files or access Git or the network"
    ],
    "failureSemantics": [
     "Throwing APIs fail closed with SFC2004 and details.kind=invalid-result when the profile or binding is invalid",
-    "verifyQuickstartExchange converts a failure into {valid:false, code, message, details}"
+    "verifyQuickstartExchange converts a failure into {valid:false, code, message, details}",
+    "Direct read-file-strict calls retain core SFC2004 details.kind failures; the JSON CLI promises only exit codes 0/2 and name/message errors"
    ],
    "invariants": [
     "The Result must bind the exact Task digest, real Resource bytes, globally unique Resource ids, operation identity, correlation fields, and the complete evidence-binding set",
+    "read-file-strict only forwards to the existing readFileStrict implementation; it copies no path, read, or digest algorithm and accepts no arbitrary function name",
     "Stability is candidate: a later minor release may change or remove this subpath"
    ],
    "ownedByCaller": [
@@ -2010,7 +2015,7 @@
     "Need to bypass target manifest authorization or handwritten-file protection"
    ],
    "prerequisites": [
-    "Install exact matching 0.3.0 versions of all three Foundation packages",
+    "Install exact matching 0.8.2 versions of all three Foundation packages",
     "The target prefix is a contained relative POSIX path"
    ],
    "inputs": [
@@ -2019,7 +2024,8 @@
     "Exact installed Contracts, Harness, and Kit package bytes"
    ],
    "outputs": [
-    "A projection manifest and provenance record with Foundation sources, consumer schemas, payload digests, tool versions, and licenses"
+    "A projection manifest and provenance record with Foundation sources, consumer schemas, payload digests, tool versions, and licenses",
+    "An offline runner carrying strict-read source and provenance, with the fixed read-file-strict operation"
    ],
    "sideEffects": [
     "Builds the manifest in memory and reads installed package plus explicit consumer-schema files",
@@ -2031,6 +2037,7 @@
    ],
    "invariants": [
     "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
+    "The managed Bundle is rebuilt from installed 0.8.2 package bytes and never imports source from a Foundation worktree",
     "The helper adds no top-level Kit command and never bypasses runProjection",
     "Stability is candidate: a later minor release may change or remove this subpath"
    ],

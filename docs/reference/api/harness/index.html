@@ -751,6 +751,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#严格读取-foundationharnessstrict-read" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        严格读取 (foundation.harness.strict-read)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="严格读取 (foundation.harness.strict-read)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#readFileStrict" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        readFileStrict
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#原子写-foundationharnessatomic-write" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1144,6 +1172,23 @@
 
     </span>
   </a>
+
+    <nav class="md-nav" aria-label="Quickstart Profile v2 candidate">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#invokeFoundationMechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        invokeFoundationMechanism
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
 
 </li>
 
@@ -2194,6 +2239,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#严格读取-foundationharnessstrict-read" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        严格读取 (foundation.harness.strict-read)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="严格读取 (foundation.harness.strict-read)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#readFileStrict" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        readFileStrict
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#原子写-foundationharnessatomic-write" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2588,6 +2661,23 @@
     </span>
   </a>
 
+    <nav class="md-nav" aria-label="Quickstart Profile v2 candidate">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#invokeFoundationMechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        invokeFoundationMechanism
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
 </li>
 
         <li class="md-nav__item">
@@ -2620,11 +2710,12 @@
 
 <h1 id="skill-family-harness-node-公共-API-参考">skill-family-harness-node 公共 API 参考<a class="headerlink" href="#skill-family-harness-node-公共-API-参考" title="Permanent link">&para;</a></h1>
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
-<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（19 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
+<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（21 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#契约校验-foundationharnesscontract-validation">契约校验</a> → <code>validateContractDocument</code> / <code>getValidator</code></li>
 <li><a href="#路径收容-foundationharnesspath-containment">路径收容</a> → <code>classifyPathInput</code> / <code>resolveContained</code> / <code>readFileContained</code></li>
+<li><a href="#严格读取-foundationharnessstrict-read">严格读取</a> → <code>readFileStrict</code></li>
 <li><a href="#原子写-foundationharnessatomic-write">原子写</a> → <code>writeFileAtomic</code></li>
 <li><a href="#临时工作区-foundationharnesstemporary-workspace">临时工作区</a> → <code>TemporaryWorkspace</code> / <code>withTemporaryWorkspace</code></li>
 <li><a href="#资源闭包-foundationharnessresource-closure">资源闭包</a> → <code>computeResourceClosure</code> / <code>digestBytes</code> / <code>closureContains</code></li>
@@ -2677,6 +2768,23 @@
 <li>源文件：<code>packages/skill-family-harness-node/src/paths.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/containment.test.mjs</code>、<code>boundaries.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：哪些路径是业务允许的选择规则（业务选择语义留在调用方）。</li>
+</ul>
+<hr />
+<h2 id="严格读取-foundationharnessstrict-read">严格读取 (foundation.harness.strict-read)<a class="headerlink" href="#严格读取-foundationharnessstrict-read" title="Permanent link">&para;</a></h2>
+<h3 id="readFileStrict">readFileStrict<a class="headerlink" href="#readFileStrict" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>readFileStrict(root, relPath, { encoding?, expectedSha256? } = {})</code>（async）。</li>
+<li>输入：收容根目录、相对文件路径，可选的 <code>utf8</code> 编码与小写 sha256 预期摘要。</li>
+<li>输出：冻结回执 <code>{ path, content, sha256, bytes, mode }</code>。指定 <code>utf8</code> 时，<code>content</code> 是字符串；省略编码时，<code>content</code> 是 <code>Buffer</code>。</li>
+<li>纯函数：否，函数只读一个受收容的普通文件。</li>
+<li>副作用：执行 <code>lstat</code>、<code>open</code>、<code>read</code> 与文件身份复核；不写文件，不访问 Git 或网络。</li>
+<li>稳定错误码与 <code>details.kind</code>：失败使用 <code>SFC2004</code>。缺失文件返回 <code>missing-resource</code>，摘要不符返回 <code>content-guard-rejected</code>，目录返回 <code>read-failed</code>，越界路径沿用路径收容的失败种类。</li>
+<li>符号链接边界：叶节点符号链接始终拒绝。祖先目录可以是指向根内目录的符号链接；其规范路径仍须受 <code>root</code> 收容。</li>
+<li>前置条件与信任锚：<code>expectedSha256</code> 的来源与信任由调用方负责；摘要只覆盖实际读到的字节。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.6.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/strict-read.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/strict-read.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：选择哪个权威文件、摘要从何而来，以及读取失败后的处置。</li>
 </ul>
 <hr />
 <h2 id="原子写-foundationharnessatomic-write">原子写 (foundation.harness.atomic-write)<a class="headerlink" href="#原子写-foundationharnessatomic-write" title="Permanent link">&para;</a></h2>
@@ -3043,7 +3151,22 @@
 <hr />
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
 <p><code>skill-family-harness-node/candidate/quickstart-profile</code> 负责创建 observation Resource、Task 与终态 Result，并复验真实文件字节、Resource id 全局唯一性、Task digest、operation 身份、逐字段 <code>run/stage/attempt</code> 以及 evidence 精确回指。<code>verifyQuickstartExchange</code> 把机制拒绝转换成结构化结果，抛出式入口继续使用已登记的 <code>SFC2004</code> 与稳定 <code>details.kind</code>。</p>
-<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。0.3.0 的 v2 与 0.2.1 的 v1 不兼容；接入必须精确锁定所选版本。</p>
+<h3 id="invokeFoundationMechanism">invokeFoundationMechanism<a class="headerlink" href="#invokeFoundationMechanism" title="Permanent link">&para;</a></h3>
+<p><code>invokeFoundationMechanism(request)</code> 是固定机制桥接。调用方只能选择预先登记的 operation，不能传入模块名、导出名或任意函数。0.8.2 新增的 <code>read-file-strict</code> 直接调用上文的 <code>readFileStrict</code>：</p>
+<pre><code class="language-json">{
+  &quot;operation&quot;: &quot;read-file-strict&quot;,
+  &quot;params&quot;: {
+    &quot;root&quot;: &quot;/absolute/consumer-root&quot;,
+    &quot;path&quot;: &quot;authority/frozen.json&quot;,
+    &quot;encoding&quot;: &quot;utf8&quot;,
+    &quot;expectedSha256&quot;: &quot;&lt;lowercase-sha256&gt;&quot;
+  }
+}
+</code></pre>
+<p><code>params</code> 是闭合对象。<code>root</code> 与 <code>path</code> 是必填非空字符串；<code>encoding</code> 只能是 <code>utf8</code> 或省略；<code>expectedSha256</code> 省略时不做预期摘要比对，提供时沿用核心严格读取合同。</p>
+<p>桥接保留核心回执的 <code>path</code>、<code>sha256</code>、<code>bytes</code> 与 <code>mode</code>。UTF-8 内容仍是字符串；二进制内容投影成 Node 标准的 Buffer JSON 形态 <code>{ "type": "Buffer", "data": [...] }</code>，以便通过 JSON 传输后无损还原字节。</p>
+<p>直接调用失败时沿用核心异常，包括 <code>SFC2004</code> 与 <code>details.kind</code>。候选 <code>mechanisms-cli.mjs</code> 继续使用一请求一响应 JSON：成功退出 0，拒绝或用法错误退出 2；CLI 错误 JSON 只承诺 <code>name</code> 与 <code>message</code>，不承诺跨语言保留 <code>details</code>。</p>
+<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.8.2，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>
