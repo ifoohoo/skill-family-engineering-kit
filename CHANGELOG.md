@@ -1,5 +1,22 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.8.4 locale=en baseline=sha256:0f6ad4e641ae6ef85ea323e458aa6263aa6d87280e704ac1324742f83016d779 -->
+## [0.8.4] - 2026-08-24
+
+Lockstep Foundation 0.8.4 update documents validated external source authority without changing Kit commands or Profile SPI.
+
+### Changed
+
+- Moves the package version to 0.8.4 together with Contracts and Harness.
+- Documents that consumers validate a source-authority receipt through Contracts before passing the returned coordinates through the existing sourceRepository and sourceBaseCommit fields.
+- Keeps the four stable top-level Kit commands, builder, Profile SPI, and public exports unchanged.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.8.4. A provider Profile descriptor upgrading from 0.8.3 and Contracts 1.7.0 must mechanically update its base.contractsVersion field to 1.8.0. Existing functions and Schema shapes, Profile SPI v3, and the four Kit commands require no migration; source-authority consumers only add the Contracts validation step before invoking the existing builder surface.
+<!-- release-skill:changelog:end version=0.8.4 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.8.3 locale=en baseline=sha256:93875982c9f941309d63e40d5758b0fe7b20d74242f71934c3fd3cd90fe6ba52 -->
 ## [0.8.3] - 2026-08-23
 

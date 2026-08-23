@@ -5,23 +5,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.3 -->
+<!-- release-skill:release-version: 0.8.4 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.3** (2026-08-23)
+**0.8.4** (2026-08-24)
 
-随 Foundation 0.8.3 锁步升版；受管 Bundle 携带 Harness 的有界路径收容修复。
+随 Foundation 0.8.4 锁步升版，补充外置 source authority 校验用法；Kit 命令与 Profile SPI 不变。
 
 **变更**
 
-- 包版本与 Contracts、Harness 一同升至 0.8.3；Kit 的四个稳定顶层命令与 Profile SPI 均保持不变。
-- 重建受管 Bundle 会投影更新后的 Harness paths 模块，包括仅一次 ENOENT 锚点重求和保持不变的失败关闭边界。
+- 包版本与 Contracts、Harness 一同升至 0.8.4。
+- 说明消费者先经 Contracts 校验 source-authority receipt，再把返回坐标传入既有 sourceRepository 与 sourceBaseCommit 字段。
+- 四个稳定顶层命令、builder、Profile SPI 与公共导出保持不变。
 
 **升级说明**
 
-消费者必须把 Contracts、Harness 和 Engineering Kit 精确锁定到 0.8.3，再重建受管 Bundle；无需迁移 Kit API 或 Profile SPI。
+消费者必须把三个 Foundation 包精确锁定到 0.8.4。provider Profile descriptor 从 0.8.3 与 Contracts 1.7.0 升级时，必须把自身的 base.contractsVersion 字段机械更新为 1.8.0。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令均不需要迁移；需要 source authority 的消费者只增加调用 builder 前的 Contracts 校验步骤。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -42,7 +43,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.3
+npm install --save-dev skill-family-engineering-kit@0.8.4
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -50,7 +51,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.3 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.4 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -59,6 +60,8 @@ npm exec -- skill-family-kit check --root <repo>
 包内携带三个 SPI JSON 资源与 Contracts canonical `profile-descriptor.schema.json`。`profiles/spi` 是唯一手写真源；projen 将这些资源和模块机械投影到该子路径。投影只修改两个公共包导入和一个本地 Schema URL。
 
 `verifyProfile({ profileRoot })` 只读处理 Profile descriptor；项目根声明使用对应的 `verifyProjectProfile({ projectRoot, profileRelPath? })`。两个入口遇到无效输入都以稳定结果码失败关闭，不会执行 Profile 提供的文件；Profile 的领域含义仍由调用方负责。
+
+provider Profile descriptor 从 Foundation 0.8.3 与 Contracts 1.7.0 升级到 Foundation 0.8.4 时，须把自身的 `base.contractsVersion` 字段机械更新为 `1.8.0`。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令的形状均不变。
 
 ### 报告子动作
 
@@ -74,13 +77,22 @@ npm exec -- skill-family-kit check report --root <repo> --report <report.md> --m
 需要从显式消费者 Schema 与冻结来源身份生成确定性的 Quickstart Profile v2 投影时，使用 candidate 子路径：
 
 ```js
+import { parseSourceAuthorityReceipt } from "skill-family-contracts";
 import {
   buildQuickstartProfileProjection,
   QUICKSTART_PROFILE_TARGET_PREFIX,
 } from "skill-family-engineering-kit/candidate/quickstart-profile";
+
+const authority = parseSourceAuthorityReceipt(receipt, actualSubjects);
+if (!authority.valid) throw new Error(authority.errorCode);
+
+const projection = await buildQuickstartProfileProjection({
+  ...projectionInputs,
+  ...authority.data,
+});
 ```
 
-生成的 Bundle 按 Schema `$id` 选择 standalone validator，离线运行时不依赖 Foundation 包、`node_modules` 或 Ajv。provenance 绑定 Foundation 来源、消费者 Schema、payload 字节、工具版本，以及实际进入 Bundle 的代码许可证。
+`receipt` 与 `actualSubjects` 由调用方在 Kit 外取得。Contracts 先精确核对两者，既有 builder 再接收返回的 `sourceRepository` 与 `sourceBaseCommit`；Kit 不解析发布计划，也不发现来源权威。生成的 Bundle 按 Schema `$id` 选择 standalone validator，离线运行时不依赖 Foundation 包、`node_modules` 或 Ajv。provenance 绑定 Foundation 来源、消费者 Schema、payload 字节、工具版本，以及实际进入 Bundle 的代码许可证。
 
 以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**；使用 v2 时应精确锁定 `0.4.0`，仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
 

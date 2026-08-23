@@ -3166,7 +3166,7 @@
 <p><code>params</code> 是闭合对象。<code>root</code> 与 <code>path</code> 是必填非空字符串；<code>encoding</code> 只能是 <code>utf8</code> 或省略；<code>expectedSha256</code> 省略时不做预期摘要比对，提供时沿用核心严格读取合同。</p>
 <p>桥接保留核心回执的 <code>path</code>、<code>sha256</code>、<code>bytes</code> 与 <code>mode</code>。UTF-8 内容仍是字符串；二进制内容投影成 Node 标准的 Buffer JSON 形态 <code>{ "type": "Buffer", "data": [...] }</code>，以便通过 JSON 传输后无损还原字节。</p>
 <p>直接调用失败时沿用核心异常，包括 <code>SFC2004</code> 与 <code>details.kind</code>。候选 <code>mechanisms-cli.mjs</code> 继续使用一请求一响应 JSON：成功退出 0，拒绝或用法错误退出 2；CLI 错误 JSON 只承诺 <code>name</code> 与 <code>message</code>，不承诺跨语言保留 <code>details</code>。</p>
-<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.8.3，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
+<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.8.4，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

@@ -1,0 +1,19 @@
+version: 0.8.4
+date: 2026-08-24
+locales:
+  en:
+    summary: Lockstep Foundation 0.8.4 update documents validated external source authority without changing Kit commands or Profile SPI.
+    changes:
+      changed:
+        - Moves the package version to 0.8.4 together with Contracts and Harness.
+        - Documents that consumers validate a source-authority receipt through Contracts before passing the returned coordinates through the existing sourceRepository and sourceBaseCommit fields.
+        - Keeps the four stable top-level Kit commands, builder, Profile SPI, and public exports unchanged.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.8.4. A provider Profile descriptor upgrading from 0.8.3 and Contracts 1.7.0 must mechanically update its base.contractsVersion field to 1.8.0. Existing functions and Schema shapes, Profile SPI v3, and the four Kit commands require no migration; source-authority consumers only add the Contracts validation step before invoking the existing builder surface.
+  zh-CN:
+    summary: 随 Foundation 0.8.4 锁步升版，补充外置 source authority 校验用法；Kit 命令与 Profile SPI 不变。
+    changes:
+      changed:
+        - 包版本与 Contracts、Harness 一同升至 0.8.4。
+        - 说明消费者先经 Contracts 校验 source-authority receipt，再把返回坐标传入既有 sourceRepository 与 sourceBaseCommit 字段。
+        - 四个稳定顶层命令、builder、Profile SPI 与公共导出保持不变。
+    upgradeNotes: 消费者必须把三个 Foundation 包精确锁定到 0.8.4。provider Profile descriptor 从 0.8.3 与 Contracts 1.7.0 升级时，必须把自身的 base.contractsVersion 字段机械更新为 1.8.0。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令均不需要迁移；需要 source authority 的消费者只增加调用 builder 前的 Contracts 校验步骤。

@@ -718,6 +718,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#来源权威收据-foundationcontractssource-authority" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        来源权威收据 (foundation.contracts.source-authority)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="来源权威收据 (foundation.contracts.source-authority)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateSourceAuthorityReceipt--parseSourceAuthorityReceipt" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateSourceAuthorityReceipt / parseSourceAuthorityReceipt
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1975,6 +2003,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#来源权威收据-foundationcontractssource-authority" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        来源权威收据 (foundation.contracts.source-authority)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="来源权威收据 (foundation.contracts.source-authority)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateSourceAuthorityReceipt--parseSourceAuthorityReceipt" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateSourceAuthorityReceipt / parseSourceAuthorityReceipt
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2197,6 +2253,7 @@
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#对象校验-foundationcontractsobject-validation">对象校验</a> → <code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code></li>
+<li><a href="#来源权威收据-foundationcontractssource-authority">来源权威收据</a> → <code>validateSourceAuthorityReceipt</code> / <code>parseSourceAuthorityReceipt</code></li>
 <li><a href="#登记与协议-foundationcontractsregistry-protocol">登记与协议</a> → <code>loadRegistry</code> / <code>findSchemaByObject</code> / <code>findProtocol</code> / <code>registerSchema</code> / <code>registerProtocol</code></li>
 <li><a href="#内核协议-foundationcontractskernel-protocol">内核协议</a> → <code>loadKernelProtocol</code> / <code>findOperation</code> / <code>checkOperation</code></li>
 <li><a href="#强制检查-foundationcontractsmandatory-checks">强制检查</a> → <code>runChecks</code> / <code>collectUnresolvedRefs</code></li>
@@ -2204,7 +2261,7 @@
 <li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（18 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.4.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（32 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.8.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2249,6 +2306,22 @@
 <li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
 <li>正例/负例测试：同上。</li>
 <li>调用方仍拥有的业务语义：方言选择策略（何时用 tolerant）。</li>
+</ul>
+<hr />
+<h2 id="来源权威收据-foundationcontractssource-authority">来源权威收据 (foundation.contracts.source-authority)<a class="headerlink" href="#来源权威收据-foundationcontractssource-authority" title="Permanent link">&para;</a></h2>
+<h3 id="validateSourceAuthorityReceipt--parseSourceAuthorityReceipt">validateSourceAuthorityReceipt / parseSourceAuthorityReceipt<a class="headerlink" href="#validateSourceAuthorityReceipt--parseSourceAuthorityReceipt" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>validateSourceAuthorityReceipt(receipt)</code>；<code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code>。</li>
+<li>输入：闭合的外置 receipt，以及调用方实际观测的 subjects。每个 subject 只含 <code>packageName</code>、<code>version</code>、<code>filename</code> 与 <code>sha256</code>。</li>
+<li>输出：两者均返回既有 <code>{ valid, errorCode, errors, data }</code> 结果形态。解析成功时，<code>data</code> 只含 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code>。</li>
+<li>纯函数：是。输入会复制后校验，调用方对象不被修改。</li>
+<li>副作用：无文件、进程、Git、网络或发布状态副作用。</li>
+<li>稳定错误码：结构、排序、重复包名、实际 subjects 形状或逐字段核对失败均返回 <code>SFC1001</code>。</li>
+<li>前置条件与信任锚：receipt subjects 至少一项，按 <code>packageName</code> 唯一、升序排列；<code>sourceBaseCommit</code> 是 40 位小写十六进制，SHA-256 是 64 位小写十六进制。调用方负责取得 receipt 与实际 subjects。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.8.4</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/source-authority.mjs</code>、<code>src/schemas/source-authority-receipt.schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/source-authority.test.mjs</code>、<code>source-authority-public-consumer.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：receipt 的签发、存储和传输；实际包发现；校验后是否采用该来源。Contracts 不执行目标，也不解释私有发布计划。</li>
 </ul>
 <hr />
 <h2 id="登记与协议-foundationcontractsregistry-protocol">登记与协议 (foundation.contracts.registry-protocol)<a class="headerlink" href="#登记与协议-foundationcontractsregistry-protocol" title="Permanent link">&para;</a></h2>

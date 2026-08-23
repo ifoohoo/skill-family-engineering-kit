@@ -1,5 +1,22 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.8.4 locale=zh-CN baseline=sha256:38a973bb735c925e8453656ce24a11173b530c6376609d68dfb850d9029daa21 -->
+## [0.8.4] - 2026-08-24
+
+随 Foundation 0.8.4 锁步升版，补充外置 source authority 校验用法；Kit 命令与 Profile SPI 不变。
+
+### 变更
+
+- 包版本与 Contracts、Harness 一同升至 0.8.4。
+- 说明消费者先经 Contracts 校验 source-authority receipt，再把返回坐标传入既有 sourceRepository 与 sourceBaseCommit 字段。
+- 四个稳定顶层命令、builder、Profile SPI 与公共导出保持不变。
+
+### 升级说明
+
+消费者必须把三个 Foundation 包精确锁定到 0.8.4。provider Profile descriptor 从 0.8.3 与 Contracts 1.7.0 升级时，必须把自身的 base.contractsVersion 字段机械更新为 1.8.0。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令均不需要迁移；需要 source authority 的消费者只增加调用 builder 前的 Contracts 校验步骤。
+<!-- release-skill:changelog:end version=0.8.4 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.8.3 locale=zh-CN baseline=sha256:3315d4594a7e28926b54dae3057c35d192b1e9293d07d22fd8856f44da2a7d80 -->
 ## [0.8.3] - 2026-08-23
 

@@ -4,23 +4,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.3 -->
+<!-- release-skill:release-version: 0.8.4 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.3** (2026-08-23)
+**0.8.4** (2026-08-24)
 
-Lockstep patch release whose managed Bundle carries the bounded Harness containment fix.
+Lockstep Foundation 0.8.4 update documents validated external source authority without changing Kit commands or Profile SPI.
 
 **Changed**
 
-- Moves the package version to 0.8.3 together with Contracts and Harness; the four stable top-level Kit commands and Profile SPI remain unchanged.
-- Rebuilding a managed Bundle projects the updated Harness paths module, including its single ENOENT anchor recomputation and unchanged fail-closed boundaries.
+- Moves the package version to 0.8.4 together with Contracts and Harness.
+- Documents that consumers validate a source-authority receipt through Contracts before passing the returned coordinates through the existing sourceRepository and sourceBaseCommit fields.
+- Keeps the four stable top-level Kit commands, builder, Profile SPI, and public exports unchanged.
 
 **Upgrade Notes**
 
-Consumers must pin Contracts, Harness, and Engineering Kit to exactly 0.8.3 and rebuild the managed Bundle. No Kit API or Profile SPI migration is required.
+Pin all three Foundation packages to exactly 0.8.4. A provider Profile descriptor upgrading from 0.8.3 and Contracts 1.7.0 must mechanically update its base.contractsVersion field to 1.8.0. Existing functions and Schema shapes, Profile SPI v3, and the four Kit commands require no migration; source-authority consumers only add the Contracts validation step before invoking the existing builder surface.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -41,7 +42,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.3
+npm install --save-dev skill-family-engineering-kit@0.8.4
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -49,7 +50,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.3 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.4 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
@@ -58,6 +59,8 @@ The `skill-family-engineering-kit/profile-spi` subpath exposes the stable Profil
 The package carries three SPI JSON resources and the Contracts canonical `profile-descriptor.schema.json`. `profiles/spi` is the only handwritten source; projen mechanically projects those resources and the module into this subpath. The projection changes only the two public package imports and the local schema URL.
 
 `verifyProfile({ profileRoot })` is read-only and data-only for Profile descriptors. `verifyProjectProfile({ projectRoot, profileRelPath? })` is the corresponding entry for a project root declaration. Both refuse invalid input with stable result codes, never execute Profile-provided files, and leave Profile domain meaning to the caller.
+
+When a provider Profile descriptor moves from Foundation 0.8.3 and Contracts 1.7.0 to Foundation 0.8.4, update its `base.contractsVersion` field mechanically to `1.8.0`. Functions and Schema shapes, Profile SPI v3, and all four Kit commands retain their existing shapes.
 
 ### Report sub-action
 
@@ -73,13 +76,22 @@ The caller must first construct a valid report model; Kit does not derive facts 
 Use the candidate subpath to build a deterministic Quickstart Profile v2 projection from explicit consumer schemas and frozen source identity:
 
 ```js
+import { parseSourceAuthorityReceipt } from "skill-family-contracts";
 import {
   buildQuickstartProfileProjection,
   QUICKSTART_PROFILE_TARGET_PREFIX,
 } from "skill-family-engineering-kit/candidate/quickstart-profile";
+
+const authority = parseSourceAuthorityReceipt(receipt, actualSubjects);
+if (!authority.valid) throw new Error(authority.errorCode);
+
+const projection = await buildQuickstartProfileProjection({
+  ...projectionInputs,
+  ...authority.data,
+});
 ```
 
-The generated Bundle selects standalone validators by schema `$id` and runs offline without Foundation packages, `node_modules`, or runtime Ajv. Its provenance binds Foundation sources, consumer schemas, payload bytes, tool versions, and the licenses of code that actually enters the Bundle.
+The caller obtains `receipt` and `actualSubjects` outside Kit. Contracts validates their exact binding before the existing builder receives `sourceRepository` and `sourceBaseCommit`; Kit does not parse release plans or discover source authority. The generated Bundle selects standalone validators by schema `$id` and runs offline without Foundation packages, `node_modules`, or runtime Ajv. Its provenance binds Foundation sources, consumer schemas, payload bytes, tool versions, and the licenses of code that actually enters the Bundle.
 
 Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. This subpath is public but **not stable**. Pin exactly `0.4.0` for v2; integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
 
