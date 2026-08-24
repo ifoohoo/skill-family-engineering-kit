@@ -71,12 +71,14 @@ import { scaffoldTarget } from "./scaffold.mjs";
 import {
   assertPlanConsistency,
   buildHostAdapter,
+  verifyHostPeers,
   materializeHostBuild,
   planHost,
+  applyHostPlan,
   probeHost,
   refuseHostApply,
 } from "./host.mjs";
-import { describeHost, loadHostRegistry } from "./host-profiles.mjs";
+import { describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
 import {
   describeSkeletonFiles,
   IDENTITY_RECORD_PATH,
@@ -249,11 +251,14 @@ export {
   PLATFORM_SUBSET_DECLARATION_PATH,
   matchAnyGlob,
   describeHost,
+  resolveHostId,
   loadHostRegistry,
   probeHost,
   buildHostAdapter,
   materializeHostBuild,
   planHost,
+  verifyHostPeers,
+  applyHostPlan,
   assertPlanConsistency,
   refuseHostApply,
 };

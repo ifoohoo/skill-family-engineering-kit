@@ -1959,7 +1959,8 @@
 <li><strong>Path operation reports SFC2004 + <code>path-traversal</code>/<code>symlink-escape</code>/<code>realpath-escape</code></strong>: the path escaped the contained root; confirm the root-directory boundary, and do not cram business-selection rules into Foundation.</li>
 <li><strong>Atomic write reports SFC2004 + <code>atomic-write-failed</code></strong>: the target is out of bounds or the content type is illegal; check path containment and content type.</li>
 <li><strong>State storage reports <code>store-locked</code></strong>: an old writer may still hold the lock; confirm outside Foundation that the old writer has terminated, then call <code>recoverStateStoreLock</code> with the exact owner/fencing.</li>
-<li><strong>host apply fails immediately</strong>: <code>apply</code> is stably refused in the read-only Phase D slice; install/update/uninstall are unimplemented; the full Qoder driver is unsupported.</li>
+<li><strong>CLI host apply fails immediately</strong>: Engineering Kit's <code>adopt-plan host-apply</code>, generic apply, and remote apply remain stably refused. The package API <code>applyHostPlan</code> is limited to digest-bound local install/update for registered hosts; executing an uninstall plan returns <code>manual-recovery-required</code> without deleting files. The full Qoder driver remains unsupported.</li>
+<li><strong>Peer-adapter verification fails</strong>: <code>verifyHostPeers</code> accepts only hosts and path categories proved by registered Profiles. Any peer path, closure, byte, or <code>logicalMappings</code> mismatch fails closed and does not grant install or release status.</li>
 <li><strong>Document versions/commands do not match the source of truth</strong>: rely on the recomputation result of <code>scripts/docs/fact-check.mjs</code>; do not revise from memory.</li>
 </ul>
 <h2 id="Project-Routing">Project Routing<a class="headerlink" href="#Project-Routing" title="Permanent link">&para;</a></h2>

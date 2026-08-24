@@ -8,6 +8,7 @@
   "packages/skill-family-harness-node/package.json",
   "packages/skill-family-engineering-kit/package.json",
   "packages/skill-family-contracts/src/index.mjs",
+  "packages/skill-family-contracts/src/stability.mjs",
   "packages/skill-family-harness-node/src/index.mjs",
   "packages/skill-family-engineering-kit/src/index.mjs",
   "packages/skill-family-engineering-kit/src/cli.mjs",
@@ -365,17 +366,21 @@
     "normalizeAdapterSource (packages/skill-family-harness-node/src/host.mjs)",
     "buildAdapterClosure (packages/skill-family-harness-node/src/host.mjs)",
     "verifyAdapterBuildManifest (packages/skill-family-harness-node/src/host.mjs)",
+    "verifyPeerAdapterDirectories (packages/skill-family-harness-node/src/peer-adapter.mjs)",
     "materializeAdapterBuild (packages/skill-family-harness-node/src/host.mjs)",
     "probeVersionVector (packages/skill-family-harness-node/src/host.mjs)"
    ],
-   "sourceRefs": [
-    "packages/skill-family-harness-node/src/host.mjs"
-   ],
-   "positiveTestRefs": [
-    "packages/skill-family-harness-node/test/host.test.mjs"
-   ],
-   "negativeTestRefs": [
-    "packages/skill-family-harness-node/test/host.test.mjs"
+  "sourceRefs": [
+    "packages/skill-family-harness-node/src/host.mjs",
+    "packages/skill-family-harness-node/src/peer-adapter.mjs"
+  ],
+  "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/host.test.mjs",
+    "packages/skill-family-harness-node/test/peer-adapter.test.mjs"
+  ],
+  "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/host.test.mjs",
+    "packages/skill-family-harness-node/test/peer-adapter.test.mjs"
    ]
   },
   {
@@ -795,12 +800,15 @@
    "stability": "unstable",
    "entrypoints": [
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
+    "resolveHostId (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "loadHostRegistry (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "probeHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "buildHostAdapter (packages/skill-family-engineering-kit/src/host.mjs)",
+    "verifyHostPeers (packages/skill-family-engineering-kit/src/host.mjs)",
     "materializeHostBuild (packages/skill-family-engineering-kit/src/host.mjs)",
     "planHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "assertPlanConsistency (packages/skill-family-engineering-kit/src/host.mjs)",
+    "applyHostPlan (packages/skill-family-engineering-kit/src/host.mjs)",
     "refuseHostApply (packages/skill-family-engineering-kit/src/host.mjs)",
     "probeTrustedVersionDriver (packages/skill-family-engineering-kit/src/host-drivers.mjs)"
    ],
@@ -1007,13 +1015,18 @@
    "since": "0.2.0",
    "stability": "unstable",
    "entrypoints": [
-    "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)"
+    "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
+    "resolveHostId (packages/skill-family-engineering-kit/src/host-profiles.mjs)"
    ],
    "sourceRefs": [
     "profiles/hosts/registry.json",
     "profiles/hosts/claude/host-descriptor.json",
     "profiles/hosts/codex/host-descriptor.json",
-    "profiles/hosts/qoder/host-descriptor.json"
+    "profiles/hosts/qoder/host-descriptor.json",
+    "profiles/hosts/kimi-code/host-descriptor.json",
+    "profiles/hosts/workbuddy/host-descriptor.json",
+    "profiles/hosts/codebuddy/host-descriptor.json",
+    "profiles/hosts/deepseek-harness/host-descriptor.json"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/host.test.mjs"
@@ -1179,20 +1192,31 @@
    "since": "0.2.1",
    "stability": "candidate",
    "entrypoints": [
-    "skill-family-contracts/candidate/quickstart-profile: QUICKSTART_PROTOCOL, QUICKSTART_PROFILE_VERSION, loadQuickstartProtocol, quickstartProfileSchemas, listQuickstartProfileSchemas, validateQuickstartProfileDocument (packages/skill-family-contracts/candidate/quickstart-profile/index.mjs)"
+    "skill-family-contracts/quickstart-profile: QUICKSTART_PROTOCOL, QUICKSTART_PROFILE_VERSION, HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS, loadQuickstartProtocol, quickstartProfileSchemas, listQuickstartProfileSchemas, loadSchemaValidationBatchRequestSchema, loadSchemaValidationBatchResultSchema, validateQuickstartProfileDocument (packages/skill-family-contracts/candidate/quickstart-profile/index.mjs)"
    ],
+   "legacyEntrypoints": [
+    "skill-family-contracts/candidate/quickstart-profile"
+   ],
+   "migration": "required-once",
+   "promotionPolicy": "consumer-transparent-after-migration",
    "sourceRefs": [
     "packages/skill-family-contracts/candidate/quickstart-profile/index.mjs",
     "packages/skill-family-contracts/candidate/quickstart-profile/protocol.json",
     "packages/skill-family-contracts/candidate/quickstart-profile/resource.schema.json",
     "packages/skill-family-contracts/candidate/quickstart-profile/task.schema.json",
-    "packages/skill-family-contracts/candidate/quickstart-profile/result.schema.json"
+    "packages/skill-family-contracts/candidate/quickstart-profile/result.schema.json",
+    "packages/skill-family-contracts/candidate/quickstart-profile/consumer-schema-inventory.schema.json",
+    "packages/skill-family-contracts/candidate/quickstart-profile/harness-surface-inventory.schema.json",
+    "packages/skill-family-contracts/candidate/foundation-mechanisms/schema-validation-batch-request.schema.json",
+    "packages/skill-family-contracts/candidate/foundation-mechanisms/schema-validation-batch-result.schema.json"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-contracts/test/quickstart-profile.test.mjs"
+    "packages/skill-family-contracts/test/quickstart-profile.test.mjs",
+    "packages/skill-family-contracts/test/candidate-promotion-compatibility.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-contracts/test/quickstart-profile.test.mjs"
+    "packages/skill-family-contracts/test/quickstart-profile.test.mjs",
+    "packages/skill-family-contracts/test/candidate-promotion-compatibility.test.mjs"
    ]
   },
   {
@@ -1202,17 +1226,27 @@
    "since": "0.2.1",
    "stability": "candidate",
    "entrypoints": [
-    "skill-family-harness-node/candidate/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, invokeFoundationMechanism[read-file-strict], canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)"
+    "skill-family-harness-node/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, invokeFoundationMechanism[read-file-strict, validate-many-by-schema-id], canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)",
+    "skill-family-harness-node/rename-directory-no-replace (packages/skill-family-harness-node/candidate/rename-directory-no-replace/rename-directory-no-replace.mjs)"
    ],
+   "legacyEntrypoints": [
+    "skill-family-harness-node/candidate/quickstart-profile",
+    "skill-family-harness-node/candidate/rename-directory-no-replace"
+   ],
+   "migration": "required-once",
+   "promotionPolicy": "consumer-transparent-after-migration",
    "sourceRefs": [
     "packages/skill-family-harness-node/candidate/quickstart-profile.mjs",
+    "packages/skill-family-harness-node/candidate/rename-directory-no-replace/rename-directory-no-replace.mjs",
     "packages/skill-family-harness-node/src/strict-read.mjs"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs"
+    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs",
+    "packages/skill-family-harness-node/test/candidate-promotion-compatibility.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs"
+    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs",
+    "packages/skill-family-harness-node/test/candidate-promotion-compatibility.test.mjs"
    ]
   },
   {
@@ -1222,18 +1256,33 @@
    "since": "0.2.1",
    "stability": "candidate",
    "entrypoints": [
-    "skill-family-engineering-kit/candidate/quickstart-profile: buildQuickstartProfileProjection, QUICKSTART_PROFILE_TARGET_PREFIX (packages/skill-family-engineering-kit/candidate/index.mjs)"
+    "skill-family-engineering-kit/quickstart-profile: buildQuickstartProfileProjection, buildQuickstartProfileProjectionFromInventory, QUICKSTART_PROFILE_TARGET_PREFIX (packages/skill-family-engineering-kit/candidate/index.mjs)",
+    "skill-family-engineering-kit/adoption: invokeFoundationAdoption, runAdoptionCli (packages/skill-family-engineering-kit/candidate/index.mjs)",
+    "skill-family-engineering-kit/skill-naming: checkPluginSkillNaming, loadSkillNamingPolicy, parseSkillFrontmatter (packages/skill-family-engineering-kit/candidate/skill-naming.mjs)"
    ],
+   "legacyEntrypoints": [
+    "skill-family-engineering-kit/candidate/quickstart-profile"
+   ],
+   "migration": "required-once",
+   "promotionPolicy": "consumer-transparent-after-migration",
    "sourceRefs": [
     "packages/skill-family-engineering-kit/candidate/index.mjs",
     "packages/skill-family-engineering-kit/candidate/profile-bundle.mjs",
-    "packages/skill-family-engineering-kit/candidate/projection-bundle-cli.mjs"
+    "packages/skill-family-engineering-kit/candidate/projection-bundle-cli.mjs",
+    "packages/skill-family-engineering-kit/candidate/adoption-mechanisms.mjs",
+    "packages/skill-family-engineering-kit/candidate/skill-naming.mjs"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-adoption-cli.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-skill-naming.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-promotion-compatibility.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-adoption-cli.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-skill-naming.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-promotion-compatibility.test.mjs"
    ]
   }
  ]

@@ -1787,7 +1787,7 @@
 <h2 id="阅读顺序">阅读顺序<a class="headerlink" href="#阅读顺序" title="Permanent link">&para;</a></h2>
 <p>智能体按下面的顺序取用，不必从头读到尾：</p>
 <ol>
-<li><code>capability-catalog.json</code> —— 全部稳定能力的机器事实目录，是判断「该需求是否属于 Foundation、落在哪一层、用哪个入口」的起点。</li>
+<li><code>capability-catalog.json</code> —— 全部稳定与 candidate 能力的机器事实目录，是判断「该需求是否属于 Foundation、落在哪一层、用哪个入口」的起点。</li>
 <li><code>architecture-routing.md</code> —— 从架构意图到层/能力/入口/外部项目的决策表与决策树。</li>
 <li><code>capability-catalog.schema.json</code> —— 目录自身的结构合同，校验器与投影都依赖它。</li>
 <li>根 <code>README.md</code> 的 Agent Quick Reference —— 只做路由，不复制 API。</li>
@@ -1848,6 +1848,9 @@
 <blockquote>
 <p>路由边界的硬规则：Foundation 不拥有远端写入（归 release-skill）、不拥有任务/重试/返工（归 loop-agent）、不拥有制品关系与 context（归 artifact-graph）、不拥有领域审计语义（归独立审计消费者）。详情见 <code>architecture-routing.md</code> 的路由表。</p>
 </blockquote>
+<p>candidate 项的 <code>entrypoints</code> 始终给出规范入口。若同时存在 <code>legacyEntrypoints</code>，表示这是 0.10.0 以前形成的历史债务，
+消费者需迁移一次；迁移后仅晋升 stable 不再改合同身份。消费者仍需更新精确 pin 才能取得新发布的 stable 承诺。
+0.10.0 以后新 candidate 的能力 ID、入口、Schema <code>$id</code> 与 operation 都不得编码成熟度。</p>
 <h2 id="与机械门禁的关系">与机械门禁的关系<a class="headerlink" href="#与机械门禁的关系" title="Permanent link">&para;</a></h2>
 <p>两个检查脚本守护目录与 README 不漂移：</p>
 <ul>

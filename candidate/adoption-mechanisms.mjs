@@ -7,7 +7,7 @@ import {
 import {
   verifyHarnessSurfaceInventory,
   verifyManagedBundleIdentity,
-} from "skill-family-harness-node/candidate/quickstart-profile";
+} from "skill-family-harness-node/quickstart-profile";
 
 export { verifyManagedBundleIdentity };
 

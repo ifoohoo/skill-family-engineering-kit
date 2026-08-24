@@ -1,5 +1,27 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.10.0 locale=en baseline=sha256:fc575df3b8c5f7a0d819090ce9637f8cdc654c277892fe3f14149d5cc1746b24 -->
+## [0.10.0] - 2026-08-24
+
+Engineering Kit 0.10.0 adds responsibility-specific canonical entrypoints, a bounded host lifecycle slice, and a thin read-only peer adapter verification entry.
+
+### Added
+
+- Adds skill-family-engineering-kit/quickstart-profile, /adoption, and /skill-naming canonical exports.
+- Adds finite Profile alias resolution, independent manual probe facts for non-driver hosts, and explicit local install/update plans; uninstall remains a manual-recovery refusal.
+- Adds `verifyHostPeers` as a thin wrapper over Harness peer verification; the Kit retains four top-level commands and does not write peer directories.
+
+### Changed
+
+- Keeps the historical Quickstart candidate export as a same-source migration alias and preserves the four-command Kit boundary.
+- Compiles one canonical Quickstart and batch Schema set while mapping historical and canonical IDs to the same standalone validators.
+
+### Upgrade Notes
+
+Update all three exact pins to 0.10.0 and migrate imports and Schema IDs once to canonical identities. A later maturity-label promotion adds no separate Bundle rebuild requirement; package-identity, source-digest, and provenance changes continue to follow the existing projection contract.
+<!-- release-skill:changelog:end version=0.10.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.9.0 locale=en baseline=sha256:6419bbdc8d469e6dd7f9fda5995e5465cc6bf98724371f9f4aa9293a7e0d9f14 -->
 ## [0.9.0] - 2026-08-24
 

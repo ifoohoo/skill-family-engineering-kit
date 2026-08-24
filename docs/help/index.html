@@ -1959,7 +1959,8 @@
 <li><strong>路径操作报 SFC2004 + <code>path-traversal</code>/<code>symlink-escape</code>/<code>realpath-escape</code></strong>：路径越出受收容根，确认根目录边界，不要把业务选择规则塞进 Foundation。</li>
 <li><strong>原子写报 SFC2004 + <code>atomic-write-failed</code></strong>：目标越界或内容类型非法，检查路径收容与内容类型。</li>
 <li><strong>状态存储报 <code>store-locked</code></strong>：旧写者可能仍持有锁；在 Foundation 外确认旧写者已终止，再用精确 owner/fencing 调用 <code>recoverStateStoreLock</code>。</li>
-<li><strong>host apply 直接失败</strong>：<code>apply</code> 在只读 Phase D 切片稳定拒绝，安装/更新/卸载未实现，Qoder 完整 driver 为 unsupported。</li>
+<li><strong>CLI host apply 直接失败</strong>：Engineering Kit 的 <code>adopt-plan host-apply</code>、通用或远端 apply 仍稳定拒绝。包 API <code>applyHostPlan</code> 只执行已登记宿主的摘要绑定本地 install/update；执行 uninstall 计划会返回 <code>manual-recovery-required</code>，不删除文件。Qoder 完整 driver 仍为 unsupported。</li>
+<li><strong>同级 adapter 验证失败</strong>：<code>verifyHostPeers</code> 只接受由已登记 Profile 证明的宿主和路径类别；任一 peer 的路径、闭包、字节或 <code>logicalMappings</code> 不一致都会失败关闭，不会授予安装或发布状态。</li>
 <li><strong>文档版本/命令对不上真源</strong>：以 <code>scripts/docs/fact-check.mjs</code> 复算结果为准，不凭记忆修订。</li>
 </ul>
 <h2 id="项目路由">项目路由<a class="headerlink" href="#项目路由" title="Permanent link">&para;</a></h2>

@@ -1859,6 +1859,7 @@
 <blockquote>
 <p>The hard rule of routing boundaries: Foundation does not own remote writes (→ release-skill), does not own tasks/retries/rework (→ loop-agent), does not own artifact relationships and context (→ artifact-graph), does not own domain-audit semantics (→ independent audit consumer). See the routing table in <code>architecture-routing.md</code> for details.</p>
 </blockquote>
+<p>For a candidate capability, <code>entrypoints</code> always lists the canonical identity. A simultaneous <code>legacyEntrypoints</code> field marks pre-0.10.0 debt that consumers migrate once. Stable promotion after that migration does not change the contract identity, although consumers must update their exact pins to obtain the newly published stable promise. Candidate capabilities introduced from 0.10.0 onward must not encode maturity in the capability ID, entrypoint, Schema <code>$id</code>, or operation.</p>
 <h2 id="Relationship-with-Mechanical-Gates">Relationship with Mechanical Gates<a class="headerlink" href="#Relationship-with-Mechanical-Gates" title="Permanent link">&para;</a></h2>
 <p>Two check scripts guard the catalog and README against drift:</p>
 <ul>

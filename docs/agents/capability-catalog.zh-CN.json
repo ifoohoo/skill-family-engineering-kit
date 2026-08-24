@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的 18 类顶层契约对象文档",
+   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 37 类顶层契约对象文档",
    "useWhen": [
     "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
@@ -73,7 +73,7 @@
     "需要按协议名查找 kernel 协议定义"
    ],
    "doNotUseWhen": [
-    "需要新增第四类登记对象（未经 ADR 不得扩展 18 类对象集）"
+    "需要在没有 ADR 的情况下新增顶层登记对象（37 类对象集已经固定）"
    ],
    "prerequisites": [
     "registry.json 已随包发布",
@@ -94,8 +94,8 @@
     "SFC1004：重复协议登记"
    ],
    "invariants": [
-    "registry.json 的 schemaVersion=1、contractsVersion=1.4.0 为唯一权威",
-    "18 类顶层对象集合固定，新增需 ADR"
+    "registry.json 的 schemaVersion=1、contractsVersion=1.10.0 为唯一权威",
+    "37 类顶层对象集合固定，新增需 ADR"
    ],
    "ownedByCaller": [
     "对象业务含义的解释"
@@ -106,7 +106,7 @@
   },
   {
    "id": "foundation.contracts.kernel-protocol",
-   "intent": "加载并校验 skill-family.kernel.operation 协议（stable，Contracts 1.4.0），定义操作请求/结果结构",
+   "intent": "加载并校验 skill-family.kernel.operation 协议（stable，Kernel 文档生命周期坐标 1.8.0），定义操作请求/结果结构",
    "useWhen": [
     "需要解析或校验 operation-request / operation-result 结构",
     "需要按操作名查找参数契约"
@@ -568,11 +568,12 @@
   },
   {
    "id": "foundation.harness.host-adapter",
-   "intent": "实现宿主接入的通用机制层：归一化 adapter source、计算构建闭包、校验构建清单、materialize 构建、probe 版本向量（默认禁 spawn）",
+  "intent": "实现宿主接入的通用机制层：归一化 adapter source、计算构建闭包、校验构建清单、验证同级适配器目录、materialize 构建、probe 版本向量（默认禁 spawn）",
    "useWhen": [
     "需要把宿主适配源做成可复算的文本闭包",
     "需要在受收容处 materialize 构建产物",
-    "需要探测宿主版本向量（不自动执行宿主二进制）"
+    "需要探测宿主版本向量（不自动执行宿主二进制）",
+    "需要从两个或更多同级适配器的真实字节执行只读目录验证"
    ],
    "doNotUseWhen": [
     "需要 host apply/install/update/uninstall（明确 unsupported）",
@@ -585,17 +586,18 @@
     "adapter source、目标路径"
    ],
    "outputs": [
-    "构建闭包、校验后的清单、materialize 产物"
+    "构建闭包、校验后的清单、materialize 产物，或带共同闭包与完整 mapping 的同级验证结果"
    ],
    "sideEffects": [
     "在受收容目标创建 sibling staging 并单次 rename",
-    "probe 默认不 spawn，不走 PATH"
+    "probe 默认不 spawn，不走 PATH",
+    "同级目录验证只读，不写入 peer 目录"
    ],
    "failureSemantics": [
-    "清单摘要不符、目标已存在、非受信可执行文件均抛错"
+    "清单摘要不符、目标已存在、非受信可执行文件、成员漂移或 mapping 漂移均失败关闭"
    ],
    "invariants": [
-    "materialize 为原子 sibling + rename"
+    "materialize 为原子 sibling + rename；同级验证从调用方提供的真实目录重新计算事实"
    ],
    "ownedByCaller": [
     "宿主具体业务语义"
@@ -1263,43 +1265,46 @@
   },
   {
    "id": "foundation.kit.host",
-   "intent": "注入具体宿主 Profile 与受信 driver，提供 describe/build/probe/plan；apply 稳定拒绝，install/update/uninstall 未实现",
+  "intent": "注入有限宿主 Profile 集合与受信 driver，提供规范身份解析、describe/build/probe/plan、受限的本地 install/update 以及只读同级适配器验证；uninstall 始终要求人工恢复",
    "useWhen": [
-    "需要描述已登记宿主（claude/codex）",
-    "需要探测、构建或规划宿主接入（只读机制层）"
+    "需要解析已登记宿主或有限 Profile alias",
+    "需要探测、构建、规划或本地 install/update 宿主接入",
+    "需要在不写入目录的前提下验证调用方拥有的同级适配器投影根"
    ],
    "doNotUseWhen": [
-    "需要 host apply/install/update/uninstall（明确 unsupported）",
+    "需要远端宿主发布、自动信任或删除式 uninstall",
+    "需要用同级验证替代领域语义，或借此获得 install/apply 生命周期能力",
     "需要 Qoder 完整 driver（该宿主 unsupported）"
    ],
    "prerequisites": [
-    "宿主 Profile 已在 profiles/hosts 登记",
+    "宿主 Profile 已在 profiles/hosts 登记，alias 也必须来自有限集合",
     "受信 driver 仅 claude-version-v1 / codex-version-v1"
    ],
    "inputs": [
-    "宿主标识、probe/plan 选项"
+    "宿主标识、有限 Profile、probe/plan 选项或已验证的本地操作输入"
    ],
    "outputs": [
-    "宿主描述、probe 结果、构建产物、plan"
+    "规范宿主身份、独立 probe fact、构建产物、plan、本地操作结果或只读同级验证结果"
    ],
    "sideEffects": [
     "build/materialize 在受收容目标写产物",
-    "probe 默认不 spawn"
+    "probe 默认不 spawn",
+    "verifyHostPeers 只读取调用方拥有的 peer 根，不写入 peer 目录"
    ],
    "failureSemantics": [
-    "unsupported host（如 qoder）抛错",
-    "apply 稳定拒绝",
-    "缺 probe facts 抛错"
+    "unsupported host（如 qoder）返回 unsupported 结果",
+    "uninstall 返回 manual-recovery-required 且不删除文件",
+    "缺 probe facts、未知投影类别、身份伪造或 scope/anchor 冲突均失败关闭"
    ],
    "invariants": [
     "HOST_DRIVER_IDS 仅两个受信 driver",
-    "apply 稳定拒绝"
+    "九项能力事实逐项输出，update 必须绑定既有摘要；manual 投影类别不授予 build/plan/apply 生命周期能力"
    ],
    "ownedByCaller": [
     "宿主业务语义"
    ],
    "routeElsewhere": [
-    "host apply：明确 unsupported",
+    "远端宿主发布和自动信任：明确 unsupported",
     "Qoder 完整 driver：unsupported"
    ]
   },
@@ -1529,7 +1534,7 @@
     "需要把私有 Profile 或真实业务数据写进公开文档（禁止泄漏）"
    ],
    "prerequisites": [
-    "base.contractsVersion = 1.4.0"
+    "base.contractsVersion = 1.10.0"
    ],
    "inputs": [
     "Profile descriptor 与各 SPI 数据资源"
@@ -1590,9 +1595,9 @@
   },
   {
    "id": "foundation.profile.hosts",
-   "intent": "登记宿主差异声明（claude/codex 支持、qoder 不支持），为 Kit host 子动作提供 descriptor 与 registry",
+   "intent": "登记有限的跨平台宿主 descriptor 集合，表达受信、手动、developer-preview 与 unsupported 成熟度状态",
    "useWhen": [
-    "需要登记受支持宿主（claude/codex）的差异",
+    "需要登记 supported、manual、developer-preview 或 unsupported 宿主差异",
     "需要为宿主接入提供声明数据"
    ],
    "doNotUseWhen": [
@@ -1611,10 +1616,10 @@
     "无副作用（声明数据）"
    ],
    "failureSemantics": [
-    "qoder 标记 unsupported，引用即拒绝"
+    "qoder 标记 unsupported，手动宿主不隐式获得 driver"
    ],
    "invariants": [
-    "claude/codex support=supported 且绑定 driverId；qoder support=unsupported"
+    "claude/codex support=supported 且绑定 driverId；手动宿主无 driver；qoder support=unsupported"
    ],
    "ownedByCaller": [
     "宿主业务语义"
@@ -1625,10 +1630,10 @@
   },
   {
    "id": "foundation.unsupported.host-apply",
-   "intent": "宿主 apply（应用接入变更到宿主运行环境）在只读 Phase D 切片中稳定拒绝，不实现",
+   "intent": "远端或通用宿主 apply 仍稳定拒绝；受限的本地 applyHostPlan 只执行已登记计划",
    "useWhen": [],
    "doNotUseWhen": [
-    "任何需要真正改变宿主运行环境的场景（当前不可用）"
+    "任何需要远端或通用修改宿主运行环境的场景"
    ],
    "prerequisites": [
     "无"
@@ -1637,7 +1642,7 @@
     "无"
    ],
    "outputs": [
-    "抛错：host apply is not implemented in the read-only Phase D slice"
+    "refuseHostApply 抛错；applyHostPlan 只处理已登记的本地计划边界"
    ],
    "sideEffects": [
     "无"
@@ -1646,7 +1651,7 @@
     "调用即抛错，CLI 层 host-apply 子动作同样拒绝"
    ],
    "invariants": [
-    "apply 稳定拒绝，不进入 0.2.x 实现范围"
+    "通用或远端 apply 稳定拒绝"
    ],
    "ownedByCaller": [
     "宿主接入的最终落地"
@@ -1657,10 +1662,10 @@
   },
   {
    "id": "foundation.unsupported.host-install-update-uninstall",
-   "intent": "宿主 install/update/uninstall 均未实现，不在 Foundation 0.2.x 范围",
+   "intent": "远端宿主生命周期和删除式 uninstall 仍不支持；本地 install/update 仅限摘要绑定的已登记计划",
    "useWhen": [],
    "doNotUseWhen": [
-    "任何需要安装/更新/卸载宿主组件的场景"
+    "任何需要远端生命周期、自动信任或删除式 uninstall 的场景"
    ],
    "prerequisites": [
     "无"
@@ -1669,16 +1674,16 @@
     "无"
    ],
    "outputs": [
-    "无（未实现）"
+    "uninstall 要求人工恢复；本地 install/update 仅执行已登记计划"
    ],
    "sideEffects": [
     "无"
    ],
    "failureSemantics": [
-    "不存在对应入口，调用应转向外部工具"
+    "uninstall 不删除文件并直接拒绝；远端生命周期没有 Foundation 入口"
    ],
    "invariants": [
-    "安装/卸载/更新均未实现"
+    "只有本地 install/update 计划可执行；uninstall 仍拒绝"
    ],
    "ownedByCaller": [
     "宿主生命周期管理"
@@ -1913,17 +1918,17 @@
   },
   {
    "id": "foundation.contracts.quickstart-profile-candidate",
-   "intent": "通过 skill-family-contracts/candidate/quickstart-profile 公开 Quickstart Profile v2 协议与按真实 $id 索引的 Resource、Task、Result Schema 集合，供锁定精确版本的接入试验使用",
+   "intent": "通过 skill-family-contracts/quickstart-profile 公开 Quickstart Profile v2 协议、按规范 $id 索引的 Schema 集合和冻结的八项历史 ID 迁移表，供锁定精确版本的接入试验使用",
    "useWhen": [
     "需要在提议进入冻结登记表前检查或校验候选 Resource、Task、Result 形状",
-    "调用方能够锁定 skill-family-contracts 精确版本，并把 candidate 导入隔离在自身稳定 API 之外"
+    "调用方能够锁定 skill-family-contracts 精确版本，并把候选能力隔离在自身稳定 API 之外"
    ],
    "doNotUseWhen": [
     "需要已进入登记表或兼容性已冻结的合同",
     "需要 Foundation 解释领域审计语义"
    ],
    "prerequisites": [
-    "安装导出 skill-family-contracts/candidate/quickstart-profile 的精确 skill-family-contracts 版本",
+    "安装导出 skill-family-contracts/quickstart-profile 的精确 skill-family-contracts 版本",
     "Node >= 22.22.2"
    ],
    "inputs": [
@@ -1931,7 +1936,7 @@
     "待校验的候选文档"
    ],
    "outputs": [
-    "候选 Schema 副本，或包含 valid、errors 与规范化 data 的校验结果"
+    "候选 Schema 副本、八项旧 ID 到规范 ID 的冻结映射，或包含 valid、errors 与规范化 data 的校验结果"
    ],
    "sideEffects": [
     "不写文件系统、Git、网络或进程状态"
@@ -1942,8 +1947,9 @@
    ],
    "invariants": [
     "唯一业务中立操作为 execute-method；method 标识与领域 Schema 继续归消费者所有",
-    "候选 Schema 不进入 src/registry.json，也不扩张 18 类稳定对象",
-    "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+    "候选 Schema 不进入 src/registry.json，也不扩张 37 类稳定对象",
+    "稳定性为 candidate：主动升级候选版本时须复验合同",
+    "历史入口和八个 Schema ID 只迁移一次；晋升 stable 不再要求改合同身份，但取得新发布承诺仍须更新精确 pin"
    ],
    "ownedByCaller": [
     "method、parameters、evidence 与 domainResult 的领域含义",
@@ -1956,7 +1962,7 @@
   },
   {
    "id": "foundation.harness.quickstart-profile-candidate",
-   "intent": "通过 skill-family-harness-node/candidate/quickstart-profile 构造并复验候选 Task/Result 交换，并通过固定机制桥接调用已登记的通用机制",
+   "intent": "通过 skill-family-harness-node/quickstart-profile 构造并复验候选 Task/Result 交换，并通过固定机制桥接调用已登记的通用机制",
    "useWhen": [
     "需要开展早期接入试验，把受收容的 observation 文件绑定到候选 Task 与终态 Result",
     "需要为锁定精确版本的候选交换取得结构化、不抛出的复验结果",
@@ -1967,7 +1973,7 @@
     "需要兼容性已冻结的 Quickstart API"
    ],
    "prerequisites": [
-    "把 skill-family-contracts、skill-family-harness-node 与 skill-family-engineering-kit 精确锁定到 0.8.3，并重建受管 Bundle",
+    "把 skill-family-contracts、skill-family-harness-node 与 skill-family-engineering-kit 精确锁定到 0.10.0；仅在采用产品字节变化时重建受管 Bundle",
     "observation 路径与 read-file-strict 路径受调用方提供的 root 收容"
    ],
    "inputs": [
@@ -1992,7 +1998,8 @@
    "invariants": [
     "Result 必须绑定精确 Task 摘要、真实 Resource 字节、全局唯一 Resource id、operation 身份、correlation 字段与完整 evidence binding 集合",
     "read-file-strict 只转发既有 readFileStrict，不复制路径、读取或摘要算法，也不接受任意函数名",
-    "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+    "稳定性为 candidate：主动升级候选版本时须复验合同",
+    "历史入口和 Schema ID 迁移到规范身份后，晋升 stable 不再要求改合同身份；Bundle 是否重建由既有绑定输入合同决定"
    ],
    "ownedByCaller": [
     "审计 method 语义与 domainResult 解释",
@@ -2005,7 +2012,7 @@
   },
   {
    "id": "foundation.kit.quickstart-profile-candidate",
-   "intent": "通过 skill-family-engineering-kit/candidate/quickstart-profile 构建确定性的 Quickstart Profile v2 离线 Bundle，并按 Schema $id 选择 standalone validator",
+   "intent": "通过 skill-family-engineering-kit/quickstart-profile 构建确定性的 Quickstart Profile v2 离线 Bundle，并通过 adoption 与 skill-naming 规范入口使用历史候选机制",
    "useWhen": [
     "需要通过稳定投影授权边界，在目标中试用候选 Quickstart Schema 与 runner",
     "需要取得完整的来源、消费者 Schema、payload、工具版本与许可证 provenance"
@@ -2015,7 +2022,7 @@
     "需要绕过目标 manifest 授权或手写文件保护"
    ],
    "prerequisites": [
-    "安装精确匹配的三个 Foundation 0.8.3 包版本",
+    "安装精确匹配的三个 Foundation 0.10.0 包版本",
     "targetPrefix 是受收容的 POSIX 相对路径"
    ],
    "inputs": [
@@ -2037,9 +2044,10 @@
    ],
    "invariants": [
     "Bundle 不含 node_modules 或运行时 Ajv，不依赖已安装 Foundation 包或网络",
-    "受管 Bundle 从 0.8.3 的已安装包字节重建，不从 Foundation 工作树导入源码",
+    "受管 Bundle 从精确锁定的已安装包字节重建，不从 Foundation 工作树导入源码",
     "辅助函数不增加 Kit 顶层命令，也不绕过 runProjection",
-    "稳定性为 candidate：后续小版本可以修改或移除该子路径"
+    "稳定性为 candidate：主动升级候选版本时须复验合同",
+    "历史入口和 Schema ID 迁移到规范身份后，晋升 stable 不再要求二次合同迁移；采用新发布仍须更新精确 pin"
    ],
    "ownedByCaller": [
     "返回 manifest 的检查与授权",

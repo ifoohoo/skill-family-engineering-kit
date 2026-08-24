@@ -1894,9 +1894,9 @@
 <h1 id="Recipe文本资源闭包与宿主构建">Recipe：文本资源闭包与宿主构建<a class="headerlink" href="#Recipe文本资源闭包与宿主构建" title="Permanent link">&para;</a></h1>
 <h2 id="1-场景与非场景">1. 场景与非场景<a class="headerlink" href="#1-场景与非场景" title="Permanent link">&para;</a></h2>
 <p>适用：需要把一组文本资源归一成可复算的闭包，并据此在受收容处 materialize 一个宿主适配构建，且构建清单可全摘要复验。</p>
-<p>不适用：需要把二进制资源纳入 adapter 投影（仅支持文本闭包）；需要 host apply/install/update/uninstall（明确 unsupported）。</p>
+<p>不适用：需要把二进制资源纳入 adapter 投影（仅支持文本闭包）；需要 Kit CLI apply、通用或远端 apply、自动删除式 uninstall。</p>
 <h2 id="2-架构选择及能力-ID">2. 架构选择及能力 ID<a class="headerlink" href="#2-架构选择及能力-ID" title="Permanent link">&para;</a></h2>
-<p>首选能力：<code>foundation.harness.resource-closure</code>（确定性闭包与 sha256 摘要）与 <code>foundation.harness.host-adapter</code>（adapter source closure / build / manifest 校验 / materialize）。</p>
+<p>首选能力：<code>foundation.harness.resource-closure</code>（确定性闭包与 sha256 摘要）与 <code>foundation.harness.host-adapter</code>（adapter source closure / build / manifest 校验 / materialize / <code>verifyPeerAdapterDirectories</code> 只读同级验证）。</p>
 <h2 id="3-前置条件与信任边界">3. 前置条件与信任边界<a class="headerlink" href="#3-前置条件与信任边界" title="Permanent link">&para;</a></h2>
 <ul>
 <li>adapter source 为已声明的文本闭包（<code>content</code> 只接受 string，utf8）。</li>
@@ -1938,7 +1938,8 @@ buildAdapterClosure({ path: &quot;x.bin&quot;, content: Buffer.from([0, 1, 2]) }
 </ul>
 <h2 id="9-升级与回滚注意事项">9. 升级与回滚注意事项<a class="headerlink" href="#9-升级与回滚注意事项" title="Permanent link">&para;</a></h2>
 <ul>
-<li>host apply 稳定拒绝，安装/卸载/更新未实现；Qoder 完整 driver 为 unsupported。</li>
+<li>Harness 只负责构建和只读同级验证。包 API <code>applyHostPlan</code> 在 Kit 层支持已登记、摘要绑定的本地 install/update；执行 uninstall 计划不删除文件。Kit CLI apply、通用或远端 apply 仍稳定拒绝，Qoder 完整 driver 为 unsupported。</li>
+<li><code>verifyPeerAdapterDirectories</code> 只证明同级目录的闭包、字节和 <code>logicalMappings</code> 一致，不推导安装、发布或领域状态。</li>
 <li>materialize 为原子 sibling + rename，失败时不影响既有目标；升级跟随 <code>skill-family-harness-node</code> 版本。</li>
 </ul>
 

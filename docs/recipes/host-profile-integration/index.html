@@ -1893,13 +1893,13 @@
 </blockquote>
 <h1 id="Recipe宿主接入与-Profile-注入">Recipe：宿主接入与 Profile 注入<a class="headerlink" href="#Recipe宿主接入与-Profile-注入" title="Permanent link">&para;</a></h1>
 <h2 id="1-场景与非场景">1. 场景与非场景<a class="headerlink" href="#1-场景与非场景" title="Permanent link">&para;</a></h2>
-<p>适用：需要描述已登记宿主（claude/codex）、探测或规划宿主接入，并向 Foundation 注入具体宿主 Profile 与受信 driver。</p>
-<p>不适用：需要 host apply/install/update/uninstall（明确 unsupported）；需要 Qoder 完整 driver（该宿主 unsupported）。</p>
+<p>适用：需要描述已登记宿主（claude/codex）、探测或规划宿主接入，验证同级 adapter 目录，或者通过包 API 执行摘要绑定的本地 install/update。</p>
+<p>不适用：需要 Kit CLI apply、通用或远端 apply、自动删除式 uninstall；需要 Qoder 完整 driver（该宿主 unsupported）。</p>
 <h2 id="2-架构选择及能力-ID">2. 架构选择及能力 ID<a class="headerlink" href="#2-架构选择及能力-ID" title="Permanent link">&para;</a></h2>
-<p>首选能力：<code>foundation.kit.host</code>（<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>planHost</code>）与 <code>foundation.profile.extension-spi</code>（<code>verifyProfile</code>）。宿主差异声明在 <code>foundation.profile.hosts</code>。</p>
+<p>首选能力：<code>foundation.kit.host</code>（<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>verifyHostPeers</code> / <code>planHost</code> / <code>applyHostPlan</code>）与 <code>foundation.profile.extension-spi</code>（<code>verifyProfile</code>）。宿主差异声明在 <code>foundation.profile.hosts</code>。</p>
 <h2 id="3-前置条件与信任边界">3. 前置条件与信任边界<a class="headerlink" href="#3-前置条件与信任边界" title="Permanent link">&para;</a></h2>
 <ul>
-<li>宿主 Profile 已在 <code>profiles/hosts</code> 登记；受信 driver 仅 <code>claude-version-v1</code> / <code>codex-version-v1</code>。</li>
+<li>宿主 Profile 已在 <code>profiles/hosts</code> 登记；受信 driver 仅 <code>claude-version-v1</code> / <code>codex-version-v1</code>。本地 install/update 还要求已验证 build、摘要一致的 plan、受收容 <code>targetRoot</code> 与显式 <code>authorizationRef</code>。</li>
 <li>信任边界：Profile 入口必须是 JSON 数据资源，公共核心不导入 <code>profiles/</code>；<code>coreOwned</code> 为禁入目标。</li>
 </ul>
 <h2 id="4-最小命令与代码">4. 最小命令与代码<a class="headerlink" href="#4-最小命令与代码" title="Permanent link">&para;</a></h2>
@@ -1909,19 +1909,37 @@ npm exec -- skill-family-kit adopt-plan host-describe --host claude --hosts-root
 # 只读探测（默认不 spawn）
 npm exec -- skill-family-kit adopt-plan host-probe --host claude --hosts-root profiles/hosts
 </code></pre>
-<pre><code class="language-js">import { describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
+<pre><code class="language-js">import { buildHostAdapter, describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
 import { verifyProfile } from &quot;profiles/spi/index.mjs&quot;;
 
-const desc = describeHost(&quot;claude&quot;); // 受支持宿主描述
-const facts = probeHost(&quot;claude&quot;, { allowSpawn: false });
-const plan = planHost(desc, facts);
+const hostsRoot = &quot;profiles/hosts&quot;;
+const desc = await describeHost({ hostId: &quot;claude&quot;, hostsRoot });
+const facts = await probeHost({ hostId: &quot;claude&quot;, hostsRoot, allowSpawn: false });
+const build = await buildHostAdapter({
+  hostId: &quot;claude&quot;,
+  pathCategoryId: &quot;claude-project-skills&quot;,
+  input: {
+    schemaVersion: 1,
+    kind: &quot;skill-family.adapter-source&quot;,
+    skillFamilyId: &quot;example-family&quot;,
+    skills: [{ id: &quot;demo&quot;, files: [{ path: &quot;SKILL.md&quot;, content: &quot;# Demo\n&quot; }] }],
+  },
+  hostsRoot,
+});
+const plan = await planHost({
+  hostId: &quot;claude&quot;,
+  pathCategoryId: &quot;claude-project-skills&quot;,
+  buildManifest: build.manifest,
+  probeFacts: facts.facts,
+  hostsRoot,
+});
 const spi = verifyProfile({ profileRoot: &quot;profiles/public-plugin&quot; }); // SPE0000
 </code></pre>
-<p>以上命令与代码展示了 describe/probe/plan 的只读机制，以及用 <code>verifyProfile</code> 校验 Profile 声明。</p>
+<p>以上命令与代码展示了 describe/probe、内存构建和 plan 的机制，以及用 <code>verifyProfile</code> 校验 Profile 声明；它们没有执行 install/update。</p>
 <h2 id="5-预期输出与证据">5. 预期输出与证据<a class="headerlink" href="#5-预期输出与证据" title="Permanent link">&para;</a></h2>
 <p><code>describeHost</code> 返回宿主描述，<code>probeHost</code> 返回只读探测事实，<code>planHost</code> 返回接入计划，<code>verifyProfile</code> 返回 <code>SPE0000</code> 等结果码。证据：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code> 与 <code>fixtures/generic-profile-extension-conformance/verify.mjs</code>。</p>
 <h2 id="6-安全失败负例">6. 安全/失败负例<a class="headerlink" href="#6-安全失败负例" title="Permanent link">&para;</a></h2>
-<pre><code class="language-sh"># 负例：apply 稳定拒绝
+<pre><code class="language-sh"># 负例：CLI apply 稳定拒绝
 npm exec -- skill-family-kit adopt-plan host-apply --host claude --hosts-root profiles/hosts
 # 退出码 2：host apply is not implemented in the read-only Phase D slice
 </code></pre>
@@ -1935,11 +1953,12 @@ describeHost(&quot;qoder&quot;); // 抛错：support = &quot;unsupported&quot;
 <h2 id="8-调用方继续拥有的业务逻辑">8. 调用方继续拥有的业务逻辑<a class="headerlink" href="#8-调用方继续拥有的业务逻辑" title="Permanent link">&para;</a></h2>
 <ul>
 <li>宿主具体业务语义。</li>
-<li>宿主应用（apply）的最终落地（当前不在 Foundation 范围）。</li>
+<li>本地 install/update 的业务授权与完成判定；卸载时的人工恢复和文件删除。</li>
 </ul>
 <h2 id="9-升级与回滚注意事项">9. 升级与回滚注意事项<a class="headerlink" href="#9-升级与回滚注意事项" title="Permanent link">&para;</a></h2>
 <ul>
-<li>宿主接入线只支持 describe/build/probe/plan；apply 稳定拒绝，安装/卸载/更新未实现。</li>
+<li>包 API <code>applyHostPlan</code> 支持已登记、摘要绑定的本地 install/update；执行 uninstall 计划只返回 <code>manual-recovery-required</code>，不删除文件。Kit CLI apply、通用或远端 apply 仍稳定拒绝。</li>
+<li><code>verifyHostPeers</code> 只做同级 adapter 目录的只读复验，不授予安装、发布或领域裁决能力。</li>
 <li>Qoder 完整 driver 为 unsupported，只参考其结构，不声称已在 Qoder 运行；升级新增受支持宿主须登记 descriptor 并绑定受信 driver。</li>
 </ul>
 

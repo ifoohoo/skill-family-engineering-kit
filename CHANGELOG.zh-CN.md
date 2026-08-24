@@ -1,5 +1,27 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.10.0 locale=zh-CN baseline=sha256:45180b7a3b60853842cbe3a379da7ff95f1bd1fe832192368ec2c92a813279dc -->
+## [0.10.0] - 2026-08-24
+
+Engineering Kit 0.10.0 为历史 candidate 提供职责明确的规范入口，增加受限的跨平台宿主身份、探针和本地生命周期能力，并提供同级适配器只读验证薄入口。
+
+### 新增
+
+- 新增 skill-family-engineering-kit/quickstart-profile、/adoption 与 /skill-naming 规范导出。
+- 增加有限 Profile alias 解析、非 driver 宿主的独立手动 probe fact 和显式本地 install/update 计划；uninstall 仍要求人工恢复。
+- 新增 `verifyHostPeers`，只包装 Harness 的 peer 验证，不增加第五个顶层命令，也不写入 peer 目录。
+
+### 变更
+
+- 历史 Quickstart candidate 导出继续作为同源迁移别名，Kit 四命令边界不变。
+- 只编译一套规范 Quickstart 与批量校验 Schema；历史和规范 ID 指向同一 standalone validator。
+
+### 升级说明
+
+消费者应把三个包的精确 pin 更新到 0.10.0，并把导入与 Schema ID 一次迁移到规范身份。以后仅晋升成熟度标签时不另加 Bundle 重建要求；包身份、来源摘要或 provenance 变化仍按既有投影合同处理。
+<!-- release-skill:changelog:end version=0.10.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.9.0 locale=zh-CN baseline=sha256:c84db7b53f562cbdad947ccf8fcc23209f18137100270b2691bab7d9a7ad623c -->
 ## [0.9.0] - 2026-08-24
 

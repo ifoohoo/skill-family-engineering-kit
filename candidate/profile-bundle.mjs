@@ -7,11 +7,12 @@ import {
   canonicalJson,
 } from "skill-family-contracts";
 import {
+  HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS,
   QUICKSTART_PROFILE_ID,
   QUICKSTART_PROFILE_VERSION,
-} from "skill-family-contracts/candidate/quickstart-profile";
+} from "skill-family-contracts/quickstart-profile";
 import { digestBytes } from "skill-family-harness-node";
-import { verifyConsumerSchemaInventory } from "skill-family-harness-node/candidate/quickstart-profile";
+import { verifyConsumerSchemaInventory } from "skill-family-harness-node/quickstart-profile";
 
 /**
  * Candidate Quickstart Profile v2 offline bundle builder (unstable).
@@ -79,7 +80,7 @@ const ADDITIONAL_FOUNDATION_SCHEMA_FILES = Object.freeze([
 
 const HARNESS_IMPORT_MAP = new Map([
   ["skill-family-contracts", "../contracts/index.mjs"],
-  ["skill-family-contracts/candidate/quickstart-profile", "../contracts-candidate/index.mjs"],
+  ["skill-family-contracts/quickstart-profile", "../contracts-candidate/index.mjs"],
   ["../src/closure.mjs", "./closure.mjs"],
   ["../src/errors.mjs", "./errors.mjs"],
   ["../src/paths.mjs", "./paths.mjs"],
@@ -110,7 +111,7 @@ const HARNESS_TOKEN_LOCK_IMPORT_MAP = new Map([
 
 const ADOPTION_IMPORT_MAP = new Map([
   ["../src/migration.mjs", "./runtime/kit/migration.mjs"],
-  ["skill-family-harness-node/candidate/quickstart-profile", "./runtime/harness/quickstart-profile.mjs"],
+  ["skill-family-harness-node/quickstart-profile", "./runtime/harness/quickstart-profile.mjs"],
 ]);
 
 const DIALECT_URIS = Object.freeze({
@@ -1043,6 +1044,32 @@ function standaloneMapSource({ entries2020, entriesDraft07 }) {
   return lines.join("\n");
 }
 
+function standaloneEntriesWithHistoricalAliases(schemaIds) {
+  const canonicalEntries = [...schemaIds]
+    .sort()
+    .map((schemaId, index) => ({ schemaId, exportName: standaloneExportName(index) }));
+  const canonicalById = new Map(
+    canonicalEntries.map((entry) => [entry.schemaId, entry]),
+  );
+  const aliases = Object.entries(HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS)
+    .map(([legacyId, canonicalId]) => {
+      if (canonicalById.has(legacyId)) {
+        throw new Error(
+          `historical candidate schema $id collides with a canonical schema: ${legacyId}`,
+        );
+      }
+      const canonical = canonicalById.get(canonicalId);
+      if (!canonical) {
+        throw new Error(
+          `historical candidate schema migration target is absent from the Bundle: ${canonicalId}`,
+        );
+      }
+      return { schemaId: legacyId, exportName: canonical.exportName };
+    });
+  return [...canonicalEntries, ...aliases]
+    .sort((a, b) => (a.schemaId < b.schemaId ? -1 : a.schemaId > b.schemaId ? 1 : 0));
+}
+
 function validatorsSource() {
   return `import standaloneValidators from "./runtime/generated/standalone-map.mjs";
 import { findNonJsonValue, normalizeValidationError } from "./runtime/json-boundary.mjs";
@@ -1292,6 +1319,14 @@ export async function buildQuickstartProfileProjection({
 
   const graph = buildSchemaGraph(consumerRecords, foundationSchemaDocuments);
 
+  for (const record of consumerRecords) {
+    if (Object.hasOwn(HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS, record.document.$id)) {
+      throw buildError(
+        `consumer schema $id is reserved for a historical Foundation identity: ${record.document.$id}`,
+      );
+    }
+  }
+
   // --- Standalone validator generation (Ajv build dependency only). ---
   const fromContracts = createRequire(pathToFileURL(path.join(contractsRoot, "package.json")));
   const ajvEntry = fromContracts.resolve("ajv");
@@ -1322,6 +1357,10 @@ export async function buildQuickstartProfileProjection({
     ...foundationSchemaDocuments.map((entry) => entry.document),
     ...graph["2020-12"].map((record) => record.document),
   ];
+  const generated2020SchemaIds = [
+    ...schemas2020.map((schema) => schema.$id),
+    "https://contracts.skill-family.example/quickstart-profile/v2/harness-surface-detectors.json",
+  ];
   const generated2020 = await generateStandaloneModule({
     AjvCtor: Ajv2020,
     schemas: schemas2020,
@@ -1329,10 +1368,7 @@ export async function buildQuickstartProfileProjection({
     codegenTemplate,
     standaloneCode,
     isValidDateTime,
-    schemaIds: [
-      ...schemas2020.map((schema) => schema.$id),
-      "https://contracts.skill-family.example/candidate/quickstart-profile/v2/harness-surface-detectors.json",
-    ],
+    schemaIds: generated2020SchemaIds,
   });
   const schemasDraft07 = graph["draft-07"].map((record) => record.document);
   const withDraft07 = schemasDraft07.length > 0;
@@ -1487,12 +1523,7 @@ export async function buildQuickstartProfileProjection({
     setText("runtime/generated/validate-draft-07.mjs", generatedDraft07);
   }
   const sortById = (a, b) => (a.$id < b.$id ? -1 : 1);
-  const entries2020 = [
-    ...schemas2020.map((schema) => schema.$id),
-    "https://contracts.skill-family.example/candidate/quickstart-profile/v2/harness-surface-detectors.json",
-  ]
-    .sort()
-    .map((schemaId, index) => ({ schemaId, exportName: standaloneExportName(index) }));
+  const entries2020 = standaloneEntriesWithHistoricalAliases(generated2020SchemaIds);
   const entriesDraft07 = [...schemasDraft07]
     .sort(sortById)
     .map((schema, index) => ({ schemaId: schema.$id, exportName: standaloneExportName(index) }));

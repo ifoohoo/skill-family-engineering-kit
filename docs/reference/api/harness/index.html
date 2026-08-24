@@ -987,10 +987,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--materializeAdapterBuild--probeVersionVector" class="md-nav__link">
+  <a href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--verifyPeerAdapterDirectories--materializeAdapterBuild--probeVersionVector" class="md-nav__link">
     <span class="md-ellipsis">
 
-        normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / materializeAdapterBuild / probeVersionVector
+        normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / verifyPeerAdapterDirectories / materializeAdapterBuild / probeVersionVector
 
     </span>
   </a>
@@ -2531,10 +2531,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--materializeAdapterBuild--probeVersionVector" class="md-nav__link">
+  <a href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--verifyPeerAdapterDirectories--materializeAdapterBuild--probeVersionVector" class="md-nav__link">
     <span class="md-ellipsis">
 
-        normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / materializeAdapterBuild / probeVersionVector
+        normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / verifyPeerAdapterDirectories / materializeAdapterBuild / probeVersionVector
 
     </span>
   </a>
@@ -3022,12 +3022,13 @@
 </ul>
 <hr />
 <h2 id="宿主适配机制-foundationharnesshost-adapter">宿主适配机制 (foundation.harness.host-adapter)<a class="headerlink" href="#宿主适配机制-foundationharnesshost-adapter" title="Permanent link">&para;</a></h2>
-<h3 id="normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--materializeAdapterBuild--probeVersionVector">normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / materializeAdapterBuild / probeVersionVector<a class="headerlink" href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--materializeAdapterBuild--probeVersionVector" title="Permanent link">&para;</a></h3>
+<h3 id="normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--verifyPeerAdapterDirectories--materializeAdapterBuild--probeVersionVector">normalizeAdapterSource / buildAdapterClosure / verifyAdapterBuildManifest / verifyPeerAdapterDirectories / materializeAdapterBuild / probeVersionVector<a class="headerlink" href="#normalizeAdapterSource--buildAdapterClosure--verifyAdapterBuildManifest--verifyPeerAdapterDirectories--materializeAdapterBuild--probeVersionVector" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>
 <li><code>normalizeAdapterSource(input)</code></li>
 <li><code>buildAdapterClosure({ hostId, pathCategory, input } = {})</code></li>
 <li><code>verifyAdapterBuildManifest(manifestInput, { hostId, pathCategory } = {})</code></li>
+<li><code>verifyPeerAdapterDirectories({ request, peerRoots } = {})</code>（async）：从两个或更多真实 peer 根目录重算共同闭包、标准 manifest 和完整 <code>logicalMappings</code>。</li>
 <li><code>materializeAdapterBuild({ targetRoot, build, writer = writeFileAtomic } = {})</code>（async）</li>
 <li><code>probeVersionVector({ hostId, capabilities, executable, argv, allowSpawn = false, timeoutMs = 5000, runner = spawnSync } = {})</code>（async）</li>
 <li>输入：adapter source、目标路径、probe 选项。</li>
@@ -3039,8 +3040,9 @@
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/host.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/host.test.mjs</code>。</li>
-<li>调用方仍拥有的业务语义：宿主具体业务语义（<code>host apply</code> 明确 unsupported，转 Profile + Kit <code>host</code> 子动作）。</li>
+<li>调用方仍拥有的业务语义：宿主具体业务语义与本地生命周期决策；Kit 只复用本节的绑定读取、严格不替换发布和原子写机制，不由 Harness 注册宿主别名或 driver。</li>
 </ul>
+<p><code>verifyPeerAdapterDirectories</code> 是只读入口。它逐级枚举和读取真实目录，拒绝符号链接、路径逃逸、非普通文件、缺失/多出或逐字节摘要不一致；mapping 必须唯一覆盖每个真实 <code>SKILL.md</code>。它按 <code>peerId</code> 归一化比较闭包，因此请求顺序不会影响结果。失败使用既有 <code>SFC2003</code>/<code>SFC2004</code> 与 <code>details.kind</code>，不返回部分成功，也不写入 peer 根目录。</p>
 <hr />
 <h2 id="持久状态底座-foundationharnessstate-store">持久状态底座 (foundation.harness.state-store)<a class="headerlink" href="#持久状态底座-foundationharnessstate-store" title="Permanent link">&para;</a></h2>
 <h3 id="openStateStore--appendEvent--readEvents--readSnapshot--writeSnapshot--verifyStateStore--rebuildSnapshot--inspectStateStoreLock--recoverStateStoreLock--closeStateStore--close">openStateStore / appendEvent / readEvents / readSnapshot / writeSnapshot / verifyStateStore / rebuildSnapshot / inspectStateStoreLock / recoverStateStoreLock / closeStateStore / close<a class="headerlink" href="#openStateStore--appendEvent--readEvents--readSnapshot--writeSnapshot--verifyStateStore--rebuildSnapshot--inspectStateStoreLock--recoverStateStoreLock--closeStateStore--close" title="Permanent link">&para;</a></h3>
@@ -3289,7 +3291,10 @@
 </ul>
 <hr />
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
-<p><code>skill-family-harness-node/candidate/quickstart-profile</code> 负责创建 observation Resource、Task 与终态 Result，并复验真实文件字节、Resource id 全局唯一性、Task digest、operation 身份、逐字段 <code>run/stage/attempt</code> 以及 evidence 精确回指。<code>verifyQuickstartExchange</code> 把机制拒绝转换成结构化结果，抛出式入口继续使用已登记的 <code>SFC2004</code> 与稳定 <code>details.kind</code>。</p>
+<p>规范入口 <code>skill-family-harness-node/quickstart-profile</code> 负责创建 observation Resource、Task 与终态 Result，并复验真实
+文件字节、Resource id 全局唯一性、Task digest、operation 身份、逐字段 <code>run/stage/attempt</code> 以及 evidence 精确回指。
+历史入口 <code>skill-family-harness-node/candidate/quickstart-profile</code> 在弃用窗口内解析同一模块；消费者应迁移一次。
+<code>verifyQuickstartExchange</code> 把机制拒绝转换成结构化结果，抛出式入口继续使用已登记的 <code>SFC2004</code> 与稳定 <code>details.kind</code>。</p>
 <h3 id="invokeFoundationMechanism">invokeFoundationMechanism<a class="headerlink" href="#invokeFoundationMechanism" title="Permanent link">&para;</a></h3>
 <p><code>invokeFoundationMechanism(request)</code> 是固定机制桥接。调用方只能选择预先登记的 operation，不能传入模块名、导出名或任意函数。0.8.2 新增的 <code>read-file-strict</code> 直接调用上文的 <code>readFileStrict</code>：</p>
 <pre><code class="language-json">{
@@ -3305,7 +3310,13 @@
 <p><code>params</code> 是闭合对象。<code>root</code> 与 <code>path</code> 是必填非空字符串；<code>encoding</code> 只能是 <code>utf8</code> 或省略；<code>expectedSha256</code> 省略时不做预期摘要比对，提供时沿用核心严格读取合同。</p>
 <p>桥接保留核心回执的 <code>path</code>、<code>sha256</code>、<code>bytes</code> 与 <code>mode</code>。UTF-8 内容仍是字符串；二进制内容投影成 Node 标准的 Buffer JSON 形态 <code>{ "type": "Buffer", "data": [...] }</code>，以便通过 JSON 传输后无损还原字节。</p>
 <p>直接调用失败时沿用核心异常，包括 <code>SFC2004</code> 与 <code>details.kind</code>。候选 <code>mechanisms-cli.mjs</code> 继续使用一请求一响应 JSON：成功退出 0，拒绝或用法错误退出 2；CLI 错误 JSON 只承诺 <code>name</code> 与 <code>message</code>，不承诺跨语言保留 <code>details</code>。</p>
-<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.9.0，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
+<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与
+Engineering Kit 精确锁定到同一版本；不能从 Foundation 工作树导入源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。
+迁移到规范入口和 Schema 身份后，后续仅晋升 stable 不再要求改合同身份；消费者仍需更新精确 pin 才能取得新发布的
+stable 承诺，Bundle 是否重建由既有包字节与 provenance 绑定输入决定。</p>
+<p><code>rename-directory-no-replace</code> 的规范入口是
+<code>skill-family-harness-node/rename-directory-no-replace</code>；历史 <code>/candidate/rename-directory-no-replace</code> 入口解析同一原生原语。
+该原语仍不等同于稳定的高层 <code>fixed-set-publication</code>，消费者应根据所需合同选择，不得用别名混淆两个能力层次。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

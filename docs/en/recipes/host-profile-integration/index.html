@@ -1893,13 +1893,13 @@
 </blockquote>
 <h1 id="Recipe-Host-Access-and-Profile-Injection">Recipe: Host Access and Profile Injection<a class="headerlink" href="#Recipe-Host-Access-and-Profile-Injection" title="Permanent link">&para;</a></h1>
 <h2 id="1-Scenario-and-Non-Scenario">1. Scenario and Non-Scenario<a class="headerlink" href="#1-Scenario-and-Non-Scenario" title="Permanent link">&para;</a></h2>
-<p>Applicable: you need to describe a registered host (claude/codex), probe or plan host access, and inject a concrete host Profile and trusted driver into Foundation.</p>
-<p>Not applicable: needs host apply/install/update/uninstall (explicitly unsupported); needs the full Qoder driver (that host is unsupported).</p>
+<p>Applicable: you need to describe a registered host (claude/codex), probe or plan host access, verify peer-adapter directories, or use the package API for digest-bound local install/update.</p>
+<p>Not applicable: needs Kit CLI apply, generic or remote apply, or automatic deleting uninstall; needs the full Qoder driver (that host is unsupported).</p>
 <h2 id="2-Architecture-Choice-and-Capability-ID">2. Architecture Choice and Capability ID<a class="headerlink" href="#2-Architecture-Choice-and-Capability-ID" title="Permanent link">&para;</a></h2>
-<p>Preferred capabilities: <code>foundation.kit.host</code> (<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>planHost</code>) and <code>foundation.profile.extension-spi</code> (<code>verifyProfile</code>). Host-difference declarations are in <code>foundation.profile.hosts</code>.</p>
+<p>Preferred capabilities: <code>foundation.kit.host</code> (<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>verifyHostPeers</code> / <code>planHost</code> / <code>applyHostPlan</code>) and <code>foundation.profile.extension-spi</code> (<code>verifyProfile</code>). Host-difference declarations are in <code>foundation.profile.hosts</code>.</p>
 <h2 id="3-Preconditions-and-Trust-Boundary">3. Preconditions and Trust Boundary<a class="headerlink" href="#3-Preconditions-and-Trust-Boundary" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The host Profile is registered in <code>profiles/hosts</code>; the only trusted drivers are <code>claude-version-v1</code> / <code>codex-version-v1</code>.</li>
+<li>The host Profile is registered in <code>profiles/hosts</code>; the only trusted drivers are <code>claude-version-v1</code> / <code>codex-version-v1</code>. Local install/update additionally require a verified build, a digest-consistent plan, a contained <code>targetRoot</code>, and an explicit <code>authorizationRef</code>.</li>
 <li>Trust boundary: the Profile entry point must be a JSON data resource, and the public core does not import <code>profiles/</code>; <code>coreOwned</code> is a forbidden target.</li>
 </ul>
 <h2 id="4-Minimal-Command-and-Code">4. Minimal Command and Code<a class="headerlink" href="#4-Minimal-Command-and-Code" title="Permanent link">&para;</a></h2>
@@ -1909,19 +1909,37 @@ npm exec -- skill-family-kit adopt-plan host-describe --host claude --hosts-root
 # Read-only probe (no spawn by default)
 npm exec -- skill-family-kit adopt-plan host-probe --host claude --hosts-root profiles/hosts
 </code></pre>
-<pre><code class="language-js">import { describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
+<pre><code class="language-js">import { buildHostAdapter, describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
 import { verifyProfile } from &quot;profiles/spi/index.mjs&quot;;
 
-const desc = describeHost(&quot;claude&quot;); // supported host description
-const facts = probeHost(&quot;claude&quot;, { allowSpawn: false });
-const plan = planHost(desc, facts);
+const hostsRoot = &quot;profiles/hosts&quot;;
+const desc = await describeHost({ hostId: &quot;claude&quot;, hostsRoot });
+const facts = await probeHost({ hostId: &quot;claude&quot;, hostsRoot, allowSpawn: false });
+const build = await buildHostAdapter({
+  hostId: &quot;claude&quot;,
+  pathCategoryId: &quot;claude-project-skills&quot;,
+  input: {
+    schemaVersion: 1,
+    kind: &quot;skill-family.adapter-source&quot;,
+    skillFamilyId: &quot;example-family&quot;,
+    skills: [{ id: &quot;demo&quot;, files: [{ path: &quot;SKILL.md&quot;, content: &quot;# Demo\n&quot; }] }],
+  },
+  hostsRoot,
+});
+const plan = await planHost({
+  hostId: &quot;claude&quot;,
+  pathCategoryId: &quot;claude-project-skills&quot;,
+  buildManifest: build.manifest,
+  probeFacts: facts.facts,
+  hostsRoot,
+});
 const spi = verifyProfile({ profileRoot: &quot;profiles/public-plugin&quot; }); // SPE0000
 </code></pre>
-<p>The command and code above show the read-only describe/probe/plan mechanism, and using <code>verifyProfile</code> to validate the Profile declaration.</p>
+<p>The commands and code above cover describe/probe, in-memory build, and plan, plus Profile validation through <code>verifyProfile</code>; they do not execute install/update.</p>
 <h2 id="5-Expected-Output-and-Evidence">5. Expected Output and Evidence<a class="headerlink" href="#5-Expected-Output-and-Evidence" title="Permanent link">&para;</a></h2>
 <p><code>describeHost</code> returns the host description, <code>probeHost</code> returns read-only probe facts, <code>planHost</code> returns the access plan, and <code>verifyProfile</code> returns result codes such as <code>SPE0000</code>. Evidence: <code>packages/skill-family-engineering-kit/test/host.test.mjs</code> and <code>fixtures/generic-profile-extension-conformance/verify.mjs</code>.</p>
 <h2 id="6-Safety--Failure-Negative-Case">6. Safety / Failure Negative Case<a class="headerlink" href="#6-Safety--Failure-Negative-Case" title="Permanent link">&para;</a></h2>
-<pre><code class="language-sh"># Negative case: apply stably refused
+<pre><code class="language-sh"># Negative case: CLI apply stably refused
 npm exec -- skill-family-kit adopt-plan host-apply --host claude --hosts-root profiles/hosts
 # exit code 2: host apply is not implemented in the read-only Phase D slice
 </code></pre>
@@ -1935,11 +1953,12 @@ describeHost(&quot;qoder&quot;); // throws: support = &quot;unsupported&quot;
 <h2 id="8-Business-Logic-the-Caller-Continues-to-Own">8. Business Logic the Caller Continues to Own<a class="headerlink" href="#8-Business-Logic-the-Caller-Continues-to-Own" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The host's concrete business semantics.</li>
-<li>The final landing of host apply (currently outside Foundation's scope).</li>
+<li>Business authorization and completion criteria for local install/update; manual recovery and file deletion for uninstall.</li>
 </ul>
 <h2 id="9-Upgrade-and-Rollback-Notes">9. Upgrade and Rollback Notes<a class="headerlink" href="#9-Upgrade-and-Rollback-Notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The host-access line supports only describe/build/probe/plan; apply is stably refused, and install/uninstall/update are unimplemented.</li>
+<li>The package API <code>applyHostPlan</code> supports registered, digest-bound local install/update. Executing an uninstall plan only returns <code>manual-recovery-required</code> and does not delete files. Kit CLI apply, generic apply, and remote apply remain stably refused.</li>
+<li><code>verifyHostPeers</code> only performs read-only peer-adapter directory verification; it grants no install, release, or domain decision.</li>
 <li>The full Qoder driver is unsupported; only its structure is referenced, and it is not claimed to have been run on Qoder; adding a supported host on upgrade requires registering a descriptor and binding a trusted driver.</li>
 </ul>
 

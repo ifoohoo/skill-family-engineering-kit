@@ -1208,10 +1208,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#Package-Version-Matrix" class="md-nav__link">
+  <a href="#Current-Versions" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Package Version Matrix
+        Current Versions
 
     </span>
   </a>
@@ -1219,10 +1219,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Quickstart-Profile-Candidate-Compatibility" class="md-nav__link">
+  <a href="#Two-Generation-Maturity-Rule" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Quickstart Profile Candidate Compatibility
+        Two-Generation Maturity Rule
 
     </span>
   </a>
@@ -1230,10 +1230,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Node-Support-Matrix" class="md-nav__link">
+  <a href="#Historical-Candidate-Migration-Matrix" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Node Support Matrix
+        Historical Candidate Migration Matrix
 
     </span>
   </a>
@@ -1241,10 +1241,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Contracts-Version-and-Stability" class="md-nav__link">
+  <a href="#R05-and-legacy-platform-manifest-migration" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Contracts Version and Stability
+        R05 and legacy platform-manifest migration
 
     </span>
   </a>
@@ -1252,10 +1252,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Host-Support-Matrix" class="md-nav__link">
+  <a href="#Node-and-Toolchain" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Host Support Matrix
+        Node and Toolchain
 
     </span>
   </a>
@@ -1263,21 +1263,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Upgrade-Rules" class="md-nav__link">
+  <a href="#Contracts-and-Engineering-Boundaries" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Upgrade Rules
-
-    </span>
-  </a>
-
-</li>
-
-        <li class="md-nav__item">
-  <a href="#Anti-Compatibility-Boundaries-Explicitly-Unsupported" class="md-nav__link">
-    <span class="md-ellipsis">
-
-        Anti-Compatibility Boundaries (Explicitly Unsupported)
+        Contracts and Engineering Boundaries
 
     </span>
   </a>
@@ -1751,10 +1740,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#Package-Version-Matrix" class="md-nav__link">
+  <a href="#Current-Versions" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Package Version Matrix
+        Current Versions
 
     </span>
   </a>
@@ -1762,10 +1751,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Quickstart-Profile-Candidate-Compatibility" class="md-nav__link">
+  <a href="#Two-Generation-Maturity-Rule" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Quickstart Profile Candidate Compatibility
+        Two-Generation Maturity Rule
 
     </span>
   </a>
@@ -1773,10 +1762,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Node-Support-Matrix" class="md-nav__link">
+  <a href="#Historical-Candidate-Migration-Matrix" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Node Support Matrix
+        Historical Candidate Migration Matrix
 
     </span>
   </a>
@@ -1784,10 +1773,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Contracts-Version-and-Stability" class="md-nav__link">
+  <a href="#R05-and-legacy-platform-manifest-migration" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Contracts Version and Stability
+        R05 and legacy platform-manifest migration
 
     </span>
   </a>
@@ -1795,10 +1784,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Host-Support-Matrix" class="md-nav__link">
+  <a href="#Node-and-Toolchain" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Host Support Matrix
+        Node and Toolchain
 
     </span>
   </a>
@@ -1806,21 +1795,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Upgrade-Rules" class="md-nav__link">
+  <a href="#Contracts-and-Engineering-Boundaries" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Upgrade Rules
-
-    </span>
-  </a>
-
-</li>
-
-        <li class="md-nav__item">
-  <a href="#Anti-Compatibility-Boundaries-Explicitly-Unsupported" class="md-nav__link">
-    <span class="md-ellipsis">
-
-        Anti-Compatibility Boundaries (Explicitly Unsupported)
+        Contracts and Engineering Boundaries
 
     </span>
   </a>
@@ -1848,135 +1826,162 @@
 <p><a href="../../../reference/compatibility/">简体中文</a></p>
 </blockquote>
 <h1 id="Compatibility-and-Support-Matrix">Compatibility and Support Matrix<a class="headerlink" href="#Compatibility-and-Support-Matrix" title="Permanent link">&para;</a></h1>
-<p>This page gives the support matrix and upgrade rules for packages, Contracts, Node, and hosts. All version numbers are recomputed from the machine source of truth, not from memory.</p>
-<h2 id="Package-Version-Matrix">Package Version Matrix<a class="headerlink" href="#Package-Version-Matrix" title="Permanent link">&para;</a></h2>
+<p>This page records the current source versions, runtime support, and the one-time migration rule for historical candidate entrypoints. Package manifests, the Contracts registry, and the capability catalog are the machine authorities.</p>
+<h2 id="Current-Versions">Current Versions<a class="headerlink" href="#Current-Versions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Package</th>
-<th>Version (package.json)</th>
+<th>Current source version</th>
 <th>Role</th>
-<th>Release status</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>skill-family-contracts</code></td>
-<td>0.3.0</td>
-<td>Contracts 1.4.0 machine contracts</td>
-<td>Public release target (private: false)</td>
+<td>0.10.0</td>
+<td>Contracts 1.10.0 machine contracts</td>
 </tr>
 <tr>
 <td><code>skill-family-harness-node</code></td>
-<td>0.3.0</td>
-<td>Node thin-mechanism runtime of Contracts</td>
-<td>Public release target</td>
+<td>0.10.0</td>
+<td>Node implementation of Contracts mechanisms</td>
 </tr>
 <tr>
 <td><code>skill-family-engineering-kit</code></td>
-<td>0.3.0</td>
-<td>Four engineering commands (CLI <code>skill-family-kit</code>)</td>
-<td>Public release target</td>
+<td>0.10.0</td>
+<td>Four engineering commands and build-time projection</td>
 </tr>
 <tr>
-<td>Workspace repository</td>
-<td>0.3.0</td>
-<td>Private parent workspace (private: true)</td>
-<td>Development source of truth only</td>
+<td>Private parent workspace</td>
+<td>0.10.0</td>
+<td>Sole development source of truth</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p>The contract authority version (<code>CONTRACTS_VERSION</code>) is <code>1.4.0</code>, and the npm package version is <code>0.3.0</code>; the two version lines run in parallel and are not mixed.</p>
-</blockquote>
-<h2 id="Quickstart-Profile-Candidate-Compatibility">Quickstart Profile Candidate Compatibility<a class="headerlink" href="#Quickstart-Profile-Candidate-Compatibility" title="Permanent link">&para;</a></h2>
+<p>The three leaf packages release in lockstep and must not be mixed. The Contracts specification and npm packages use separate version lines.</p>
+<h2 id="Two-Generation-Maturity-Rule">Two-Generation Maturity Rule<a class="headerlink" href="#Two-Generation-Maturity-Rule" title="Permanent link">&para;</a></h2>
+<p>Historical candidate APIs migrate once to canonical entrypoints. Legacy entrypoints continue to resolve to the same module during the compatibility window. Removing one requires a published deprecation, zero references in known real consumers, at least one release cycle, and a separate major-version decision.</p>
+<p>APIs introduced from 0.10.0 onward use their final canonical identity from the first candidate release. An active candidate upgrade can still require adaptation. Candidate-to-stable promotion, however, may change only the provider's compatibility promise. It cannot change the entrypoint, capability ID, Schema <code>$id</code>, operation, request, result, or error semantics. A consumer must still update all three exact package pins to obtain the newly published stable promise. Existing package-identity, source-digest, and provenance bindings determine whether a Bundle rebuild is required; the maturity label adds no separate rebuild condition. FND-ADR-016 and <code>CANDIDATE_PROMOTION_POLICY</code> define the machine rule.</p>
+<h2 id="Historical-Candidate-Migration-Matrix">Historical Candidate Migration Matrix<a class="headerlink" href="#Historical-Candidate-Migration-Matrix" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Package version</th>
-<th>Candidate profile</th>
-<th>Compatibility rule</th>
+<th>Historical coordinate or capability</th>
+<th>0.10.0 migration target</th>
+<th>Current treatment</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>0.2.1</td>
-<td>v1</td>
-<td>Existing integrations may remain pinned to exactly 0.2.1</td>
+<td><code>skill-family-contracts/candidate/quickstart-profile</code></td>
+<td><code>skill-family-contracts/quickstart-profile</code></td>
+<td>Same source module; migrate once</td>
 </tr>
 <tr>
-<td>0.3.0</td>
-<td>v2</td>
-<td>Uses <code>execute-method</code>, real <code>$id</code> schema resolution, and the offline Bundle; pin exactly 0.3.0</td>
+<td><code>skill-family-harness-node/candidate/quickstart-profile</code></td>
+<td><code>skill-family-harness-node/quickstart-profile</code></td>
+<td>Same source module; operations unchanged</td>
+</tr>
+<tr>
+<td><code>skill-family-harness-node/candidate/rename-directory-no-replace</code></td>
+<td><code>skill-family-harness-node/rename-directory-no-replace</code></td>
+<td>Same source module; distinct from high-level fixed-set publication</td>
+</tr>
+<tr>
+<td><code>skill-family-engineering-kit/candidate/quickstart-profile</code></td>
+<td><code>skill-family-engineering-kit/quickstart-profile</code></td>
+<td>One-time Quickstart builder migration</td>
+</tr>
+<tr>
+<td>Adoption from the old Quickstart namespace</td>
+<td><code>skill-family-engineering-kit/adoption</code></td>
+<td>Responsibility-specific canonical entrypoint backed by the same source</td>
+</tr>
+<tr>
+<td>Package-local or projected skill-naming candidate</td>
+<td><code>skill-family-engineering-kit/skill-naming</code></td>
+<td>Canonical package entrypoint; no fifth Kit command</td>
+</tr>
+<tr>
+<td>0.4.0 fixed-set candidate schemas and primitive</td>
+<td>0.9.0 stable Schema <code>$id</code> values and <code>skill-family-harness-node/fixed-set-publication</code></td>
+<td>Legacy schemas remain packaged while consumers migrate to the high-level API</td>
+</tr>
+<tr>
+<td>0.9.0 <code>validate-many-by-schema-id</code> candidate schemas</td>
+<td><code>/foundation-mechanisms/v1/schema-validation-batch-{request,result}.json</code></td>
+<td>One canonical Schema copy; legacy and canonical IDs dispatch to the same compiled validator, with no operation or echoed-result change</td>
 </tr>
 </tbody>
 </table>
-<p>Version 2 replaces v1 and provides no dual-track compatibility layer. Stable Contracts 1.4.0, the 18 object classes, the kernel protocol, and the error-code registry do not change with the candidate profile.</p>
-<h2 id="Node-Support-Matrix">Node Support Matrix<a class="headerlink" href="#Node-Support-Matrix" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Engine requirement: <code>&gt;=22.22.2 &lt;23</code> (major 22 locked).</li>
-<li>Exact floor: <code>.node-version</code> takes <code>22.22.2</code>, as the mechanical source of truth for runtime version determination.</li>
-<li>pnpm: <code>10.30.0</code> (the <code>packageManager</code> in <code>package.json</code>).</li>
-<li>projen: <code>0.101.23</code> (the sole generation entry point for managed engineering files).</li>
-</ul>
-<p>A Node version below the floor cannot substitute for the authoritative result; first-version implementations in a second language: 0.</p>
-<h2 id="Contracts-Version-and-Stability">Contracts Version and Stability<a class="headerlink" href="#Contracts-Version-and-Stability" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Top-level objects: 18 kinds (with <code>packages/skill-family-contracts/src/registry.json</code> as the sole source of truth).</li>
-<li>Mandatory mechanical rules: 9, budget ceiling 20, absolute ceiling 30.</li>
-<li>kernel protocol: <code>skill-family.kernel.operation</code> (stable), Contracts 1.4.0.</li>
-<li>Schema validator: Ajv 8.20.0 (exact pin), supporting draft-07 and 2020-12.</li>
-<li>Error codes: a frozen registry; codes only increase, never change or get reused.</li>
-</ul>
-<h2 id="Host-Support-Matrix">Host Support Matrix<a class="headerlink" href="#Host-Support-Matrix" title="Permanent link">&para;</a></h2>
+<p>The six Quickstart v2 identities for Resource, Task, Result, consumer inventory, and Harness surface inventory/detectors also migrate once from <code>/candidate/quickstart-profile/v2/</code> to <code>/quickstart-profile/v2/</code>. Contracts loaders return only canonical <code>$id</code> values. During the compatibility window, Bundles accept both old and new IDs without a second Schema set or a general alias registry.</p>
+<p>Quickstart v1 had already been replaced by v2 before 0.3.0. Consumers that still require v1 must remain pinned to 0.2.1. Version 0.10.0 neither rewrites historical artifacts nor repackages v1.</p>
+<h2 id="R05-and-legacy-platform-manifest-migration">R05 and legacy platform-manifest migration<a class="headerlink" href="#R05-and-legacy-platform-manifest-migration" title="Permanent link">&para;</a></h2>
+<p>The R05 request/result Schemas are the sole structural owners of <code>logicalMappings</code>. A consumer keeps only fields that belong to its own domain, then removes duplicated closure, digest, and file-list structures after real-directory verification. It does not maintain permanent dual writes.</p>
 <table>
 <thead>
 <tr>
-<th>Host</th>
-<th>support</th>
-<th>driver</th>
-<th>Notes</th>
+<th>Legacy field</th>
+<th>Migration decision</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>claude</td>
-<td>supported</td>
-<td>claude-version-v1</td>
-<td>Skill path is determined by the Profile</td>
+<td><code>familyId</code></td>
+<td>Map to <code>skillFamilyId</code>.</td>
 </tr>
 <tr>
-<td>codex</td>
-<td>supported</td>
-<td>codex-version-v1</td>
-<td>Skill path fixed at <code>.agents/skills</code></td>
+<td><code>platformId</code></td>
+<td>Map to canonical <code>hostId</code> only after a registered Descriptor proves the identity. A request declaration is not proof.</td>
 </tr>
 <tr>
-<td>qoder</td>
-<td>unsupported</td>
-<td>none</td>
-<td>No auditable non-interactive host driver is frozen</td>
+<td><code>version</code></td>
+<td>Keep as the consumer package version.</td>
+</tr>
+<tr>
+<td><code>sourceDigest</code></td>
+<td>Map to <code>commonSourceClosure.digest</code>.</td>
+</tr>
+<tr>
+<td><code>projectionDigest</code></td>
+<td>No automatic equivalence; <code>manifest.digest</code> must not stand in for it.</td>
+</tr>
+<tr>
+<td><code>fileCount</code> / <code>files</code></td>
+<td>Derive from the standard manifest. The peer root's <code>skills/</code> does not include a legacy manifest in its parent directory; remove the old list after migration.</td>
+</tr>
+<tr>
+<td><code>logicalMappings</code></td>
+<td>Owned only by request/result.</td>
+</tr>
+<tr>
+<td><code>lifecycleStatus</code> / <code>blocked</code> / <code>blockingReasons</code> / <code>advisories</code></td>
+<td>Remain in the consumer domain.</td>
+</tr>
+<tr>
+<td><code>verified</code></td>
+<td>Does not derive product, Audit, or release state.</td>
 </tr>
 </tbody>
 </table>
-<p>The host-access line currently supports only <code>describe</code>/<code>build</code>/<code>probe</code>/<code>plan</code>; <code>apply</code> is stably refused, and install/uninstall/update are unimplemented.</p>
-<h2 id="Upgrade-Rules">Upgrade Rules<a class="headerlink" href="#Upgrade-Rules" title="Permanent link">&para;</a></h2>
+<h2 id="Node-and-Toolchain">Node and Toolchain<a class="headerlink" href="#Node-and-Toolchain" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Package version</strong>: the three leaf packages must synchronize versions; single-package drift is forbidden; a new component must justify that deleting it would force two or more real consumers to re-implement it.</li>
-<li><strong>Contracts</strong>: the object set is fixed at 18 kinds; additions require an ADR; error codes are frozen and do not drift; Schema changes are handled as a new contract-version task.</li>
-<li><strong>Kit commands</strong>: top-level commands are fixed at 4 (scaffold/adopt-plan/projection/check), not expanded; <code>REFUSED_MUTATION_FLAGS</code> are refused at the CLI entry point.</li>
-<li><strong>Node/pnpm/projen</strong>: follow the exact locks in <code>.foundation/version-lock.json</code> and <code>package.json</code>; upgrades require re-generating the managed projection via <code>pnpm synth</code>.</li>
-<li><strong>Host</strong>: adding a supported host requires registering a descriptor and binding a trusted driver; unsupported hosts (e.g., qoder) are only referenced structurally and not claimed to have been run on.</li>
-<li><strong>Candidate</strong>: a later minor version may change or remove a candidate subpath; do not mix the 0.2.1 v1 packages with the 0.3.0 v2 packages, and pin all three package versions exactly.</li>
+<li>Node: <code>&gt;=22.22.2 &lt;23</code>; <code>.node-version</code> fixes the exact floor at <code>22.22.2</code>.</li>
+<li>pnpm: <code>10.30.0</code>.</li>
+<li>projen: <code>0.101.23</code>, the sole generator for managed engineering files.</li>
+<li>Schema validator: Ajv <code>8.20.0</code>, supporting draft-07 and 2020-12.</li>
 </ul>
-<h2 id="Anti-Compatibility-Boundaries-Explicitly-Unsupported">Anti-Compatibility Boundaries (Explicitly Unsupported)<a class="headerlink" href="#Anti-Compatibility-Boundaries-Explicitly-Unsupported" title="Permanent link">&para;</a></h2>
+<p>Results from Node below the floor or above the locked major cannot replace authoritative gate results.</p>
+<h2 id="Contracts-and-Engineering-Boundaries">Contracts and Engineering Boundaries<a class="headerlink" href="#Contracts-and-Engineering-Boundaries" title="Permanent link">&para;</a></h2>
 <ul>
-<li>host apply / install / update / uninstall (unsupported).</li>
-<li>Full Qoder driver (unsupported).</li>
-<li>Binary adapter source (text closure only).</li>
-<li>Remote publishing and all remote writes (→ release-skill).</li>
-<li>Business state machine, model orchestration, domain-audit semantics (→ consumer / loop-agent / independent audit respectively).</li>
+<li>The Contracts registry contains 37 top-level object classes and is the sole authority for that set.</li>
+<li>The stable kernel protocol is <code>skill-family.kernel.operation</code>; the Contracts specification is 1.10.0, while the kernel document remains byte-pinned at its 1.8.0 lifecycle coordinate.</li>
+<li>Error codes are append-only and are never reassigned.</li>
+<li>Kit top-level commands remain <code>scaffold</code>, <code>adopt-plan</code>, <code>projection</code>, and <code>check</code>.</li>
+<li>Host apply, install/update/uninstall, a full Qoder driver, remote publication, business state machines, model orchestration, and domain-audit semantics are outside the stable support surface. Local install/update remain within the 0.10.0 unstable plan-API boundary; an unsupported host receives no automatic lifecycle capability and no remote-publication guarantee.</li>
 </ul>
+<p>Current host support comes from the capability catalog, Profile descriptors, and real drivers. A directory convention or CLI identity alone does not establish a supported lifecycle.</p>
 
 
 

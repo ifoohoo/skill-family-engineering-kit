@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "Compile and validate the 18 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+   "intent": "Compile and validate all 37 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
    "useWhen": [
     "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
     "Need to detect the document dialect and select the strict or tolerant validation policy"
@@ -73,7 +73,7 @@
     "Need to find a kernel protocol definition by protocol name"
    ],
    "doNotUseWhen": [
-    "Need to add a fourth class of registered object (the 18-object set must not be extended without an ADR)"
+    "Need to add a registered top-level object without an ADR (the 37-object set is fixed)"
    ],
    "prerequisites": [
     "registry.json is shipped with the package",
@@ -94,8 +94,8 @@
     "SFC1004: duplicate protocol registration"
    ],
    "invariants": [
-    "registry.json's schemaVersion=1 and contractsVersion=1.4.0 are the single authority",
-    "The set of 18 top-level objects is fixed; additions require an ADR"
+    "registry.json's schemaVersion=1 and contractsVersion=1.10.0 are the single authority",
+    "The set of 37 top-level objects is fixed; additions require an ADR"
    ],
    "ownedByCaller": [
     "Interpretation of an object's business meaning"
@@ -106,7 +106,7 @@
   },
   {
    "id": "foundation.contracts.kernel-protocol",
-   "intent": "Load and validate the skill-family.kernel.operation protocol (stable, Contracts 1.4.0), defining the operation request/result structure.",
+   "intent": "Load and validate the skill-family.kernel.operation protocol (stable; kernel document lifecycle coordinate 1.8.0), defining the operation request/result structure.",
    "useWhen": [
     "Need to parse or validate operation-request / operation-result structures",
     "Need to look up a parameter contract by operation name"
@@ -568,11 +568,12 @@
   },
   {
    "id": "foundation.harness.host-adapter",
-   "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, materialize the build, probe the version vector (spawn disabled by default).",
+  "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, verify peer adapter directories, materialize the build, and probe the version vector (spawn disabled by default).",
    "useWhen": [
     "Need to turn a host adapter source into a reproducible text closure",
     "Need to materialize build artifacts at a contained location",
-    "Need to probe the host version vector (without auto-executing the host binary)"
+    "Need to probe the host version vector (without auto-executing the host binary)",
+    "Need read-only verification of two or more peer adapter directories from their real bytes"
    ],
    "doNotUseWhen": [
     "Need host apply/install/update/uninstall (explicitly unsupported)",
@@ -585,17 +586,18 @@
     "adapter source, target path"
    ],
    "outputs": [
-    "Build closure, validated manifest, materialized artifacts"
+    "Build closure, validated manifest, materialized artifacts, or a peer-verification result with a common closure and complete mappings"
    ],
    "sideEffects": [
     "Create a sibling staging area at the contained target and a single rename",
-    "Probe does not spawn by default and does not use PATH"
+    "Probe does not spawn by default and does not use PATH",
+    "Peer-directory verification is read-only and does not write peer directories"
    ],
    "failureSemantics": [
-    "Mismatched manifest digest, existing target, or untrusted executable all throw"
+    "Mismatched manifest digest, existing target, untrusted executable, member drift, or mapping drift all fail closed"
    ],
    "invariants": [
-    "materialize is an atomic sibling + rename"
+    "materialize is an atomic sibling + rename; peer verification recomputes facts from the caller-provided directories"
    ],
    "ownedByCaller": [
     "Concrete host business semantics"
@@ -1263,43 +1265,46 @@
   },
   {
    "id": "foundation.kit.host",
-   "intent": "Inject a concrete host Profile and trusted driver, providing describe/build/probe/plan; apply is stably rejected, and install/update/uninstall are unimplemented.",
+  "intent": "Inject a finite host Profile set and trusted drivers, providing canonical identity resolution, describe/build/probe/plan, bounded local install/update, and read-only peer adapter verification; uninstall remains a manual-recovery refusal.",
    "useWhen": [
-    "Need to describe a registered host (claude/codex)",
-    "Need to probe, build, or plan host integration (read-only mechanism layer)"
+    "Need to resolve a registered host or finite Profile alias",
+    "Need to probe, build, plan, or locally install/update host integration",
+    "Need to verify caller-owned peer adapter projection roots without writing them"
    ],
    "doNotUseWhen": [
-    "Need host apply/install/update/uninstall (explicitly unsupported)",
+    "Need remote host publication, automatic trust, or uninstall deletion",
+    "Need peer verification to decide domain semantics or to grant install/apply lifecycle support",
     "Need a full Qoder driver (that host is unsupported)"
    ],
    "prerequisites": [
-    "The host Profile is registered in profiles/hosts",
+    "The host Profile is registered in profiles/hosts and aliases are finite",
     "Trusted drivers are only claude-version-v1 / codex-version-v1"
    ],
    "inputs": [
-    "Host identifier, probe/plan options"
+    "Host identifier, finite Profile, probe/plan options, or a verified local operation input"
    ],
    "outputs": [
-    "Host description, probe result, build artifacts, plan"
+    "Canonical host identity, independent probe facts, build artifacts, plan, local operation result, or a read-only peer-verification result"
    ],
    "sideEffects": [
     "build/materialize writes artifacts at the contained target",
-    "Probe does not spawn by default"
+    "Probe does not spawn by default",
+    "verifyHostPeers reads caller-owned peer roots and writes no peer directory"
    ],
    "failureSemantics": [
-    "An unsupported host (e.g. qoder) throws",
-    "apply is stably rejected",
-    "Missing probe facts throws"
+    "An unsupported host (e.g. qoder) returns an unsupported result",
+    "Uninstall returns manual-recovery-required without deleting files",
+    "Missing probe facts, unknown projection categories, identity spoofing, or scope/anchor conflicts fail closed"
    ],
    "invariants": [
     "HOST_DRIVER_IDS contains only the two trusted drivers",
-    "apply is stably rejected"
+    "The nine capability facts are emitted independently; update operations require prior digests; manual projection categories do not grant build/plan/apply lifecycle support"
    ],
    "ownedByCaller": [
     "Host business semantics"
    ],
    "routeElsewhere": [
-    "host apply: explicitly unsupported",
+    "Remote host publication and automatic trust: explicitly unsupported",
     "Full Qoder driver: unsupported"
    ]
   },
@@ -1529,7 +1534,7 @@
     "Need to put a private Profile or real business data into public docs (leakage forbidden)"
    ],
    "prerequisites": [
-    "base.contractsVersion = 1.4.0"
+    "base.contractsVersion = 1.10.0"
    ],
    "inputs": [
     "Profile descriptor and each SPI data resource"
@@ -1590,9 +1595,9 @@
   },
   {
    "id": "foundation.profile.hosts",
-   "intent": "Register host diff declarations (claude/codex supported, qoder unsupported), providing the descriptor and registry for the Kit host sub-action.",
+   "intent": "Register the finite cross-platform host descriptor set, including trusted, manual, developer-preview, and unsupported maturity states.",
    "useWhen": [
-    "Need to register diffs for supported hosts (claude/codex)",
+    "Need to register supported, manual, developer-preview, or unsupported host differences",
     "Need to provide declarative data for host integration"
    ],
    "doNotUseWhen": [
@@ -1611,10 +1616,10 @@
     "No side effects (declared data)"
    ],
    "failureSemantics": [
-    "qoder is marked unsupported and is rejected on reference"
+    "qoder is marked unsupported and manual hosts never acquire an implicit driver"
    ],
    "invariants": [
-    "claude/codex have support=supported and are bound to a driverId; qoder has support=unsupported"
+    "claude/codex have support=supported and are bound to a driverId; manual hosts have no driver; qoder has support=unsupported"
    ],
    "ownedByCaller": [
     "Host business semantics"
@@ -1625,10 +1630,10 @@
   },
   {
    "id": "foundation.unsupported.host-apply",
-   "intent": "Host apply (applying integration changes to the host runtime environment) is stably rejected in the read-only Phase D slice and is not implemented.",
+   "intent": "Remote or generic host apply remains stably rejected; the bounded local applyHostPlan API is limited to registered plan execution.",
    "useWhen": [],
    "doNotUseWhen": [
-    "Any scenario that truly changes the host runtime environment (currently unavailable)"
+    "Any scenario requiring remote or generic host runtime mutation"
    ],
    "prerequisites": [
     "none"
@@ -1637,7 +1642,7 @@
     "none"
    ],
    "outputs": [
-    "Throws: host apply is not implemented in the read-only Phase D slice"
+    "refuseHostApply throws; applyHostPlan handles only the registered local plan boundary"
    ],
    "sideEffects": [
     "none"
@@ -1646,7 +1651,7 @@
     "Throws on call; the CLI-layer host-apply sub-action rejects as well"
    ],
    "invariants": [
-    "apply is stably rejected and is out of scope for the 0.2.x implementation"
+    "Generic or remote apply is stably rejected"
    ],
    "ownedByCaller": [
     "Final landing of host integration"
@@ -1657,10 +1662,10 @@
   },
   {
    "id": "foundation.unsupported.host-install-update-uninstall",
-   "intent": "Host install/update/uninstall are all unimplemented and out of scope for Foundation 0.2.x.",
+   "intent": "Remote host lifecycle and deletion-style uninstall remain unsupported; local install/update are limited to digest-bound registered plans.",
    "useWhen": [],
    "doNotUseWhen": [
-    "Any scenario requiring installation/update/uninstallation of host components"
+    "Any scenario requiring remote lifecycle, automatic trust, or deletion-style uninstall"
    ],
    "prerequisites": [
     "none"
@@ -1669,16 +1674,16 @@
     "none"
    ],
    "outputs": [
-    "none (unimplemented)"
+    "Manual-recovery refusal for uninstall; local install/update plan execution only"
    ],
    "sideEffects": [
     "none"
    ],
    "failureSemantics": [
-    "No corresponding entry point exists; calls should turn to external tools"
+    "Uninstall is refused without deleting files; remote lifecycle has no Foundation entry point"
    ],
    "invariants": [
-    "Install/uninstall/update are all unimplemented"
+    "Only local install/update plans are executable; uninstall remains refused"
    ],
    "ownedByCaller": [
     "Host lifecycle management"
@@ -1913,17 +1918,17 @@
   },
   {
    "id": "foundation.contracts.quickstart-profile-candidate",
-   "intent": "Expose the Quickstart Profile v2 protocol and real-$id Resource, Task, and Result schema collection through skill-family-contracts/candidate/quickstart-profile for exact-version integration trials.",
+   "intent": "Expose the Quickstart Profile v2 protocol, canonical-$id Schema collection, and frozen eight-entry historical-ID migration map through skill-family-contracts/quickstart-profile for exact-version integration trials.",
    "useWhen": [
     "Need to inspect or validate the candidate Resource, Task, or Result shape before it is proposed for the frozen registry",
-    "The consumer can pin the exact skill-family-contracts package version and isolate candidate imports from its stable API"
+    "The consumer can pin the exact skill-family-contracts package version and isolate candidate capabilities from its stable API"
    ],
    "doNotUseWhen": [
     "Need a registry-listed or compatibility-frozen contract",
     "Need Foundation to interpret domain audit semantics"
    ],
    "prerequisites": [
-    "Install an exact skill-family-contracts version that exports skill-family-contracts/candidate/quickstart-profile",
+    "Install an exact skill-family-contracts version that exports skill-family-contracts/quickstart-profile",
     "Node >= 22.22.2"
    ],
    "inputs": [
@@ -1931,7 +1936,7 @@
     "Candidate document to validate"
    ],
    "outputs": [
-    "Cloned candidate schemas or a validation result containing valid, errors, and normalized data"
+    "Cloned candidate schemas, the frozen eight-entry legacy-to-canonical ID map, or a validation result containing valid, errors, and normalized data"
    ],
    "sideEffects": [
     "No filesystem, Git, network, or process writes"
@@ -1942,8 +1947,9 @@
    ],
    "invariants": [
     "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
-    "Candidate schemas remain absent from src/registry.json and do not expand the 18 stable object classes",
-    "Stability is candidate: a later minor release may change or remove this subpath"
+    "Candidate schemas remain absent from src/registry.json and do not expand the 37 stable object classes",
+    "Stability is candidate: actively upgrading the candidate version requires contract verification",
+    "Historical entrypoints and eight Schema IDs migrate once; stable promotion requires no further contract-identity change, while obtaining the new published promise still requires exact-pin updates"
    ],
    "ownedByCaller": [
     "Domain meaning of method, parameters, evidence, and domainResult",
@@ -1956,7 +1962,7 @@
   },
   {
    "id": "foundation.harness.quickstart-profile-candidate",
-   "intent": "Construct and verify a candidate Task/Result exchange and call registered generic mechanisms through the fixed skill-family-harness-node/candidate/quickstart-profile bridge.",
+   "intent": "Construct and verify a candidate Task/Result exchange and call registered generic mechanisms through the fixed skill-family-harness-node/quickstart-profile bridge.",
    "useWhen": [
     "Need an early integration trial that binds a contained observation file to a candidate Task and terminal Result",
     "Need a structured non-throwing verification result for an exact-version candidate exchange",
@@ -1967,7 +1973,7 @@
     "Need a compatibility-frozen Quickstart API"
    ],
    "prerequisites": [
-    "Pin skill-family-contracts, skill-family-harness-node, and skill-family-engineering-kit to exactly 0.8.3 and rebuild the managed Bundle",
+    "Pin skill-family-contracts, skill-family-harness-node, and skill-family-engineering-kit to exactly 0.10.0; rebuild a managed Bundle only when adopting changed product bytes",
     "Observation and read-file-strict paths are contained under the caller-supplied root"
    ],
    "inputs": [
@@ -1992,7 +1998,8 @@
    "invariants": [
     "The Result must bind the exact Task digest, real Resource bytes, globally unique Resource ids, operation identity, correlation fields, and the complete evidence-binding set",
     "read-file-strict only forwards to the existing readFileStrict implementation; it copies no path, read, or digest algorithm and accepts no arbitrary function name",
-    "Stability is candidate: a later minor release may change or remove this subpath"
+    "Stability is candidate: actively upgrading the candidate version requires contract verification",
+    "After migrating historical entrypoints and Schema IDs, stable promotion requires no contract-identity change; existing bound inputs determine whether the Bundle is rebuilt"
    ],
    "ownedByCaller": [
     "Audit method semantics and domainResult interpretation",
@@ -2005,7 +2012,7 @@
   },
   {
    "id": "foundation.kit.quickstart-profile-candidate",
-   "intent": "Build a deterministic Quickstart Profile v2 offline Bundle with standalone validators selected by schema $id through skill-family-engineering-kit/candidate/quickstart-profile.",
+   "intent": "Build a deterministic Quickstart Profile v2 offline Bundle through skill-family-engineering-kit/quickstart-profile and use the historical adoption and skill-naming mechanisms through responsibility-specific canonical entrypoints.",
    "useWhen": [
     "Need to trial the candidate Quickstart schemas and runner in a target using the stable projection authorization boundary",
     "Need complete source, consumer-schema, payload, tool-version, and license provenance for the generated Bundle"
@@ -2015,7 +2022,7 @@
     "Need to bypass target manifest authorization or handwritten-file protection"
    ],
    "prerequisites": [
-    "Install exact matching 0.8.3 versions of all three Foundation packages",
+    "Install exact matching 0.10.0 versions of all three Foundation packages",
     "The target prefix is a contained relative POSIX path"
    ],
    "inputs": [
@@ -2037,9 +2044,10 @@
    ],
    "invariants": [
     "The Bundle contains no node_modules or runtime Ajv and runs without installed Foundation packages or network access",
-    "The managed Bundle is rebuilt from installed 0.8.3 package bytes and never imports source from a Foundation worktree",
+    "The managed Bundle is rebuilt from exact installed package bytes and never imports source from a Foundation worktree",
     "The helper adds no top-level Kit command and never bypasses runProjection",
-    "Stability is candidate: a later minor release may change or remove this subpath"
+    "Stability is candidate: actively upgrading the candidate version requires contract verification",
+    "After migrating historical entrypoints and Schema IDs to canonical identities, stable promotion requires no second contract migration; adopting the new release still requires exact-pin updates"
    ],
    "ownedByCaller": [
     "Review and authorization of the returned manifest",

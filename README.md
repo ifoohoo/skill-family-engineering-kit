@@ -4,27 +4,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.9.0 -->
+<!-- release-skill:release-version: 0.10.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.9.0** (2026-08-24)
+**0.10.0** (2026-08-24)
 
-Engineering Kit 0.9.0 projects the stable filesystem schemas, bound-read Harness closure, and candidate ordered batch validation into the existing Quickstart Bundle.
+Engineering Kit 0.10.0 adds responsibility-specific canonical entrypoints, a bounded host lifecycle slice, and a thin read-only peer adapter verification entry.
 
 **Added**
 
-- Projects the three stable filesystem schemas and two candidate batch schemas from Contracts authorities.
-- Projects the stable bound-read entry and its exact native prebuild closure without adding a Kit command.
+- Adds skill-family-engineering-kit/quickstart-profile, /adoption, and /skill-naming canonical exports.
+- Adds finite Profile alias resolution, independent manual probe facts for non-driver hosts, and explicit local install/update plans; uninstall remains a manual-recovery refusal.
+- Adds `verifyHostPeers` as a thin wrapper over Harness peer verification; the Kit retains four top-level commands and does not write peer directories.
 
 **Changed**
 
-- Keeps the four top-level Kit commands and Profile SPI candidate boundary unchanged.
+- Keeps the historical Quickstart candidate export as a same-source migration alias and preserves the four-command Kit boundary.
+- Compiles one canonical Quickstart and batch Schema set while mapping historical and canonical IDs to the same standalone validators.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.9.0 and rebuild managed Bundles. Batch validation is available only through the existing candidate Bundle and mechanisms CLI.
+Update all three exact pins to 0.10.0 and migrate imports and Schema IDs once to canonical identities. A later maturity-label promotion adds no separate Bundle rebuild requirement; package-identity, source-digest, and provenance changes continue to follow the existing projection contract.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -45,7 +47,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.9.0
+npm install --save-dev skill-family-engineering-kit@0.10.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -53,7 +55,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.9.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.10.0 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
@@ -63,7 +65,7 @@ The package carries three SPI JSON resources and the Contracts canonical `profil
 
 `verifyProfile({ profileRoot })` is read-only and data-only for Profile descriptors. `verifyProjectProfile({ projectRoot, profileRelPath? })` is the corresponding entry for a project root declaration. Both refuse invalid input with stable result codes, never execute Profile-provided files, and leave Profile domain meaning to the caller.
 
-When a provider Profile descriptor moves from Foundation 0.8.4 and Contracts 1.8.0 to Foundation 0.9.0, update its `base.contractsVersion` field mechanically to `1.9.0`. The four Kit commands and Profile SPI retain their existing shapes.
+When a provider Profile descriptor moves from Foundation 0.9.0 and Contracts 1.9.0 to Foundation 0.10.0, update its `base.contractsVersion` field mechanically to `1.10.0`. The four Kit commands and Profile SPI retain their existing shapes.
 
 ### Report sub-action
 
@@ -83,7 +85,7 @@ import { parseSourceAuthorityReceipt } from "skill-family-contracts";
 import {
   buildQuickstartProfileProjection,
   QUICKSTART_PROFILE_TARGET_PREFIX,
-} from "skill-family-engineering-kit/candidate/quickstart-profile";
+} from "skill-family-engineering-kit/quickstart-profile";
 
 const authority = parseSourceAuthorityReceipt(receipt, actualSubjects);
 if (!authority.valid) throw new Error(authority.errorCode);
@@ -96,7 +98,7 @@ const projection = await buildQuickstartProfileProjection({
 
 The caller obtains `receipt` and `actualSubjects` outside Kit. Contracts validates their exact binding before the existing builder receives `sourceRepository` and `sourceBaseCommit`; Kit does not parse release plans or discover source authority. The generated Bundle selects standalone validators by schema `$id` and runs offline without Foundation packages, `node_modules`, or runtime Ajv. Its provenance binds Foundation sources, consumer schemas, payload bytes, tool versions, and the licenses of code that actually enters the Bundle.
 
-Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. This subpath is public but **not stable**. Pin exactly `0.4.0` for v2; integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
+Pass the returned `manifest` to the stable `runProjection` API; the helper does not write files or add a fifth top-level command. The capability remains **candidate**, so pin all three packages exactly. Version 0.10.0 adds the canonical path above; the historical `/candidate/quickstart-profile` path remains a same-source migration alias. Adoption and skill naming now also have the canonical `skill-family-engineering-kit/adoption` and `skill-family-engineering-kit/skill-naming` paths. A later stable promotion will not require a second migration. Integrations that still require the v1 dependency-closure Bundle must stay pinned to exactly `0.2.1`.
 
 ### Host sub-action
 
@@ -107,7 +109,7 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-The Profile must be provided explicitly; Kit does not bind a specific host by default. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. `host-apply` is stably rejected; install, update, or uninstall is not implemented. Codex's skill target path is fixed at `.agents/skills`; other supported hosts are offered only per registered Profile; Qoder is `unsupported`, this version only references its structure, provides no full driver, and does not claim to have run in Qoder. adapter source only accepts declared text closures; binary projection is not supported; see this version's CHANGELOG and registered Profile for the precise host support matrix.
+The Profile must be provided explicitly; Kit does not bind a specific host by default. Canonical host IDs may resolve only aliases declared by the finite registered Profile set. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. Local install and update use an explicit authorization reference plus the existing contained publication primitives; uninstall is rejected with `manual-recovery-required` because Foundation has no safe bound deletion primitive. Two registered hosts have trusted version drivers; Kimi Code, WorkBuddy, CodeBuddy, and DeepSeek Harness expose independent manual facts; Qoder is `unsupported`. Adapter source only accepts declared text closures; binary projection is not supported; see the [host capability matrix](../../docs/reference/host-capability-matrix.md) and registered Profiles.
 
 ## Typical Use Cases
 
@@ -169,7 +171,7 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 ### Do not use when
 
 - You need auto-fix (`check` does not fix), or auto-migration (`adopt-plan` writes no files).
-- You need host apply/install/update/uninstall or a full Qoder driver (explicitly unsupported).
+- You need remote host publication, automatic trust confirmation, uninstall deletion, or a full Qoder driver (explicitly unsupported).
 - You need a stable Quickstart API or expect the candidate helper to bypass `runProjection` authorization.
 
 ### Capability selection
@@ -180,7 +182,8 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 - `foundation.kit.check`: nine check classes, diagnosis only, no fix.
 - `foundation.kit.report`: projection/check report sub-action orchestration.
 - `foundation.kit.git-probe`: read-only whitelisted Git status probe.
-- `foundation.kit.host`: describe/build/probe/plan, apply stably rejected.
+- `foundation.kit.host`: describe/build/probe/plan plus authorized, digest-bound local install/update through `applyHostPlan`; Kit CLI apply, generic or remote apply, and deleting uninstall remain rejected.
+- `verifyHostPeers` is a thin read-only host entry over Harness peer adapter verification; it does not write peer directories or add a fifth command.
 - `foundation.kit.licensing`: Profile authorization-data loading and generation.
 - `foundation.kit.identity-check`: identity-drift and Profile-consistency checks.
 - `foundation.kit.cli`: four-command dispatch and mutation-flag entry rejection.
@@ -215,12 +218,12 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 ### Route elsewhere when
 
 - Remote publish: route to release-skill.
-- host apply/install/update/uninstall: explicitly unsupported.
+- remote host publication, automatic trust confirmation, and uninstall deletion: explicitly unsupported; local install/update are limited to the registered plan API.
 - Business state machine / migration execution: stays with the caller or a later version.
 
 ### Machine-readable sources
 
 - Public capability catalog: [`capability-catalog.json`](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json) (`foundation.kit.*` entries).
 - Package-local source: `src/*.mjs`.
-- Package-local candidate source: `candidate/*`; public import: `skill-family-engineering-kit/candidate/quickstart-profile`.
+- Package-local candidate source: `candidate/*`; canonical public imports: `skill-family-engineering-kit/quickstart-profile`, `/adoption`, and `/skill-naming`; historical migration alias: `skill-family-engineering-kit/candidate/quickstart-profile`.
 <!-- agent-quick-reference:end -->

@@ -2100,14 +2100,14 @@
 <td><code>SFC</code>（越权参数拒绝）</td>
 </tr>
 <tr>
-<td><code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>planHost</code></td>
+<td><code>describeHost</code> / <code>resolveHostId</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>planHost</code> / <code>applyHostPlan</code></td>
 <td>是</td>
-<td>build 写（受收容）</td>
+<td>build/install/update 写（受收容；uninstall 不写）</td>
 <td>probe 默认否</td>
 <td>否</td>
 <td>否</td>
-<td>无</td>
-<td><code>SFC2004</code>；apply 稳定拒绝</td>
+<td>仅显式 <code>authorizationRef</code></td>
+<td><code>SFC2004</code>；远端 apply 与删除式 uninstall 稳定拒绝</td>
 </tr>
 <tr>
 <td><code>loadLicensingProfile</code> / <code>generateLicenseContent</code> 等</td>

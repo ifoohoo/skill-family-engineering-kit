@@ -1982,6 +1982,16 @@
 <td><code>SFC2004</code> (<code>missing-resource</code>)</td>
 </tr>
 <tr>
+<td><code>verifyPeerAdapterDirectories</code></td>
+<td>yes (bound peer roots)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>none</td>
+<td><code>SFC2003</code>/<code>SFC2004</code> (identity, mapping, closure, or path failure)</td>
+</tr>
+<tr>
 <td><code>materializeAdapterBuild</code></td>
 <td>no</td>
 <td>yes (contained, sibling + rename)</td>
@@ -2100,14 +2110,24 @@
 <td><code>SFC</code> (over-privileged parameter refused)</td>
 </tr>
 <tr>
-<td><code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>planHost</code></td>
+<td><code>describeHost</code> / <code>resolveHostId</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>verifyHostPeers</code> / <code>planHost</code></td>
 <td>yes</td>
 <td>build writes (contained)</td>
 <td>probe default no</td>
 <td>no</td>
 <td>no</td>
 <td>none</td>
-<td><code>SFC2004</code>; apply stably refused</td>
+<td><code>SFC2003</code>/<code>SFC2004</code></td>
+</tr>
+<tr>
+<td><code>applyHostPlan</code></td>
+<td>yes</td>
+<td>bounded local install/update</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>staging is cleaned; result records partial/indeterminate publication</td>
+<td><code>SFC2003</code>/<code>SFC2004</code>; uninstall returns <code>manual-recovery-required</code> without deleting</td>
 </tr>
 <tr>
 <td><code>loadLicensingProfile</code> / <code>generateLicenseContent</code> etc.</td>
@@ -2141,7 +2161,7 @@
 </tr>
 </tbody>
 </table>
-<p>Kit's <code>FORBIDDEN_SIDE_EFFECTS</code> includes git-init/commit/push/tag, publish, remote-write; <code>REFUSED_MUTATION_FLAGS</code> (including <code>--apply</code>) are refused at the CLI entry point.</p>
+<p>Kit's <code>FORBIDDEN_SIDE_EFFECTS</code> includes git-init/commit/push/tag, publish, remote-write; <code>REFUSED_MUTATION_FLAGS</code> (including <code>--apply</code>) are refused at the CLI entry point. The package API <code>applyHostPlan</code> does not add a fifth command or grant generic/remote apply.</p>
 <h2 id="Residual-State-Collection">Residual-State Collection<a class="headerlink" href="#Residual-State-Collection" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Atomic write: on failure, rolls back the temp file, leaving no half-product in the target directory.</li>

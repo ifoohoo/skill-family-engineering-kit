@@ -1894,9 +1894,9 @@
 <h1 id="Recipe-Text-Resource-Closure-and-Host-Build">Recipe: Text Resource Closure and Host Build<a class="headerlink" href="#Recipe-Text-Resource-Closure-and-Host-Build" title="Permanent link">&para;</a></h1>
 <h2 id="1-Scenario-and-Non-Scenario">1. Scenario and Non-Scenario<a class="headerlink" href="#1-Scenario-and-Non-Scenario" title="Permanent link">&para;</a></h2>
 <p>Applicable: you need to normalize a set of text resources into a recomputable closure, and based on it materialize a host-adapter build at a contained location, with the build manifest fully digest-verifiable.</p>
-<p>Not applicable: needs to include binary resources in the adapter projection (text closure only); needs host apply/install/update/uninstall (explicitly unsupported).</p>
+<p>Not applicable: needs to include binary resources in the adapter projection (text closure only); needs Kit CLI apply, generic or remote apply, or automatic deleting uninstall.</p>
 <h2 id="2-Architecture-Choice-and-Capability-ID">2. Architecture Choice and Capability ID<a class="headerlink" href="#2-Architecture-Choice-and-Capability-ID" title="Permanent link">&para;</a></h2>
-<p>Preferred capabilities: <code>foundation.harness.resource-closure</code> (deterministic closure and sha256 digest) and <code>foundation.harness.host-adapter</code> (adapter source closure / build / manifest verification / materialize).</p>
+<p>Preferred capabilities: <code>foundation.harness.resource-closure</code> (deterministic closure and sha256 digest) and <code>foundation.harness.host-adapter</code> (adapter source closure / build / manifest verification / materialize / read-only peer verification through <code>verifyPeerAdapterDirectories</code>).</p>
 <h2 id="3-Preconditions-and-Trust-Boundary">3. Preconditions and Trust Boundary<a class="headerlink" href="#3-Preconditions-and-Trust-Boundary" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The adapter source is a declared text closure (<code>content</code> accepts only string, utf8).</li>
@@ -1938,7 +1938,8 @@ buildAdapterClosure({ path: &quot;x.bin&quot;, content: Buffer.from([0, 1, 2]) }
 </ul>
 <h2 id="9-Upgrade-and-Rollback-Notes">9. Upgrade and Rollback Notes<a class="headerlink" href="#9-Upgrade-and-Rollback-Notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>host apply is stably refused, and install/uninstall/update are unimplemented; the full Qoder driver is unsupported.</li>
+<li>Harness owns only build and read-only peer verification. The Kit package API <code>applyHostPlan</code> supports registered, digest-bound local install/update; executing an uninstall plan does not delete files. Kit CLI apply, generic apply, and remote apply remain stably refused, and the full Qoder driver is unsupported.</li>
+<li><code>verifyPeerAdapterDirectories</code> proves only that peer directories have matching closures, bytes, and <code>logicalMappings</code>; it derives no install, release, or domain state.</li>
 <li>materialize is an atomic sibling + rename, and on failure does not affect the existing target; upgrade follows the <code>skill-family-harness-node</code> version.</li>
 </ul>
 

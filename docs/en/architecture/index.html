@@ -1139,6 +1139,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Capability-Identity-and-Maturity" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Capability Identity and Maturity
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Next-Phase-Capability-Lines-Architecture-Hand-off" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1861,6 +1872,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Capability-Identity-and-Maturity" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Capability Identity and Maturity
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Next-Phase-Capability-Lines-Architecture-Hand-off" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1972,7 +1994,7 @@ Horizontal (attachment surfaces, no new vertical layers):
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>Structure, protocols, error codes, protocol-name registry; 20 top-level object kinds; 9 mandatory rules</td>
+<td>Structure, protocols, error codes, protocol-name registry; 37 top-level object kinds; 9 mandatory rules</td>
 <td>Business-field semantics, domain auditing, remote writes, model generation</td>
 </tr>
 <tr>
@@ -2066,12 +2088,15 @@ Carries limited domain semantics? ──yes──▶ finite closed semantics: co
 <li><strong>Task lifecycle</strong>: owned by loop-agent (tasks, retries, rework, acceptance); Foundation contains no workflow state machine (<code>foundation.unsupported.business-state-machine</code>).</li>
 <li><strong>Artifact governance</strong>: artifact-graph owns the <code>artifacts/</code> relationship contract and version-lock; its gate is <code>check:artifacts</code>.</li>
 <li><strong>Domain auditing</strong>: an independent audit consumer owns the semantics and final accept/reject; Foundation provides only a deterministic audit surface (<code>foundation.unsupported.domain-audit-semantics</code>).</li>
-<li><strong>Host apply and lifecycle</strong>: host apply is stably refused, install/update/uninstall are unimplemented, and the full Qoder driver is unsupported (<code>foundation.unsupported.host-apply</code>, <code>foundation.unsupported.host-install-update-uninstall</code>, <code>foundation.unsupported.qoder-driver</code>).</li>
+<li><strong>Host apply and lifecycle</strong>: the package API <code>applyHostPlan</code> supports digest-bound local install/update for registered supported hosts. Executing an uninstall plan returns <code>manual-recovery-required</code> without deleting files. The four-command Kit CLI, generic or remote apply, and the full Qoder driver remain unsupported (<code>foundation.unsupported.host-apply</code>, <code>foundation.unsupported.host-install-update-uninstall</code>, <code>foundation.unsupported.qoder-driver</code>).</li>
 </ul>
+<h2 id="Capability-Identity-and-Maturity">Capability Identity and Maturity<a class="headerlink" href="#Capability-Identity-and-Maturity" title="Permanent link">&para;</a></h2>
+<p>Capability identity and maturity are separate dimensions (FND-ADR-016). Consumers of historical <code>./candidate/**</code> entrypoints migrate once to the canonical entrypoints introduced in 0.10.0, while the old entrypoints remain same-source compatibility surfaces during deprecation. Capabilities introduced from 0.10.0 onward use their final canonical entrypoint, Schema <code>$id</code>, and operation from the first candidate release. Stable promotion changes the compatibility promise only and does not trigger another source or contract-identity migration. A consumer must still update all three exact package pins to obtain a newly published stable promise. Existing package-identity, source-digest, and provenance bindings continue to determine whether a Bundle rebuild is required; the maturity label does not add a separate rebuild condition.</p>
+<p>The physical <code>candidate/</code> directory is not an architecture layer and does not determine public stability. The Contracts machine policy and capability-catalog <code>stability</code> field are authoritative. Removing a historical entrypoint requires a separate major-version decision and consumer-exit evidence; it cannot be bundled into promotion.</p>
 <h2 id="Next-Phase-Capability-Lines-Architecture-Hand-off">Next-Phase Capability Lines (Architecture Hand-off)<a class="headerlink" href="#Next-Phase-Capability-Lines-Architecture-Hand-off" title="Permanent link">&para;</a></h2>
 <p>All three capability lines were included via the FND-ADR-001 capability admission-gate adjudication and all land within the existing layers:</p>
 <ul>
-<li><strong>Host-access line</strong> (FND-FR-001/FND-FR-002, FND-ADR-003): Contracts registers descriptor/source/manifest/probe/plan/receipt; Harness implements generic source closure, atomic build/materialize, and probe classification; Kit injects the concrete Profile and trusted driver. Currently only describe/build/probe/plan are supported; <code>apply</code> is stably refused; install/uninstall/update are unimplemented.</li>
+<li><strong>Host-access line</strong> (FND-FR-001/FND-FR-002/FND-FR-008/FND-FR-009): Contracts registers descriptor/source/manifest/probe/plan/receipt and peer-verification request/result; Harness implements generic source closure, atomic build/materialize, probe classification, and read-only peer verification; Kit injects the concrete Profile and trusted driver. The package API supports bounded local install/update through <code>applyHostPlan</code>; uninstall execution remains non-destructive and requires manual recovery. Kit CLI apply and generic or remote apply remain refused.</li>
 <li><strong>Durable state-substrate line</strong> (FND-FR-003, FND-ADR-004): append-only events, hash chain, snapshots, and verification recovery; provides only the state substrate, not business semantics such as state machines, task nodes, retries, terminal states, or memory.</li>
 <li><strong>Human-report line</strong> (FND-FR-004, FND-ADR-005): a two-layer contract — machine results are the sole source of truth, and the human report is deterministically rendered from machine results (Markdown + digest binding + graded checks), not freely authored.</li>
 <li><strong>Finite-closed-semantics tools line</strong> (FND-ADR-009): baseline materialization + contentGuard (digest mismatch, mid-materialization change, and guard rejection all fail closed), generic read chokepoint (allowed-root set + optional identity predicate), strategy-driven surface scan (policy contract + injection self-test), token upper-bound estimation (deterministic estimation primitive with no model/network/tokenizer dependency), and a generic upper-bound guard (reusing the state-store event ledger and token-lock; the bound and over-limit policy are consumer-configured).</li>
@@ -2079,12 +2104,12 @@ Carries limited domain semantics? ──yes──▶ finite closed semantics: co
 <p>The three-package structure is preserved and a fourth package is not split out (FND-ADR-007); artifact governance uses the artifact-graph CLI and version-lock (FND-ADR-006).</p>
 <h2 id="First-Version-Budget">First-Version Budget<a class="headerlink" href="#First-Version-Budget" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Top-level Contracts objects: 20 kinds (the complete list uses <code>packages/skill-family-contracts/src/registry.json</code> as the sole source of truth): project-manifest, profile-descriptor, managed-file-lock, operation-request, operation-result, migration-manifest, adapter-source, report-model, report-binding, host-descriptor, host-registry, host-capability-fact, host-probe-result, adapter-build-manifest, host-operation-plan, host-operation-receipt, state-event-envelope, state-snapshot-metadata, token-estimate-result, surface-scan-policy;</li>
+<li>Top-level Contracts objects: 37 kinds, with <code>packages/skill-family-contracts/src/registry.json</code> as the sole source of truth;</li>
 <li>Kit top-level commands: 4 (scaffold, adopt-plan, projection, check);</li>
 <li>Mandatory mechanical rules: currently 9, budget not exceeding 20, absolute ceiling 30; CR-001 uniformly compiles all Schemas within the registry;</li>
 <li>Leaf packages: 3 (skill-family-contracts, skill-family-harness-node, skill-family-engineering-kit);</li>
 <li>Schema validator: Ajv 8.20.0 (exact version pin), supporting both draft-07 and 2020-12 dialects;</li>
-<li>kernel protocol: skill-family.kernel.operation (stable), Contracts version 1.4.0;</li>
+<li>kernel protocol: skill-family.kernel.operation (stable), Contracts specification 1.10.0; the Kernel document remains at its 1.8.0 lifecycle coordinate and byte baseline;</li>
 <li>Default runtime language: Node; first-version implementations in a second language: 0.</li>
 </ul>
 <p>Any new component must justify the two-or-more real-consumer re-implementation that deleting it would cause, and be verified by an independent fixture.</p>

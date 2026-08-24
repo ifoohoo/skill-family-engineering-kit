@@ -936,6 +936,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        同级适配器验证合同 (foundation.contracts.peer-adapter-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        能力成熟度与历史迁移政策
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2232,6 +2254,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        同级适配器验证合同 (foundation.contracts.peer-adapter-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        能力成熟度与历史迁移政策
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Quickstart-Profile-v2-candidate" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2283,8 +2327,9 @@
 <li><a href="#fixture-校验-foundationcontractsfixture-verification">fixture 校验</a> → <code>listFixtures</code> / <code>verifyFixture</code> / <code>verifyAllFixtures</code></li>
 <li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
+<li><a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（35 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.9.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（37 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.10.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2592,11 +2637,39 @@
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/audit-surface.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：审计语义结论（接受/拒绝属外部独立审阅）。</li>
 </ul>
+<h2 id="同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同 (foundation.contracts.peer-adapter-verification)<a class="headerlink" href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.10.0 登记 <code>adapter-peer-verification-request</code> 与
+<code>adapter-peer-verification-result</code> 两个稳定 Schema。request 至少包含两个显式 peer；每个 peer
+携带闭集 <code>hostId</code>、路径类别和完整 <code>logicalMappings</code>。result 固定为 <code>verified</code> 与
+<code>peer-verification</code>，并携带共同来源闭包、每个 peer 的标准 manifest 和 mapping。</p>
+<p>这两个合同只描述业务中立的只读验证，不拥有 canonical source、目录写入、迁移、receipt、重试或生命周期状态。
+peer 顺序不得改变共同闭包摘要或结论；未知字段、重复/缺失/悬空 mapping 和无法由真实目录证明的输入必须失败关闭。</p>
+<ul>
+<li><code>since</code> / <code>stability</code>：<code>0.10.0</code> / <code>stable</code>。</li>
+<li>Schema 文件：<code>packages/skill-family-contracts/src/schemas/adapter-peer-verification-request.schema.json</code>、<code>adapter-peer-verification-result.schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/peer-adapter.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：peer 的 canonical 选择、旧 manifest 迁移解释、消费者 smoke 和发布后验证。</li>
+</ul>
 <hr />
+<h2 id="能力成熟度与历史迁移政策">能力成熟度与历史迁移政策<a class="headerlink" href="#能力成熟度与历史迁移政策" title="Permanent link">&para;</a></h2>
+<p>包根导出 <code>CAPABILITY_MATURITY_LEVELS</code>、<code>CANDIDATE_PROMOTION_POLICY</code>、
+<code>HISTORICAL_CANDIDATE_MIGRATION_POLICY</code>，以及两个返回结构化副本的 <code>describe*Policy()</code>。它们不读取文件、不写状态，
+也不替消费者执行迁移。政策固定历史入口只迁移一次；新能力采用规范身份后，candidate→stable 不再改变消费者合同。
+消费者要取得新发布的 stable 承诺仍需更新三包精确 pin；受管投影是否重建沿用既有绑定输入合同。</p>
+<p><code>since</code> / <code>stability</code>：<code>0.10.0</code> / <code>stable</code>。源文件：<code>packages/skill-family-contracts/src/stability.mjs</code>。正反例测试：
+<code>packages/skill-family-contracts/test/candidate-promotion-compatibility.test.mjs</code>。</p>
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
-<p><code>skill-family-contracts/candidate/quickstart-profile</code> 导出 v2 协议、按真实 <code>$id</code> 索引的 Resource/Task/Result Schema 集合，以及 <code>validateQuickstartProfileDocument</code>。唯一操作名是业务中立的 <code>execute-method</code>；Foundation 不登记 method 词表，也不解释 parameters、evidence 或 domainResult 的领域含义。</p>
-<p>0.9.0 另提供两个 candidate batch Schema：<code>schema-validation-batch-request.json</code> 与 <code>schema-validation-batch-result.json</code>。它们只供现有 Quickstart Bundle 的 <code>validate-many-by-schema-id</code> 机制使用；未知 <code>schemaId</code> 或任一结构畸形都使整批请求失败，不改变稳定 Registry。</p>
-<p>该入口从 <code>0.2.1</code> 起公开，但稳定性仍为 <code>candidate</code>。0.3.0 已用 v2 替换 v1，两者不兼容：新接入需精确锁定 <code>0.3.0</code>，仍需 v1 的接入继续精确锁定 <code>0.2.1</code>。candidate Schema 不进入稳定 <code>src/registry.json</code>。</p>
+<p>规范入口 <code>skill-family-contracts/quickstart-profile</code> 导出 v2 协议、按规范 <code>$id</code> 索引的 Resource/Task/Result Schema 集合，
+以及 <code>validateQuickstartProfileDocument</code>。历史入口 <code>skill-family-contracts/candidate/quickstart-profile</code> 在弃用窗口内解析到
+同一模块，现有消费者应迁移一次。唯一 operation 是业务中立的 <code>execute-method</code>；Foundation 不登记 method 词表，
+也不解释 parameters、evidence 或 domainResult 的领域含义。</p>
+<p>0.10.0 把 Quickstart 六个历史 Schema 身份和 0.9.0 的两个 batch Schema 身份一次迁移到不含 <code>/candidate/</code> 的规范
+<code>$id</code>。<code>HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS</code> 固定八项旧 ID→规范 ID；loader 只返回规范 Schema。Quickstart
+Bundle 让旧新 ID 指向同一编译 validator，不复制 Schema，也不登记进 stable Registry。两个 batch Schema 仍只供
+<code>validate-many-by-schema-id</code> 使用；未知 <code>schemaId</code> 或任一结构畸形都使整批请求失败。</p>
+<p>该能力从 <code>0.2.1</code> 起公开，稳定性仍为 <code>candidate</code>。0.3.0 已用 v2 替换 v1，两者不兼容：仍需 v1 的接入继续精确
+锁定 <code>0.2.1</code>；v2 新接入应使用 0.10.0 规范入口并精确锁定三包。candidate Schema 不进入稳定 <code>src/registry.json</code>。
+主动升级候选版本仍需复验；以后仅晋升 stable 时不再切入口或 Schema 身份。取得 stable 发布承诺仍需更新三包精确 pin。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

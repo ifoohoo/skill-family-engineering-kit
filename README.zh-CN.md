@@ -5,27 +5,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.9.0 -->
+<!-- release-skill:release-version: 0.10.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.9.0** (2026-08-24)
+**0.10.0** (2026-08-24)
 
-Engineering Kit 0.9.0 将稳定文件系统 Schema、绑定读取 Harness 闭包与有序批量校验 candidate 投影到既有 Quickstart Bundle。
+Engineering Kit 0.10.0 为历史 candidate 提供职责明确的规范入口，增加受限的跨平台宿主身份、探针和本地生命周期能力，并提供同级适配器只读验证薄入口。
 
 **新增**
 
-- 从 Contracts 权威源投影三个稳定文件系统 Schema 与两个批量校验 candidate Schema。
-- 投影稳定绑定读取入口及其精确原生预构建闭包，不新增 Kit 命令。
+- 新增 skill-family-engineering-kit/quickstart-profile、/adoption 与 /skill-naming 规范导出。
+- 增加有限 Profile alias 解析、非 driver 宿主的独立手动 probe fact 和显式本地 install/update 计划；uninstall 仍要求人工恢复。
+- 新增 `verifyHostPeers`，只包装 Harness 的 peer 验证，不增加第五个顶层命令，也不写入 peer 目录。
 
 **变更**
 
-- 四个顶层 Kit 命令与 Profile SPI 的 candidate 边界保持不变。
+- 历史 Quickstart candidate 导出继续作为同源迁移别名，Kit 四命令边界不变。
+- 只编译一套规范 Quickstart 与批量校验 Schema；历史和规范 ID 指向同一 standalone validator。
 
 **升级说明**
 
-三个 Foundation 包必须精确锁定 0.9.0 并重新构建 managed Bundle；批量校验只能通过既有 candidate Bundle 与 mechanisms CLI 使用。
+消费者应把三个包的精确 pin 更新到 0.10.0，并把导入与 Schema ID 一次迁移到规范身份。以后仅晋升成熟度标签时不另加 Bundle 重建要求；包身份、来源摘要或 provenance 变化仍按既有投影合同处理。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -46,7 +48,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.9.0
+npm install --save-dev skill-family-engineering-kit@0.10.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -54,7 +56,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.9.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.10.0 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -64,7 +66,7 @@ npm exec -- skill-family-kit check --root <repo>
 
 `verifyProfile({ profileRoot })` 只读处理 Profile descriptor；项目根声明使用对应的 `verifyProjectProfile({ projectRoot, profileRelPath? })`。两个入口遇到无效输入都以稳定结果码失败关闭，不会执行 Profile 提供的文件；Profile 的领域含义仍由调用方负责。
 
-provider Profile descriptor 从 Foundation 0.8.4 与 Contracts 1.8.0 升级到 Foundation 0.9.0 时，须把自身的 `base.contractsVersion` 字段更新为 `1.9.0`。Kit 四个顶层命令与 Profile SPI 的形状保持不变。
+provider Profile descriptor 从 Foundation 0.9.0 与 Contracts 1.9.0 升级到 Foundation 0.10.0 时，须把自身的 `base.contractsVersion` 字段更新为 `1.10.0`。Kit 四个顶层命令与 Profile SPI 的形状保持不变。
 
 ### 报告子动作
 
@@ -84,7 +86,7 @@ import { parseSourceAuthorityReceipt } from "skill-family-contracts";
 import {
   buildQuickstartProfileProjection,
   QUICKSTART_PROFILE_TARGET_PREFIX,
-} from "skill-family-engineering-kit/candidate/quickstart-profile";
+} from "skill-family-engineering-kit/quickstart-profile";
 
 const authority = parseSourceAuthorityReceipt(receipt, actualSubjects);
 if (!authority.valid) throw new Error(authority.errorCode);
@@ -97,7 +99,7 @@ const projection = await buildQuickstartProfileProjection({
 
 `receipt` 与 `actualSubjects` 由调用方在 Kit 外取得。Contracts 先精确核对两者，既有 builder 再接收返回的 `sourceRepository` 与 `sourceBaseCommit`；Kit 不解析发布计划，也不发现来源权威。生成的 Bundle 按 Schema `$id` 选择 standalone validator，离线运行时不依赖 Foundation 包、`node_modules` 或 Ajv。provenance 绑定 Foundation 来源、消费者 Schema、payload 字节、工具版本，以及实际进入 Bundle 的代码许可证。
 
-以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该子路径公开但**不稳定**；使用 v2 时应精确锁定 `0.4.0`，仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
+以上辅助函数不写文件，也不增加第五个顶层命令。调用方需要把返回的 `manifest` 交给稳定的 `runProjection` API。该能力仍是 **candidate**，必须精确锁定三个包。0.10.0 新增上面的规范入口；历史 `/candidate/quickstart-profile` 入口作为同源迁移别名继续可用。adoption 与 skill naming 也分别提供 `skill-family-engineering-kit/adoption` 和 `skill-family-engineering-kit/skill-naming` 规范入口。消费者迁移一次后，未来晋升 stable 不再二次迁移。仍依赖 v1 依赖闭包 Bundle 的接入必须继续精确锁定 `0.2.1`。
 
 ### 宿主子动作
 
@@ -108,7 +110,7 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-Profile 必须显式提供，Kit 不默认绑定具体宿主。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。`host-apply` 稳定拒绝，未实现安装、更新或卸载。Codex 的技能目标路径固定为 `.agents/skills`；其他受支持宿主只按已登记 Profile 提供；Qoder 为 `unsupported`，本版只参考其结构，不提供完整 driver，也不声称已在 Qoder 运行。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见本版本 CHANGELOG 与已登记 Profile。
+Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实；Qoder 为 `unsupported`。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
 
 ## 典型使用场景
 
@@ -170,7 +172,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ### Do not use when
 
 - 需要自动修复（`check` 不修复）、自动迁移（`adopt-plan` 不写文件）。
-- 需要 host apply/install/update/uninstall 或 Qoder 完整 driver（明确 unsupported）。
+- 需要远端宿主发布、自动信任、删除式 uninstall 或 Qoder 完整 driver（明确 unsupported）。
 - 需要稳定 Quickstart API，或希望 candidate 辅助函数绕过 `runProjection` 授权。
 
 ### Capability selection
@@ -181,7 +183,8 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 - `foundation.kit.check`：九类检查只诊断不修复。
 - `foundation.kit.report`：projection/check report 子动作编排。
 - `foundation.kit.git-probe`：只读白名单 Git 状态探测。
-- `foundation.kit.host`：describe/build/probe/plan，apply 稳定拒绝。
+- `foundation.kit.host`：有限身份解析、describe/build/probe/plan，以及受授权的本地 install/update；删除式 uninstall 和远端 apply 稳定拒绝。
+- `verifyHostPeers` 是 Harness 同级适配器验证的薄只读宿主入口，不写入 peer 目录，也不增加第五个顶层命令。
 - `foundation.kit.licensing`：Profile 授权数据加载与生成。
 - `foundation.kit.identity-check`：身份漂移与 Profile 一致性检查。
 - `foundation.kit.cli`：四命令分派与变更旗标入口拒绝。
@@ -216,12 +219,12 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ### Route elsewhere when
 
 - 远端发布：转 release-skill。
-- host apply/install/update/uninstall：明确 unsupported。
+- 远端 host apply、自动信任与删除式 uninstall：明确 unsupported；本地 install/update 仅限已登记计划。
 - 业务状态机/迁移执行：留在调用方或后续版本。
 
 ### Machine-readable sources
 
 - 公开能力目录：[`capability-catalog.json`](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json)（`foundation.kit.*` 条目）。
 - 包内源：`src/*.mjs`。
-- 包内 Candidate 源：`candidate/*`；公共导入：`skill-family-engineering-kit/candidate/quickstart-profile`。
+- 包内 Candidate 源：`candidate/*`；规范公共导入：`skill-family-engineering-kit/quickstart-profile`、`/adoption` 与 `/skill-naming`；历史迁移别名：`skill-family-engineering-kit/candidate/quickstart-profile`。
 <!-- agent-quick-reference:end -->

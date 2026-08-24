@@ -1817,7 +1817,7 @@
 <h2 id="关键纪律">关键纪律<a class="headerlink" href="#关键纪律" title="Permanent link">&para;</a></h2>
 <ul>
 <li>机制失败统一 <code>SFC2004</code>（<code>EXECUTION_FAILED</code>），由 <code>details.kind</code> 区分（<code>HARNESS_ERROR_KINDS</code> 冻结枚举）；Contracts 校验失败（<code>SFC1001</code> / <code>SFC1002</code>）经 <code>validateDocument</code> 返回值表达、不抛异常。</li>
-<li>Kit 顶层命令集合固定为 4 个（<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>），不扩张；<code>host apply</code> / <code>install</code> / <code>update</code> / <code>uninstall</code>、Qoder 完整 driver、二进制 adapter source、远端发布、业务状态机、模型编排、领域审计语义均明确 unsupported。</li>
+<li>Kit 顶层命令集合固定为 4 个（<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>），不扩张；远端或通用 <code>host apply</code>、删除式 <code>uninstall</code>、Qoder 完整 driver、二进制 adapter source、远端发布、业务状态机、模型编排、领域审计语义均明确 unsupported。已登记宿主的本地 install/update 仅通过受授权的 plan API 提供。</li>
 <li>所有版本字段从 <code>package.json</code> 与 Contracts 真源生成或由 fact-check 校验；<code>CONTRACTS_VERSION=1.4.0</code> 与 npm 包版本 <code>0.3.0</code> 并行。</li>
 </ul>
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>

@@ -913,10 +913,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" class="md-nav__link">
+  <a href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
     <span class="md-ellipsis">
 
-        describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver
+        describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
 
     </span>
   </a>
@@ -2206,10 +2206,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" class="md-nav__link">
+  <a href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
     <span class="md-ellipsis">
 
-        describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver
+        describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
 
     </span>
   </a>
@@ -2376,7 +2376,9 @@
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 从 Foundation 0.8.4 与 Contracts 1.8.0 升级到 Foundation 0.9.0 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.9.0</code>。Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序 <code>validate-many-by-schema-id</code>。</p>
+<p>provider Profile descriptor 使用 Contracts 1.10.0 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.10.0</code>。
+Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
+<code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code></li>
@@ -2385,7 +2387,7 @@
 <li><a href="#check-foundationkitcheck">check</a> → <code>runChecks</code> / <code>runCoreCheck</code></li>
 <li><a href="#report-foundationkitreport">report</a> → <code>renderReportAction</code> / <code>checkReportAction</code></li>
 <li><a href="#git-probe-foundationkitgit-probe">git-probe</a> → <code>probeGitState</code> / <code>probeGitFacts</code></li>
-<li><a href="#host-foundationkithost">host</a> → <code>describeHost</code> / <code>probeHost</code> / <code>refuseHostApply</code> …</li>
+<li><a href="#host-foundationkithost">host</a> → <code>describeHost</code> / <code>resolveHostId</code> / <code>probeHost</code> / <code>planHost</code> / <code>applyHostPlan</code> …</li>
 <li><a href="#licensing-foundationkitlicensing">licensing</a> → <code>loadLicensingProfile</code> / <code>generateLicenseContent</code> …</li>
 <li><a href="#identity-check-foundationkitidentity-check">identity-check</a> → <code>checkIdentityDrift</code> / <code>validateIdentityAgainstProfile</code></li>
 <li><a href="./">CLI</a> → <code>runCommand</code> / <code>cliMain</code></li>
@@ -2521,28 +2523,30 @@
 </ul>
 <hr />
 <h2 id="host-foundationkithost">host (foundation.kit.host)<a class="headerlink" href="#host-foundationkithost" title="Permanent link">&para;</a></h2>
-<h3 id="describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver">describeHost / loadHostRegistry / probeHost / buildHostAdapter / materializeHostBuild / planHost / assertPlanConsistency / refuseHostApply / probeTrustedVersionDriver<a class="headerlink" href="#describeHost--loadHostRegistry--probeHost--buildHostAdapter--materializeHostBuild--planHost--assertPlanConsistency--refuseHostApply--probeTrustedVersionDriver" title="Permanent link">&para;</a></h3>
+<h3 id="describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver">describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver<a class="headerlink" href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" title="Permanent link">&para;</a></h3>
 <ul>
-<li>签名（节选，除 <code>refuseHostApply</code> 外均为 async）：</li>
+<li>签名（节选，除 <code>assertPlanConsistency</code> 外均为 async）：</li>
 <li><code>describeHost({ hostId, hostsRoot, registry } = {})</code></li>
+<li><code>resolveHostId({ hostId, hostsRoot, registry } = {})</code>（async）：读取已登记的有限 Profile 集合，解析 canonical <code>hostId</code> 与 <code>sourceAliases</code>；不读取或写入全局别名表。</li>
 <li><code>loadHostRegistry({ hostsRoot, registry } = {})</code></li>
 <li><code>probeHost({ hostId, hostsRoot, registry, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
 <li><code>buildHostAdapter({ hostId, pathCategoryId, input, hostsRoot, registry } = {})</code></li>
+<li><code>verifyHostPeers({ request, peerRoots, hostsRoot, registry } = {})</code>（async）：<code>hostsRoot</code> 为必需的 Profile 证明根，<code>registry</code> 可选；薄包装 Harness 的同级适配器只读验证，不写入目录。</li>
 <li><code>materializeHostBuild(options)</code></li>
-<li><code>planHost({ hostId, pathCategoryId, buildManifest, probeFacts, hostsRoot, registry } = {})</code></li>
+<li><code>planHost({ hostId, pathCategoryId, buildManifest, probeFacts, operation = "install", previousMembers = [], hostsRoot, registry } = {})</code></li>
 <li><code>assertPlanConsistency(planInput)</code></li>
-<li><code>refuseHostApply()</code>（直接抛错）</li>
+<li><code>applyHostPlan({ plan, build, targetRoot, authorizationRef } = {})</code>：复用 Harness 的身份绑定读取、严格不替换发布和原子替换；卸载始终返回 <code>manual-recovery-required</code>，不删除文件。</li>
 <li><code>probeTrustedVersionDriver({ hostId, driverId, capabilities = CAPABILITIES, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
-<li>输入：宿主标识、probe/plan 选项。</li>
-<li>输出：宿主描述、probe 结果、构建产物、plan。</li>
-<li>纯函数：<code>assertPlanConsistency</code> / <code>refuseHostApply</code> 是；其余含落盘或进程调用。</li>
-<li>副作用：<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。</li>
-<li>稳定错误码与 <code>details.kind</code>：unsupported host（如 <code>qoder</code>）抛 <code>KitError</code>（<code>unsupported-host</code>）；<code>apply</code> 由 <code>refuseHostApply</code> 稳定拒绝；缺 probe facts 抛 <code>KitError</code>（<code>missing-probe-facts</code>）。<code>HOST_DRIVER_IDS</code> 仅两个受信 driver（<code>claude-version-v1</code> / <code>codex-version-v1</code>）。</li>
-<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记；受信 driver 限定；<code>apply</code> / <code>install</code> / <code>update</code> / <code>uninstall</code> 明确 unsupported。</li>
-<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>unstable</code>（host 能力整体 unstable）。</li>
+<li>输入：宿主标识、有限 Profile、probe/plan 选项；更新和卸载计划必须携带已拥有成员的摘要。</li>
+<li>输出：宿主描述、canonical 身份、逐项独立的九类 probe fact、构建产物、plan 或本地操作结果。</li>
+<li>纯函数：只有 <code>assertPlanConsistency</code> 是；<code>resolveHostId</code> 通过受收容的只读 I/O 读取 Profile，不能当作纯函数。其余入口按职责含落盘或进程调用。</li>
+<li>副作用：<code>resolveHostId</code> / <code>verifyHostPeers</code> 只读；<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。</li>
+<li>稳定错误码与 <code>details.kind</code>：unsupported host（如 <code>qoder</code>）返回 <code>unsupported</code> 结果；缺 probe facts 抛 <code>KitError</code>（<code>missing-probe-facts</code>）；写入失败按 Harness 的 <code>publicationState</code> 返回 <code>partially_applied</code> 或 <code>indeterminate</code>。<code>HOST_DRIVER_IDS</code> 仅两个受信 driver（<code>claude-version-v1</code> / <code>codex-version-v1</code>）。</li>
+<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记；别名必须来自该有限集合；受信 driver 限定；<code>applyHostPlan</code> 要求显式 <code>authorizationRef</code>、已验证 build 与目标根。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.10.0</code> / <code>unstable</code>（host 能力整体 unstable）。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/host.mjs</code>、<code>host-profiles.mjs</code>、<code>host-drivers.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>。</li>
-<li>调用方仍拥有的业务语义：宿主业务语义（<code>host apply</code> 明确 unsupported；Qoder 完整 driver unsupported）。</li>
+<li>调用方仍拥有的业务语义：宿主能力是否可用、手动事实的解释与生命周期授权；Foundation 不声明消费者 smoke 或远端发布成功。</li>
 </ul>
 <hr />
 <h2 id="licensing-foundationkitlicensing">licensing (foundation.kit.licensing)<a class="headerlink" href="#licensing-foundationkitlicensing" title="Permanent link">&para;</a></h2>
@@ -2617,8 +2621,17 @@
 <p>公共投影入口没有文件写入、Git、网络或进程副作用。<code>profileRoot</code> 必须是可读取目录，资源 entrypoint 必须留在该目录内且为 JSON 数据文件；符号链接和路径逃逸均失败关闭。Profile 的领域语义仍由调用方拥有。</p>
 <p><code>profiles/spi</code> 是唯一手写真源；<code>packages/skill-family-engineering-kit/profile-spi</code> 由 projen 机械生成，不得直接编辑投影文件。</p>
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
-<p><code>skill-family-engineering-kit/candidate/quickstart-profile</code> 导出 <code>buildQuickstartProfileProjection</code> 与 <code>QUICKSTART_PROFILE_TARGET_PREFIX</code>。builder 接收显式消费者 Schema 路径与冻结来源身份，生成按 Schema <code>$id</code> 查询的 standalone validator、机械投影的 Contracts/Harness runtime、许可证和完整 provenance。</p>
-<p>Bundle 离线运行时不需要 Foundation 包、<code>node_modules</code> 或 Ajv。builder 只返回稳定 projection manifest，不写目标文件，也不增加第五个 Kit 顶层命令；调用方仍需把 manifest 交给 <code>runProjection</code> 完成授权写入。0.3.0 的 v2 与 0.2.1 的依赖闭包 Bundle 不兼容，必须精确锁定版本。</p>
+<p>规范入口 <code>skill-family-engineering-kit/quickstart-profile</code> 导出 <code>buildQuickstartProfileProjection</code>、
+<code>buildQuickstartProfileProjectionFromInventory</code> 与 <code>QUICKSTART_PROFILE_TARGET_PREFIX</code>。builder 接收显式消费者 Schema 路径
+与冻结来源身份，生成按 Schema <code>$id</code> 查询的 standalone validator、机械投影的 Contracts/Harness runtime、许可证和
+完整 provenance。历史 <code>skill-family-engineering-kit/candidate/quickstart-profile</code> 在弃用窗口内解析同一模块。</p>
+<p>Bundle 离线运行时不需要 Foundation 包、<code>node_modules</code> 或 Ajv。builder 只返回稳定 projection manifest，不写目标文件，
+也不增加第五个 Kit 顶层命令；调用方仍需把 manifest 交给 <code>runProjection</code> 完成授权写入。0.3.0 的 v2 与 0.2.1 的依赖
+闭包 Bundle 不兼容，必须精确锁定版本。</p>
+<p>历史 Quickstart 命名空间还导出 adoption 机制；0.10.0 的规范入口是 <code>skill-family-engineering-kit/adoption</code>。
+skill naming 使用 <code>skill-family-engineering-kit/skill-naming</code>。两个入口都不增加 Kit 顶层命令；历史消费者迁移一次后，
+以后只改变成熟度标签时不再迁移合同身份。消费者采用新 Foundation 版本仍需更新精确 pin，Bundle 是否重建按既有
+package identity、来源摘要与 provenance 绑定合同判断。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>
