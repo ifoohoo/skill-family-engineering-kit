@@ -779,6 +779,62 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#身份绑定读取-foundationharnessbound-read" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        身份绑定读取 (foundation.harness.bound-read)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="身份绑定读取 (foundation.harness.bound-read)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#createFilesystemRootBinding--readFileBound" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        createFilesystemRootBinding / readFileBound
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        固定集合发布 (foundation.harness.fixed-set-publication)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="固定集合发布 (foundation.harness.fixed-set-publication)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#createFixedSetPublicationManifest--publishFixedSet" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        createFixedSetPublicationManifest / publishFixedSet
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#原子写-foundationharnessatomic-write" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2267,6 +2323,62 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#身份绑定读取-foundationharnessbound-read" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        身份绑定读取 (foundation.harness.bound-read)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="身份绑定读取 (foundation.harness.bound-read)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#createFilesystemRootBinding--readFileBound" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        createFilesystemRootBinding / readFileBound
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        固定集合发布 (foundation.harness.fixed-set-publication)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="固定集合发布 (foundation.harness.fixed-set-publication)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#createFixedSetPublicationManifest--publishFixedSet" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        createFixedSetPublicationManifest / publishFixedSet
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#原子写-foundationharnessatomic-write" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2716,6 +2828,8 @@
 <li><a href="#契约校验-foundationharnesscontract-validation">契约校验</a> → <code>validateContractDocument</code> / <code>getValidator</code></li>
 <li><a href="#路径收容-foundationharnesspath-containment">路径收容</a> → <code>classifyPathInput</code> / <code>resolveContained</code> / <code>readFileContained</code></li>
 <li><a href="#严格读取-foundationharnessstrict-read">严格读取</a> → <code>readFileStrict</code></li>
+<li><a href="#身份绑定读取-foundationharnessbound-read">身份绑定读取</a> → <code>createFilesystemRootBinding</code> / <code>readFileBound</code></li>
+<li><a href="#固定集合发布-foundationharnessfixed-set-publication">固定集合发布</a> → <code>createFixedSetPublicationManifest</code> / <code>publishFixedSet</code></li>
 <li><a href="#原子写-foundationharnessatomic-write">原子写</a> → <code>writeFileAtomic</code></li>
 <li><a href="#临时工作区-foundationharnesstemporary-workspace">临时工作区</a> → <code>TemporaryWorkspace</code> / <code>withTemporaryWorkspace</code></li>
 <li><a href="#资源闭包-foundationharnessresource-closure">资源闭包</a> → <code>computeResourceClosure</code> / <code>digestBytes</code> / <code>closureContains</code></li>
@@ -2787,6 +2901,31 @@
 <li>调用方仍拥有的业务语义：选择哪个权威文件、摘要从何而来，以及读取失败后的处置。</li>
 </ul>
 <hr />
+<h2 id="身份绑定读取-foundationharnessbound-read">身份绑定读取 (foundation.harness.bound-read)<a class="headerlink" href="#身份绑定读取-foundationharnessbound-read" title="Permanent link">&para;</a></h2>
+<h3 id="createFilesystemRootBinding--readFileBound">createFilesystemRootBinding / readFileBound<a class="headerlink" href="#createFilesystemRootBinding--readFileBound" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>createFilesystemRootBinding(root)</code>；<code>readFileBound(root, relPath, { rootBinding, encoding?, expectedSha256? } = {})</code>（均为 async）。</li>
+<li>输入：已规范化的绝对真实目录、受收容的相对 POSIX 路径，以及调用方先前批准的冻结根绑定。<code>encoding</code> 仅支持 <code>utf8</code>；权威读取可带小写 sha256 预期摘要。</li>
+<li>输出：根绑定为冻结可序列化值；读取回执为冻结 <code>{ path, content, sha256, bytes, mode }</code>。</li>
+<li>语义边界：根与中间目录由固定四平台 N-API 闭包以不跟随符号链接的句柄相对方式获取；叶子必须是单链接普通文件。句柄不会逃逸，调用结束前关闭。绑定读取不提供删除或恢复状态机。</li>
+<li>副作用：只读文件系统访问；不写文件、不触 Git、网络或进程。</li>
+<li>错误：根身份不符、符号链接组件、缺失资源和摘要不符均失败关闭；不支持的 Darwin/Linux 架构不提供 JavaScript 回退。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.9.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/bound-read.mjs</code> 与 <code>src/native/</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/bound-read.test.mjs</code>。</li>
+</ul>
+<h2 id="固定集合发布-foundationharnessfixed-set-publication">固定集合发布 (foundation.harness.fixed-set-publication)<a class="headerlink" href="#固定集合发布-foundationharnessfixed-set-publication" title="Permanent link">&para;</a></h2>
+<h3 id="createFixedSetPublicationManifest--publishFixedSet">createFixedSetPublicationManifest / publishFixedSet<a class="headerlink" href="#createFixedSetPublicationManifest--publishFixedSet" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>createFixedSetPublicationManifest({ sourceRoot, targetParent, targetSegment })</code>；<code>publishFixedSet({ sourceRoot, targetParent, targetSegment, manifest })</code>（均为 async）。稳定入口也由 <code>skill-family-harness-node/fixed-set-publication</code> 导出。</li>
+<li>输入：同一规范父目录下的源目录、目标父目录、一个安全目标段和此前冻结的完整集合 manifest。</li>
+<li>输出：完整集合 manifest 与结构化 publication receipt。receipt 终态为 <code>succeeded</code>、<code>refused</code>、<code>failed</code> 或 <code>indeterminate</code>。</li>
+<li>语义边界：发布使用 Darwin <code>renameatx_np(RENAME_EXCL)</code> 或 Linux <code>renameat2(RENAME_NOREPLACE)</code> 的固定原生闭包；不使用检查后 <code>rename</code> 的 JavaScript 替代，不提供身份保护删除，不自动重试、回滚或恢复 <code>indeterminate</code>。</li>
+<li>副作用：仅在成功时对目标目录执行一次不替换发布；失败关闭。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.9.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/fixed-set-publication.mjs</code> 与固定原生加载器。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs</code> 与既有固定集合边界测试。</li>
+</ul>
 <h2 id="原子写-foundationharnessatomic-write">原子写 (foundation.harness.atomic-write)<a class="headerlink" href="#原子写-foundationharnessatomic-write" title="Permanent link">&para;</a></h2>
 <h3 id="writeFileAtomic">writeFileAtomic<a class="headerlink" href="#writeFileAtomic" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3166,7 +3305,7 @@
 <p><code>params</code> 是闭合对象。<code>root</code> 与 <code>path</code> 是必填非空字符串；<code>encoding</code> 只能是 <code>utf8</code> 或省略；<code>expectedSha256</code> 省略时不做预期摘要比对，提供时沿用核心严格读取合同。</p>
 <p>桥接保留核心回执的 <code>path</code>、<code>sha256</code>、<code>bytes</code> 与 <code>mode</code>。UTF-8 内容仍是字符串；二进制内容投影成 Node 标准的 Buffer JSON 形态 <code>{ "type": "Buffer", "data": [...] }</code>，以便通过 JSON 传输后无损还原字节。</p>
 <p>直接调用失败时沿用核心异常，包括 <code>SFC2004</code> 与 <code>details.kind</code>。候选 <code>mechanisms-cli.mjs</code> 继续使用一请求一响应 JSON：成功退出 0，拒绝或用法错误退出 2；CLI 错误 JSON 只承诺 <code>name</code> 与 <code>message</code>，不承诺跨语言保留 <code>details</code>。</p>
-<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.8.4，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
+<p>该入口不选择 method，不解释 domainResult，也不拥有重试、调度或生命周期。消费者必须把 Contracts、Harness 与 Engineering Kit 精确锁定到 0.9.0，并重建受管 Bundle；禁止从 Foundation 工作树导入候选源码。0.3.0 的 v2 与 0.2.1 的 v1 不兼容。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

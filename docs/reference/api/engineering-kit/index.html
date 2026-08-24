@@ -2376,7 +2376,7 @@
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 从 Foundation 0.8.3 与 Contracts 1.7.0 升级到 Foundation 0.8.4 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.8.0</code>。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令的形状均不变。</p>
+<p>provider Profile descriptor 从 Foundation 0.8.4 与 Contracts 1.8.0 升级到 Foundation 0.9.0 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.9.0</code>。Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code></li>

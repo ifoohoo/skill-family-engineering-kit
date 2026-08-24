@@ -5,24 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.4 -->
+<!-- release-skill:release-version: 0.9.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.4** (2026-08-24)
+**0.9.0** (2026-08-24)
 
-随 Foundation 0.8.4 锁步升版，补充外置 source authority 校验用法；Kit 命令与 Profile SPI 不变。
+Engineering Kit 0.9.0 将稳定文件系统 Schema、绑定读取 Harness 闭包与有序批量校验 candidate 投影到既有 Quickstart Bundle。
+
+**新增**
+
+- 从 Contracts 权威源投影三个稳定文件系统 Schema 与两个批量校验 candidate Schema。
+- 投影稳定绑定读取入口及其精确原生预构建闭包，不新增 Kit 命令。
 
 **变更**
 
-- 包版本与 Contracts、Harness 一同升至 0.8.4。
-- 说明消费者先经 Contracts 校验 source-authority receipt，再把返回坐标传入既有 sourceRepository 与 sourceBaseCommit 字段。
-- 四个稳定顶层命令、builder、Profile SPI 与公共导出保持不变。
+- 四个顶层 Kit 命令与 Profile SPI 的 candidate 边界保持不变。
 
 **升级说明**
 
-消费者必须把三个 Foundation 包精确锁定到 0.8.4。provider Profile descriptor 从 0.8.3 与 Contracts 1.7.0 升级时，必须把自身的 base.contractsVersion 字段机械更新为 1.8.0。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令均不需要迁移；需要 source authority 的消费者只增加调用 builder 前的 Contracts 校验步骤。
+三个 Foundation 包必须精确锁定 0.9.0 并重新构建 managed Bundle；批量校验只能通过既有 candidate Bundle 与 mechanisms CLI 使用。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -43,7 +46,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.4
+npm install --save-dev skill-family-engineering-kit@0.9.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -51,7 +54,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.8.4 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.9.0 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -61,7 +64,7 @@ npm exec -- skill-family-kit check --root <repo>
 
 `verifyProfile({ profileRoot })` 只读处理 Profile descriptor；项目根声明使用对应的 `verifyProjectProfile({ projectRoot, profileRelPath? })`。两个入口遇到无效输入都以稳定结果码失败关闭，不会执行 Profile 提供的文件；Profile 的领域含义仍由调用方负责。
 
-provider Profile descriptor 从 Foundation 0.8.3 与 Contracts 1.7.0 升级到 Foundation 0.8.4 时，须把自身的 `base.contractsVersion` 字段机械更新为 `1.8.0`。既有函数与 Schema 形状、Profile SPI v3、Kit 四命令的形状均不变。
+provider Profile descriptor 从 Foundation 0.8.4 与 Contracts 1.8.0 升级到 Foundation 0.9.0 时，须把自身的 `base.contractsVersion` 字段更新为 `1.9.0`。Kit 四个顶层命令与 Profile SPI 的形状保持不变。
 
 ### 报告子动作
 

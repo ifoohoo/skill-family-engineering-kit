@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.9.0 locale=en baseline=sha256:6419bbdc8d469e6dd7f9fda5995e5465cc6bf98724371f9f4aa9293a7e0d9f14 -->
+## [0.9.0] - 2026-08-24
+
+Engineering Kit 0.9.0 projects the stable filesystem schemas, bound-read Harness closure, and candidate ordered batch validation into the existing Quickstart Bundle.
+
+### Added
+
+- Projects the three stable filesystem schemas and two candidate batch schemas from Contracts authorities.
+- Projects the stable bound-read entry and its exact native prebuild closure without adding a Kit command.
+
+### Changed
+
+- Keeps the four top-level Kit commands and Profile SPI candidate boundary unchanged.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.9.0 and rebuild managed Bundles. Batch validation is available only through the existing candidate Bundle and mechanisms CLI.
+<!-- release-skill:changelog:end version=0.9.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.8.4 locale=en baseline=sha256:0f6ad4e641ae6ef85ea323e458aa6263aa6d87280e704ac1324742f83016d779 -->
 ## [0.8.4] - 2026-08-24
 

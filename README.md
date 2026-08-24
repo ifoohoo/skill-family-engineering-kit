@@ -4,24 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.8.4 -->
+<!-- release-skill:release-version: 0.9.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.8.4** (2026-08-24)
+**0.9.0** (2026-08-24)
 
-Lockstep Foundation 0.8.4 update documents validated external source authority without changing Kit commands or Profile SPI.
+Engineering Kit 0.9.0 projects the stable filesystem schemas, bound-read Harness closure, and candidate ordered batch validation into the existing Quickstart Bundle.
+
+**Added**
+
+- Projects the three stable filesystem schemas and two candidate batch schemas from Contracts authorities.
+- Projects the stable bound-read entry and its exact native prebuild closure without adding a Kit command.
 
 **Changed**
 
-- Moves the package version to 0.8.4 together with Contracts and Harness.
-- Documents that consumers validate a source-authority receipt through Contracts before passing the returned coordinates through the existing sourceRepository and sourceBaseCommit fields.
-- Keeps the four stable top-level Kit commands, builder, Profile SPI, and public exports unchanged.
+- Keeps the four top-level Kit commands and Profile SPI candidate boundary unchanged.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.8.4. A provider Profile descriptor upgrading from 0.8.3 and Contracts 1.7.0 must mechanically update its base.contractsVersion field to 1.8.0. Existing functions and Schema shapes, Profile SPI v3, and the four Kit commands require no migration; source-authority consumers only add the Contracts validation step before invoking the existing builder surface.
+Pin all three Foundation packages to exactly 0.9.0 and rebuild managed Bundles. Batch validation is available only through the existing candidate Bundle and mechanisms CLI.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -42,7 +45,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.8.4
+npm install --save-dev skill-family-engineering-kit@0.9.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -50,7 +53,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.8.4 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.9.0 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
@@ -60,7 +63,7 @@ The package carries three SPI JSON resources and the Contracts canonical `profil
 
 `verifyProfile({ profileRoot })` is read-only and data-only for Profile descriptors. `verifyProjectProfile({ projectRoot, profileRelPath? })` is the corresponding entry for a project root declaration. Both refuse invalid input with stable result codes, never execute Profile-provided files, and leave Profile domain meaning to the caller.
 
-When a provider Profile descriptor moves from Foundation 0.8.3 and Contracts 1.7.0 to Foundation 0.8.4, update its `base.contractsVersion` field mechanically to `1.8.0`. Functions and Schema shapes, Profile SPI v3, and all four Kit commands retain their existing shapes.
+When a provider Profile descriptor moves from Foundation 0.8.4 and Contracts 1.8.0 to Foundation 0.9.0, update its `base.contractsVersion` field mechanically to `1.9.0`. The four Kit commands and Profile SPI retain their existing shapes.
 
 ### Report sub-action
 

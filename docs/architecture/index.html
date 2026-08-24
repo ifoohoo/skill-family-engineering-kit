@@ -1972,7 +1972,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>结构、协议、错误码、协议名登记；32 类顶层对象；9 条 mandatory rule</td>
+<td>结构、协议、错误码、协议名登记；35 类顶层对象；9 条 mandatory rule</td>
 <td>业务字段语义、领域审计、远端写入、模型生成</td>
 </tr>
 <tr>
@@ -2077,12 +2077,12 @@ Contracts（结构、协议、错误码、协议名登记）
 <p>三包结构保持、不拆第四包（FND-ADR-007）；制品治理采用 artifact-graph CLI 与版本锁（FND-ADR-006）。</p>
 <h2 id="首版预算">首版预算<a class="headerlink" href="#首版预算" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象：32 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）；</li>
+<li>顶层 Contracts 对象：35 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）、filesystem-root-binding、fixed-set-publication-manifest、fixed-set-publication-receipt（1.9.0 纳入）；</li>
 <li>Kit 顶层命令：4 个（scaffold、adopt-plan、projection、check）；</li>
 <li>强制机械规则：当前 9 条，预算不超过 20 条，绝对上限 30 条；CR-001 对登记表内全部 Schema 做统一编译；</li>
 <li>叶子包：3 个（skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit）；</li>
 <li>Schema 校验器：Ajv 8.20.0（精确版本 pin），支持 draft-07 与 2020-12 双方言；</li>
-<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 版本 1.8.0；</li>
+<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 版本 1.9.0；</li>
 <li>默认运行时语言：Node；第二语言实现首版为 0。</li>
 </ul>
 <p>任何新增组件必须说明删除它会导致的两个以上真实消费者重复实现，并通过独立 fixture 验证。</p>

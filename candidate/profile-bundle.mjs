@@ -69,6 +69,14 @@ const FOUNDATION_SCHEMA_FILES = Object.freeze([
   ["harness-surface-inventory.schema.json", "schemas/foundation/harness-surface-inventory.schema.json"],
 ]);
 
+const ADDITIONAL_FOUNDATION_SCHEMA_FILES = Object.freeze([
+  ["filesystem-root-binding.schema.json", "src/schemas/filesystem-root-binding.schema.json", "schemas/foundation/filesystem-root-binding.schema.json"],
+  ["fixed-set-publication-manifest.schema.json", "src/schemas/fixed-set-publication-manifest.schema.json", "schemas/foundation/fixed-set-publication-manifest.schema.json"],
+  ["fixed-set-publication-receipt.schema.json", "src/schemas/fixed-set-publication-receipt.schema.json", "schemas/foundation/fixed-set-publication-receipt.schema.json"],
+  ["schema-validation-batch-request.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-request.schema.json", "schemas/foundation/schema-validation-batch-request.schema.json"],
+  ["schema-validation-batch-result.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-result.schema.json", "schemas/foundation/schema-validation-batch-result.schema.json"],
+]);
+
 const HARNESS_IMPORT_MAP = new Map([
   ["skill-family-contracts", "../contracts/index.mjs"],
   ["skill-family-contracts/candidate/quickstart-profile", "../contracts-candidate/index.mjs"],
@@ -76,6 +84,7 @@ const HARNESS_IMPORT_MAP = new Map([
   ["../src/errors.mjs", "./errors.mjs"],
   ["../src/paths.mjs", "./paths.mjs"],
   ["../src/strict-read.mjs", "./strict-read.mjs"],
+  ["../src/bound-read.mjs", "./bound-read.mjs"],
 ]);
 
 const HARNESS_STRICT_READ_IMPORT_MAP = new Map([
@@ -124,6 +133,18 @@ const FIXED_SET_CANDIDATE_FILES = Object.freeze([
   "prebuilds/linux-x64-gnu/rename_directory_no_replace.linux-x64-gnu.node",
 ]);
 const FIXED_SET_BINARY_PREFIX = "prebuilds/";
+const STABLE_BOUND_READ_NATIVE_FILES = Object.freeze([
+  "prebuild-manifest.json",
+  "prebuilds/darwin-arm64/bound_read.darwin-arm64.node",
+  "prebuilds/darwin-x64/bound_read.darwin-x64.node",
+  "prebuilds/linux-arm64-gnu/bound_read.linux-arm64-gnu.node",
+  "prebuilds/linux-x64-gnu/bound_read.linux-x64-gnu.node",
+]);
+const STABLE_BOUND_READ_METADATA_FILES = Object.freeze([
+  "NOTICE",
+  "prebuild-sbom.json",
+  "prebuild-release-receipt.json",
+]);
 
 // These fragments are the exact case-sensitive words rejected by the
 // bundle-wide byte scan. Caller-provided source identities enter provenance
@@ -958,6 +979,13 @@ function projectContractsCandidateIndex(sourceText) {
       `schema load path ${fileName}`,
     );
   }
+  for (const [fileName] of ADDITIONAL_FOUNDATION_SCHEMA_FILES.filter(([name]) => name.startsWith("schema-validation-batch-"))) {
+    applyOnce(
+      `load(new URL("../foundation-mechanisms/${fileName}", import.meta.url))`,
+      `load(new URL("../../schemas/foundation/${fileName}", import.meta.url))`,
+      `schema load path ${fileName}`,
+    );
+  }
 
   const getCollectionMarker = "function getCollection(";
   const getCollectionHits = projected.split(getCollectionMarker).length - 1;
@@ -1068,12 +1096,15 @@ function runnerSource() {
     'export * from "./runtime/harness/quickstart-profile.mjs";',
     'export { validateQuickstartProfileDocument } from "./runtime/contracts-candidate/index.mjs";',
     'export { validateBySchemaId } from "./validators.mjs";',
+    'export { createFilesystemRootBinding, readFileBound } from "./runtime/harness/bound-read.mjs";',
+    'export { createFixedSetPublicationManifest, publishFixedSet } from "./runtime/harness/fixed-set-publication.mjs";',
     'export { publishFileExclusive, publishFileOrReplace, replaceFileAtomic } from "./runtime/harness/atomic.mjs";',
     'export { acquireFilesystemLock, inspectFilesystemLock, releaseFilesystemLock, recoverFilesystemLock } from "./runtime/harness/token-lock.mjs";',
     'import { invokeFoundationMechanism as invokeHarnessMechanism } from "./runtime/harness/quickstart-profile.mjs";',
     'import { validateBySchemaId } from "./validators.mjs";',
+    'import { listValidatableSchemaIds } from "./validators.mjs";',
     'export function invokeFoundationMechanism(request) {',
-    '  return invokeHarnessMechanism(request, { validateBySchemaId });',
+    '  return invokeHarnessMechanism(request, { validateBySchemaId, listValidatableSchemaIds });',
     '}',
     "",
   ].join("\n");
@@ -1176,6 +1207,10 @@ export async function buildQuickstartProfileProjection({
       `candidate/quickstart-profile/${fileName}`,
     );
   }
+  const additionalSchemaTexts = {};
+  for (const [fileName, sourcePath] of ADDITIONAL_FOUNDATION_SCHEMA_FILES) {
+    additionalSchemaTexts[fileName] = await readSourceText(contractsRoot, sourcePath);
+  }
   sources.harnessIndex = await readSourceText(harnessRoot, "src/index.mjs");
   sources.harnessCandidate = await readSourceText(harnessRoot, "candidate/quickstart-profile.mjs");
   sources.harnessMechanismsCli = await readSourceText(harnessRoot, "candidate/mechanisms-cli.mjs");
@@ -1185,6 +1220,22 @@ export async function buildQuickstartProfileProjection({
   sources.harnessStrictRead = await readSourceText(harnessRoot, "src/strict-read.mjs");
   sources.harnessAtomic = await readSourceText(harnessRoot, "src/atomic.mjs");
   sources.harnessTokenLock = await readSourceText(harnessRoot, "src/token-lock.mjs");
+  sources.harnessBoundRead = await readSourceText(harnessRoot, "src/bound-read.mjs");
+  sources.harnessFixedSetPublication = await readSourceText(harnessRoot, "src/fixed-set-publication.mjs");
+  sources.harnessFixedSetPublicationLoader = await readSourceText(harnessRoot, "src/fixed-set-publication-loader.mjs");
+  sources.harnessBoundReadLoader = await readSourceText(harnessRoot, "src/native/loader.mjs");
+  sources.harnessBoundReadManifest = await readSourceText(harnessRoot, "src/native/prebuild-manifest.json");
+  sources.harnessBoundReadMetadata = {};
+  for (const relative of STABLE_BOUND_READ_METADATA_FILES) {
+    sources.harnessBoundReadMetadata[relative] = await readSourceText(harnessRoot, `src/native/${relative}`);
+  }
+  const harnessBoundReadBinaries = {};
+  for (const relative of STABLE_BOUND_READ_NATIVE_FILES.slice(1)) {
+    harnessBoundReadBinaries[relative] = await readCanonicalRegularFile(
+      path.join(harnessRoot, "src/native", relative),
+      `stable bound-read prebuild ${relative}`,
+    );
+  }
   // The package manifests are recorded as complete original bytes below, so
   // every provenance path digest recomputes from the real file.
   const contractsPackageJsonText = await readSourceText(contractsRoot, "package.json");
@@ -1232,6 +1283,10 @@ export async function buildQuickstartProfileProjection({
     ].map((fileName) => ({
       name: fileName,
       text: candidateSchemaTexts[fileName],
+    })),
+    ...ADDITIONAL_FOUNDATION_SCHEMA_FILES.map(([fileName]) => ({
+      name: fileName,
+      text: additionalSchemaTexts[fileName],
     })),
   ].map((entry) => ({ name: entry.name, document: JSON.parse(entry.text) }));
 
@@ -1359,6 +1414,9 @@ export async function buildQuickstartProfileProjection({
   for (const [fileName, bundlePath] of FOUNDATION_SCHEMA_FILES) {
     setText(bundlePath, candidateSchemaTexts[fileName]);
   }
+  for (const [fileName, , bundlePath] of ADDITIONAL_FOUNDATION_SCHEMA_FILES) {
+    setText(bundlePath, additionalSchemaTexts[fileName]);
+  }
   setText("schemas/foundation/operation-request.schema.json", sources.operationRequest);
   setText("schemas/foundation/operation-result.schema.json", sources.operationResult);
   setText("schemas/foundation/migration-manifest.schema.json", sources.migrationManifestSchema);
@@ -1387,6 +1445,31 @@ export async function buildQuickstartProfileProjection({
     "runtime/harness/token-lock.mjs",
     projectModuleWithImportMap(sources.harnessTokenLock, HARNESS_TOKEN_LOCK_IMPORT_MAP, "harness src/token-lock.mjs"),
   );
+  setText(
+    "runtime/harness/bound-read.mjs",
+    projectModuleWithImportMap(
+      sources.harnessBoundRead,
+      new Map([["skill-family-contracts", "../contracts/index.mjs"]]),
+      "harness src/bound-read.mjs",
+    ),
+  );
+  setText(
+    "runtime/harness/fixed-set-publication.mjs",
+    projectModuleWithImportMap(
+      sources.harnessFixedSetPublication,
+      new Map([["skill-family-contracts", "../contracts/index.mjs"]]),
+      "harness src/fixed-set-publication.mjs",
+    ),
+  );
+  setText("runtime/harness/fixed-set-publication-loader.mjs", sources.harnessFixedSetPublicationLoader);
+  setText("runtime/harness/native/loader.mjs", sources.harnessBoundReadLoader);
+  setText("runtime/harness/native/prebuild-manifest.json", sources.harnessBoundReadManifest);
+  for (const relative of STABLE_BOUND_READ_METADATA_FILES) {
+    setText(`runtime/harness/native/${relative}`, sources.harnessBoundReadMetadata[relative]);
+  }
+  for (const relative of STABLE_BOUND_READ_NATIVE_FILES.slice(1)) {
+    setBytes(`runtime/harness/native/${relative}`, harnessBoundReadBinaries[relative].bytes);
+  }
   const migrationManifestSchemaId = JSON.parse(sources.migrationManifestSchema).$id;
   setText(
     "runtime/kit/migration.mjs",
@@ -1472,6 +1555,11 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-contracts/candidate/quickstart-profile/result.schema.json", candidateSchemaTexts["result.schema.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/consumer-schema-inventory.schema.json", candidateSchemaTexts["consumer-schema-inventory.schema.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/harness-surface-inventory.schema.json", candidateSchemaTexts["harness-surface-inventory.schema.json"], "projected"],
+    ...ADDITIONAL_FOUNDATION_SCHEMA_FILES.map(([fileName, sourcePath]) => [
+      `packages/skill-family-contracts/${sourcePath}`,
+      additionalSchemaTexts[fileName],
+      "projected",
+    ]),
     ["packages/skill-family-contracts/candidate/quickstart-profile/index.mjs", sources.candidateIndex, "extraction-input"],
     ["packages/skill-family-harness-node/package.json", harnessPackageJsonText, "identity"],
     ["packages/skill-family-harness-node/src/index.mjs", sources.harnessIndex, "imported-surface"],
@@ -1483,6 +1571,21 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-harness-node/src/strict-read.mjs", sources.harnessStrictRead, "projected"],
     ["packages/skill-family-harness-node/src/atomic.mjs", sources.harnessAtomic, "projected"],
     ["packages/skill-family-harness-node/src/token-lock.mjs", sources.harnessTokenLock, "projected"],
+    ["packages/skill-family-harness-node/src/bound-read.mjs", sources.harnessBoundRead, "projected"],
+    ["packages/skill-family-harness-node/src/fixed-set-publication.mjs", sources.harnessFixedSetPublication, "projected"],
+    ["packages/skill-family-harness-node/src/fixed-set-publication-loader.mjs", sources.harnessFixedSetPublicationLoader, "projected"],
+    ["packages/skill-family-harness-node/src/native/loader.mjs", sources.harnessBoundReadLoader, "projected"],
+    ["packages/skill-family-harness-node/src/native/prebuild-manifest.json", sources.harnessBoundReadManifest, "identity"],
+    ...STABLE_BOUND_READ_METADATA_FILES.map((relative) => [
+      `packages/skill-family-harness-node/src/native/${relative}`,
+      sources.harnessBoundReadMetadata[relative],
+      "identity",
+    ]),
+    ...STABLE_BOUND_READ_NATIVE_FILES.slice(1).map((relative) => [
+      `packages/skill-family-harness-node/src/native/${relative}`,
+      harnessBoundReadBinaries[relative].bytes,
+      "binary",
+    ]),
     ["packages/skill-family-engineering-kit/package.json", kitPackageJsonText, "identity"],
     ["packages/skill-family-engineering-kit/candidate/profile-bundle.mjs", kitBuilderSource, "builder"],
     ["packages/skill-family-engineering-kit/candidate/projection-bundle-cli.mjs", kitCliSource, "builder"],

@@ -1791,7 +1791,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 冻结版本（当前 <code>1.8.0</code>）</td>
+<td>Contracts 冻结版本（当前 <code>1.9.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -1806,7 +1806,7 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.8.0.pin.json</code>）比对。</p>
+<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与基线 pin（当前为 <code>baseline/contracts-1.9.0.pin.json</code>）比对。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -1866,6 +1866,7 @@
 <li><strong>Contracts 1.6.0（2026-08-18）</strong>：审计整改 C5 能力线增量，不是描述补丁：新增 <code>public-boundary-declaration</code>、<code>platform-difference-registry</code>、<code>observation-scope</code>、<code>profile-adoption-declaration</code>、<code>audit-baseline-pin</code>、<code>token-estimate-record</code> 六个顶层契约（顶层对象集合 24 → 30），改变了公开机器合同与审计事实；未新增 SFC 错误码，规则与 kernel 协议仅随 <code>contractsVersion</code> 字段更新。pin 合同本身（<code>audit-baseline-pin</code>）与消费面校验函数 <code>verifyBaselinePin()</code>（AUD-BASE-001 / AUD-LOCK-001 编码）在本版本落地（GAP-5 / SG-28）。</li>
 <li><strong>Contracts 1.7.0（2026-08-22）</strong>：FND-ADR-013 的 Project Profile 能力线增量。新增 <code>project-profile</code> 顶层契约（顶层对象集合 30 → 31），统一 scaffold 项目根声明的机器结构；未新增 SFC 错误码。<code>contracts-1.7.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从 <code>describeAuditSurface()/describeBaselinePin()</code> 机械生成，并经过合同校验和 <code>verifyBaselinePin()</code> 自校验；现作为历史只读兼容存档保留。</li>
 <li><strong>Contracts 1.8.0（2026-08-24）</strong>：新增业务中立的 <code>source-authority-receipt</code> 顶层契约（31 → 32），以及纯校验、解析 API；未新增 SFC 错误码。<code>contracts-1.8.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开 Contracts 表面机械生成并自校验；1.7.0 及更早 pin 保留为只读兼容存档。</li>
+<li><strong>Contracts 1.9.0（2026-08-24）</strong>：新增业务中立的 <code>filesystem-root-binding</code>、<code>fixed-set-publication-manifest</code> 和 <code>fixed-set-publication-receipt</code> 三个顶层契约（32 → 35）。错误码、规则、检查类型、预算、Kernel 操作和校验策略均未变化。<code>contracts-1.9.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开 Contracts 表面机械生成并自校验；1.8.0 及更早 pin 保留为只读兼容存档。</li>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
 <h2 id="profile-行为变更纪律2026-08-19D6">profile 行为变更纪律（2026-08-19，D6）<a class="headerlink" href="#profile-行为变更纪律2026-08-19D6" title="Permanent link">&para;</a></h2>

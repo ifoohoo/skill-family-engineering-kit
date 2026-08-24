@@ -746,6 +746,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#文件系统契约-foundationcontractsfilesystem" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        文件系统契约 (foundation.contracts.filesystem)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2031,6 +2042,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#文件系统契约-foundationcontractsfilesystem" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        文件系统契约 (foundation.contracts.filesystem)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#登记与协议-foundationcontractsregistry-protocol" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2254,6 +2276,7 @@
 <ul>
 <li><a href="#对象校验-foundationcontractsobject-validation">对象校验</a> → <code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code></li>
 <li><a href="#来源权威收据-foundationcontractssource-authority">来源权威收据</a> → <code>validateSourceAuthorityReceipt</code> / <code>parseSourceAuthorityReceipt</code></li>
+<li><a href="#文件系统契约-foundationcontractsfilesystem">文件系统契约</a> → 根绑定与固定集合 manifest/receipt Schema</li>
 <li><a href="#登记与协议-foundationcontractsregistry-protocol">登记与协议</a> → <code>loadRegistry</code> / <code>findSchemaByObject</code> / <code>findProtocol</code> / <code>registerSchema</code> / <code>registerProtocol</code></li>
 <li><a href="#内核协议-foundationcontractskernel-protocol">内核协议</a> → <code>loadKernelProtocol</code> / <code>findOperation</code> / <code>checkOperation</code></li>
 <li><a href="#强制检查-foundationcontractsmandatory-checks">强制检查</a> → <code>runChecks</code> / <code>collectUnresolvedRefs</code></li>
@@ -2261,7 +2284,7 @@
 <li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（32 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.8.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（35 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.9.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2324,6 +2347,13 @@
 <li>调用方仍拥有的业务语义：receipt 的签发、存储和传输；实际包发现；校验后是否采用该来源。Contracts 不执行目标，也不解释私有发布计划。</li>
 </ul>
 <hr />
+<h2 id="文件系统契约-foundationcontractsfilesystem">文件系统契约 (foundation.contracts.filesystem)<a class="headerlink" href="#文件系统契约-foundationcontractsfilesystem" title="Permanent link">&para;</a></h2>
+<p>0.9.0 新增三个稳定顶层 Schema：<code>filesystem-root-binding</code>、<code>fixed-set-publication-manifest</code> 与 <code>fixed-set-publication-receipt</code>。它们只描述结构与回执，不提供删除、替换或通用恢复状态机。</p>
+<ul>
+<li>根绑定 Schema：<code>https://contracts.skill-family.example/v1/filesystem-root-binding.json</code>。值固定为 <code>kind</code>、<code>digestAlgorithm</code>、<code>basis</code>、<code>digest</code> 四个字段；绑定值可序列化且不包含公开目录句柄。</li>
+<li>固定集合 manifest/receipt Schema：<code>https://contracts.skill-family.example/v1/fixed-set-publication-manifest.json</code> 与 <code>https://contracts.skill-family.example/v1/fixed-set-publication-receipt.json</code>。发布回执的终态只允许 <code>succeeded</code>、<code>refused</code>、<code>failed</code>、<code>indeterminate</code>。</li>
+<li>这三个 Schema 的真实登记与 fixture 由 <code>packages/skill-family-contracts/src/registry.json</code>、<code>src/schemas/</code> 和 <code>test/</code> 共同核验；批量校验 Schema 保持 candidate，不进入稳定 Registry。</li>
+</ul>
 <h2 id="登记与协议-foundationcontractsregistry-protocol">登记与协议 (foundation.contracts.registry-protocol)<a class="headerlink" href="#登记与协议-foundationcontractsregistry-protocol" title="Permanent link">&para;</a></h2>
 <h3 id="loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol">loadRegistry / listSchemas / listProtocols / findSchemaRegistration / findSchemaByObject / findProtocol<a class="headerlink" href="#loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2565,6 +2595,7 @@
 <hr />
 <h2 id="Quickstart-Profile-v2-candidate">Quickstart Profile v2 candidate<a class="headerlink" href="#Quickstart-Profile-v2-candidate" title="Permanent link">&para;</a></h2>
 <p><code>skill-family-contracts/candidate/quickstart-profile</code> 导出 v2 协议、按真实 <code>$id</code> 索引的 Resource/Task/Result Schema 集合，以及 <code>validateQuickstartProfileDocument</code>。唯一操作名是业务中立的 <code>execute-method</code>；Foundation 不登记 method 词表，也不解释 parameters、evidence 或 domainResult 的领域含义。</p>
+<p>0.9.0 另提供两个 candidate batch Schema：<code>schema-validation-batch-request.json</code> 与 <code>schema-validation-batch-result.json</code>。它们只供现有 Quickstart Bundle 的 <code>validate-many-by-schema-id</code> 机制使用；未知 <code>schemaId</code> 或任一结构畸形都使整批请求失败，不改变稳定 Registry。</p>
 <p>该入口从 <code>0.2.1</code> 起公开，但稳定性仍为 <code>candidate</code>。0.3.0 已用 v2 替换 v1，两者不兼容：新接入需精确锁定 <code>0.3.0</code>，仍需 v1 的接入继续精确锁定 <code>0.2.1</code>。candidate Schema 不进入稳定 <code>src/registry.json</code>。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>

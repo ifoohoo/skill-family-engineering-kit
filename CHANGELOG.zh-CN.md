@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.9.0 locale=zh-CN baseline=sha256:c84db7b53f562cbdad947ccf8fcc23209f18137100270b2691bab7d9a7ad623c -->
+## [0.9.0] - 2026-08-24
+
+Engineering Kit 0.9.0 将稳定文件系统 Schema、绑定读取 Harness 闭包与有序批量校验 candidate 投影到既有 Quickstart Bundle。
+
+### 新增
+
+- 从 Contracts 权威源投影三个稳定文件系统 Schema 与两个批量校验 candidate Schema。
+- 投影稳定绑定读取入口及其精确原生预构建闭包，不新增 Kit 命令。
+
+### 变更
+
+- 四个顶层 Kit 命令与 Profile SPI 的 candidate 边界保持不变。
+
+### 升级说明
+
+三个 Foundation 包必须精确锁定 0.9.0 并重新构建 managed Bundle；批量校验只能通过既有 candidate Bundle 与 mechanisms CLI 使用。
+<!-- release-skill:changelog:end version=0.9.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.8.4 locale=zh-CN baseline=sha256:38a973bb735c925e8453656ce24a11173b530c6376609d68dfb850d9029daa21 -->
 ## [0.8.4] - 2026-08-24
 

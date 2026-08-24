@@ -1,0 +1,21 @@
+version: 0.9.0
+date: 2026-08-24
+locales:
+  en:
+    summary: Engineering Kit 0.9.0 projects the stable filesystem schemas, bound-read Harness closure, and candidate ordered batch validation into the existing Quickstart Bundle.
+    changes:
+      added:
+        - Projects the three stable filesystem schemas and two candidate batch schemas from Contracts authorities.
+        - Projects the stable bound-read entry and its exact native prebuild closure without adding a Kit command.
+      changed:
+        - Keeps the four top-level Kit commands and Profile SPI candidate boundary unchanged.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.9.0 and rebuild managed Bundles. Batch validation is available only through the existing candidate Bundle and mechanisms CLI.
+  zh-CN:
+    summary: Engineering Kit 0.9.0 将稳定文件系统 Schema、绑定读取 Harness 闭包与有序批量校验 candidate 投影到既有 Quickstart Bundle。
+    changes:
+      added:
+        - 从 Contracts 权威源投影三个稳定文件系统 Schema 与两个批量校验 candidate Schema。
+        - 投影稳定绑定读取入口及其精确原生预构建闭包，不新增 Kit 命令。
+      changed:
+        - 四个顶层 Kit 命令与 Profile SPI 的 candidate 边界保持不变。
+    upgradeNotes: 三个 Foundation 包必须精确锁定 0.9.0 并重新构建 managed Bundle；批量校验只能通过既有 candidate Bundle 与 mechanisms CLI 使用。
