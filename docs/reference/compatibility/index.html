@@ -1840,22 +1840,22 @@ Contracts 登记表和能力目录复核。</p>
 <tbody>
 <tr>
 <td><code>skill-family-contracts</code></td>
-<td>0.10.0</td>
-<td>Contracts 1.10.0 机器契约</td>
+<td>0.11.0</td>
+<td>Contracts 1.11.0 机器契约</td>
 </tr>
 <tr>
 <td><code>skill-family-harness-node</code></td>
-<td>0.10.0</td>
+<td>0.11.0</td>
 <td>Contracts 的 Node 机制实现</td>
 </tr>
 <tr>
 <td><code>skill-family-engineering-kit</code></td>
-<td>0.10.0</td>
+<td>0.11.0</td>
 <td>四个工程命令与构建期投影</td>
 </tr>
 <tr>
 <td>私有父工作区</td>
-<td>0.10.0</td>
+<td>0.11.0</td>
 <td>唯一开发真源</td>
 </tr>
 </tbody>
@@ -1984,8 +1984,8 @@ provenance 绑定输入决定，不能仅因成熟度标签另加要求。机器
 <p>低于 Node floor 或高于锁定 major 的结果不能替代权威门禁结果。</p>
 <h2 id="Contracts-与工程边界">Contracts 与工程边界<a class="headerlink" href="#Contracts-与工程边界" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象为 37 类，以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源。</li>
-<li>Kernel 协议是 stable <code>skill-family.kernel.operation</code>；本轮 Contracts 规格为 1.10.0，Kernel 文档仍按既有生命周期保持 1.8.0 字节基线。</li>
+<li>顶层 Contracts 对象为 39 类，以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源。</li>
+<li>Kernel 协议是 stable <code>skill-family.kernel.operation</code>；本轮 Contracts 规格为 1.11.0，Kernel 文档仍按既有生命周期保持 1.8.0 字节基线。</li>
 <li>错误码只增不改、不复用。</li>
 <li>Kit 顶层命令固定为 <code>scaffold</code>、<code>adopt-plan</code>、<code>projection</code>、<code>check</code>。</li>
 <li>远端或通用 <code>host apply</code>、删除式 <code>uninstall</code>、完整 Qoder driver、远端发布、业务状态机、模型编排与领域审计语义不在稳定支持面；本地 install/update 仍处于 0.10.0 unstable 计划 API 边界，unsupported 宿主不会获得自动生命周期能力，也不构成远端发布保证。</li>

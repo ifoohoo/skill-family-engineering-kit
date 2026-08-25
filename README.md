@@ -4,29 +4,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.10.0 -->
+<!-- release-skill:release-version: 0.11.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.10.0** (2026-08-24)
+**0.11.0** (2026-08-25)
 
-Engineering Kit 0.10.0 adds responsibility-specific canonical entrypoints, a bounded host lifecycle slice, and a thin read-only peer adapter verification entry.
+Engineering Kit 0.11.0 adds a candidate real-host verification API and ships the registered host Profile closure.
 
 **Added**
 
-- Adds skill-family-engineering-kit/quickstart-profile, /adoption, and /skill-naming canonical exports.
-- Adds finite Profile alias resolution, independent manual probe facts for non-driver hosts, and explicit local install/update plans; uninstall remains a manual-recovery refusal.
-- Adds `verifyHostPeers` as a thin wrapper over Harness peer verification; the Kit retains four top-level commands and does not write peer directories.
+- Adds runHostVerification for one fresh, bounded Kimi or WorkBuddy invocation reusing the caller's existing login state, and verifyHostVerificationBindings for pure result composition.
+- Recomputes closure and stream digests from raw bytes and keeps private evidence outside the public result.
+- Ships the registered host Profile closure through bundledHostProfilesRoot().
 
 **Changed**
 
-- Keeps the historical Quickstart candidate export as a same-source migration alias and preserves the four-command Kit boundary.
-- Compiles one canonical Quickstart and batch Schema set while mapping historical and canonical IDs to the same standalone validators.
+- Manual Profiles retain their lifecycle restrictions; host verification does not grant build, plan, apply, install, update, uninstall, or rollback support.
 
 **Upgrade Notes**
 
-Update all three exact pins to 0.10.0 and migrate imports and Schema IDs once to canonical identities. A later maturity-label promotion adds no separate Bundle rebuild requirement; package-identity, source-digest, and provenance changes continue to follow the existing projection contract.
+The 0.11.0 host-verification API is candidate-only. It does not own domain PASS/FAIL, release state, or automatic login, and it claims no authentication isolation, unchanged credentials, fixed model identity, or disabled host tool capability. executableSha256 is a point-in-time preflight observation, not proof of the executed image; the caller exclusively controls that namespace. Foundation retains session directories, and the caller cleans its outer temporaryRoot after inspection.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -47,7 +46,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 ## Installation and Minimal Example
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.10.0
+npm install --save-dev skill-family-engineering-kit@0.11.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -55,7 +54,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.10.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.11.0 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
@@ -110,6 +109,14 @@ npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id>
 ```
 
 The Profile must be provided explicitly; Kit does not bind a specific host by default. Canonical host IDs may resolve only aliases declared by the finite registered Profile set. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. Local install and update use an explicit authorization reference plus the existing contained publication primitives; uninstall is rejected with `manual-recovery-required` because Foundation has no safe bound deletion primitive. Two registered hosts have trusted version drivers; Kimi Code, WorkBuddy, CodeBuddy, and DeepSeek Harness expose independent manual facts; Qoder is `unsupported`. Adapter source only accepts declared text closures; binary projection is not supported; see the [host capability matrix](../../docs/reference/host-capability-matrix.md) and registered Profiles.
+
+### Candidate real-host verification library API
+
+`runHostVerification({ request, bindings, hostsRoot })` and `verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost })` are library APIs, not a fifth Kit command. The first runs one bounded candidate verification against caller-bound roots using an admitted built-in driver (`kimi-code-print-v1` or `workbuddy-codebuddy-print-v1`, both bound to `existing-user-state + host-managed`) and returns a Contracts-validated, redacted four-state result. The second is pure and combines only `observed` results with the exact common fields and per-host request digest expected by the caller.
+
+The API keeps consumer workload, domain output checks, domain PASS/FAIL, release freshness, and release state outside Foundation. The caller supplies a canonical `existingUserStateRoot` that is projected into the child environment but never read, digested, modified or cleaned by Foundation; it does not grant manual Profiles any build, plan, apply, install, update, or uninstall capability. The Kimi and WorkBuddy real-host publication gates remain a hard publication requirement for 0.11.0.
+
+`executableSha256` binds only the bytes observed by the strict preflight read; the actual process is still spawned by pathname, so the caller must exclusively control the executable namespace through probe and invocation. Foundation retains the call's `session-*` directory and never deletes it by pathname. After inspection, the caller cleans its exclusively owned outer `temporaryRoot`.
 
 ## Typical Use Cases
 

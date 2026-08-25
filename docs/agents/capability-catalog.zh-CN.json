@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 37 类顶层契约对象文档",
+   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 39 类顶层契约对象文档",
    "useWhen": [
     "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
@@ -73,7 +73,7 @@
     "需要按协议名查找 kernel 协议定义"
    ],
    "doNotUseWhen": [
-    "需要在没有 ADR 的情况下新增顶层登记对象（37 类对象集已经固定）"
+    "需要在没有 ADR 的情况下新增顶层登记对象（39 类对象集已经固定）"
    ],
    "prerequisites": [
     "registry.json 已随包发布",
@@ -95,7 +95,7 @@
    ],
    "invariants": [
     "registry.json 的 schemaVersion=1、contractsVersion=1.10.0 为唯一权威",
-    "37 类顶层对象集合固定，新增需 ADR"
+    "39 类顶层对象集合固定，新增需 ADR"
    ],
    "ownedByCaller": [
     "对象业务含义的解释"
@@ -1265,7 +1265,7 @@
   },
   {
    "id": "foundation.kit.host",
-  "intent": "注入有限宿主 Profile 集合与受信 driver，提供规范身份解析、describe/build/probe/plan、受限的本地 install/update 以及只读同级适配器验证；uninstall 始终要求人工恢复",
+  "intent": "显式选择随包或调用方提供的有限宿主 Profile 集合与受信 driver，提供规范身份解析、describe/build/probe/plan、受限的本地 install/update 以及只读同级适配器验证；uninstall 始终要求人工恢复",
    "useWhen": [
     "需要解析已登记宿主或有限 Profile alias",
     "需要探测、构建、规划或本地 install/update 宿主接入",
@@ -1277,7 +1277,7 @@
     "需要 Qoder 完整 driver（该宿主 unsupported）"
    ],
    "prerequisites": [
-    "宿主 Profile 已在 profiles/hosts 登记，alias 也必须来自有限集合",
+    "宿主 Profile 已在 profiles/hosts 登记，alias 也必须来自有限集合；npm 消费者可显式选择 Kit 随包投影根",
     "受信 driver 仅 claude-version-v1 / codex-version-v1"
    ],
    "inputs": [
@@ -1947,7 +1947,7 @@
    ],
    "invariants": [
     "唯一业务中立操作为 execute-method；method 标识与领域 Schema 继续归消费者所有",
-    "候选 Schema 不进入 src/registry.json，也不扩张 37 类稳定对象",
+    "候选 Schema 不进入 src/registry.json，也不扩张 39 类稳定对象",
     "稳定性为 candidate：主动升级候选版本时须复验合同",
     "历史入口和八个 Schema ID 只迁移一次；晋升 stable 不再要求改合同身份，但取得新发布承诺仍须更新精确 pin"
    ],

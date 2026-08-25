@@ -1899,7 +1899,7 @@
 <p>首选能力：<code>foundation.kit.host</code>（<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>verifyHostPeers</code> / <code>planHost</code> / <code>applyHostPlan</code>）与 <code>foundation.profile.extension-spi</code>（<code>verifyProfile</code>）。宿主差异声明在 <code>foundation.profile.hosts</code>。</p>
 <h2 id="3-前置条件与信任边界">3. 前置条件与信任边界<a class="headerlink" href="#3-前置条件与信任边界" title="Permanent link">&para;</a></h2>
 <ul>
-<li>宿主 Profile 已在 <code>profiles/hosts</code> 登记；受信 driver 仅 <code>claude-version-v1</code> / <code>codex-version-v1</code>。本地 install/update 还要求已验证 build、摘要一致的 plan、受收容 <code>targetRoot</code> 与显式 <code>authorizationRef</code>。</li>
+<li>宿主 Profile 已在 <code>profiles/hosts</code> 登记；0.11.0 起，Kit 安装包携带该闭包的受管投影。受信 driver 仅 <code>claude-version-v1</code> / <code>codex-version-v1</code>。本地 install/update 还要求已验证 build、摘要一致的 plan、受收容 <code>targetRoot</code> 与显式 <code>authorizationRef</code>。</li>
 <li>信任边界：Profile 入口必须是 JSON 数据资源，公共核心不导入 <code>profiles/</code>；<code>coreOwned</code> 为禁入目标。</li>
 </ul>
 <h2 id="4-最小命令与代码">4. 最小命令与代码<a class="headerlink" href="#4-最小命令与代码" title="Permanent link">&para;</a></h2>
@@ -1909,10 +1909,10 @@ npm exec -- skill-family-kit adopt-plan host-describe --host claude --hosts-root
 # 只读探测（默认不 spawn）
 npm exec -- skill-family-kit adopt-plan host-probe --host claude --hosts-root profiles/hosts
 </code></pre>
-<pre><code class="language-js">import { buildHostAdapter, describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
+<pre><code class="language-js">import { bundledHostProfilesRoot, buildHostAdapter, describeHost, probeHost, planHost } from &quot;skill-family-engineering-kit&quot;;
 import { verifyProfile } from &quot;profiles/spi/index.mjs&quot;;
 
-const hostsRoot = &quot;profiles/hosts&quot;;
+const hostsRoot = bundledHostProfilesRoot();
 const desc = await describeHost({ hostId: &quot;claude&quot;, hostsRoot });
 const facts = await probeHost({ hostId: &quot;claude&quot;, hostsRoot, allowSpawn: false });
 const build = await buildHostAdapter({
@@ -1935,7 +1935,7 @@ const plan = await planHost({
 });
 const spi = verifyProfile({ profileRoot: &quot;profiles/public-plugin&quot; }); // SPE0000
 </code></pre>
-<p>以上命令与代码展示了 describe/probe、内存构建和 plan 的机制，以及用 <code>verifyProfile</code> 校验 Profile 声明；它们没有执行 install/update。</p>
+<p>以上命令展示了如何显式选择仓内 Profile 根。代码则从安装包取得规范根，再运行 describe/probe、内存构建和 plan，并用 <code>verifyProfile</code> 校验 Profile 声明；这些操作没有执行 install/update。</p>
 <h2 id="5-预期输出与证据">5. 预期输出与证据<a class="headerlink" href="#5-预期输出与证据" title="Permanent link">&para;</a></h2>
 <p><code>describeHost</code> 返回宿主描述，<code>probeHost</code> 返回只读探测事实，<code>planHost</code> 返回接入计划，<code>verifyProfile</code> 返回 <code>SPE0000</code> 等结果码。证据：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code> 与 <code>fixtures/generic-profile-extension-conformance/verify.mjs</code>。</p>
 <h2 id="6-安全失败负例">6. 安全/失败负例<a class="headerlink" href="#6-安全失败负例" title="Permanent link">&para;</a></h2>
@@ -1959,6 +1959,7 @@ describeHost(&quot;qoder&quot;); // 抛错：support = &quot;unsupported&quot;
 <ul>
 <li>包 API <code>applyHostPlan</code> 支持已登记、摘要绑定的本地 install/update；执行 uninstall 计划只返回 <code>manual-recovery-required</code>，不删除文件。Kit CLI apply、通用或远端 apply 仍稳定拒绝。</li>
 <li><code>verifyHostPeers</code> 只做同级 adapter 目录的只读复验，不授予安装、发布或领域裁决能力。</li>
+<li><code>bundledHostProfilesRoot()</code> 只提供受管 Profile 根。宿主入口仍要求显式传 <code>hostsRoot</code>，调用方也可以选择另一组符合合同的 Profile。</li>
 <li>Qoder 完整 driver 为 unsupported，只参考其结构，不声称已在 Qoder 运行；升级新增受支持宿主须登记 descriptor 并绑定受信 driver。</li>
 </ul>
 

@@ -799,12 +799,15 @@
    "since": "0.2.0",
    "stability": "unstable",
    "entrypoints": [
+    "bundledHostProfilesRoot (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "resolveHostId (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "loadHostRegistry (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "probeHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "buildHostAdapter (packages/skill-family-engineering-kit/src/host.mjs)",
     "verifyHostPeers (packages/skill-family-engineering-kit/src/host.mjs)",
+    "runHostVerification (packages/skill-family-engineering-kit/src/host-verification.mjs)",
+    "verifyHostVerificationBindings (packages/skill-family-engineering-kit/src/host-verification.mjs)",
     "materializeHostBuild (packages/skill-family-engineering-kit/src/host.mjs)",
     "planHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "assertPlanConsistency (packages/skill-family-engineering-kit/src/host.mjs)",
@@ -815,13 +818,17 @@
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/host.mjs",
     "packages/skill-family-engineering-kit/src/host-profiles.mjs",
-    "packages/skill-family-engineering-kit/src/host-drivers.mjs"
+    "packages/skill-family-engineering-kit/src/host-drivers.mjs",
+    "packages/skill-family-engineering-kit/src/host-verification.mjs",
+    "packages/skill-family-engineering-kit/src/host-verification-drivers.mjs"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-engineering-kit/test/host.test.mjs"
+    "packages/skill-family-engineering-kit/test/host.test.mjs",
+    "packages/skill-family-engineering-kit/test/host-verification.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/host.test.mjs"
+    "packages/skill-family-engineering-kit/test/host.test.mjs",
+    "packages/skill-family-engineering-kit/test/host-verification.test.mjs"
    ]
   },
   {
@@ -1015,6 +1022,7 @@
    "since": "0.2.0",
    "stability": "unstable",
    "entrypoints": [
+    "bundledHostProfilesRoot (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "resolveHostId (packages/skill-family-engineering-kit/src/host-profiles.mjs)"
    ],

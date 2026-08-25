@@ -1994,7 +1994,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>结构、协议、错误码、协议名登记；37 类顶层对象；9 条 mandatory rule</td>
+<td>结构、协议、错误码、协议名登记；39 类顶层对象；9 条 mandatory rule</td>
 <td>业务字段语义、领域审计、远端写入、模型生成</td>
 </tr>
 <tr>
@@ -2088,6 +2088,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <li><strong>领域审计</strong>：独立审计消费者拥有语义与最终接受/拒绝；Foundation 只提供确定性审计表面（<code>foundation.unsupported.domain-audit-semantics</code>）。</li>
 <li><strong>宿主应用与生命周期</strong>：有限 host identity/alias 解析、独立 probe facts 与本地 install/update 复用既有绑定读取和发布原语；uninstall 因缺少安全绑定删除原语而拒绝并转人工恢复。Qoder 仍为 unsupported，DeepSeek Harness 仅为 developer-preview 身份事实；远端发布、自动信任和消费者 smoke 不在 Foundation（<code>foundation.unsupported.qoder-driver</code>）。</li>
 <li><strong>同级适配器只读验证</strong>：Contracts 1.10.0 增加成熟度中立的 request/result；Harness 复用真实根绑定、路径收容、读取、闭包和 manifest，按 peer 归一化后验证共同来源与唯一 <code>SKILL.md</code> mapping；Kit 只提供薄入口。Foundation 不拥有 canonical source，不写目录，不产生 receipt，也不接管旧 manifest 的业务迁移。</li>
+<li><strong>真实宿主验证</strong>：Contracts 1.11.0 增加 <code>host-verification-request</code> 与 <code>host-verification-result</code>；Harness 在既有 <code>superviseProcess</code> 上提供原始字节 sink，Kit 实现 Kimi 与 WorkBuddy 两个内置 candidate driver（均绑定 <code>existing-user-state + host-managed</code>）的受约束执行、现有用户状态根边界与结果组合。Foundation 不拥有领域输出或发布状态，也不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。</li>
 </ul>
 <h2 id="能力身份与成熟度">能力身份与成熟度<a class="headerlink" href="#能力身份与成熟度" title="Permanent link">&para;</a></h2>
 <p>能力身份和成熟度是两个维度（FND-ADR-016）。历史 <code>./candidate/**</code> 消费者迁移一次到 0.10.0 提供的规范入口；旧入口
@@ -2099,7 +2100,7 @@ operation。后续晋升 stable 只提高兼容承诺，不再触发消费者源
 <h2 id="下一阶段能力线架构-hand-off">下一阶段能力线（架构 hand-off）<a class="headerlink" href="#下一阶段能力线架构-hand-off" title="Permanent link">&para;</a></h2>
 <p>三条能力线均经 FND-ADR-001 能力纳入门裁决纳入，全部在既有分层内落位：</p>
 <ul>
-<li><strong>宿主接入线</strong>（FND-FR-001/FND-FR-002，FND-ADR-003，FND-ADR-017）：Contracts 1.10.0 在既有 stable descriptor/probe/plan/receipt 合同上补足有限成熟度、手动事实与 digest 绑定的操作约束；Harness 复用 source closure、绑定读取、严格发布和原子替换；Kit 注入有限 Profile 与两类受信 driver。0.10.0 提供 describe/build/probe/plan 及受显式授权保护的本地 install/update；uninstall 保持人工恢复拒绝。</li>
+<li><strong>宿主接入线</strong>（FND-FR-001/FND-FR-002，FND-ADR-003，FND-ADR-017）：Contracts 1.10.0 在既有 stable descriptor/probe/plan/receipt 合同上补足有限成熟度、手动事实与 digest 绑定的操作约束；Harness 复用 source closure、绑定读取、严格发布和原子替换；Kit 注入有限 Profile 与两类受信 driver。0.10.0 提供 describe/build/probe/plan 及受显式授权保护的本地 install/update；uninstall 保持人工恢复拒绝。0.11.0 追加独立的真实宿主验证候选，登记 Kimi 与 WorkBuddy 两个内置 driver，复用现有登录态。</li>
 <li><strong>持久状态底座线</strong>（FND-FR-003，FND-ADR-004）：append-only 事件、hash chain、快照与校验恢复；只提供状态底座，状态机、任务节点、重试、终态、记忆等业务语义不纳入 Foundation。</li>
 <li><strong>人类报告线</strong>（FND-FR-004，FND-ADR-005）：双层合同——机器结果是唯一真源，人类报告由机器结果确定性渲染（Markdown + digest 绑定 + 分级检查），不自由撰写。</li>
 <li><strong>有限封闭语义工具线</strong>（FND-ADR-009）：基线物化 + contentGuard（摘要不符、物化中途变化、守卫检出均失败关闭）、通用只读 chokepoint（允许根集合 + 可选身份谓词）、策略化表面扫描（策略契约 + 注入式自测）、token 上界估算（确定性领域估算原语，无模型/网络/tokenizer 依赖）、通用上限守卫（复用 state-store 事件账与 token-lock，上限与超限策略由消费者配置）。</li>
@@ -2107,12 +2108,12 @@ operation。后续晋升 stable 只提高兼容承诺，不再触发消费者源
 <p>三包结构保持、不拆第四包（FND-ADR-007）；制品治理采用 artifact-graph CLI 与版本锁（FND-ADR-006）。</p>
 <h2 id="首版预算">首版预算<a class="headerlink" href="#首版预算" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象：37 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）、filesystem-root-binding、fixed-set-publication-manifest、fixed-set-publication-receipt（1.9.0 纳入）、adapter-peer-verification-request、adapter-peer-verification-result（FND-ADR-018，1.10.0 纳入）；</li>
+<li>顶层 Contracts 对象：39 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）、filesystem-root-binding、fixed-set-publication-manifest、fixed-set-publication-receipt（1.9.0 纳入）、adapter-peer-verification-request、adapter-peer-verification-result（FND-ADR-018，1.10.0 纳入）、host-verification-request、host-verification-result（FND-ADR-019，1.11.0 纳入）；</li>
 <li>Kit 顶层命令：4 个（scaffold、adopt-plan、projection、check）；</li>
 <li>强制机械规则：当前 9 条，预算不超过 20 条，绝对上限 30 条；CR-001 对登记表内全部 Schema 做统一编译；</li>
 <li>叶子包：3 个（skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit）；</li>
 <li>Schema 校验器：Ajv 8.20.0（精确版本 pin），支持 draft-07 与 2020-12 双方言；</li>
-<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 规格版本 1.10.0；Kernel 文档仍保持 1.8.0 生命周期坐标和字节基线；</li>
+<li>kernel 协议：skill-family.kernel.operation（stable），Contracts 规格版本 1.11.0；Kernel 文档仍保持 1.8.0 生命周期坐标和字节基线；</li>
 <li>默认运行时语言：Node；第二语言实现首版为 0。</li>
 </ul>
 <p>任何新增组件必须说明删除它会导致的两个以上真实消费者重复实现，并通过独立 fixture 验证。</p>

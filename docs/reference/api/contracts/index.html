@@ -947,6 +947,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#真实宿主验证合同-foundationcontractshost-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        真实宿主验证合同 (foundation.contracts.host-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2265,6 +2276,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#真实宿主验证合同-foundationcontractshost-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        真实宿主验证合同 (foundation.contracts.host-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2328,8 +2350,9 @@
 <li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
 <li><a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同</a> → request/result Schema</li>
+<li><a href="#真实宿主验证合同-foundationcontractshost-verification">真实宿主验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（37 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.10.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（39 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.11.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2649,6 +2672,26 @@ peer 顺序不得改变共同闭包摘要或结论；未知字段、重复/缺�
 <li>Schema 文件：<code>packages/skill-family-contracts/src/schemas/adapter-peer-verification-request.schema.json</code>、<code>adapter-peer-verification-result.schema.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/peer-adapter.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：peer 的 canonical 选择、旧 manifest 迁移解释、消费者 smoke 和发布后验证。</li>
+</ul>
+<hr />
+<h2 id="真实宿主验证合同-foundationcontractshost-verification">真实宿主验证合同 (foundation.contracts.host-verification)<a class="headerlink" href="#真实宿主验证合同-foundationcontractshost-verification" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.11.0 登记 <code>host-verification-request</code> 与 <code>host-verification-result</code>。两个 Schema 的 <code>$id</code>、
+<code>operation=host-verification</code> 和四态结果身份从首版固定，但该能力当前是 <code>candidate</code>，不能据此宣称宿主、领域结果或发布已通过。</p>
+<ul>
+<li>request 把共同候选绑定与每宿主 binding 分开；所有 <code>*Sha256</code> 与 <code>*ClosureDigest</code> 均为 64 位小写十六进制。调用方必须从私有
+  roots 严格重算这些值，不能把自报摘要当作证明。<code>auth</code> 固定为 <code>existing-user-state + host-managed</code>，只说明复用用户现有
+  登录状态；<code>execution.modelOverridePolicy</code> 固定为 <code>forbidden</code>。</li>
+<li>result 只允许 <code>observed</code>、<code>rejected</code>、<code>failed</code>、<code>indeterminate</code>。它不含 credential、绝对路径、环境变量、Prompt、原始
+  stream 或 durable receipt；<code>observed</code> 只表示基础设施观察完整，不表示消费者领域 PASS。<code>requiredActions</code> 只允许
+  <code>manual-temporary-root-inspection-required</code>。</li>
+<li>request auth 必须精确对应已登记 Descriptor 的单值 <code>driverId/authStrategy/credentialMutation</code>；Descriptor 是认证组合的
+  唯一事实源，Schema 同时机械绑定 <code>kimi-code → kimi-code-print-v1</code> 与 <code>workbuddy → workbuddy-codebuddy-print-v1</code>。
+  Schema 不提供通用 driver Registry 或认证 SPI。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.11.0</code> / <code>candidate</code>。Schema 文件：
+  <code>packages/skill-family-contracts/src/schemas/host-verification-request.schema.json</code>、
+  <code>packages/skill-family-contracts/src/schemas/host-verification-result.schema.json</code>。正反例：
+  <code>packages/skill-family-contracts/test/schemas.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：candidate 解引用、workload、领域输出、发布新鲜度、领域 PASS/FAIL 与发布决定。</li>
 </ul>
 <hr />
 <h2 id="能力成熟度与历史迁移政策">能力成熟度与历史迁移政策<a class="headerlink" href="#能力成熟度与历史迁移政策" title="Permanent link">&para;</a></h2>

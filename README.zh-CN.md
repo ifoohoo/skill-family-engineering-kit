@@ -5,29 +5,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.10.0 -->
+<!-- release-skill:release-version: 0.11.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.10.0** (2026-08-24)
+**0.11.0** (2026-08-25)
 
-Engineering Kit 0.10.0 为历史 candidate 提供职责明确的规范入口，增加受限的跨平台宿主身份、探针和本地生命周期能力，并提供同级适配器只读验证薄入口。
+Engineering Kit 0.11.0 增加候选真实宿主验证 API，并随包携带已登记宿主 Profile 闭包。
 
 **新增**
 
-- 新增 skill-family-engineering-kit/quickstart-profile、/adoption 与 /skill-naming 规范导出。
-- 增加有限 Profile alias 解析、非 driver 宿主的独立手动 probe fact 和显式本地 install/update 计划；uninstall 仍要求人工恢复。
-- 新增 `verifyHostPeers`，只包装 Harness 的 peer 验证，不增加第五个顶层命令，也不写入 peer 目录。
+- 新增 runHostVerification，执行一次 fresh、受约束的 Kimi 或 WorkBuddy 调用（复用调用方现有登录态）；新增 verifyHostVerificationBindings，组合结果时只做纯校验。
+- 从原始字节重算闭包和流摘要，并把私有证据留在公共结果之外。
+- 通过 bundledHostProfilesRoot() 携带已登记宿主 Profile 闭包。
 
 **变更**
 
-- 历史 Quickstart candidate 导出继续作为同源迁移别名，Kit 四命令边界不变。
-- 只编译一套规范 Quickstart 与批量校验 Schema；历史和规范 ID 指向同一 standalone validator。
+- manual Profile 继续保留生命周期限制；宿主验证不会授予 build、plan、apply、install、update、uninstall 或 rollback 能力。
 
 **升级说明**
 
-消费者应把三个包的精确 pin 更新到 0.10.0，并把导入与 Schema ID 一次迁移到规范身份。以后仅晋升成熟度标签时不另加 Bundle 重建要求；包身份、来源摘要或 provenance 变化仍按既有投影合同处理。
+0.11.0 宿主验证 API 仍为候选能力，不拥有领域 PASS/FAIL、发布状态或自动登录；不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。executableSha256 只是启动前的点时观察，不证明实际执行映像；调用方独占对应命名空间。Foundation 保留 session 目录，调用方检查后清理外层 temporaryRoot。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -48,7 +47,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.10.0
+npm install --save-dev skill-family-engineering-kit@0.11.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -56,7 +55,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.10.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.11.0 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -111,6 +110,14 @@ npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id>
 ```
 
 Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实；Qoder 为 `unsupported`。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
+
+### 候选真实宿主验证库 API
+
+`runHostVerification({ request, bindings, hostsRoot })` 和 `verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost })` 是库 API，不是第五个 Kit 命令。前者通过已准入的内置 driver（`kimi-code-print-v1` 或 `workbuddy-codebuddy-print-v1`，均绑定 `existing-user-state + host-managed`），针对调用方绑定的根执行一次候选验证，并返回经过 Contracts 校验的脱敏四态结果；后者是纯函数，只组合 `observed` 结果，并核对共同字段和逐宿主 request digest。
+
+该 API 不接管消费者 workload、领域输出检查、领域 PASS/FAIL、发布新鲜度或发布状态。调用方提供 canonical 的 `existingUserStateRoot`；Foundation 只把它投影进子进程环境，不读取、摘要、修改或清理其中内容，也不会因此为 manual Profile 授予 build、plan、apply、install、update 或 uninstall 能力。
+
+`executableSha256` 只绑定启动前严格读取到的字节。实际进程仍按 pathname 启动，因此调用方必须在 probe 和正式调用期间独占可执行文件的命名空间。Foundation 保留本次调用的 `session-*` 目录，不按路径删除；调用方检查完成后，统一清理其独占的外层 `temporaryRoot`。
 
 ## 典型使用场景
 

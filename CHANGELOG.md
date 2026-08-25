@@ -1,5 +1,26 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.11.0 locale=en baseline=sha256:108e261312b0838af53184710453fe19f369a9ea10ac5d1fc3e829e919d0f99d -->
+## [0.11.0] - 2026-08-25
+
+Engineering Kit 0.11.0 adds a candidate real-host verification API and ships the registered host Profile closure.
+
+### Added
+
+- Adds runHostVerification for one fresh, bounded Kimi or WorkBuddy invocation reusing the caller's existing login state, and verifyHostVerificationBindings for pure result composition.
+- Recomputes closure and stream digests from raw bytes and keeps private evidence outside the public result.
+- Ships the registered host Profile closure through bundledHostProfilesRoot().
+
+### Changed
+
+- Manual Profiles retain their lifecycle restrictions; host verification does not grant build, plan, apply, install, update, uninstall, or rollback support.
+
+### Upgrade Notes
+
+The 0.11.0 host-verification API is candidate-only. It does not own domain PASS/FAIL, release state, or automatic login, and it claims no authentication isolation, unchanged credentials, fixed model identity, or disabled host tool capability. executableSha256 is a point-in-time preflight observation, not proof of the executed image; the caller exclusively controls that namespace. Foundation retains session directories, and the caller cleans its outer temporaryRoot after inspection.
+<!-- release-skill:changelog:end version=0.11.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.10.0 locale=en baseline=sha256:fc575df3b8c5f7a0d819090ce9637f8cdc654c277892fe3f14149d5cc1746b24 -->
 ## [0.10.0] - 2026-08-24
 

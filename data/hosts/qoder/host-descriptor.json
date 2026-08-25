@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-family.host-descriptor",
+  "hostId": "qoder",
+  "displayName": "Qoder",
+  "support": "unsupported",
+  "maturity": "unsupported",
+  "sourceAliases": [],
+  "unsupportedReason": "No auditable non-interactive host driver is frozen for this release.",
+  "pathCategories": [],
+  "probeCapabilities": []
+}

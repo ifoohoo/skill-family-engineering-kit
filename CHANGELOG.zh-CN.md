@@ -1,5 +1,26 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.11.0 locale=zh-CN baseline=sha256:5d5852f3fa3c970b4d277600a0886d533e3c883fc72ce144a85a071d1e270771 -->
+## [0.11.0] - 2026-08-25
+
+Engineering Kit 0.11.0 增加候选真实宿主验证 API，并随包携带已登记宿主 Profile 闭包。
+
+### 新增
+
+- 新增 runHostVerification，执行一次 fresh、受约束的 Kimi 或 WorkBuddy 调用（复用调用方现有登录态）；新增 verifyHostVerificationBindings，组合结果时只做纯校验。
+- 从原始字节重算闭包和流摘要，并把私有证据留在公共结果之外。
+- 通过 bundledHostProfilesRoot() 携带已登记宿主 Profile 闭包。
+
+### 变更
+
+- manual Profile 继续保留生命周期限制；宿主验证不会授予 build、plan、apply、install、update、uninstall 或 rollback 能力。
+
+### 升级说明
+
+0.11.0 宿主验证 API 仍为候选能力，不拥有领域 PASS/FAIL、发布状态或自动登录；不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。executableSha256 只是启动前的点时观察，不证明实际执行映像；调用方独占对应命名空间。Foundation 保留 session 目录，调用方检查后清理外层 temporaryRoot。
+<!-- release-skill:changelog:end version=0.11.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.10.0 locale=zh-CN baseline=sha256:45180b7a3b60853842cbe3a379da7ff95f1bd1fe832192368ec2c92a813279dc -->
 ## [0.10.0] - 2026-08-24
 

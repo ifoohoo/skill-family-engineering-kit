@@ -919,6 +919,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#进程监督-foundationharnesssupervise-process" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        进程监督 (foundation.harness.supervise-process)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="进程监督 (foundation.harness.supervise-process)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#superviseProcess--validateTimeoutPolicy" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        superviseProcess / validateTimeoutPolicy
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#请求管线-foundationharnessrequest-processing" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2463,6 +2491,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#进程监督-foundationharnesssupervise-process" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        进程监督 (foundation.harness.supervise-process)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="进程监督 (foundation.harness.supervise-process)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#superviseProcess--validateTimeoutPolicy" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        superviseProcess / validateTimeoutPolicy
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#请求管线-foundationharnessrequest-processing" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2833,6 +2889,7 @@
 <li><a href="#原子写-foundationharnessatomic-write">原子写</a> → <code>writeFileAtomic</code></li>
 <li><a href="#临时工作区-foundationharnesstemporary-workspace">临时工作区</a> → <code>TemporaryWorkspace</code> / <code>withTemporaryWorkspace</code></li>
 <li><a href="#资源闭包-foundationharnessresource-closure">资源闭包</a> → <code>computeResourceClosure</code> / <code>digestBytes</code> / <code>closureContains</code></li>
+<li><a href="#进程监督-foundationharnesssupervise-process">进程监督</a> → <code>superviseProcess</code> / <code>validateTimeoutPolicy</code></li>
 <li><a href="#请求管线-foundationharnessrequest-processing">请求管线</a> → <code>parseRequest</code> / <code>processRequest</code></li>
 <li><a href="#报告-foundationharnessreport">报告</a> → <code>validateReportModel</code> / <code>renderReportMarkdown</code> / <code>buildBinding</code> / <code>verifyBinding</code> / <code>checkReport</code></li>
 <li><a href="#宿主适配机制-foundationharnesshost-adapter">宿主适配机制</a> → <code>normalizeAdapterSource</code> / <code>buildAdapterClosure</code> / <code>materializeAdapterBuild</code> / <code>probeVersionVector</code></li>
@@ -2978,6 +3035,28 @@
 <li>源文件：<code>packages/skill-family-harness-node/src/closure.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/closure.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：资源业务含义。</li>
+</ul>
+<hr />
+<h2 id="进程监督-foundationharnesssupervise-process">进程监督 (foundation.harness.supervise-process)<a class="headerlink" href="#进程监督-foundationharnesssupervise-process" title="Permanent link">&para;</a></h2>
+<h3 id="superviseProcess--validateTimeoutPolicy">superviseProcess / validateTimeoutPolicy<a class="headerlink" href="#superviseProcess--validateTimeoutPolicy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>superviseProcess(options, deps = {})</code>（async）；<code>validateTimeoutPolicy(policy)</code>。</li>
+<li>输入：受约束的 command、args、cwd、环境、超时策略与既有监督选项。0.11.0 可选 <code>rawSink</code> 只接受
+  <code>{ root, stdoutFile, stderrFile, onClosed? }</code>：根必须在打开时已是 fresh canonical 目录，两个文件名必须是不同的单段相对名。</li>
+<li>输出：一个既有的 <code>watchdog-termination-envelope</code>。<code>rawSink.onClosed</code> 只接收冻结的 stdout/stderr <code>{ sha256, bytes }</code> 摘要；
+  它不创建第二种公开 envelope 或 receipt。</li>
+<li>副作用：启动一个受监督子进程。raw sink 在 spawn 前以 exclusive/no-follow、0600 打开两个文件，直到 child <code>close</code>、两个
+  stream <code>close</code>、全部排队写入、<code>fsync</code> 和 handle <code>close</code> 都完成才结束；exit 后到达的字节仍计入摘要。</li>
+<li>身份边界：调用方必须在整个调用期间独占 raw sink 的命名空间。文件句柄保护不会证明调用期间 pathname 或根目录身份始终不变；
+  前后检查只用于尽早失败。</li>
+<li>失败语义：选项形状错误抛 <code>TypeError</code>；机制失败抛 <code>SFC2004</code>，沿既有 <code>supervise-process-failed</code> 错误域失败关闭。<code>rawStreamSink</code>
+  兼容别名、绝对路径、多段文件名、相同 stdout/stderr 名称与非 fresh 根均被拒绝。</li>
+<li><code>since</code> / <code>stability</code>：监督入口自 <code>0.5.0</code> / <code>stable</code>；受约束 raw sink 自 <code>0.11.0</code>，仅提供机制，不承诺宿主资格、认证、领域
+  判断或发布状态。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/supervise-process.mjs</code>。正反例测试：
+  <code>packages/skill-family-harness-node/test/supervise-process-validation.test.mjs</code>、
+  <code>packages/skill-family-harness-node/test/supervise-process-evidence.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：可执行程序选择、超时策略值、输出解释、认证、重试和发布决定。</li>
 </ul>
 <hr />
 <h2 id="请求管线-foundationharnessrequest-processing">请求管线 (foundation.harness.request-processing)<a class="headerlink" href="#请求管线-foundationharnessrequest-processing" title="Permanent link">&para;</a></h2>

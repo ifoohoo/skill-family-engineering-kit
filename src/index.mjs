@@ -78,7 +78,8 @@ import {
   probeHost,
   refuseHostApply,
 } from "./host.mjs";
-import { describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
+import { bundledHostProfilesRoot, describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
+import { runHostVerification, verifyHostVerificationBindings } from "./host-verification.mjs";
 import {
   describeSkeletonFiles,
   IDENTITY_RECORD_PATH,
@@ -253,6 +254,7 @@ export {
   describeHost,
   resolveHostId,
   loadHostRegistry,
+  bundledHostProfilesRoot,
   probeHost,
   buildHostAdapter,
   materializeHostBuild,
@@ -261,6 +263,8 @@ export {
   applyHostPlan,
   assertPlanConsistency,
   refuseHostApply,
+  runHostVerification,
+  verifyHostVerificationBindings,
 };
 export { ContractsError };
 

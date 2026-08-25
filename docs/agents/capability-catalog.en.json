@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "Compile and validate all 37 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+   "intent": "Compile and validate all 39 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
    "useWhen": [
     "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
     "Need to detect the document dialect and select the strict or tolerant validation policy"
@@ -73,7 +73,7 @@
     "Need to find a kernel protocol definition by protocol name"
    ],
    "doNotUseWhen": [
-    "Need to add a registered top-level object without an ADR (the 37-object set is fixed)"
+    "Need to add a registered top-level object without an ADR (the 39-object set is fixed)"
    ],
    "prerequisites": [
     "registry.json is shipped with the package",
@@ -95,7 +95,7 @@
    ],
    "invariants": [
     "registry.json's schemaVersion=1 and contractsVersion=1.10.0 are the single authority",
-    "The set of 37 top-level objects is fixed; additions require an ADR"
+    "The set of 39 top-level objects is fixed; additions require an ADR"
    ],
    "ownedByCaller": [
     "Interpretation of an object's business meaning"
@@ -1265,7 +1265,7 @@
   },
   {
    "id": "foundation.kit.host",
-  "intent": "Inject a finite host Profile set and trusted drivers, providing canonical identity resolution, describe/build/probe/plan, bounded local install/update, and read-only peer adapter verification; uninstall remains a manual-recovery refusal.",
+  "intent": "Explicitly select a packaged or caller-provided finite host Profile set and trusted drivers, providing canonical identity resolution, describe/build/probe/plan, bounded local install/update, and read-only peer adapter verification; uninstall remains a manual-recovery refusal.",
    "useWhen": [
     "Need to resolve a registered host or finite Profile alias",
     "Need to probe, build, plan, or locally install/update host integration",
@@ -1277,7 +1277,7 @@
     "Need a full Qoder driver (that host is unsupported)"
    ],
    "prerequisites": [
-    "The host Profile is registered in profiles/hosts and aliases are finite",
+    "The host Profile is registered in profiles/hosts and aliases are finite; npm consumers may explicitly select the Kit's packaged projection root",
     "Trusted drivers are only claude-version-v1 / codex-version-v1"
    ],
    "inputs": [
@@ -1947,7 +1947,7 @@
    ],
    "invariants": [
     "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
-    "Candidate schemas remain absent from src/registry.json and do not expand the 37 stable object classes",
+    "Candidate schemas remain absent from src/registry.json and do not expand the 39 stable object classes",
     "Stability is candidate: actively upgrading the candidate version requires contract verification",
     "Historical entrypoints and eight Schema IDs migrate once; stable promotion requires no further contract-identity change, while obtaining the new published promise still requires exact-pin updates"
    ],

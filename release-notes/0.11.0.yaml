@@ -1,0 +1,23 @@
+version: 0.11.0
+date: 2026-08-25
+locales:
+  en:
+    summary: Engineering Kit 0.11.0 adds a candidate real-host verification API and ships the registered host Profile closure.
+    changes:
+      added:
+        - Adds runHostVerification for one fresh, bounded Kimi or WorkBuddy invocation reusing the caller's existing login state, and verifyHostVerificationBindings for pure result composition.
+        - Recomputes closure and stream digests from raw bytes and keeps private evidence outside the public result.
+        - Ships the registered host Profile closure through bundledHostProfilesRoot().
+      changed:
+        - Manual Profiles retain their lifecycle restrictions; host verification does not grant build, plan, apply, install, update, uninstall, or rollback support.
+    upgradeNotes: The 0.11.0 host-verification API is candidate-only. It does not own domain PASS/FAIL, release state, or automatic login, and it claims no authentication isolation, unchanged credentials, fixed model identity, or disabled host tool capability. executableSha256 is a point-in-time preflight observation, not proof of the executed image; the caller exclusively controls that namespace. Foundation retains session directories, and the caller cleans its outer temporaryRoot after inspection.
+  zh-CN:
+    summary: Engineering Kit 0.11.0 增加候选真实宿主验证 API，并随包携带已登记宿主 Profile 闭包。
+    changes:
+      added:
+        - 新增 runHostVerification，执行一次 fresh、受约束的 Kimi 或 WorkBuddy 调用（复用调用方现有登录态）；新增 verifyHostVerificationBindings，组合结果时只做纯校验。
+        - 从原始字节重算闭包和流摘要，并把私有证据留在公共结果之外。
+        - 通过 bundledHostProfilesRoot() 携带已登记宿主 Profile 闭包。
+      changed:
+        - manual Profile 继续保留生命周期限制；宿主验证不会授予 build、plan、apply、install、update、uninstall 或 rollback 能力。
+    upgradeNotes: 0.11.0 宿主验证 API 仍为候选能力，不拥有领域 PASS/FAIL、发布状态或自动登录；不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。executableSha256 只是启动前的点时观察，不证明实际执行映像；调用方独占对应命名空间。Foundation 保留 session 目录，调用方检查后清理外层 temporaryRoot。

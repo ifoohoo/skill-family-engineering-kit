@@ -913,10 +913,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
+  <a href="#bundledHostProfilesRoot--describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--runHostVerification--verifyHostVerificationBindings--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
     <span class="md-ellipsis">
 
-        describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
+        bundledHostProfilesRoot / describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / runHostVerification / verifyHostVerificationBindings / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
 
     </span>
   </a>
@@ -2206,10 +2206,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
+  <a href="#bundledHostProfilesRoot--describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--runHostVerification--verifyHostVerificationBindings--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" class="md-nav__link">
     <span class="md-ellipsis">
 
-        describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
+        bundledHostProfilesRoot / describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / runHostVerification / verifyHostVerificationBindings / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver
 
     </span>
   </a>
@@ -2376,7 +2376,7 @@
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 使用 Contracts 1.10.0 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.10.0</code>。
+<p>provider Profile descriptor 使用 Contracts 1.11.0 时，须把自身的 <code>base.contractsVersion</code> 字段机械更新为 <code>1.11.0</code>。
 Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
@@ -2523,30 +2523,36 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 </ul>
 <hr />
 <h2 id="host-foundationkithost">host (foundation.kit.host)<a class="headerlink" href="#host-foundationkithost" title="Permanent link">&para;</a></h2>
-<h3 id="describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver">describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver<a class="headerlink" href="#describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" title="Permanent link">&para;</a></h3>
+<h3 id="bundledHostProfilesRoot--describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--runHostVerification--verifyHostVerificationBindings--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver">bundledHostProfilesRoot / describeHost / resolveHostId / loadHostRegistry / probeHost / buildHostAdapter / verifyHostPeers / runHostVerification / verifyHostVerificationBindings / materializeHostBuild / planHost / assertPlanConsistency / applyHostPlan / probeTrustedVersionDriver<a class="headerlink" href="#bundledHostProfilesRoot--describeHost--resolveHostId--loadHostRegistry--probeHost--buildHostAdapter--verifyHostPeers--runHostVerification--verifyHostVerificationBindings--materializeHostBuild--planHost--assertPlanConsistency--applyHostPlan--probeTrustedVersionDriver" title="Permanent link">&para;</a></h3>
 <ul>
-<li>签名（节选，除 <code>assertPlanConsistency</code> 外均为 async）：</li>
+<li>签名（节选；<code>bundledHostProfilesRoot</code> 与 <code>assertPlanConsistency</code> 为同步函数，其余入口按下列 async 合同执行）：</li>
+<li><code>bundledHostProfilesRoot()</code>：返回 Engineering Kit 安装包内宿主 Profile 闭包的规范绝对路径。</li>
 <li><code>describeHost({ hostId, hostsRoot, registry } = {})</code></li>
 <li><code>resolveHostId({ hostId, hostsRoot, registry } = {})</code>（async）：读取已登记的有限 Profile 集合，解析 canonical <code>hostId</code> 与 <code>sourceAliases</code>；不读取或写入全局别名表。</li>
 <li><code>loadHostRegistry({ hostsRoot, registry } = {})</code></li>
 <li><code>probeHost({ hostId, hostsRoot, registry, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
 <li><code>buildHostAdapter({ hostId, pathCategoryId, input, hostsRoot, registry } = {})</code></li>
-<li><code>verifyHostPeers({ request, peerRoots, hostsRoot, registry } = {})</code>（async）：<code>hostsRoot</code> 为必需的 Profile 证明根，<code>registry</code> 可选；薄包装 Harness 的同级适配器只读验证，不写入目录。</li>
+<li><code>verifyHostPeers({ request, peerRoots, hostsRoot, registry } = {})</code>（async）：<code>hostsRoot</code> 为必需的 Profile 证明根，<code>registry</code> 可选；npm 消费者可以显式传 <code>bundledHostProfilesRoot()</code>，薄包装 Harness 的同级适配器只读验证，不写入目录。</li>
+<li><code>runHostVerification({ request, bindings, hostsRoot } = {})</code>（async）：按已登记的内置 candidate driver（<code>kimi-code-print-v1</code> / <code>workbuddy-codebuddy-print-v1</code>，均绑定 <code>existing-user-state + host-managed</code>）执行一次受约束调用。请求、候选、fixture、workspace、现有用户状态根和临时根均由调用方绑定；公共结果只返回脱敏的逐宿主事实。</li>
+<li><code>verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost } = {})</code>：只组合已验证的 <code>observed</code> 结果，要求共同字段和逐宿主 request digest 精确匹配；不同宿主的 driver、安装、Prompt 和可执行文件事实保持独立。</li>
 <li><code>materializeHostBuild(options)</code></li>
 <li><code>planHost({ hostId, pathCategoryId, buildManifest, probeFacts, operation = "install", previousMembers = [], hostsRoot, registry } = {})</code></li>
 <li><code>assertPlanConsistency(planInput)</code></li>
 <li><code>applyHostPlan({ plan, build, targetRoot, authorizationRef } = {})</code>：复用 Harness 的身份绑定读取、严格不替换发布和原子替换；卸载始终返回 <code>manual-recovery-required</code>，不删除文件。</li>
 <li><code>probeTrustedVersionDriver({ hostId, driverId, capabilities = CAPABILITIES, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
 <li>输入：宿主标识、有限 Profile、probe/plan 选项；更新和卸载计划必须携带已拥有成员的摘要。</li>
-<li>输出：宿主描述、canonical 身份、逐项独立的九类 probe fact、构建产物、plan 或本地操作结果。</li>
+<li>输出：宿主描述、canonical 身份、逐项独立的九类 probe fact、构建产物、plan 或本地操作结果。<code>runHostVerification()</code> 直接返回
+  Contracts 校验后的逐宿主四态 result；<code>verifyHostVerificationBindings()</code> 成功时严格返回 <code>{ status: "bound" }</code>。</li>
 <li>纯函数：只有 <code>assertPlanConsistency</code> 是；<code>resolveHostId</code> 通过受收容的只读 I/O 读取 Profile，不能当作纯函数。其余入口按职责含落盘或进程调用。</li>
-<li>副作用：<code>resolveHostId</code> / <code>verifyHostPeers</code> 只读；<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。</li>
+<li>副作用：<code>resolveHostId</code> / <code>verifyHostPeers</code> 只读；<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。真实宿主验证只在调用方提供的 fresh 私有根内写原始证据；公共 result 不落盘为 Foundation receipt。</li>
 <li>稳定错误码与 <code>details.kind</code>：unsupported host（如 <code>qoder</code>）返回 <code>unsupported</code> 结果；缺 probe facts 抛 <code>KitError</code>（<code>missing-probe-facts</code>）；写入失败按 Harness 的 <code>publicationState</code> 返回 <code>partially_applied</code> 或 <code>indeterminate</code>。<code>HOST_DRIVER_IDS</code> 仅两个受信 driver（<code>claude-version-v1</code> / <code>codex-version-v1</code>）。</li>
-<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记；别名必须来自该有限集合；受信 driver 限定；<code>applyHostPlan</code> 要求显式 <code>authorizationRef</code>、已验证 build 与目标根。</li>
-<li><code>since</code> / <code>stability</code>：<code>0.10.0</code> / <code>unstable</code>（host 能力整体 unstable）。</li>
-<li>源文件：<code>packages/skill-family-engineering-kit/src/host.mjs</code>、<code>host-profiles.mjs</code>、<code>host-drivers.mjs</code>。</li>
-<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>。</li>
-<li>调用方仍拥有的业务语义：宿主能力是否可用、手动事实的解释与生命周期授权；Foundation 不声明消费者 smoke 或远端发布成功。</li>
+<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记，并由 synth 投影进 Kit 的 <code>data/hosts</code>；别名必须来自该有限集合；受信 driver 限定；<code>applyHostPlan</code> 要求显式 <code>authorizationRef</code>、已验证 build 与目标根。真实宿主验证还要求显式 <code>hostsRoot</code>、受 Descriptor 约束的内置 driver（<code>kimi-code-print-v1</code> / <code>workbuddy-codebuddy-print-v1</code>，均绑定 <code>existing-user-state + host-managed</code>）、canonical 的 <code>existingUserStateRoot</code>（只读根可位于其下；不得等于或位于 output、temporary、private evidence、安装目标或 WorkBuddy config root 内部），以及互不重叠的 fresh 根与最小发现布局预检（两个 driver 的 <code>&lt;skills-root&gt;</code> materialize 前为空；WorkBuddy 的 <code>&lt;config&gt;/skills</code> 布局在 spawn 前预检）。宿主入口不设置默认 <code>hostsRoot</code>。</li>
+<li>可执行文件身份边界：<code>executableSha256</code> 只绑定启动前严格读取到的字节，是点时观察；实际进程仍按 pathname 启动，不证明进程映像。调用方必须在 probe 与正式调用期间独占可执行文件的命名空间。</li>
+<li>临时目录生命周期：Foundation 保留本次调用的 <code>session-*</code> 目录，不按路径自动删除。调用方完成检查后，统一清理其独占的外层 <code>temporaryRoot</code>。</li>
+<li><code>since</code> / <code>stability</code>：既有宿主能力自 <code>0.10.0</code> 提供；<code>bundledHostProfilesRoot</code> 与真实宿主验证自 <code>0.11.0</code> 提供，真实宿主验证仍为 <code>candidate</code>。真实发布门（Kimi 与 WorkBuddy 现有登录态复用）未关闭前不得发布。</li>
+<li>源文件：<code>packages/skill-family-engineering-kit/src/host.mjs</code>、<code>host-profiles.mjs</code>、<code>host-drivers.mjs</code>、<code>host-verification.mjs</code>、<code>host-verification-drivers.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>、<code>host-verification.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：宿主能力是否可用、手动事实的解释与生命周期授权；Foundation 不声明消费者 smoke 或远端发布成功，也不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。</li>
 </ul>
 <hr />
 <h2 id="licensing-foundationkitlicensing">licensing (foundation.kit.licensing)<a class="headerlink" href="#licensing-foundationkitlicensing" title="Permanent link">&para;</a></h2>
