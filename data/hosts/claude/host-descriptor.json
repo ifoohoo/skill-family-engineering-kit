@@ -10,6 +10,11 @@
   ],
   "driverId": "claude-version-v1",
   "adapterFormat": "skill-directory-v1",
+  "verification": {
+    "driverId": "claude-code-print-v1",
+    "authStrategy": "existing-user-state",
+    "credentialMutation": "host-managed"
+  },
   "pathCategories": [
     {
       "id": "claude-user-skills",

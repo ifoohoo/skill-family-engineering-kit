@@ -1791,7 +1791,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 冻结版本（当前 <code>1.10.0</code>）</td>
+<td>Contracts 冻结版本（当前 <code>1.12.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -1806,7 +1806,7 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与当前 Contracts 版本对应的基线 pin 比对（当前为 <code>baseline/contracts-1.11.0.pin.json</code>）。</p>
+<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与当前 Contracts 版本对应的基线 pin 比对（当前为 <code>baseline/contracts-1.12.0.pin.json</code>）。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -1869,6 +1869,7 @@
 <li><strong>Contracts 1.9.0（2026-08-24）</strong>：新增业务中立的 <code>filesystem-root-binding</code>、<code>fixed-set-publication-manifest</code> 和 <code>fixed-set-publication-receipt</code> 三个顶层契约（32 → 35）。错误码、规则、检查类型、预算、Kernel 操作和校验策略均未变化。<code>contracts-1.9.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开 Contracts 表面机械生成并自校验；1.8.0 及更早 pin 保留为只读兼容存档。</li>
 <li><strong>Contracts 1.10.0（2026-08-24）</strong>：Foundation 0.10.0 扩展已登记的 <code>host-descriptor</code>、<code>host-probe-result</code> 和 <code>host-operation-plan</code> stable Schema，加入有限 <code>manual</code> 支持、<code>maturity/sourceAliases</code> 与 digest 绑定的本地生命周期计划语义；同时新增业务中立的 <code>adapter-peer-verification-request</code> 与 <code>adapter-peer-verification-result</code> R05 Schema，顶层对象由 35 类增至 37 类。未新增 SFC 错误码，registry、rules、error-codes 重新记录 1.10.0 坐标，Kernel 协议仍按既有生命周期保持 1.8.0 字节基线。<code>contracts-1.10.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开 Contracts 表面机械生成并自校验；1.9.0 pin 保留为只读兼容存档。</li>
 <li><strong>Contracts 1.11.0（2026-08-25）</strong>：Foundation 0.11.0 新增 <code>host-verification-request</code> 与 <code>host-verification-result</code> 业务中立 Schema，顶层对象由 37 类增至 39 类；Harness 增加原始字节 sink，Engineering Kit 提供 candidate 受约束真实宿主验证入口（Kimi 与 WorkBuddy 两个内置 driver，复用现有登录态）。<code>contracts-1.11.0.pin.json</code> 由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开 Contracts 表面机械生成并自校验；1.10.0 及更早 pin 保留为只读兼容存档。</li>
+<li><strong>Contracts 1.12.0（2026-08-26）</strong>：扩展既有 <code>host-descriptor</code> 的固定宿主验证组合，并允许 <code>host-verification-result</code> 在退出码为零但输出协议不合法时表达执行失败。顶层对象仍为 39 类，无新增 Schema ID 或错误码。registry、rules、error-codes 更新版本坐标，Kernel 保持 1.8.0 字节基线。新 pin 只由 <code>scripts/baseline-pin-gen.mjs --update</code> 从公开表面生成并自校验；1.11.0 及更早 pin 不改写。</li>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
 <h2 id="profile-行为变更纪律2026-08-19D6">profile 行为变更纪律（2026-08-19，D6）<a class="headerlink" href="#profile-行为变更纪律2026-08-19D6" title="Permanent link">&para;</a></h2>

@@ -1,5 +1,30 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.12.0 locale=en baseline=sha256:6000579dc8b473dbeda1832274d971df0c4f3a62a90c973184dd70e59ffc8602 -->
+## [0.12.0] - 2026-08-26
+
+Engineering Kit 0.12.0 extends bounded real-host verification from two to five fixed built-in drivers.
+
+### Added
+
+- Extends runHostVerification with three fixed built-in drivers while retaining the Kimi and WorkBuddy raw-byte behavior.
+
+### Changed
+
+- Uses the classic plugin-root/skills/skill-id layout for the plugin-directory driver and validates complete JSONL event streams before accepting execution.
+- Keeps output meaning with consumers and applies strict text decoding only to the three new text-protocol drivers.
+- Registers Qoder as manual for host support and descriptor maturity, while its real-host verification capability remains candidate.
+
+### Fixed
+
+- Rejects malformed protocol tails, invalid UTF-8 in text-protocol drivers, and version suffixes outside each driver's fixed format before they can support a successful public result.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to 0.12.0. Existing runHostVerification and verifyHostVerificationBindings entrypoints and request identities remain unchanged. Reuse the host's existing login state; Foundation does not isolate authentication, freeze model identity, disable host tools, or decide domain PASS/FAIL. Qoder verification grants no build, plan, apply, install, update, uninstall, or rollback capability. The executable digest is a preflight observation and member snapshots cover only the declared members at the two observed times.
+<!-- release-skill:changelog:end version=0.12.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.11.0 locale=en baseline=sha256:108e261312b0838af53184710453fe19f369a9ea10ac5d1fc3e829e919d0f99d -->
 ## [0.11.0] - 2026-08-25
 

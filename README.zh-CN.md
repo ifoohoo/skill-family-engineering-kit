@@ -5,28 +5,32 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.11.0 -->
+<!-- release-skill:release-version: 0.12.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.11.0** (2026-08-25)
+**0.12.0** (2026-08-26)
 
-Engineering Kit 0.11.0 增加候选真实宿主验证 API，并随包携带已登记宿主 Profile 闭包。
+Engineering Kit 0.12.0 将受约束真实宿主验证从两个固定内置驱动扩展为五个。
 
 **新增**
 
-- 新增 runHostVerification，执行一次 fresh、受约束的 Kimi 或 WorkBuddy 调用（复用调用方现有登录态）；新增 verifyHostVerificationBindings，组合结果时只做纯校验。
-- 从原始字节重算闭包和流摘要，并把私有证据留在公共结果之外。
-- 通过 bundledHostProfilesRoot() 携带已登记宿主 Profile 闭包。
+- 为 runHostVerification 增加三个固定的内置驱动，保留 Kimi 与 WorkBuddy 的原始字节行为。
 
 **变更**
 
-- manual Profile 继续保留生命周期限制；宿主验证不会授予 build、plan、apply、install、update、uninstall 或 rollback 能力。
+- 插件目录驱动使用 plugin-root/skills/skill-id 经典插件布局；JSONL 驱动必须扫描完整事件流后才接受执行结果。
+- 输出的业务含义由消费者判断，严格文本解码仅用于三个新增的文本协议驱动。
+- Qoder 的宿主支持和 Descriptor 成熟度登记为 manual，真实宿主验证能力继续标为 candidate。
+
+**修复**
+
+- 拒绝畸形协议尾部、文本协议中的非法 UTF-8，以及驱动固定格式之外的版本后缀，避免产生错误的公共成功结果。
 
 **升级说明**
 
-0.11.0 宿主验证 API 仍为候选能力，不拥有领域 PASS/FAIL、发布状态或自动登录；不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。executableSha256 只是启动前的点时观察，不证明实际执行映像；调用方独占对应命名空间。Foundation 保留 session 目录，调用方检查后清理外层 temporaryRoot。
+三个 Foundation 包须精确锁定到同一 0.12.0 版本。runHostVerification、verifyHostVerificationBindings 入口与请求身份不变。验证复用宿主现有登录态；Foundation 不隔离认证、不固定模型身份、不关闭宿主工具，也不判定领域 PASS/FAIL。Qoder 验证不授予 build、plan、apply、install、update、uninstall 或 rollback 能力。可执行文件摘要仅是启动前观察，成员快照仅覆盖已声明成员的两个观察时点。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -47,7 +51,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 ## 安装和最小示例
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.11.0
+npm install --save-dev skill-family-engineering-kit@0.12.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -55,7 +59,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.11.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.12.0 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -109,7 +113,15 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实；Qoder 为 `unsupported`。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
+Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实。Qoder 自 0.12.0 起为 `manual`，候选真实验证不授予生命周期能力。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
+
+### 候选真实宿主验证 API
+
+`runHostVerification({ request, bindings, hostsRoot })` 使用固定内置驱动执行一次受约束验证，返回经过 Contracts 校验和脱敏的四态结果。五个驱动覆盖 Kimi、WorkBuddy、Claude Code、Codex exec 和 Qoder CLI，均复用 `existing-user-state + host-managed` 登录态。`verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost })` 只组合校验 `observed` 结果，公共字段与请求摘要必须匹配调用方预期。两者都是库 API，不增加第五个 Kit 命令。
+
+调用方保留工作负载、领域输出检查、领域 PASS/FAIL、发布新鲜度和发布状态。规范路径 `existingUserStateRoot` 仅投影到子进程环境，Foundation 自身不读取、摘要、修改或清理其中内容，也不授予手动宿主生命周期能力。0.12.0 发布前须完成五个固定驱动的真实验证，发布决定不归该 API。
+
+`executableSha256` 只绑定启动前严格读取的字节，进程仍按路径启动；调用方须在版本观察和执行期间独占可执行文件命名空间。Foundation 保留 `session-*` 目录，调用方检查后清理独占的外层 `temporaryRoot`。
 
 ### 候选真实宿主验证库 API
 

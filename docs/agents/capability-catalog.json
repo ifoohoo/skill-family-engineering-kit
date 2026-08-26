@@ -1079,22 +1079,6 @@
    ]
   },
   {
-   "id": "foundation.unsupported.qoder-driver",
-   "package": "foundation",
-   "layer": "unsupported",
-   "since": "0.2.0",
-   "stability": "unsupported",
-   "entrypoints": [],
-   "sourceRefs": [
-    "profiles/hosts/qoder/host-descriptor.json",
-    "packages/skill-family-engineering-kit/src/host-drivers.mjs"
-   ],
-   "positiveTestRefs": [],
-   "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/host.test.mjs"
-   ]
-  },
-  {
    "id": "foundation.unsupported.binary-adapter-source",
    "package": "foundation",
    "layer": "unsupported",
@@ -1191,6 +1175,29 @@
    "positiveTestRefs": [],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/git-probe.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.qoder-verification",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.12.0",
+   "stability": "candidate",
+   "entrypoints": [
+    "runHostVerification (packages/skill-family-engineering-kit/src/host-verification.mjs)"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent",
+   "sourceRefs": [
+    "profiles/hosts/qoder/host-descriptor.json",
+    "packages/skill-family-engineering-kit/src/host-verification-drivers.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/host-verification.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/host.test.mjs",
+    "packages/skill-family-engineering-kit/test/host-verification.test.mjs"
    ]
   },
   {

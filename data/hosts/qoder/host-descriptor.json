@@ -3,10 +3,24 @@
   "kind": "skill-family.host-descriptor",
   "hostId": "qoder",
   "displayName": "Qoder",
-  "support": "unsupported",
-  "maturity": "unsupported",
+  "support": "manual",
+  "maturity": "manual",
   "sourceAliases": [],
-  "unsupportedReason": "No auditable non-interactive host driver is frozen for this release.",
+  "verification": {
+    "driverId": "qodercli-print-v1",
+    "authStrategy": "existing-user-state",
+    "credentialMutation": "host-managed"
+  },
   "pathCategories": [],
-  "probeCapabilities": []
+  "probeCapabilities": [
+    "cli",
+    "version",
+    "payload",
+    "registry",
+    "discover",
+    "enabled",
+    "reload",
+    "smoke",
+    "uninstall"
+  ]
 }

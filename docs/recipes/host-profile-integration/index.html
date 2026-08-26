@@ -1894,7 +1894,7 @@
 <h1 id="Recipe宿主接入与-Profile-注入">Recipe：宿主接入与 Profile 注入<a class="headerlink" href="#Recipe宿主接入与-Profile-注入" title="Permanent link">&para;</a></h1>
 <h2 id="1-场景与非场景">1. 场景与非场景<a class="headerlink" href="#1-场景与非场景" title="Permanent link">&para;</a></h2>
 <p>适用：需要描述已登记宿主（claude/codex）、探测或规划宿主接入，验证同级 adapter 目录，或者通过包 API 执行摘要绑定的本地 install/update。</p>
-<p>不适用：需要 Kit CLI apply、通用或远端 apply、自动删除式 uninstall；需要 Qoder 完整 driver（该宿主 unsupported）。</p>
+<p>不适用：需要 Kit CLI apply、通用或远端 apply、自动删除式 uninstall；需要 Qoder 的 install/update 生命周期 driver（该宿主为 <code>manual</code>，只支持受约束的真实宿主验证，不授予生命周期能力）。</p>
 <h2 id="2-架构选择及能力-ID">2. 架构选择及能力 ID<a class="headerlink" href="#2-架构选择及能力-ID" title="Permanent link">&para;</a></h2>
 <p>首选能力：<code>foundation.kit.host</code>（<code>describeHost</code> / <code>probeHost</code> / <code>buildHostAdapter</code> / <code>verifyHostPeers</code> / <code>planHost</code> / <code>applyHostPlan</code>）与 <code>foundation.profile.extension-spi</code>（<code>verifyProfile</code>）。宿主差异声明在 <code>foundation.profile.hosts</code>。</p>
 <h2 id="3-前置条件与信任边界">3. 前置条件与信任边界<a class="headerlink" href="#3-前置条件与信任边界" title="Permanent link">&para;</a></h2>
@@ -1943,8 +1943,10 @@ const spi = verifyProfile({ profileRoot: &quot;profiles/public-plugin&quot; }); 
 npm exec -- skill-family-kit adopt-plan host-apply --host claude --hosts-root profiles/hosts
 # 退出码 2：host apply is not implemented in the read-only Phase D slice
 </code></pre>
-<pre><code class="language-js">// 负例：qoder 为 unsupported
-describeHost(&quot;qoder&quot;); // 抛错：support = &quot;unsupported&quot;
+<pre><code class="language-js">// 负例：qoder 为 manual，不授予生命周期能力
+const qoder = await describeHost({ hostId: &quot;qoder&quot;, hostsRoot }); // support = &quot;manual&quot;，无 driverId
+const qoderFacts = await probeHost({ hostId: &quot;qoder&quot;, hostsRoot }); // 九项均为 unknown / driver-limited
+const qoderPlan = await planHost({ hostId: &quot;qoder&quot;, hostsRoot }); // status = &quot;manual&quot;，actions 为空
 </code></pre>
 <h2 id="7-可复制验证命令">7. 可复制验证命令<a class="headerlink" href="#7-可复制验证命令" title="Permanent link">&para;</a></h2>
 <pre><code class="language-sh">node --test packages/skill-family-engineering-kit/test/host.test.mjs \
@@ -1960,7 +1962,7 @@ describeHost(&quot;qoder&quot;); // 抛错：support = &quot;unsupported&quot;
 <li>包 API <code>applyHostPlan</code> 支持已登记、摘要绑定的本地 install/update；执行 uninstall 计划只返回 <code>manual-recovery-required</code>，不删除文件。Kit CLI apply、通用或远端 apply 仍稳定拒绝。</li>
 <li><code>verifyHostPeers</code> 只做同级 adapter 目录的只读复验，不授予安装、发布或领域裁决能力。</li>
 <li><code>bundledHostProfilesRoot()</code> 只提供受管 Profile 根。宿主入口仍要求显式传 <code>hostsRoot</code>，调用方也可以选择另一组符合合同的 Profile。</li>
-<li>Qoder 完整 driver 为 unsupported，只参考其结构，不声称已在 Qoder 运行；升级新增受支持宿主须登记 descriptor 并绑定受信 driver。</li>
+<li>Qoder 为 <code>manual</code> 宿主：Descriptor <code>support</code> 与 <code>maturity</code> 均为 <code>manual</code>，真实验证能力的稳定性由能力目录的 <code>stability=candidate</code> 表达。只登记受约束的真实宿主验证能力，不授予 build、plan、apply、通用 install/update/uninstall 或 rollback；升级新增受支持宿主须登记 descriptor 并绑定受信 driver。</li>
 </ul>
 
 

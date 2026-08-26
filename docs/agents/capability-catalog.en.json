@@ -1274,7 +1274,7 @@
    "doNotUseWhen": [
     "Need remote host publication, automatic trust, or uninstall deletion",
     "Need peer verification to decide domain semantics or to grant install/apply lifecycle support",
-    "Need a full Qoder driver (that host is unsupported)"
+    "Need a Qoder lifecycle driver (that host is manual and grants no lifecycle capability)"
    ],
    "prerequisites": [
     "The host Profile is registered in profiles/hosts and aliases are finite; npm consumers may explicitly select the Kit's packaged projection root",
@@ -1292,7 +1292,7 @@
     "verifyHostPeers reads caller-owned peer roots and writes no peer directory"
    ],
    "failureSemantics": [
-    "An unsupported host (e.g. qoder) returns an unsupported result",
+    "Hosts without a bound verification driver (e.g. codebuddy) are rejected before spawn with preflight-rejected",
     "Uninstall returns manual-recovery-required without deleting files",
     "Missing probe facts, unknown projection categories, identity spoofing, or scope/anchor conflicts fail closed"
    ],
@@ -1305,7 +1305,7 @@
    ],
    "routeElsewhere": [
     "Remote host publication and automatic trust: explicitly unsupported",
-    "Full Qoder driver: unsupported"
+    "Qoder lifecycle driver: unsupported"
    ]
   },
   {
@@ -1601,7 +1601,7 @@
     "Need to provide declarative data for host integration"
    ],
    "doNotUseWhen": [
-    "Need to register a full Qoder driver (that host is unsupported)"
+    "Need to register a Qoder lifecycle driver (that host is manual and registers only a verification driver)"
    ],
    "prerequisites": [
     "The host descriptor is bound to a trusted driverId"
@@ -1616,16 +1616,16 @@
     "No side effects (declared data)"
    ],
    "failureSemantics": [
-    "qoder is marked unsupported and manual hosts never acquire an implicit driver"
+    "qoder is marked manual and manual hosts never acquire an implicit lifecycle driver"
    ],
    "invariants": [
-    "claude/codex have support=supported and are bound to a driverId; manual hosts have no driver; qoder has support=unsupported"
+    "claude/codex have support=supported and are bound to a driverId; qoder has support=manual and binds only the verification driver (qodercli-print-v1), with no lifecycle driver"
    ],
    "ownedByCaller": [
     "Host business semantics"
    ],
    "routeElsewhere": [
-    "Full Qoder driver: unsupported"
+    "Qoder lifecycle driver: unsupported"
    ]
   },
   {
@@ -1690,38 +1690,6 @@
    ],
    "routeElsewhere": [
     "Host lifecycle: external tools or a later version"
-   ]
-  },
-  {
-   "id": "foundation.unsupported.qoder-driver",
-   "intent": "The full driver for the Qoder host is not frozen (No auditable non-interactive host driver is frozen), marked unsupported, referenced for structure only.",
-   "useWhen": [],
-   "doNotUseWhen": [
-    "Any scenario requiring actual execution on Qoder"
-   ],
-   "prerequisites": [
-    "none"
-   ],
-   "inputs": [
-    "none"
-   ],
-   "outputs": [
-    "none (unsupported)"
-   ],
-   "sideEffects": [
-    "none"
-   ],
-   "failureSemantics": [
-    "Referencing the qoder driver throws"
-   ],
-   "invariants": [
-    "HOST_DRIVER_IDS contains only claude-version-v1 / codex-version-v1"
-   ],
-   "ownedByCaller": [
-    "Qoder integration"
-   ],
-   "routeElsewhere": [
-    "Qoder support: a later version or external"
    ]
   },
   {
@@ -1914,6 +1882,40 @@
    ],
    "routeElsewhere": [
     "Git write operations: the Git lifecycle guide"
+   ]
+  },
+  {
+   "id": "foundation.kit.qoder-verification",
+   "intent": "Qoder has been a manual host (descriptor maturity=manual) since 0.12.0: one constrained real-host verification runs through the frozen qodercli-print-v1 verification driver (capability stability=candidate) in a fresh workspace",
+   "useWhen": [
+    "Need to request Qoder candidate real-host verification for upgraded consumers"
+   ],
+   "doNotUseWhen": [
+    "Need Qoder build, plan, apply, generic install/update/uninstall, or rollback lifecycle capability"
+   ],
+   "prerequisites": [
+    "The qoder executable exists and is logged in; qoder static preflight and fresh-workspace layout checks pass"
+   ],
+   "inputs": [
+    "Qoder host Profile and verification driver binding"
+   ],
+   "outputs": [
+    "A single constrained real-execution observed, failed, or rejected result (quota and error-code details stay out of the public result)"
+   ],
+   "sideEffects": [
+    "Runs one qoder CLI execution in a fresh workspace; writes private evidence and snapshots"
+   ],
+   "failureSemantics": [
+    "Static preflight failures reject before spawn with preflight-rejected; execution failures such as quota exhaustion are marked execution-failed"
+   ],
+   "invariants": [
+    "qoder gains no lifecycle driver; all nine probe facts remain unknown/driver-limited"
+   ],
+   "ownedByCaller": [
+    "Qoder integration and the real release gate"
+   ],
+   "routeElsewhere": [
+    "Qoder lifecycle capability: external tools or a later version"
    ]
   },
   {

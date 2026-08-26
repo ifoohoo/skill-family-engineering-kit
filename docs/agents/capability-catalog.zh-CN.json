@@ -1274,7 +1274,7 @@
    "doNotUseWhen": [
     "需要远端宿主发布、自动信任或删除式 uninstall",
     "需要用同级验证替代领域语义，或借此获得 install/apply 生命周期能力",
-    "需要 Qoder 完整 driver（该宿主 unsupported）"
+    "需要 Qoder 生命周期 driver（该宿主为 manual，不授予生命周期能力）"
    ],
    "prerequisites": [
     "宿主 Profile 已在 profiles/hosts 登记，alias 也必须来自有限集合；npm 消费者可显式选择 Kit 随包投影根",
@@ -1292,7 +1292,7 @@
     "verifyHostPeers 只读取调用方拥有的 peer 根，不写入 peer 目录"
    ],
    "failureSemantics": [
-    "unsupported host（如 qoder）返回 unsupported 结果",
+    "未绑定验证 driver 的宿主（如 codebuddy）在 spawn 前拒绝，标记 preflight-rejected",
     "uninstall 返回 manual-recovery-required 且不删除文件",
     "缺 probe facts、未知投影类别、身份伪造或 scope/anchor 冲突均失败关闭"
    ],
@@ -1305,7 +1305,7 @@
    ],
    "routeElsewhere": [
     "远端宿主发布和自动信任：明确 unsupported",
-    "Qoder 完整 driver：unsupported"
+    "Qoder 生命周期 driver：unsupported"
    ]
   },
   {
@@ -1601,7 +1601,7 @@
     "需要为宿主接入提供声明数据"
    ],
    "doNotUseWhen": [
-    "需要登记 Qoder 完整 driver（该宿主 unsupported）"
+    "需要登记 Qoder 生命周期 driver（该宿主为 manual，仅登记验证 driver）"
    ],
    "prerequisites": [
     "宿主 descriptor 绑定受信 driverId"
@@ -1616,16 +1616,16 @@
     "无副作用（声明数据）"
    ],
    "failureSemantics": [
-    "qoder 标记 unsupported，手动宿主不隐式获得 driver"
+    "qoder 标记 manual，手动宿主不隐式获得生命周期 driver"
    ],
    "invariants": [
-    "claude/codex support=supported 且绑定 driverId；手动宿主无 driver；qoder support=unsupported"
+    "claude/codex support=supported 且绑定 driverId；qoder support=manual 且仅绑定验证 driver（qodercli-print-v1），无生命周期 driver"
    ],
    "ownedByCaller": [
     "宿主业务语义"
    ],
    "routeElsewhere": [
-    "Qoder 完整 driver：unsupported"
+    "Qoder 生命周期 driver：unsupported"
    ]
   },
   {
@@ -1690,38 +1690,6 @@
    ],
    "routeElsewhere": [
     "宿主生命周期：外部工具或后续版本"
-   ]
-  },
-  {
-   "id": "foundation.unsupported.qoder-driver",
-   "intent": "Qoder 宿主的完整 driver 未冻结（No auditable non-interactive host driver is frozen），标记为 unsupported，仅参考其结构",
-   "useWhen": [],
-   "doNotUseWhen": [
-    "任何需要在 Qoder 实际运行的场景"
-   ],
-   "prerequisites": [
-    "无"
-   ],
-   "inputs": [
-    "无"
-   ],
-   "outputs": [
-    "无（unsupported）"
-   ],
-   "sideEffects": [
-    "无"
-   ],
-   "failureSemantics": [
-    "引用 qoder driver 即报错"
-   ],
-   "invariants": [
-    "HOST_DRIVER_IDS 仅 claude-version-v1 / codex-version-v1"
-   ],
-   "ownedByCaller": [
-    "Qoder 接入"
-   ],
-   "routeElsewhere": [
-    "Qoder 支持：后续版本或外部"
    ]
   },
   {
@@ -1914,6 +1882,40 @@
    ],
    "routeElsewhere": [
     "Git 写操作：Git 生命周期指南"
+   ]
+  },
+  {
+   "id": "foundation.kit.qoder-verification",
+   "intent": "Qoder 自 0.12.0 起为 manual 宿主（Descriptor maturity=manual）：通过冻结的 qodercli-print-v1 验证 driver（能力 stability=candidate）在 fresh 工作区执行一次受约束的真实宿主验证",
+   "useWhen": [
+    "需要为升级消费者请求 Qoder 的 candidate 真实宿主验证"
+   ],
+   "doNotUseWhen": [
+    "需要 Qoder 的 build、plan、apply、通用 install/update/uninstall 或 rollback 生命周期能力"
+   ],
+   "prerequisites": [
+    "qoder 可执行文件存在且已登录；qoder 静态预检与 fresh 工作区布局检查通过"
+   ],
+   "inputs": [
+    "Qoder 宿主 Profile 与验证 driver 绑定"
+   ],
+   "outputs": [
+    "一次受约束真实执行的 observed、failed 或 rejected 结果（额度与错误码详情不进公共结果）"
+   ],
+   "sideEffects": [
+    "在 fresh 工作区执行一次 qoder CLI；写入私有证据与快照"
+   ],
+   "failureSemantics": [
+    "静态预检失败在 spawn 前拒绝并标记 preflight-rejected；额度用尽等执行失败标记 execution-failed"
+   ],
+   "invariants": [
+    "qoder 不获得任何生命周期 driver；九项 probe 事实仍为 unknown/driver-limited"
+   ],
+   "ownedByCaller": [
+    "Qoder 接入与真实发布门"
+   ],
+   "routeElsewhere": [
+    "Qoder 生命周期能力：外部工具或后续版本"
    ]
   },
   {

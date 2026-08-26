@@ -1,0 +1,27 @@
+version: 0.12.0
+date: 2026-08-26
+locales:
+  en:
+    summary: Engineering Kit 0.12.0 extends bounded real-host verification from two to five fixed built-in drivers.
+    changes:
+      added:
+        - Extends runHostVerification with three fixed built-in drivers while retaining the Kimi and WorkBuddy raw-byte behavior.
+      changed:
+        - Uses the classic plugin-root/skills/skill-id layout for the plugin-directory driver and validates complete JSONL event streams before accepting execution.
+        - Keeps output meaning with consumers and applies strict text decoding only to the three new text-protocol drivers.
+        - Registers Qoder as manual for host support and descriptor maturity, while its real-host verification capability remains candidate.
+      fixed:
+        - Rejects malformed protocol tails, invalid UTF-8 in text-protocol drivers, and version suffixes outside each driver's fixed format before they can support a successful public result.
+    upgradeNotes: Pin all three Foundation packages to 0.12.0. Existing runHostVerification and verifyHostVerificationBindings entrypoints and request identities remain unchanged. Reuse the host's existing login state; Foundation does not isolate authentication, freeze model identity, disable host tools, or decide domain PASS/FAIL. Qoder verification grants no build, plan, apply, install, update, uninstall, or rollback capability. The executable digest is a preflight observation and member snapshots cover only the declared members at the two observed times.
+  zh-CN:
+    summary: Engineering Kit 0.12.0 将受约束真实宿主验证从两个固定内置驱动扩展为五个。
+    changes:
+      added:
+        - 为 runHostVerification 增加三个固定的内置驱动，保留 Kimi 与 WorkBuddy 的原始字节行为。
+      changed:
+        - 插件目录驱动使用 plugin-root/skills/skill-id 经典插件布局；JSONL 驱动必须扫描完整事件流后才接受执行结果。
+        - 输出的业务含义由消费者判断，严格文本解码仅用于三个新增的文本协议驱动。
+        - Qoder 的宿主支持和 Descriptor 成熟度登记为 manual，真实宿主验证能力继续标为 candidate。
+      fixed:
+        - 拒绝畸形协议尾部、文本协议中的非法 UTF-8，以及驱动固定格式之外的版本后缀，避免产生错误的公共成功结果。
+    upgradeNotes: 三个 Foundation 包须精确锁定到同一 0.12.0 版本。runHostVerification、verifyHostVerificationBindings 入口与请求身份不变。验证复用宿主现有登录态；Foundation 不隔离认证、不固定模型身份、不关闭宿主工具，也不判定领域 PASS/FAIL。Qoder 验证不授予 build、plan、apply、install、update、uninstall 或 rollback 能力。可执行文件摘要仅是启动前观察，成员快照仅覆盖已声明成员的两个观察时点。

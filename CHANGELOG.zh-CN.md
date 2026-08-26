@@ -1,5 +1,30 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.12.0 locale=zh-CN baseline=sha256:f2a68cdeac0b2a44d7a4cc64df8e8f371795b4150719d821a31866a6e8873e2f -->
+## [0.12.0] - 2026-08-26
+
+Engineering Kit 0.12.0 将受约束真实宿主验证从两个固定内置驱动扩展为五个。
+
+### 新增
+
+- 为 runHostVerification 增加三个固定的内置驱动，保留 Kimi 与 WorkBuddy 的原始字节行为。
+
+### 变更
+
+- 插件目录驱动使用 plugin-root/skills/skill-id 经典插件布局；JSONL 驱动必须扫描完整事件流后才接受执行结果。
+- 输出的业务含义由消费者判断，严格文本解码仅用于三个新增的文本协议驱动。
+- Qoder 的宿主支持和 Descriptor 成熟度登记为 manual，真实宿主验证能力继续标为 candidate。
+
+### 修复
+
+- 拒绝畸形协议尾部、文本协议中的非法 UTF-8，以及驱动固定格式之外的版本后缀，避免产生错误的公共成功结果。
+
+### 升级说明
+
+三个 Foundation 包须精确锁定到同一 0.12.0 版本。runHostVerification、verifyHostVerificationBindings 入口与请求身份不变。验证复用宿主现有登录态；Foundation 不隔离认证、不固定模型身份、不关闭宿主工具，也不判定领域 PASS/FAIL。Qoder 验证不授予 build、plan、apply、install、update、uninstall 或 rollback 能力。可执行文件摘要仅是启动前观察，成员快照仅覆盖已声明成员的两个观察时点。
+<!-- release-skill:changelog:end version=0.12.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.11.0 locale=zh-CN baseline=sha256:5d5852f3fa3c970b4d277600a0886d533e3c883fc72ce144a85a071d1e270771 -->
 ## [0.11.0] - 2026-08-25
 
