@@ -1,3 +1,5 @@
+import path from "node:path";
+
 /**
  * Closed, built-in real-host driver table.  The table contains mechanism
  * facts only; it does not own a host registry or domain assertions.
@@ -52,7 +54,7 @@ export const WORKBUDDY_DRIVER = Object.freeze({
   outputArgs: Object.freeze(["--output-format", "stream-json"]),
   // No auto-accept (`-y`), model override or trust auto-confirmation flag may
   // enter the vector.  The skill discovery directory comes from the
-  // CODEBUDDY_CONFIG_DIR environment projection (see host-verification.mjs),
+  // CODEBUDDY_CONFIG_DIR environment projection (driverEnvironment below),
   // which resolves `<config>/skills/<skill-id>/SKILL.md`; the config root
   // layout is pre-checked before any spawn and `skills/` must be an empty
   // real (non-symlink) directory before the skill is materialized.
@@ -65,6 +67,8 @@ export const CLAUDE_DRIVER = Object.freeze({
   driverId: "claude-code-print-v1",
   driverVersion: "1.0.0",
   executableBasename: "claude",
+  pluginCliVersion: "2.1.233",
+  pluginChannel: Object.freeze({ configVariable: "CLAUDE_CONFIG_DIR", marketplaceDirectory: "plugins/marketplaces" }),
   probeArgs: Object.freeze(["--version"]),
   promptFlag: "-p",
   // Frozen invocation (S-022): `-p --verbose --no-session-persistence
@@ -94,6 +98,8 @@ export const CODEX_DRIVER = Object.freeze({
   driverId: "codex-exec-v1",
   driverVersion: "1.0.0",
   executableBasename: "codex",
+  pluginCliVersion: "0.145.0",
+  pluginChannel: Object.freeze({ configVariable: "CODEX_HOME", marketplaceDirectory: ".tmp/marketplaces" }),
   probeArgs: Object.freeze(["--version"]),
   // Frozen invocation (S-023): `codex exec --json --ephemeral <prompt>`.
   // Never --dangerously-bypass-approvals-and-sandbox,
@@ -142,6 +148,41 @@ export const BUILT_IN_HOST_VERIFICATION_DRIVERS = Object.freeze({
 
 export function getBuiltInHostVerificationDriver(driverId) {
   return BUILT_IN_HOST_VERIFICATION_DRIVERS[driverId] ?? null;
+}
+
+/**
+ * Driver-fixed environment projection.  Every driver reuses the caller's
+ * existing login state; the skill directory and the working directory stay
+ * on the fresh isolated roots:
+ *
+ * - Kimi points KIMI_CODE_HOME at the existing state root and HOME at the
+ *   fresh session root;
+ * - WorkBuddy points HOME at the existing state root (the user's existing
+ *   configuration stays in effect) and CODEBUDDY_CONFIG_DIR at the parent of
+ *   the installed parent, so the CLI resolves
+ *   `<config>/skills/<skill-id>/SKILL.md`, which is the installed target.
+ *   That config root shape is proven by the discovery layout pre-check
+ *   (assertDiscoveryLayout) before any spawn; no other skill-directory
+ *   environment variable is set.
+ * - claude, codex and qoder point HOME at the existing state root only
+ *   (their login state lives under HOME); no model override, --config-dir or
+ *   CODEX_HOME override is ever projected.
+ */
+export function driverEnvironment({ driver, sessionRoot, existingUserStateRoot, installedParent }) {
+  const env = { NO_COLOR: "1" };
+  if (driver.driverId === KIMI_DRIVER.driverId) {
+    env.HOME = sessionRoot;
+    env.KIMI_CODE_HOME = existingUserStateRoot;
+  } else {
+    env.HOME = existingUserStateRoot;
+    if (driver.driverId === WORKBUDDY_DRIVER.driverId) {
+      env.CODEBUDDY_CONFIG_DIR = path.dirname(installedParent);
+    }
+  }
+  for (const key of ["LANG", "LC_ALL", "PATH", "TMPDIR", "http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "no_proxy"]) {
+    if (typeof process.env[key] === "string") env[key] = process.env[key];
+  }
+  return env;
 }
 
 /**

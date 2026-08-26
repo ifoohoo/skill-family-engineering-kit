@@ -5,32 +5,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.12.0 -->
+<!-- release-skill:release-version: 0.13.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.12.0** (2026-08-26)
+**0.13.0** (2026-08-26)
 
-Engineering Kit 0.12.0 将受约束真实宿主验证从两个固定内置驱动扩展为五个。
+Engineering Kit 0.13.0 源码候选增加完整插件验证，分别报告安装、发现和调用事实。
 
 **新增**
 
-- 为 runHostVerification 增加三个固定的内置驱动，保留 Kimi 与 WorkBuddy 的原始字节行为。
-
-**变更**
-
-- 插件目录驱动使用 plugin-root/skills/skill-id 经典插件布局；JSONL 驱动必须扫描完整事件流后才接受执行结果。
-- 输出的业务含义由消费者判断，严格文本解码仅用于三个新增的文本协议驱动。
-- Qoder 的宿主支持和 Descriptor 成熟度登记为 manual，真实宿主验证能力继续标为 candidate。
-
-**修复**
-
-- 拒绝畸形协议尾部、文本协议中的非法 UTF-8，以及驱动固定格式之外的版本后缀，避免产生错误的公共成功结果。
+- 新增永久候选根入口 runPluginVerification({ request, bindings, hostsRoot })。
+- 保留完整插件布局并提供安装观察，载荷接受政策仍由调用方决定。
 
 **升级说明**
 
-三个 Foundation 包须精确锁定到同一 0.12.0 版本。runHostVerification、verifyHostVerificationBindings 入口与请求身份不变。验证复用宿主现有登录态；Foundation 不隔离认证、不固定模型身份、不关闭宿主工具，也不判定领域 PASS/FAIL。Qoder 验证不授予 build、plan、apply、install、update、uninstall 或 rollback 能力。可执行文件摘要仅是启动前观察，成员快照仅覆盖已声明成员的两个观察时点。
+三个包须精确锁步。runHostVerification 与 verifyHostVerificationBindings 继续用于单 Skill 验证。每个真实宿主与来源组合仍须取得资格证据；本次不代表发布完成或消费者机制已退出。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -50,8 +41,10 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
+0.13.0 尚未发布。下面的 registry 安装命令供发布后使用；本轮验证应在隔离目录安装三个本地候选 tarball。
+
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.12.0
+npm install --save-dev skill-family-engineering-kit@0.13.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -59,7 +52,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.12.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.13.0 -- skill-family-kit --help`。
 
 ### 公共 Profile SPI
 
@@ -247,3 +240,9 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 - 包内源：`src/*.mjs`。
 - 包内 Candidate 源：`candidate/*`；规范公共导入：`skill-family-engineering-kit/quickstart-profile`、`/adoption` 与 `/skill-naming`；历史迁移别名：`skill-family-engineering-kit/candidate/quickstart-profile`。
 <!-- agent-quick-reference:end -->
+
+## 完整插件候选能力
+
+新增候选 runPluginVerification({ request, bindings, hostsRoot })，保留完整插件布局并分别报告安装、发现与调用事实。真实宿主与来源组合仍需独立资格证据。
+
+0.13.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball，不能把版本标记、单元测试或安装成功当作完整宿主资格与发布批准。

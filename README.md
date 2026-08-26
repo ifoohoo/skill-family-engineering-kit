@@ -4,32 +4,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.12.0 -->
+<!-- release-skill:release-version: 0.13.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.12.0** (2026-08-26)
+**0.13.0** (2026-08-26)
 
-Engineering Kit 0.12.0 extends bounded real-host verification from two to five fixed built-in drivers.
+Engineering Kit 0.13.0 is a source candidate for complete plugin verification with separate installation, discovery and invocation facts.
 
 **Added**
 
-- Extends runHostVerification with three fixed built-in drivers while retaining the Kimi and WorkBuddy raw-byte behavior.
-
-**Changed**
-
-- Uses the classic plugin-root/skills/skill-id layout for the plugin-directory driver and validates complete JSONL event streams before accepting execution.
-- Keeps output meaning with consumers and applies strict text decoding only to the three new text-protocol drivers.
-- Registers Qoder as manual for host support and descriptor maturity, while its real-host verification capability remains candidate.
-
-**Fixed**
-
-- Rejects malformed protocol tails, invalid UTF-8 in text-protocol drivers, and version suffixes outside each driver's fixed format before they can support a successful public result.
+- Adds the permanent candidate root entry runPluginVerification({ request, bindings, hostsRoot }).
+- Preserves complete plugin layouts and exposes installation observations without taking over caller acceptance policy.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to 0.12.0. Existing runHostVerification and verifyHostVerificationBindings entrypoints and request identities remain unchanged. Reuse the host's existing login state; Foundation does not isolate authentication, freeze model identity, disable host tools, or decide domain PASS/FAIL. Qoder verification grants no build, plan, apply, install, update, uninstall, or rollback capability. The executable digest is a preflight observation and member snapshots cover only the declared members at the two observed times.
+Pin the three packages together. Existing runHostVerification and verifyHostVerificationBindings remain available for single-Skill verification. Every actual host/source combination still needs qualification; no publication or consumer mechanism removal is implied.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -49,8 +40,10 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
+Version 0.13.0 is not published. The registry command below is for use after publication; this iteration installs the three local candidate tarballs in an isolated directory.
+
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.12.0
+npm install --save-dev skill-family-engineering-kit@0.13.0
 npm exec -- skill-family-kit --help
 npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
 npm exec -- skill-family-kit adopt-plan --root <repo>
@@ -58,7 +51,7 @@ npm exec -- skill-family-kit projection --root <repo>
 npm exec -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.12.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.13.0 -- skill-family-kit --help`.
 
 ### Public Profile SPI
 
@@ -238,3 +231,9 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 - Package-local source: `src/*.mjs`.
 - Package-local candidate source: `candidate/*`; canonical public imports: `skill-family-engineering-kit/quickstart-profile`, `/adoption`, and `/skill-naming`; historical migration alias: `skill-family-engineering-kit/candidate/quickstart-profile`.
 <!-- agent-quick-reference:end -->
+
+## Complete Plugin Candidate
+
+The candidate runPluginVerification({ request, bindings, hostsRoot }) preserves a complete plugin layout and separates installation, discovery and invocation facts. Each actual host/source combination still needs qualification evidence.
+
+Version 0.13.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete host qualification or release approval.

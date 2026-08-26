@@ -1,0 +1,17 @@
+version: 0.13.0
+date: 2026-08-26
+locales:
+  en:
+    summary: Engineering Kit 0.13.0 is a source candidate for complete plugin verification with separate installation, discovery and invocation facts.
+    changes:
+      added:
+        - Adds the permanent candidate root entry runPluginVerification({ request, bindings, hostsRoot }).
+        - Preserves complete plugin layouts and exposes installation observations without taking over caller acceptance policy.
+    upgradeNotes: Pin the three packages together. Existing runHostVerification and verifyHostVerificationBindings remain available for single-Skill verification. Every actual host/source combination still needs qualification; no publication or consumer mechanism removal is implied.
+  zh-CN:
+    summary: Engineering Kit 0.13.0 源码候选增加完整插件验证，分别报告安装、发现和调用事实。
+    changes:
+      added:
+        - 新增永久候选根入口 runPluginVerification({ request, bindings, hostsRoot })。
+        - 保留完整插件布局并提供安装观察，载荷接受政策仍由调用方决定。
+    upgradeNotes: 三个包须精确锁步。runHostVerification 与 verifyHostVerificationBindings 继续用于单 Skill 验证。每个真实宿主与来源组合仍须取得资格证据；本次不代表发布完成或消费者机制已退出。

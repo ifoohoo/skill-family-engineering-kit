@@ -1062,6 +1062,34 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#完整插件验证-foundationkitplugin-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整插件验证 (foundation.kit.plugin-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="完整插件验证 (foundation.kit.plugin-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runPluginVerification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runPluginVerification
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2355,6 +2383,34 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#完整插件验证-foundationkitplugin-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整插件验证 (foundation.kit.plugin-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="完整插件验证 (foundation.kit.plugin-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runPluginVerification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runPluginVerification
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2376,7 +2432,7 @@
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 使用 Contracts 1.12.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.12.0</code>。
+<p>provider Profile descriptor 使用 Contracts 1.13.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.13.0</code>。
 Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
@@ -2643,6 +2699,19 @@ package identity、来源摘要与 provenance 绑定合同判断。</p>
 <ul>
 <li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.kit.*</code>、<code>foundation.unsupported.*</code>）。</li>
 <li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code> 与 <code>cli.mjs</code>，拒绝引用不存在的入口，并校验 <code>TOP_LEVEL_COMMANDS</code> 未扩张为超 4 个。</li>
+</ul>
+<h2 id="完整插件验证-foundationkitplugin-verification">完整插件验证 (foundation.kit.plugin-verification)<a class="headerlink" href="#完整插件验证-foundationkitplugin-verification" title="Permanent link">&para;</a></h2>
+<h3 id="runPluginVerification">runPluginVerification<a class="headerlink" href="#runPluginVerification" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>runPluginVerification({ request, bindings, hostsRoot })</code>（async）。</li>
+<li>输入：注册的 <code>plugin-verification-request</code>、私有路径绑定及显式宿主 Profile 根。请求区分 <code>install-only</code> 与 <code>install-and-invoke</code>；来源区分 <code>local-staged</code> 与有限 <code>public-channel</code>。</li>
+<li>输出：注册的 <code>plugin-verification-result</code>。输入、安装、原生发现和调用事实分别报告；未执行的阶段不填造事实。完整安装观察和原始输出保存于私有证据根。</li>
+<li>副作用：创建新鲜安装、会话和证据目录；公共渠道命令可能访问网络，调用模式启动受限宿主。仅安装模式不运行模型。不覆盖已有安装，不自动重试、回滚或清理不确定现场。</li>
+<li>失败语义：<code>rejected</code> 表示前提拒绝，<code>failed</code> 表示确定失败，<code>indeterminate</code> 表示边界终态无法证明。<code>payloadMatches</code> 记录比较事实，完整观察成功不替代消费者接受政策。</li>
+<li>前提：三包精确锁步；调用方提供冻结源、授权和现有宿主登录态。每个真实宿主与来源组合必须另有资格证据，入口存在不等于全部组合获准。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.13.0</code> / <code>candidate</code>。永久入口身份不因成熟度标签变化而迁移；现有单 Skill 入口及合同保留。</li>
+<li>源文件与正反例：<code>packages/skill-family-engineering-kit/src/plugin-verification.mjs</code>、<code>test/plugin-verification.test.mjs</code>。</li>
+<li>调用方责任：源接受、领域结果、发布新鲜度和状态、消费者迁移及机制退出证明。</li>
 </ul>
 
 

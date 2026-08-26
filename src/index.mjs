@@ -80,6 +80,7 @@ import {
 } from "./host.mjs";
 import { bundledHostProfilesRoot, describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
 import { runHostVerification, verifyHostVerificationBindings } from "./host-verification.mjs";
+import { runPluginVerification } from "./plugin-verification.mjs";
 import {
   describeSkeletonFiles,
   IDENTITY_RECORD_PATH,
@@ -265,6 +266,7 @@ export {
   refuseHostApply,
   runHostVerification,
   verifyHostVerificationBindings,
+  runPluginVerification,
 };
 export { ContractsError };
 

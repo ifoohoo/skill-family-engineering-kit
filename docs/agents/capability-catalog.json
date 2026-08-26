@@ -370,15 +370,15 @@
     "materializeAdapterBuild (packages/skill-family-harness-node/src/host.mjs)",
     "probeVersionVector (packages/skill-family-harness-node/src/host.mjs)"
    ],
-  "sourceRefs": [
+   "sourceRefs": [
     "packages/skill-family-harness-node/src/host.mjs",
     "packages/skill-family-harness-node/src/peer-adapter.mjs"
-  ],
-  "positiveTestRefs": [
+   ],
+   "positiveTestRefs": [
     "packages/skill-family-harness-node/test/host.test.mjs",
     "packages/skill-family-harness-node/test/peer-adapter.test.mjs"
-  ],
-  "negativeTestRefs": [
+   ],
+   "negativeTestRefs": [
     "packages/skill-family-harness-node/test/host.test.mjs",
     "packages/skill-family-harness-node/test/peer-adapter.test.mjs"
    ]
@@ -1299,6 +1299,51 @@
     "packages/skill-family-engineering-kit/test/candidate-skill-naming.test.mjs",
     "packages/skill-family-engineering-kit/test/candidate-promotion-compatibility.test.mjs"
    ]
+  },
+  {
+   "id": "foundation.harness.filesystem-tree-observation",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.13.0",
+   "stability": "candidate",
+   "entrypoints": [
+    "skill-family-harness-node: observeFilesystemTree (packages/skill-family-harness-node/src/filesystem-observation.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/filesystem-observation.mjs",
+    "packages/skill-family-harness-node/src/native/bound_read.c"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.kit.plugin-verification",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.13.0",
+   "stability": "candidate",
+   "entrypoints": [
+    "skill-family-engineering-kit: runPluginVerification (packages/skill-family-engineering-kit/src/plugin-verification.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/plugin-verification.mjs",
+    "packages/skill-family-contracts/src/schemas/plugin-verification-request.schema.json",
+    "packages/skill-family-contracts/src/schemas/plugin-verification-result.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
   }
  ]
 }

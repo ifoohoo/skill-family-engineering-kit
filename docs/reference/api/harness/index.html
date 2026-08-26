@@ -807,6 +807,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#完整树观察-foundationharnessfilesystem-tree-observation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整树观察 (foundation.harness.filesystem-tree-observation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="完整树观察 (foundation.harness.filesystem-tree-observation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#observeFilesystemTree" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        observeFilesystemTree
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2379,6 +2407,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#完整树观察-foundationharnessfilesystem-tree-observation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整树观察 (foundation.harness.filesystem-tree-observation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="完整树观察 (foundation.harness.filesystem-tree-observation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#observeFilesystemTree" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        observeFilesystemTree
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2963,13 +3019,26 @@
 <ul>
 <li>签名：<code>createFilesystemRootBinding(root)</code>；<code>readFileBound(root, relPath, { rootBinding, encoding?, expectedSha256? } = {})</code>（均为 async）。</li>
 <li>输入：已规范化的绝对真实目录、受收容的相对 POSIX 路径，以及调用方先前批准的冻结根绑定。<code>encoding</code> 仅支持 <code>utf8</code>；权威读取可带小写 sha256 预期摘要。</li>
-<li>输出：根绑定为冻结可序列化值；读取回执为冻结 <code>{ path, content, sha256, bytes, mode }</code>。</li>
+<li>输出：根绑定为冻结可序列化值；读取回执为冻结 <code>{ path, content, sha256, bytes, mode, statMode }</code>。<code>mode</code> 保持旧兼容含义（<code>st_mode &amp; 0o777</code>）；<code>statMode</code> 是同次原生打开描述符 <code>fstat</code> 得到的完整 POSIX <code>st_mode</code>，包括文件类型与特殊权限位。</li>
 <li>语义边界：根与中间目录由固定四平台 N-API 闭包以不跟随符号链接的句柄相对方式获取；叶子必须是单链接普通文件。句柄不会逃逸，调用结束前关闭。绑定读取不提供删除或恢复状态机。</li>
 <li>副作用：只读文件系统访问；不写文件、不触 Git、网络或进程。</li>
 <li>错误：根身份不符、符号链接组件、缺失资源和摘要不符均失败关闭；不支持的 Darwin/Linux 架构不提供 JavaScript 回退。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.9.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/bound-read.mjs</code> 与 <code>src/native/</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/bound-read.test.mjs</code>。</li>
+</ul>
+<h2 id="完整树观察-foundationharnessfilesystem-tree-observation">完整树观察 (foundation.harness.filesystem-tree-observation)<a class="headerlink" href="#完整树观察-foundationharnessfilesystem-tree-observation" title="Permanent link">&para;</a></h2>
+<h3 id="observeFilesystemTree">observeFilesystemTree<a class="headerlink" href="#observeFilesystemTree" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>observeFilesystemTree({ root, rootBinding })</code>（async）。调用方先用既有 <code>createFilesystemRootBinding</code> 批准根目录。</li>
+<li>输入：已规范化的真实绝对目录及其根绑定。每次调用重新读取目录和普通文件，空树合法。</li>
+<li>输出：私有 <code>filesystem-tree-observation</code>，含按路径排序的完整成员、根绑定和 <code>membersDigest</code>。文件成员包含同次读取的 <code>contentBase64</code>、<code>sha256</code>、<code>bytes</code> 与完整 POSIX <code>statMode</code>；目录成员只含路径、类型和模式，不伪造文件摘要。</li>
+<li>副作用：只读文件系统，不安装、不启动进程、不访问网络。结果含原始文件内容，调用方必须保护敏感数据。</li>
+<li>失败语义：参数不合法抛 <code>TypeError</code>，机制失败沿 <code>SFC2004</code> 关闭，不把部分观察报告为成功。</li>
+<li>保证边界：每次检查同一根绑定，不使用旧缓存；不承诺整个操作期间的连续路径身份或事务快照。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.13.0</code> / <code>candidate</code>。观察完成不等于消费者接受载荷。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/filesystem-observation.mjs</code> 与 <code>src/native/bound_read.c</code>。</li>
+<li>正例/负例：<code>packages/skill-family-engineering-kit/test/plugin-verification.test.mjs</code> 的实际树观察与载荷政策组合测试。</li>
 </ul>
 <h2 id="固定集合发布-foundationharnessfixed-set-publication">固定集合发布 (foundation.harness.fixed-set-publication)<a class="headerlink" href="#固定集合发布-foundationharnessfixed-set-publication" title="Permanent link">&para;</a></h2>
 <h3 id="createFixedSetPublicationManifest--publishFixedSet">createFixedSetPublicationManifest / publishFixedSet<a class="headerlink" href="#createFixedSetPublicationManifest--publishFixedSet" title="Permanent link">&para;</a></h3>
@@ -3043,10 +3112,12 @@
 <li>签名：<code>superviseProcess(options, deps = {})</code>（async）；<code>validateTimeoutPolicy(policy)</code>。</li>
 <li>输入：受约束的 command、args、cwd、环境、超时策略与既有监督选项。0.11.0 可选 <code>rawSink</code> 只接受
   <code>{ root, stdoutFile, stderrFile, onClosed? }</code>：根必须在打开时已是 fresh canonical 目录，两个文件名必须是不同的单段相对名。</li>
+<li>可选每流上限：<code>outputByteLimits</code> 为 <code>{ stdout?, stderr? }</code>，至少声明一流，各值为 0 到 <code>Number.MAX_SAFE_INTEGER</code> 的整数。按原始字节独立计数，等于上限允许，首次超过上限进入既有进程组终止流程。</li>
 <li>输出：一个既有的 <code>watchdog-termination-envelope</code>。<code>rawSink.onClosed</code> 只接收冻结的 stdout/stderr <code>{ sha256, bytes }</code> 摘要；
   它不创建第二种公开 envelope 或 receipt。</li>
 <li>副作用：启动一个受监督子进程。raw sink 在 spawn 前以 exclusive/no-follow、0600 打开两个文件，直到 child <code>close</code>、两个
   stream <code>close</code>、全部排队写入、<code>fsync</code> 和 handle <code>close</code> 都完成才结束；exit 后到达的字节仍计入摘要。</li>
+<li>限额结果：仅配置上限时，<code>evidence</code> 增加 <code>outputByteLimits</code> 和 <code>outputLimitExceeded</code>；超限采用 <code>output_limit_exceeded</code> 终止原因。保存的截断流摘要只覆盖已保存字节。流、进程或写入终态未知时仍优先失败关闭。未配置上限保留旧行为。</li>
 <li>身份边界：调用方必须在整个调用期间独占 raw sink 的命名空间。文件句柄保护不会证明调用期间 pathname 或根目录身份始终不变；
   前后检查只用于尽早失败。</li>
 <li>失败语义：选项形状错误抛 <code>TypeError</code>；机制失败抛 <code>SFC2004</code>，沿既有 <code>supervise-process-failed</code> 错误域失败关闭。<code>rawStreamSink</code>

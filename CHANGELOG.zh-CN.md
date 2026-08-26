@@ -1,5 +1,21 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.13.0 locale=zh-CN baseline=sha256:3493c49151b2ebabddcba806d892ce967c0ae47621b0b2c75086e1cac334ebf9 -->
+## [0.13.0] - 2026-08-26
+
+Engineering Kit 0.13.0 源码候选增加完整插件验证，分别报告安装、发现和调用事实。
+
+### 新增
+
+- 新增永久候选根入口 runPluginVerification({ request, bindings, hostsRoot })。
+- 保留完整插件布局并提供安装观察，载荷接受政策仍由调用方决定。
+
+### 升级说明
+
+三个包须精确锁步。runHostVerification 与 verifyHostVerificationBindings 继续用于单 Skill 验证。每个真实宿主与来源组合仍须取得资格证据；本次不代表发布完成或消费者机制已退出。
+<!-- release-skill:changelog:end version=0.13.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.12.0 locale=zh-CN baseline=sha256:f2a68cdeac0b2a44d7a4cc64df8e8f371795b4150719d821a31866a6e8873e2f -->
 ## [0.12.0] - 2026-08-26
 

@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 39 类顶层契约对象文档",
+   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 42 类顶层契约对象文档",
    "useWhen": [
     "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
@@ -73,7 +73,7 @@
     "需要按协议名查找 kernel 协议定义"
    ],
    "doNotUseWhen": [
-    "需要在没有 ADR 的情况下新增顶层登记对象（39 类对象集已经固定）"
+    "需要在没有 ADR 的情况下新增顶层登记对象（42 类对象集已经固定）"
    ],
    "prerequisites": [
     "registry.json 已随包发布",
@@ -94,8 +94,8 @@
     "SFC1004：重复协议登记"
    ],
    "invariants": [
-    "registry.json 的 schemaVersion=1、contractsVersion=1.10.0 为唯一权威",
-    "39 类顶层对象集合固定，新增需 ADR"
+    "registry.json 的 schemaVersion=1、contractsVersion 为唯一权威",
+    "42 类顶层对象集合固定，新增需 ADR"
    ],
    "ownedByCaller": [
     "对象业务含义的解释"
@@ -568,7 +568,7 @@
   },
   {
    "id": "foundation.harness.host-adapter",
-  "intent": "实现宿主接入的通用机制层：归一化 adapter source、计算构建闭包、校验构建清单、验证同级适配器目录、materialize 构建、probe 版本向量（默认禁 spawn）",
+   "intent": "实现宿主接入的通用机制层：归一化 adapter source、计算构建闭包、校验构建清单、验证同级适配器目录、materialize 构建、probe 版本向量（默认禁 spawn）",
    "useWhen": [
     "需要把宿主适配源做成可复算的文本闭包",
     "需要在受收容处 materialize 构建产物",
@@ -922,7 +922,8 @@
     "消费者提供命令、cwd 与含 maxSeconds 和 killGraceSeconds 的超时策略"
    ],
    "inputs": [
-    "命令/参数/cwd、超时策略、可选的进度与终态进度路径、可选的预算与长工具钩子、可选的证据路径"
+    "命令/参数/cwd、超时策略、可选的进度与终态进度路径、可选的预算与长工具钩子、可选的证据路径",
+    "0.13.0 可选 outputByteLimits 分别限制 stdout/stderr 原始字节；等于上限允许，首次超过上限启动既有终止路径。未配置时不追加限额字段，保持旧行为。"
    ],
    "outputs": [
     "每次调用恰好一个冻结的 watchdog-termination-envelope（单写者）"
@@ -1265,7 +1266,7 @@
   },
   {
    "id": "foundation.kit.host",
-  "intent": "显式选择随包或调用方提供的有限宿主 Profile 集合与受信 driver，提供规范身份解析、describe/build/probe/plan、受限的本地 install/update 以及只读同级适配器验证；uninstall 始终要求人工恢复",
+   "intent": "显式选择随包或调用方提供的有限宿主 Profile 集合与受信 driver，提供规范身份解析、describe/build/probe/plan、受限的本地 install/update 以及只读同级适配器验证；uninstall 始终要求人工恢复",
    "useWhen": [
     "需要解析已登记宿主或有限 Profile alias",
     "需要探测、构建、规划或本地 install/update 宿主接入",
@@ -1949,7 +1950,7 @@
    ],
    "invariants": [
     "唯一业务中立操作为 execute-method；method 标识与领域 Schema 继续归消费者所有",
-    "候选 Schema 不进入 src/registry.json，也不扩张 39 类稳定对象",
+    "候选 Schema 不进入 src/registry.json，也不扩张 42 类稳定对象",
     "稳定性为 candidate：主动升级候选版本时须复验合同",
     "历史入口和八个 Schema ID 只迁移一次；晋升 stable 不再要求改合同身份，但取得新发布承诺仍须更新精确 pin"
    ],
@@ -2058,6 +2059,93 @@
    "routeElsewhere": [
     "普通受管投影：使用 Kit 稳定包根导出的 runProjection",
     "远端发布：转 release-skill"
+   ]
+  },
+  {
+   "id": "foundation.harness.filesystem-tree-observation",
+   "intent": "从已绑定目录读取同次完整树事实，供消费者自行判断载荷是否可接受",
+   "useWhen": [
+    "需要读取普通文件、目录、空目录和权限事实",
+    "需要在同一根绑定下重新观察实际内容"
+   ],
+   "doNotUseWhen": [
+    "需要安装、恢复或删除目录",
+    "需要事务快照或操作期间连续身份保护"
+   ],
+   "prerequisites": [
+    "已规范化真实根目录和 createFilesystemRootBinding 返回的根绑定",
+    "包内固定 Darwin/Linux 四平台原生实现可用"
+   ],
+   "inputs": [
+    "{ root, rootBinding }"
+   ],
+   "outputs": [
+    "filesystem-tree-observation 私有对象：排序成员、文件原始字节的 contentBase64、sha256、bytes、statMode 及 membersDigest"
+   ],
+   "sideEffects": [
+    "只读文件系统访问，不写文件、不启动进程、不访问网络"
+   ],
+   "failureSemantics": [
+    "非法参数抛 TypeError；机制失败沿 SFC2004 失败关闭",
+    "不返回部分成员作为成功结果"
+   ],
+   "invariants": [
+    "每次调用重新观察，不返回旧缓存",
+    "观察成功与消费者接受载荷分离",
+    "不接收忽略规则、预期表或回调"
+   ],
+   "ownedByCaller": [
+    "载荷比较政策及其业务含义",
+    "保存或公开结果时的敏感数据保护"
+   ],
+   "routeElsewhere": [
+    "安装与调用使用 Kit 的插件验证入口",
+    "发布授权由 release-skill 负责"
+   ]
+  },
+  {
+   "id": "foundation.kit.plugin-verification",
+   "intent": "保留完整插件布局，分别报告输入、安装、发现与受限调用事实",
+   "useWhen": [
+    "需要验证冻结完整插件的本地载荷或有限公共渠道安装",
+    "需要把安装观察与领域接受判断分开"
+   ],
+   "doNotUseWhen": [
+    "需要通用驱动插件、自动重试、恢复或回滚",
+    "需要由 Foundation 判定领域通过或发布完成"
+   ],
+   "prerequisites": [
+    "三包精确版本一致，并提供冻结请求、私有路径绑定及 hostsRoot",
+    "真实宿主和来源组合须另有资格证据；候选入口存在不等于组合已获资格"
+   ],
+   "inputs": [
+    "runPluginVerification({ request, bindings, hostsRoot })",
+    "plugin-verification-request：install-only 或 install-and-invoke；local-staged 或 public-channel"
+   ],
+   "outputs": [
+    "plugin-verification-result：输入、安装、发现及调用事实分别记录",
+    "原始输出和完整树观察保留在私有证据根"
+   ],
+   "sideEffects": [
+    "创建新鲜安装树、会话与私有证据；有限渠道命令可能访问网络",
+    "调用模式启动受限宿主；install-only 不运行模型"
+   ],
+   "failureSemantics": [
+    "rejected、failed、indeterminate 分别保留拒绝、确定失败与边界不确定",
+    "确定输出超限不能恢复为成功；未知终态保持不确定"
+   ],
+   "invariants": [
+    "不覆盖已有安装，不自动重试或清理不确定现场",
+    "保留 runHostVerification 和 verifyHostVerificationBindings 的单 Skill 合同",
+    "完整树事实不替代消费者接受政策"
+   ],
+   "ownedByCaller": [
+    "冻结源、工作负载、授权、认证与宿主资格",
+    "领域判定、发布新鲜度、迁移及机制退出证明"
+   ],
+   "routeElsewhere": [
+    "领域审阅交消费者",
+    "发布、重试和任务编排交对应外部技能族"
    ]
   }
  ]

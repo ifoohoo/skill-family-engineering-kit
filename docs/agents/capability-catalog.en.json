@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "Compile and validate all 39 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+   "intent": "Compile and validate all 42 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
    "useWhen": [
     "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
     "Need to detect the document dialect and select the strict or tolerant validation policy"
@@ -73,7 +73,7 @@
     "Need to find a kernel protocol definition by protocol name"
    ],
    "doNotUseWhen": [
-    "Need to add a registered top-level object without an ADR (the 39-object set is fixed)"
+    "Need to add a registered top-level object without an ADR (the 42-object set is fixed)"
    ],
    "prerequisites": [
     "registry.json is shipped with the package",
@@ -94,8 +94,8 @@
     "SFC1004: duplicate protocol registration"
    ],
    "invariants": [
-    "registry.json's schemaVersion=1 and contractsVersion=1.10.0 are the single authority",
-    "The set of 39 top-level objects is fixed; additions require an ADR"
+    "registry.json's schemaVersion=1 and contractsVersion are the single authority",
+    "The set of 42 top-level objects is fixed; additions require an ADR"
    ],
    "ownedByCaller": [
     "Interpretation of an object's business meaning"
@@ -568,7 +568,7 @@
   },
   {
    "id": "foundation.harness.host-adapter",
-  "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, verify peer adapter directories, materialize the build, and probe the version vector (spawn disabled by default).",
+   "intent": "Implement the generic mechanism layer for host integration: normalize adapter source, compute the build closure, validate the build manifest, verify peer adapter directories, materialize the build, and probe the version vector (spawn disabled by default).",
    "useWhen": [
     "Need to turn a host adapter source into a reproducible text closure",
     "Need to materialize build artifacts at a contained location",
@@ -922,7 +922,8 @@
     "The consumer supplies the command, cwd, and a timeout policy with maxSeconds and killGraceSeconds"
    ],
    "inputs": [
-    "Command/args/cwd, timeout policy, optional progress and terminal progress paths, optional budget and long-tool hooks, optional evidence path"
+    "Command/args/cwd, timeout policy, optional progress and terminal progress paths, optional budget and long-tool hooks, optional evidence path",
+    "The optional 0.13.0 outputByteLimits caps stdout and stderr independently by raw bytes. Equality is allowed; first excess uses the existing termination path. Without caps, no limit fields are added and legacy behavior remains."
    ],
    "outputs": [
     "One frozen watchdog-termination-envelope per call (single writer)"
@@ -1265,7 +1266,7 @@
   },
   {
    "id": "foundation.kit.host",
-  "intent": "Explicitly select a packaged or caller-provided finite host Profile set and trusted drivers, providing canonical identity resolution, describe/build/probe/plan, bounded local install/update, and read-only peer adapter verification; uninstall remains a manual-recovery refusal.",
+   "intent": "Explicitly select a packaged or caller-provided finite host Profile set and trusted drivers, providing canonical identity resolution, describe/build/probe/plan, bounded local install/update, and read-only peer adapter verification; uninstall remains a manual-recovery refusal.",
    "useWhen": [
     "Need to resolve a registered host or finite Profile alias",
     "Need to probe, build, plan, or locally install/update host integration",
@@ -1949,7 +1950,7 @@
    ],
    "invariants": [
     "The sole business-neutral operation is execute-method; method identifiers and domain schemas remain consumer-owned",
-    "Candidate schemas remain absent from src/registry.json and do not expand the 39 stable object classes",
+    "Candidate schemas remain absent from src/registry.json and do not expand the 42 stable object classes",
     "Stability is candidate: actively upgrading the candidate version requires contract verification",
     "Historical entrypoints and eight Schema IDs migrate once; stable promotion requires no further contract-identity change, while obtaining the new published promise still requires exact-pin updates"
    ],
@@ -2058,6 +2059,93 @@
    "routeElsewhere": [
     "Ordinary managed projection: use runProjection from the stable Kit root export",
     "Remote publication: route to release-skill"
+   ]
+  },
+  {
+   "id": "foundation.harness.filesystem-tree-observation",
+   "intent": "Read a complete bound tree and leave payload acceptance to the caller",
+   "useWhen": [
+    "Need regular-file, directory, empty-directory and mode facts",
+    "Need a fresh observation using the same approved root binding"
+   ],
+   "doNotUseWhen": [
+    "Need installation, recovery or deletion",
+    "Need a transaction snapshot or continuous path identity protection"
+   ],
+   "prerequisites": [
+    "A canonical real root and its createFilesystemRootBinding result",
+    "The packaged native implementation supports the current Darwin/Linux platform"
+   ],
+   "inputs": [
+    "{ root, rootBinding }"
+   ],
+   "outputs": [
+    "Private filesystem-tree-observation: sorted members, contentBase64 from actual file bytes, sha256, bytes, statMode and membersDigest"
+   ],
+   "sideEffects": [
+    "Read-only filesystem access; no writes, processes or network"
+   ],
+   "failureSemantics": [
+    "Invalid parameters throw TypeError; mechanism failures fail closed through SFC2004",
+    "Partial member sets are not successful results"
+   ],
+   "invariants": [
+    "Every call observes the tree again without cached results",
+    "Observation success and payload acceptance remain separate",
+    "No ignore policy, expected-member table or callbacks"
+   ],
+   "ownedByCaller": [
+    "Payload acceptance policy and business meaning",
+    "Protection of sensitive observation data"
+   ],
+   "routeElsewhere": [
+    "Use Kit plugin verification for installation and invocation",
+    "Release authorization belongs to release-skill"
+   ]
+  },
+  {
+   "id": "foundation.kit.plugin-verification",
+   "intent": "Preserve the complete plugin layout and report input, installation, discovery and bounded invocation facts separately",
+   "useWhen": [
+    "Need frozen local payload or finite public-channel plugin verification",
+    "Need installation observations without transferring domain acceptance"
+   ],
+   "doNotUseWhen": [
+    "Need arbitrary drivers, retry, recovery or rollback",
+    "Need Foundation to approve domain output or publication"
+   ],
+   "prerequisites": [
+    "Exact lockstep package versions, a frozen request, private bindings and hostsRoot",
+    "Each actual host/source combination needs separate qualification evidence; an exported candidate API is not qualification"
+   ],
+   "inputs": [
+    "runPluginVerification({ request, bindings, hostsRoot })",
+    "plugin-verification-request: install-only or install-and-invoke; local-staged or public-channel"
+   ],
+   "outputs": [
+    "plugin-verification-result with separate input, installation, discovery and invocation facts",
+    "Raw streams and complete tree observations under private evidence roots"
+   ],
+   "sideEffects": [
+    "Creates a fresh installation, session and private evidence; finite channel commands may access the network",
+    "Invocation mode starts a constrained host; install-only makes no model call"
+   ],
+   "failureSemantics": [
+    "rejected, failed and indeterminate distinguish refusal, determined failure and unknown boundary state",
+    "A determined output limit breach cannot become success; unknown terminal state remains indeterminate"
+   ],
+   "invariants": [
+    "No overwrite of existing installations, automatic retry or cleanup of unknown state",
+    "Existing single-Skill runHostVerification and verifyHostVerificationBindings contracts remain intact",
+    "Complete tree observations do not replace caller acceptance policy"
+   ],
+   "ownedByCaller": [
+    "Source freezing, workload, authorization, authentication and host qualification",
+    "Domain acceptance, release freshness, migration and mechanism removal evidence"
+   ],
+   "routeElsewhere": [
+    "Domain review belongs to the consumer",
+    "Publication, retry and task orchestration belong to their external skill families"
    ]
   }
  ]

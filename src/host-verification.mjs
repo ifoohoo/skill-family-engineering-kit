@@ -13,6 +13,7 @@ import { observeHostDescriptor } from "./host-profiles.mjs";
 import {
   CLAUDE_DRIVER,
   CODEX_DRIVER,
+  driverEnvironment,
   evaluateDriverStreamProtocol,
   getBuiltInHostVerificationDriver,
   KIMI_DRIVER,
@@ -262,41 +263,6 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
   await canonicalDirectory(skillsRoot, "skills directory");
   if ((await readdir(skillsRoot)).length !== 0) throw fail("skills directory must be empty before materialization");
   return { skillsRoot, configRoot };
-}
-
-/**
- * Driver-fixed environment projection.  Every driver reuses the caller's
- * existing login state; the skill directory and the working directory stay
- * on the fresh isolated roots:
- *
- * - Kimi points KIMI_CODE_HOME at the existing state root and HOME at the
- *   fresh session root;
- * - WorkBuddy points HOME at the existing state root (the user's existing
- *   configuration stays in effect) and CODEBUDDY_CONFIG_DIR at the parent of
- *   the installed parent, so the CLI resolves
- *   `<config>/skills/<skill-id>/SKILL.md`, which is the installed target.
- *   That config root shape is proven by the discovery layout pre-check
- *   (assertDiscoveryLayout) before any spawn; no other skill-directory
- *   environment variable is set.
- * - claude, codex and qoder point HOME at the existing state root only
- *   (their login state lives under HOME); no model override, --config-dir or
- *   CODEX_HOME override is ever projected.
- */
-function driverEnvironment({ driver, sessionRoot, existingUserStateRoot, installedParent }) {
-  const env = { NO_COLOR: "1" };
-  if (driver.driverId === KIMI_DRIVER.driverId) {
-    env.HOME = sessionRoot;
-    env.KIMI_CODE_HOME = existingUserStateRoot;
-  } else {
-    env.HOME = existingUserStateRoot;
-    if (driver.driverId === WORKBUDDY_DRIVER.driverId) {
-      env.CODEBUDDY_CONFIG_DIR = path.dirname(installedParent);
-    }
-  }
-  for (const key of ["LANG", "LC_ALL", "PATH", "TMPDIR", "http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "no_proxy"]) {
-    if (typeof process.env[key] === "string") env[key] = process.env[key];
-  }
-  return env;
 }
 
 /**

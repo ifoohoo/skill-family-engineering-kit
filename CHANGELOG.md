@@ -1,5 +1,21 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.13.0 locale=en baseline=sha256:b9eed0b2361ff46c23ddd903b98b7059d9ceed8329f846010cb4a943101ec9a3 -->
+## [0.13.0] - 2026-08-26
+
+Engineering Kit 0.13.0 is a source candidate for complete plugin verification with separate installation, discovery and invocation facts.
+
+### Added
+
+- Adds the permanent candidate root entry runPluginVerification({ request, bindings, hostsRoot }).
+- Preserves complete plugin layouts and exposes installation observations without taking over caller acceptance policy.
+
+### Upgrade Notes
+
+Pin the three packages together. Existing runHostVerification and verifyHostVerificationBindings remain available for single-Skill verification. Every actual host/source combination still needs qualification; no publication or consumer mechanism removal is implied.
+<!-- release-skill:changelog:end version=0.13.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.12.0 locale=en baseline=sha256:6000579dc8b473dbeda1832274d971df0c4f3a62a90c973184dd70e59ffc8602 -->
 ## [0.12.0] - 2026-08-26
 
