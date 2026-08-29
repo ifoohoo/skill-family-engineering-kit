@@ -18,6 +18,7 @@ import {
   PROJECT_MANIFEST_PATH,
 } from "./skeleton.mjs";
 import { resolveTargetRoot } from "./workspace.mjs";
+import { resolveScaffoldCapabilities } from "./capability-assessment.mjs";
 
 /**
  * scaffold — generate a project skeleton into an EMPTY target only.
@@ -62,7 +63,7 @@ async function assertEmptyTarget(root) {
  * Returns a structured result; throws KitError with a stable kind on any
  * refusal. Never writes outside the target root.
  */
-export async function scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections } = {}) {
+export async function scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, capabilities = [] } = {}) {
   if (root === undefined || root === null) {
     throw kitError(KIT_ERROR_KINDS.INVALID_ROOT, "scaffold requires an explicit target root");
   }
@@ -79,12 +80,17 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     rootBasename: path.basename(rootAbs),
   });
 
+  // Resolve and validate the entire repeated selection before the target is
+  // created. This is the only capability selection pass used by scaffold.
+  const scaffoldSelection = await resolveScaffoldCapabilities(capabilities);
+
   // Resolve the licensing profile and compute the complete deterministic
   // write set before creating the target directory. Invalid or incomplete
   // profile coordinates (for example a multi-variant profile without a
   // variant) must leave zero filesystem traces.
   const skeleton = await describeSkeletonFiles({
     ...inputs,
+    scaffoldSelection,
     licensingProfileData,
     profilesRoot,
     identityProjections,
@@ -172,6 +178,9 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     files: written,
     verifications,
     closure: { digest: closure.digest, resourceCount: closure.resources.length },
+    selectedCapabilities: skeleton.scaffoldSelection.selectedCapabilities,
+    generatedContractTests: skeleton.scaffoldSelection.generatedContractTests,
+    selectionWarnings: skeleton.scaffoldSelection.selectionWarnings,
     policy:
       "scaffold writes only into an empty target; every write is atomic and contained; nothing outside the target is touched",
   };

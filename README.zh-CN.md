@@ -5,23 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.13.0 -->
+<!-- release-skill:release-version: 0.14.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.13.0** (2026-08-26)
+**0.14.0** (2026-08-28)
 
-Engineering Kit 0.13.0 源码候选增加完整插件验证，分别报告安装、发现和调用事实。
+Engineering Kit 0.14.0 增加能力发现、迁移指引、消费者契约测试接线和显式资格检查入口。
 
 **新增**
 
-- 新增永久候选根入口 runPluginVerification({ request, bindings, hostsRoot })。
-- 保留完整插件布局并提供安装观察，载荷接受政策仍由调用方决定。
+- 通过 `adopt-plan` 与 `list-capabilities` CLI 模式增加只读能力评估。
+- 增加消费者契约测试脚手架指引，以及生成真实宿主证据的显式资格检查命令。
+
+**变更**
+
+- 明确区分候选发现、迁移完成、契约接入完成和真实宿主资格四种结论。
 
 **升级说明**
 
-三个包须精确锁步。runHostVerification 与 verifyHostVerificationBindings 继续用于单 Skill 验证。每个真实宿主与来源组合仍须取得资格证据；本次不代表发布完成或消费者机制已退出。
+三个 Foundation 包须一起精确锁定到 0.14.0。能力评估和迁移规划不写文件；契约向量与正式测试替身只证明接线；资格检查仍由消费者显式负责。
 <!-- release-skill:managed:end id=latest-release -->
 
 | 命令 | 用途 | 副作用 |
@@ -41,18 +45,59 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.13.0 尚未发布。下面的 registry 安装命令供发布后使用；本轮验证应在隔离目录安装三个本地候选 tarball。
+0.14.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.13.0
-npm exec -- skill-family-kit --help
-npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec -- skill-family-kit adopt-plan --root <repo>
-npm exec -- skill-family-kit projection --root <repo>
-npm exec -- skill-family-kit check --root <repo>
+pack_dir="$(mktemp -d)"
+(cd packages/skill-family-contracts && pnpm pack --pack-destination "$pack_dir")
+(cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
+(cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
+mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.14.0.tgz" "$pack_dir/skill-family-harness-node-0.14.0.tgz" "$pack_dir/skill-family-engineering-kit-0.14.0.tgz")
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.13.0 -- skill-family-kit --help`。
+发布后再使用 registry 坐标：
+
+```sh
+npm install --save-dev skill-family-engineering-kit@0.14.0
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit check --root <repo>
+```
+
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help`。
+
+### 三条采用旅程
+
+新项目可以先评估全部用途，再选择稳定能力：
+
+```sh
+npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project --capability <stable-id>
+```
+
+存量项目先运行只读计划，再为每个已声明用途记录一项 decision：
+
+```sh
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --scope all --locale zh-CN
+```
+
+日常工作不必先知道 capability ID，可以直接查询单项需求：
+
+```sh
+npm exec -- skill-family-kit adopt-plan --list-capabilities --locale zh-CN --filter "写文件失败时不能留下残缺文件"
+```
+
+输出会区分候选（`supportedMatches`）、边界（`boundary-found`）和无文本命中（`no-text-match`）。迁移 `complete` 只覆盖迁移门禁；契约接入完成由消费者的适配器和领域测试证明。真实宿主资格是独立的显式动作：
+
+```sh
+npm exec -- skill-family-kit check qualification --root <consumer-repo> --capability foundation.kit.plugin-verification --request <request-json> --bindings <private-bindings-json> --native
+```
+
+资格命令要求完整的显式输入，预检通过后才可能调用能力特定宿主；候选发现或迁移完成不会自动变成资格结论。
 
 ### 公共 Profile SPI
 
@@ -115,14 +160,6 @@ Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID �
 调用方保留工作负载、领域输出检查、领域 PASS/FAIL、发布新鲜度和发布状态。规范路径 `existingUserStateRoot` 仅投影到子进程环境，Foundation 自身不读取、摘要、修改或清理其中内容，也不授予手动宿主生命周期能力。0.12.0 发布前须完成五个固定驱动的真实验证，发布决定不归该 API。
 
 `executableSha256` 只绑定启动前严格读取的字节，进程仍按路径启动；调用方须在版本观察和执行期间独占可执行文件命名空间。Foundation 保留 `session-*` 目录，调用方检查后清理独占的外层 `temporaryRoot`。
-
-### 候选真实宿主验证库 API
-
-`runHostVerification({ request, bindings, hostsRoot })` 和 `verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost })` 是库 API，不是第五个 Kit 命令。前者通过已准入的内置 driver（`kimi-code-print-v1` 或 `workbuddy-codebuddy-print-v1`，均绑定 `existing-user-state + host-managed`），针对调用方绑定的根执行一次候选验证，并返回经过 Contracts 校验的脱敏四态结果；后者是纯函数，只组合 `observed` 结果，并核对共同字段和逐宿主 request digest。
-
-该 API 不接管消费者 workload、领域输出检查、领域 PASS/FAIL、发布新鲜度或发布状态。调用方提供 canonical 的 `existingUserStateRoot`；Foundation 只把它投影进子进程环境，不读取、摘要、修改或清理其中内容，也不会因此为 manual Profile 授予 build、plan、apply、install、update 或 uninstall 能力。
-
-`executableSha256` 只绑定启动前严格读取到的字节。实际进程仍按 pathname 启动，因此调用方必须在 probe 和正式调用期间独占可执行文件的命名空间。Foundation 保留本次调用的 `session-*` 目录，不按路径删除；调用方检查完成后，统一清理其独占的外层 `temporaryRoot`。
 
 ## 典型使用场景
 
@@ -245,4 +282,4 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 
 新增候选 runPluginVerification({ request, bindings, hostsRoot })，保留完整插件布局并分别报告安装、发现与调用事实。真实宿主与来源组合仍需独立资格证据。
 
-0.13.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball，不能把版本标记、单元测试或安装成功当作完整宿主资格与发布批准。
+0.14.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。

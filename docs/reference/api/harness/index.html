@@ -1315,6 +1315,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#消费方契约测试替身fake-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        消费方契约测试替身（fake） (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2915,6 +2926,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#消费方契约测试替身fake-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        消费方契约测试替身（fake） (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -3473,6 +3495,15 @@ stable 承诺，Bundle 是否重建由既有包字节与 provenance 绑定输入
 <li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.harness.*</code>）。</li>
 <li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code>，拒绝引用不存在的入口。</li>
 </ul>
+<h2 id="消费方契约测试替身fake-Foundation-0140">消费方契约测试替身（<code>fake</code>） (Foundation 0.14.0)<a class="headerlink" href="#消费方契约测试替身fake-Foundation-0140" title="Permanent link">&para;</a></h2>
+<p><code>createAtomicWriteFake({ vector })</code> 是按能力具名导出的官方测试替身，入口为
+<code>skill-family-harness-node/contract-testing</code>。它要求传入已由 Contracts 校验、身份与
+精确版本匹配且尚未消费的 atomic-write 向量；调用签名保持
+<code>writeFileAtomic(root, relPath, data, options)</code>，但测试替身不访问真实文件系统。</p>
+<p><code>fake.identity</code> 固定暴露 <code>capabilityId</code>、<code>vectorSetId</code> 与 <code>foundationVersion</code>。
+<code>fake.observation()</code> 返回冻结的调用参数摘要和 <code>return</code>、<code>throw</code> 或 <code>indeterminate</code>
+结果。测试替身覆盖向量声明的成功、拒绝与不确定路径，不判定消费者领域保证；消费者须
+另行运行至少一条受控真实公共调用路径。</p>
 
 
 

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { CONTRACTS_VERSION } from "skill-family-contracts";
+import { CONTRACTS_VERSION, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { digestBytes, readFileContained } from "skill-family-harness-node";
 import { runChecks } from "./check.mjs";
 import { probeGitFacts, probeGitState } from "./gitprobe.mjs";
@@ -28,6 +28,75 @@ import {
   normalizeRelPath,
   resolveTargetRoot,
 } from "./workspace.mjs";
+import { buildCapabilityAssessment } from "./capability-assessment.mjs";
+import { assessCapabilityMigration, CONSUMER_VERIFICATION_NOT_EVALUATED } from "./migration.mjs";
+
+async function readProfileCapabilities(rootAbs, { projectId, profileId } = {}) {
+  // Profile capability declarations are target-owned data. Kit reads only a
+  // contract-valid project profile with matching identity; it never validates,
+  // repairs, or writes profile.json and never consumes an alternate shape.
+  let value;
+  try {
+    const bytes = await readFileContained(rootAbs, "profile.json");
+    value = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    return [];
+  }
+  if (!value || typeof value !== "object") return [];
+  const registration = findSchemaByObject("project-profile");
+  if (!registration) return [];
+  const validation = validateDocument(value, {
+    schemaId: registration.$id,
+    dialect: registration.dialect,
+    policy: "strict",
+  });
+  if (!validation.valid) return [];
+  const profile = validation.data;
+  if (profile.schemaVersion !== 1 || profile.kind !== "skill-family.project-profile") return [];
+  if (profile.project?.id !== projectId) return [];
+  if (profile.adoption?.foundation_profile?.id !== profileId) return [];
+  return Array.isArray(profile.adoption?.capabilities) ? [...profile.adoption.capabilities] : [];
+}
+
+function buildCapabilityGuidance({ manifest, assessment, migrationFacts, profileCapabilities }) {
+  const uses = manifest?.capabilityUses ?? [];
+  const decisions = manifest?.capabilityDecisions ?? [];
+  const views = new Map([
+    ...(assessment?.scopeCapabilities ?? []),
+    ...(assessment?.scopeBoundaries ?? []),
+  ].map((view) => [view.id, view]));
+  return uses.flatMap((use) => {
+    const matching = decisions.filter((decision) => decision?.useId === use.useId);
+    if (matching.length !== 1) return [];
+    const decision = matching[0];
+    const guidance = {
+      useId: use.useId,
+      disposition: decision.disposition,
+      reason: decision.reason,
+      retainedResponsibility: [...use.retainedGuarantees],
+      legacy: migrationFacts.legacyByUse.get(use.useId) ?? { infra: [], references: [] },
+      blockers: migrationFacts.byUse.get(use.useId) ?? [],
+      profile: { declared: null },
+      currentPin: null,
+      nextActions: [],
+      consumerVerification: CONSUMER_VERIFICATION_NOT_EVALUATED,
+    };
+    if (decision.disposition === "direct-adoption" || decision.disposition === "compatibility-layer") {
+      guidance.targetCapability = decision.targetCapability;
+      guidance.capability = views.get(decision.targetCapability) ?? null;
+      guidance.profile = { declared: profileCapabilities.includes(decision.targetCapability) };
+      guidance.currentPin = assessment.foundationPackages.find(
+        (candidate) => candidate.name === guidance.capability?.package,
+      )?.version ?? assessment.foundationPackages[0]?.version ?? null;
+      guidance.nextActions = guidance.blockers.length > 0
+        ? ["先处理当前 guidance.blockers，再由消费者完成契约测试和领域验收"]
+        : ["由消费者运行公共入口、同版本契约向量和领域测试后确认采用"];
+    } else {
+      guidance.nextActions = ["保留消费者领域实现，并从旧实现退出清单移除错误关联"];
+    }
+    return [guidance];
+  });
+}
 
 /**
  * adopt-plan — strictly read-only adoption planning.
@@ -438,6 +507,47 @@ export async function planAdoption({
     inputs.projectId,
   );
 
+  // Capability assessment and its relationship checks are only activated by
+  // the new, paired context + non-empty uses fields.  A legacy 0.13 manifest
+  // therefore keeps the old plan shape and completion semantics.
+  let capabilityAssessment = null;
+  let capabilityGuidance = null;
+  let adoptionReminder = null;
+  let capabilityMigration = { blockers: [], decisionsByUse: new Map(), byUse: new Map(), legacyByUse: new Map() };
+  if (manifestDeclared && Array.isArray(migrationManifest?.capabilityUses) && migrationManifest.capabilityUses.length > 0) {
+    capabilityAssessment = await buildCapabilityAssessment({
+      mode: "project-assessment",
+      scope: migrationManifest.capabilityUseContext.scope,
+      locale: migrationManifest.capabilityUseContext.locale,
+      uses: migrationManifest.capabilityUses,
+      decisions: migrationManifest.capabilityDecisions,
+    });
+    const profileCapabilities = await readProfileCapabilities(rootAbs, {
+      projectId: inputs.projectId,
+      profileId: inputs.profileId,
+    });
+    capabilityMigration = assessCapabilityMigration({
+      manifest: migrationManifest,
+      assessment: capabilityAssessment,
+      profileCapabilities,
+    });
+    for (const row of capabilityAssessment.useMatrix) {
+      const blockers = capabilityMigration.byUse.get(row.useId) ?? [];
+      if (blockers.length > 0) {
+        row.decision = null;
+        row.needsDecision = true;
+      }
+    }
+    capabilityGuidance = buildCapabilityGuidance({
+      manifest: migrationManifest,
+      assessment: capabilityAssessment,
+      migrationFacts: capabilityMigration,
+      profileCapabilities,
+    });
+    adoptionReminder =
+      "先查看 capabilityAssessment 的完整用途矩阵，再补齐每项 decision；Foundation 只提供迁移 guidance，consumerVerification 必须由消费者自己的测试或独立验收声明。";
+  }
+
   const completion = evaluateMigrationCompletion({
     manifestDeclared,
     legacyExitList,
@@ -449,6 +559,7 @@ export async function planAdoption({
     pendingWrites,
     checkGreen,
     verificationFacts,
+    capabilityBlockers: capabilityMigration.blockers,
   });
 
   const existingManagedDeclarations = [...facts.managedSet].sort();
@@ -512,6 +623,9 @@ export async function planAdoption({
       completion,
     },
     profileDraft,
+    ...(capabilityAssessment
+      ? { capabilityAssessment, capabilityGuidance, adoptionReminder }
+      : {}),
     traceability: {
       contractsVersion: CONTRACTS_VERSION,
       skeletonSource: "describeSkeletonFiles",

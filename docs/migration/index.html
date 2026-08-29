@@ -479,6 +479,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#0140-最短入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        0.14.0 最短入口
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#分类方法" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1829,6 +1840,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#0140-最短入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        0.14.0 最短入口
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#分类方法" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2005,6 +2027,22 @@
 </blockquote>
 <h1 id="存量采用与迁移FND-070">存量采用与迁移（FND-070）<a class="headerlink" href="#存量采用与迁移FND-070" title="Permanent link">&para;</a></h1>
 <p>本页描述存量项目如何采用 Skill Family 基础设施，以及迁移完成判定的门禁。它服务于两类读者：人类负责人据此判断采用路径与风险；智能体据此用 <code>adopt-plan</code> 做只读盘点，不在本页复制写入动作。</p>
+<p>0.14.0 把四种结论分开记录。能力目录查询只发现候选；迁移状态 <code>complete</code> 只证明迁移闭环；契约接入完成由消费者自己的适配器测试与领域门禁声明；真实宿主资格只由显式的 <code>check qualification --native</code> 执行证明。任何一个结论都不能替代另外三个。</p>
+<h2 id="0140-最短入口">0.14.0 最短入口<a class="headerlink" href="#0140-最短入口" title="Permanent link">&para;</a></h2>
+<p>先在 migration manifest 中声明用途，再用同一用途矩阵查看候选。<code>adopt-plan</code> 始终只读，命令不会自动生成 decision 或修改 Profile。</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+</code></pre>
+<p>每个用途都必须明确选择 <code>direct-adoption</code>、<code>compatibility-layer</code>、<code>keep-business</code> 或 <code>foundation-gap</code>。只有前两项需要 <code>targetCapability</code>；后两项用于保留消费者责任或登记 Foundation 缺口。用途文本命中 capability ID 也不会自动形成采用声明。</p>
+<p>完成迁移后，继续由消费者验证契约接线和领域保证。需要真实宿主时，才显式运行：</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit check qualification \
+  --root &lt;consumer-repo&gt; \
+  --capability foundation.kit.plugin-verification \
+  --request &lt;request-json&gt; \
+  --bindings &lt;private-bindings-json&gt; \
+  --native
+</code></pre>
+<p><code>--request</code> 和 <code>--bindings</code> 是调用方提供的 JSON；命令会先做精确版本、目录能力和参数预检，再决定是否触碰宿主。缺少证据、跳过执行或终态不确定时，不能得到 <code>real-host-qualified</code>。</p>
 <h2 id="分类方法">分类方法<a class="headerlink" href="#分类方法" title="Permanent link">&para;</a></h2>
 <p>存量仓接入 Foundation 前，先按下面四类归类。分类决定走哪条路径、是否写文件、旧实现如何处理。</p>
 <table>
@@ -2099,33 +2137,47 @@
 <h2 id="迁移清单skill-familymigrationjson">迁移清单（skill-family.migration.json）<a class="headerlink" href="#迁移清单skill-familymigrationjson" title="Permanent link">&para;</a></h2>
 <p>目标仓在根目录声明自己的迁移状态：</p>
 <pre><code class="language-json">{
+  &quot;schemaVersion&quot;: 1,
   &quot;kind&quot;: &quot;skill-family.migration-manifest&quot;,
-  &quot;legacyInfra&quot;: [
-    { &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;, &quot;replacedBy&quot;: &quot;sf-kit check&quot; }
-  ],
-  &quot;exceptions&quot;: [
+  &quot;manifestVersion&quot;: 4,
+  &quot;capabilityUseContext&quot;: { &quot;scope&quot;: &quot;harness&quot;, &quot;locale&quot;: &quot;zh-CN&quot; },
+  &quot;capabilityUses&quot;: [
     {
-      &quot;owner&quot;: &quot;负责人&quot;,
-      &quot;reason&quot;: &quot;具体原因&quot;,
-      &quot;deadline&quot;: &quot;2026-12-31&quot;,
-      &quot;migrationTarget&quot;: &quot;wave-m1&quot;
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;problemStatement&quot;: &quot;写入输出时不能留下残缺文件&quot;,
+      &quot;constraints&quot;: [&quot;测试不得写入真实项目目录&quot;],
+      &quot;retainedGuarantees&quot;: [&quot;输出制品仍由消费者选择&quot;],
+      &quot;catalogFilters&quot;: [&quot;原子写&quot;]
     }
   ],
-  &quot;targetProfile&quot;: &quot;generic&quot;,
-  &quot;foundationPackages&quot;: [
-    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 位十六进制&gt;&quot; }
+  &quot;capabilityDecisions&quot;: [
+    {
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;disposition&quot;: &quot;direct-adoption&quot;,
+      &quot;targetCapability&quot;: &quot;foundation.harness.atomic-write&quot;,
+      &quot;reason&quot;: &quot;业务中立的原子写机制覆盖该需求，制品选择仍由消费者负责&quot;
+    }
   ],
-  &quot;verification&quot;: {
-    &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
-    &quot;integration&quot;: &quot;docs/evidence/integration.json&quot;,
-    &quot;consumer&quot;: &quot;docs/evidence/consumer.json&quot;,
-    &quot;independentAudit&quot;: &quot;docs/evidence/independent-audit.json&quot;
-  }
+  &quot;legacyInfra&quot;: [
+    {
+      &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;,
+      &quot;replacedBy&quot;: null,
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;recoveryRef&quot;: &quot;docs/recovery/old-validator.md&quot;
+    }
+  ],
+  &quot;legacyReferences&quot;: [
+    {
+      &quot;path&quot;: &quot;src/index.mjs&quot;,
+      &quot;text&quot;: &quot;legacyWrite()&quot;,
+      &quot;replacedBy&quot;: &quot;foundation.harness.atomic-write&quot;,
+      &quot;useId&quot;: &quot;safe-output-write&quot;
+    }
+  ],
+  &quot;exceptions&quot;: []
 }
 </code></pre>
-<p>以上结构展示了迁移清单的核心字段；<code>legacyInfra</code> 每项给出旧实现路径与替代物，工具只读评估存在性，绝不代为删除。</p>
+<p>以上示例与 <code>positive-04-capability-adoption.json</code> 的机器 fixture 对齐：<code>replacedBy: null</code> 表示旧实现尚未替代，<code>recoveryRef</code> 记录恢复指引；工具只读评估存在性，绝不代为删除。</p>
 <p>0.3.0 中的 Quickstart Profile candidate 已升级到 v2。迁移清单若绑定 candidate 能力，三个 Foundation 包必须统一精确锁定为 0.3.0；仍需 v1 的存量接入继续统一锁定 0.2.1，不混装两组版本。</p>
 <ul>
 <li><code>legacyInfra</code> 每项给出旧实现路径与替代物；工具只读评估存在性，绝不代为删除。</li>
@@ -2197,7 +2249,7 @@
 <li><strong>fail-closed 默认</strong>：任何不可解析、越界、身份不符或证据缺失的输入，都使对应判定为未证明，不假设成功。</li>
 </ul>
 <h2 id="Profile-草稿">Profile 草稿<a class="headerlink" href="#Profile-草稿" title="Permanent link">&para;</a></h2>
-<p><code>adopt-plan</code> 输出携带 <code>profileDraft</code> 子块（kind=<code>skill-family.profile-draft</code>，schemaVersion=1）：一份预填的 profile.json 描述符草稿（<code>descriptorRelPath</code>=<code>profile.json</code>）。adoption-lock 概念与其工件形态已废弃（整改交接 D-8）：轻量采用证明就是描述符自身的采用声明，由 <code>verifyProfile</code>（Profile SPI v2）机械核验——字段完整性与 pin 形态在描述符 Schema 步把关（SPE1001），pin 摘要按 GK-4 纪律对写集内真实工件字节逐一比对（SPE1006），overrides 只收紧策略独立裁决（SPE1007）。</p>
+<p><code>adopt-plan</code> 输出携带 <code>profileDraft</code> 子块（kind=<code>skill-family.profile-draft</code>，schemaVersion=1）：一份预填的 profile.json 描述符草稿（<code>descriptorRelPath</code>=<code>profile.json</code>）。adoption-lock 概念与其工件形态已废弃（整改交接 D-8）：轻量采用证明就是描述符自身的采用声明，由 <code>verifyProfile</code>（Profile SPI v3）机械核验——字段完整性与 pin 形态在描述符 Schema 步把关（SPE1001），pin 摘要按 GK-4 纪律对写集内真实工件字节逐一比对（SPE1006），overrides 只收紧策略独立裁决（SPE1007）。</p>
 <p>草稿预填一切可由只读事实机械推导的内容：</p>
 <ul>
 <li>描述符身份与基线：<code>profile.id</code>/<code>profile.name</code> 来自计划输入，<code>base.contractsVersion</code> 为已加载的冻结 Contracts 版本；<code>differences</code>/<code>spi</code> 为空数组起点。</li>

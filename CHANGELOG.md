@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.14.0 locale=en baseline=sha256:ae68c432972367cf4f77239dcad446fe4d15fc73e6042f70bd0a7b67041f93b9 -->
+## [0.14.0] - 2026-08-28
+
+Engineering Kit 0.14.0 adds capability discovery, migration guidance, consumer contract-test wiring, and an explicit qualification entrypoint.
+
+### Added
+
+- Adds read-only capability assessment through adopt-plan and the list-capabilities CLI mode.
+- Adds consumer contract-test scaffolding guidance and the explicit qualification command for real-host evidence.
+
+### Changed
+
+- Documents separate candidate discovery, migration completion, contract integration, and real-host qualification conclusions.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to 0.14.0. Capability assessment and migration planning write no files; contract vectors and official fakes prove wiring only; qualification remains an explicit consumer-owned activity.
+<!-- release-skill:changelog:end version=0.14.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.13.0 locale=en baseline=sha256:b9eed0b2361ff46c23ddd903b98b7059d9ceed8329f846010cb4a943101ec9a3 -->
 ## [0.13.0] - 2026-08-26
 

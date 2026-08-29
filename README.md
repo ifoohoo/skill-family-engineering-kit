@@ -4,23 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.13.0 -->
+<!-- release-skill:release-version: 0.14.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.13.0** (2026-08-26)
+**0.14.0** (2026-08-28)
 
-Engineering Kit 0.13.0 is a source candidate for complete plugin verification with separate installation, discovery and invocation facts.
+Engineering Kit 0.14.0 adds capability discovery, migration guidance, consumer contract-test wiring, and an explicit qualification entrypoint.
 
 **Added**
 
-- Adds the permanent candidate root entry runPluginVerification({ request, bindings, hostsRoot }).
-- Preserves complete plugin layouts and exposes installation observations without taking over caller acceptance policy.
+- Adds read-only capability assessment through adopt-plan and the list-capabilities CLI mode.
+- Adds consumer contract-test scaffolding guidance and the explicit qualification command for real-host evidence.
+
+**Changed**
+
+- Documents separate candidate discovery, migration completion, contract integration, and real-host qualification conclusions.
 
 **Upgrade Notes**
 
-Pin the three packages together. Existing runHostVerification and verifyHostVerificationBindings remain available for single-Skill verification. Every actual host/source combination still needs qualification; no publication or consumer mechanism removal is implied.
+Pin all three Foundation packages to 0.14.0. Capability assessment and migration planning write no files; contract vectors and official fakes prove wiring only; qualification remains an explicit consumer-owned activity.
 <!-- release-skill:managed:end id=latest-release -->
 
 | Command | Purpose | Side effects |
@@ -40,18 +44,59 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.13.0 is not published. The registry command below is for use after publication; this iteration installs the three local candidate tarballs in an isolated directory.
+Version 0.14.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.13.0
-npm exec -- skill-family-kit --help
-npm exec -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec -- skill-family-kit adopt-plan --root <repo>
-npm exec -- skill-family-kit projection --root <repo>
-npm exec -- skill-family-kit check --root <repo>
+pack_dir="$(mktemp -d)"
+(cd packages/skill-family-contracts && pnpm pack --pack-destination "$pack_dir")
+(cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
+(cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
+mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.14.0.tgz" "$pack_dir/skill-family-harness-node-0.14.0.tgz" "$pack_dir/skill-family-engineering-kit-0.14.0.tgz")
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.13.0 -- skill-family-kit --help`.
+After publication, use the registry coordinate:
+
+```sh
+npm install --save-dev skill-family-engineering-kit@0.14.0
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit check --root <repo>
+```
+
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help`.
+
+### Three adoption journeys
+
+New projects can evaluate all uses before choosing stable capabilities:
+
+```sh
+npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project --capability <stable-id>
+```
+
+Existing projects start with a read-only plan, then record one decision for each declared use:
+
+```sh
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --scope all --locale en
+```
+
+Daily work can query one requirement without knowing a capability ID:
+
+```sh
+npm exec -- skill-family-kit adopt-plan --list-capabilities --locale en --filter "must not leave a partial file when a write fails"
+```
+
+The output distinguishes candidates (`supportedMatches`), boundaries (`boundary-found`), and no text match (`no-text-match`). A migration `complete` result covers only the migration gate. Contract integration is established by the consumer's adapter and domain tests. Real-host qualification is a separate explicit action:
+
+```sh
+npm exec -- skill-family-kit check qualification --root <consumer-repo> --capability foundation.kit.plugin-verification --request <request-json> --bindings <private-bindings-json> --native
+```
+
+The qualification command requires complete explicit inputs and can invoke the capability-specific host only after preflight; it does not turn candidate discovery or migration completion into a qualification claim.
 
 ### Public Profile SPI
 
@@ -236,4 +281,4 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 
 The candidate runPluginVerification({ request, bindings, hostsRoot }) preserves a complete plugin layout and separates installation, discovery and invocation facts. Each actual host/source combination still needs qualification evidence.
 
-Version 0.13.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete host qualification or release approval.
+Version 0.14.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.

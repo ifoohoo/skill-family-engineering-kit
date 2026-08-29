@@ -23,6 +23,8 @@ import {
   planHost,
   refuseHostApply,
 } from "./index.mjs";
+import { buildCapabilityAssessment } from "./capability-assessment.mjs";
+import { QUALIFICATION_NOTICE, runQualification } from "./qualification.mjs";
 
 /**
  * skill-family-engineering-kit CLI.
@@ -65,6 +67,8 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                把新手写文件登记进 .foundation/file-registry.json，并以当前字节
                重算 skill-family.managed-file-lock.json（单次 fail-closed 事务；
                只写这两个收容状态文档，任何拒绝都零写入）。
+               显式资格子动作: check qualification 仅在显式提供
+               capability/request/bindings/native 后适配目录声明的能力特定入口。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -88,6 +92,7 @@ function commandHelp(command) {
       "  --licensing-profile <id> 许可证 Profile id（默认 registry 第一个变体）",
       "  --licensing-variant <id> 多变体 Profile 的必选变体 id",
       "  --profiles-root <dir> 许可证 Profile 根目录",
+      "  --capability <id>      可重复的稳定能力 ID（重复值会去重并按 ASCII 排序）",
       "",
       "宿主构建: skill-family-kit scaffold host-build --root <workspace> --host <id>",
       "  --path-category <id> --input <relpath> --out <relpath> [--hosts-root <dir>]",
@@ -102,6 +107,13 @@ function commandHelp(command) {
       "  --licensing-variant <id> 多变体 Profile 的必选变体 id",
       "  --profiles-root <dir> 许可证 Profile 根目录",
       "  --no-git-spawn        禁用只读 git status 探测，仅用文件系统事实",
+      "",
+      "  能力查询（仍属于 adopt-plan，不增加顶层命令）:",
+      "  --list-capabilities --locale <en|zh-CN>",
+      "    覆盖: --all --scope <scope>",
+      "    项目评估: --all --scope <scope> --uses <relative-json-path>",
+      "    单需求: [--scope <scope>] [--filter <text>] [--limit <1..10>]",
+      "    精确展开: --capability <exact-id>",
       "",
       "只读宿主子动作: host-describe | host-probe | host-plan | host-apply",
       "  host-probe 默认不执行进程；仅 --allow-host-spawn + --host-executable <绝对路径> 可启用受审计版本向量；",
@@ -139,6 +151,13 @@ function commandHelp(command) {
       "  --binding <relpath>   可选 report-binding JSON；摘要过期即 SFC3001",
       "  分级: 硬失败（SFC3001/3002/3003）计为发现，退出码 1；",
       "  风格告警（超长句/重复段/翻译腔/未解释术语）只报告、绝不改变判定。",
+      "",
+      "显式资格子动作: skill-family-kit check qualification [options]",
+      "  --root <dir>          消费方工作区（--request/--bindings 文件必须收容其中）",
+      "  --capability <id>     必须为目录声明的 foundation.kit.plugin-verification",
+      "  --request <relpath>   受注册合同约束的 plugin-verification-request JSON",
+      "  --bindings <relpath>  受既有 runPluginVerification 约束的私有绑定 JSON",
+      "  --native              显式确认允许本次真实资格；缺失即零宿主副作用。",
     ],
   };
   return [
@@ -159,25 +178,39 @@ function printError(error) {
 
 function parseOptions(argv, spec) {
   const options = {};
+  const seen = new Set();
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (REFUSED_MUTATION_FLAGS.includes(arg)) {
       throw mutationModeError(arg, spec.command);
     }
     if (arg === "--help" || arg === "-h") {
+      if (seen.has("help")) {
+        throw invalidParamsError(`duplicate option for '${spec.command}': --help`, { reason: "duplicate-option", flag: "--help" });
+      }
+      seen.add("help");
       options.help = true;
       continue;
     }
     const flagSpec = spec.flags[arg];
     if (!flagSpec) {
-      throw invalidParamsError(`unknown option for '${spec.command}': ${arg}`, { flag: arg });
+      throw invalidParamsError(`unknown option for '${spec.command}': ${arg}`, { flag: arg, reason: "unknown-option" });
     }
+    if (spec.rejectDuplicates && seen.has(arg) && !flagSpec.repeat) {
+      throw invalidParamsError(`duplicate option for '${spec.command}': ${arg}`, { reason: "duplicate-option", flag: arg });
+    }
+    seen.add(arg);
     if (flagSpec.value) {
       const value = argv[++i];
       if (value === undefined || value.startsWith("--")) {
-        throw invalidParamsError(`option ${arg} requires a value`, { flag: arg });
+        throw invalidParamsError(`option ${arg} requires a value`, { flag: arg, reason: "missing-option-value" });
       }
-      options[flagSpec.key] = value;
+      if (flagSpec.repeat) {
+        if (!Array.isArray(options[flagSpec.key])) options[flagSpec.key] = [];
+        options[flagSpec.key].push(value);
+      } else {
+        options[flagSpec.key] = value;
+      }
     } else {
       options[flagSpec.key] = true;
     }
@@ -187,6 +220,7 @@ function parseOptions(argv, spec) {
 
 const COMMAND_SPECS = {
   scaffold: {
+    rejectDuplicates: true,
     flags: {
       "--root": { key: "root", value: true },
       "--project-id": { key: "projectId", value: true },
@@ -195,6 +229,7 @@ const COMMAND_SPECS = {
       "--licensing-profile": { key: "licensingProfile", value: true },
       "--licensing-variant": { key: "licensingVariant", value: true },
       "--profiles-root": { key: "profilesRoot", value: true },
+      "--capability": { key: "capabilities", value: true, repeat: true },
     },
   },
   "adopt-plan": {
@@ -207,6 +242,14 @@ const COMMAND_SPECS = {
       "--licensing-variant": { key: "licensingVariant", value: true },
       "--profiles-root": { key: "profilesRoot", value: true },
       "--no-git-spawn": { key: "noGitSpawn", value: false },
+      "--list-capabilities": { key: "listCapabilities", value: false },
+      "--scope": { key: "scope", value: true },
+      "--locale": { key: "locale", value: true },
+      "--all": { key: "all", value: false },
+      "--uses": { key: "uses", value: true },
+      "--filter": { key: "filter", value: true },
+      "--capability": { key: "capability", value: true },
+      "--limit": { key: "limit", value: true },
     },
   },
   projection: {
@@ -252,6 +295,16 @@ const COMMAND_SPECS = {
       "--files": { key: "files", value: true },
     },
   },
+  "check qualification": {
+    rejectDuplicates: true,
+    flags: {
+      "--root": { key: "root", value: true },
+      "--capability": { key: "capability", value: true },
+      "--request": { key: "requestPath", value: true },
+      "--bindings": { key: "bindingsPath", value: true },
+      "--native": { key: "native", value: false },
+    },
+  },
   "scaffold host-build": {
     flags: {
       "--root": { key: "root", value: true },
@@ -294,6 +347,31 @@ async function readJson(root, relPath, label) {
     if (cause?.code?.startsWith?.("SFC")) throw cause;
     throw invalidParamsError(`${label} must name valid JSON contained in --root`);
   }
+}
+
+async function runCapabilityList(options) {
+  const forbidden = ["projectId", "projectName", "profileId", "licensingProfile", "licensingVariant", "profilesRoot", "noGitSpawn"];
+  if (forbidden.some((key) => options[key] !== undefined)) {
+    throw invalidParamsError("adopt-plan capability query cannot use repository planning options", { reason: "invalid-option-combination" });
+  }
+  let mode;
+  if (options.capability !== undefined) mode = "exact-capability";
+  else if (options.all === true) mode = options.uses !== undefined ? "project-assessment" : "coverage";
+  else mode = "incremental-query";
+  const limit = options.limit === undefined ? undefined : Number(options.limit);
+  const output = await buildCapabilityAssessment({
+    mode,
+    scope: options.scope,
+    locale: options.locale,
+    all: options.all,
+    root: options.root ?? ".",
+    usesPath: options.uses,
+    filter: options.filter,
+    capability: options.capability,
+    limit,
+  });
+  process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+  return KIT_EXIT_CODES.ok;
 }
 
 async function runHostSubAction(command, action, rest) {
@@ -409,10 +487,59 @@ async function runRelockSubAction(rest) {
   }
 }
 
+async function runQualificationSubAction(rest) {
+  const specName = "check qualification";
+  try {
+    const options = parseOptions(rest, {
+      command: specName,
+      flags: COMMAND_SPECS[specName].flags,
+      rejectDuplicates: true,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const result = await runQualification({
+      root: options.root,
+      capability: options.capability,
+      requestPath: options.requestPath,
+      bindingsPath: options.bindingsPath,
+      native: options.native === true,
+    });
+    const notice = result[QUALIFICATION_NOTICE];
+    if (notice) {
+      process.stderr.write(`[qualification] 保留私有资格现场：${notice.parentRoot}（证据根：${notice.privateEvidenceRoot}）。请在人工检查后删除该临时目录。\n`);
+    }
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return KIT_EXIT_CODES.ok;
+  } catch (error) {
+    const notice = error?.[QUALIFICATION_NOTICE];
+    if (notice) {
+      const evidence = notice.privateEvidenceRoot ? `（证据根：${notice.privateEvidenceRoot}）` : "";
+      process.stderr.write(`[qualification] 保留私有资格现场：${notice.parentRoot}${evidence}。请在人工检查后删除该临时目录。\n`);
+    }
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 export async function cliMain(argv) {
-  if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
+  if (argv.length === 0) {
     process.stdout.write(HELP_TEXT);
     return KIT_EXIT_CODES.ok;
+  }
+  if (argv[0] === "--help" || argv[0] === "-h") {
+    try {
+      const options = parseOptions(argv, { command: "global", flags: {}, rejectDuplicates: true });
+      if (options.help && Object.keys(options).length === 1) {
+        process.stdout.write(HELP_TEXT);
+        return KIT_EXIT_CODES.ok;
+      }
+      throw invalidParamsError("global help must be the only option", { reason: "invalid-option-combination" });
+    } catch (error) {
+      printError(error);
+      return KIT_EXIT_CODES.rejected;
+    }
   }
   const command = argv[0];
   if (!TOP_LEVEL_COMMANDS.includes(command)) {
@@ -438,6 +565,9 @@ export async function cliMain(argv) {
   if (command === "check" && argv[1] === "relock") {
     return runRelockSubAction(argv.slice(2));
   }
+  if (command === "check" && argv[1] === "qualification") {
+    return runQualificationSubAction(argv.slice(2));
+  }
   if (command === "scaffold" && argv[1] === "host-build") {
     return runHostSubAction(command, "host-build", argv.slice(2));
   }
@@ -446,10 +576,21 @@ export async function cliMain(argv) {
   }
 
   try {
-    const options = parseOptions(argv.slice(1), { command, flags: COMMAND_SPECS[command].flags });
+    const listCapabilitiesRequested = command === "adopt-plan" && argv.slice(1).includes("--list-capabilities");
+    const options = parseOptions(argv.slice(1), {
+      command,
+      flags: COMMAND_SPECS[command].flags,
+      rejectDuplicates: listCapabilitiesRequested || COMMAND_SPECS[command].rejectDuplicates === true,
+    });
     if (options.help) {
       process.stdout.write(`${commandHelp(command)}\n`);
       return KIT_EXIT_CODES.ok;
+    }
+    if (command === "adopt-plan" && options.listCapabilities === true) {
+      return await runCapabilityList(options);
+    }
+    if (command === "adopt-plan" && argv.slice(1).some((arg) => ["--all", "--scope", "--locale", "--uses", "--filter", "--capability", "--limit"].includes(arg))) {
+      throw invalidParamsError("capability query options require --list-capabilities", { reason: "invalid-option-combination" });
     }
     const { exitCode, output } = await runCommand(command, {
       root: options.root ?? ".",
@@ -459,6 +600,7 @@ export async function cliMain(argv) {
       licensingProfile: options.licensingProfile,
       licensingVariant: options.licensingVariant,
       profilesRoot: options.profilesRoot ?? bundledProfilesRoot(),
+      capabilities: options.capabilities,
       manifest: options.manifest,
       only: options.only,
       allowGitSpawn: !options.noGitSpawn,
@@ -485,6 +627,6 @@ function isDirectExecution() {
 }
 if (isDirectExecution()) {
   cliMain(process.argv.slice(2)).then((code) => {
-    process.exit(code);
+    process.exitCode = code;
   });
 }

@@ -1,0 +1,1 @@
+Fictional shared text for byte-preservation checks only.

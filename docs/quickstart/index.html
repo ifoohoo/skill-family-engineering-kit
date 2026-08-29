@@ -344,10 +344,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#新项目生成骨架" class="md-nav__link">
+  <a href="#公共安装前提" class="md-nav__link">
     <span class="md-ellipsis">
 
-        新项目：生成骨架
+        公共安装前提
 
     </span>
   </a>
@@ -355,10 +355,54 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#存量项目只读盘点" class="md-nav__link">
+  <a href="#新项目发现能力并生成骨架" class="md-nav__link">
     <span class="md-ellipsis">
 
-        存量项目：只读盘点
+        新项目：发现能力并生成骨架
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#存量项目采用并完成迁移" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        存量项目：采用并完成迁移
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#日常工作查询单项需求" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        日常工作：查询单项需求
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#旧版最短路径生成骨架" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        旧版最短路径：生成骨架
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#存量项目只读盘点兼容入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        存量项目：只读盘点（兼容入口）
 
     </span>
   </a>
@@ -1729,10 +1773,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#新项目生成骨架" class="md-nav__link">
+  <a href="#公共安装前提" class="md-nav__link">
     <span class="md-ellipsis">
 
-        新项目：生成骨架
+        公共安装前提
 
     </span>
   </a>
@@ -1740,10 +1784,54 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#存量项目只读盘点" class="md-nav__link">
+  <a href="#新项目发现能力并生成骨架" class="md-nav__link">
     <span class="md-ellipsis">
 
-        存量项目：只读盘点
+        新项目：发现能力并生成骨架
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#存量项目采用并完成迁移" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        存量项目：采用并完成迁移
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#日常工作查询单项需求" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        日常工作：查询单项需求
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#旧版最短路径生成骨架" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        旧版最短路径：生成骨架
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#存量项目只读盘点兼容入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        存量项目：只读盘点（兼容入口）
 
     </span>
   </a>
@@ -1804,15 +1892,51 @@
 <p><a href="../en/quickstart/">English</a></p>
 </blockquote>
 <h1 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h1>
-<p>本页给三类读者各给一条最短成功路径：新项目、存量项目、架构设计者。每条路径只列必做动作与验证命令，深入细节转到对应文档。</p>
-<h2 id="新项目生成骨架">新项目：生成骨架<a class="headerlink" href="#新项目生成骨架" title="Permanent link">&para;</a></h2>
-<p>目标是从零拿到一个符合 Foundation 契约的项目骨架。</p>
-<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit
-npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project
+<p>本页给普通开发者三条可执行旅程：新项目能力发现与骨架生成、存量项目采用与迁移、日常单需求查询。每条路径都给出精确命令；架构路由与 API 细节转到对应文档。</p>
+<h2 id="公共安装前提">公共安装前提<a class="headerlink" href="#公共安装前提" title="Permanent link">&para;</a></h2>
+<p>本地候选验证从工作区打出三份 <code>0.14.0</code> tarball，并把它们安装到临时 consumer；以下命令从 Foundation 工作区根目录运行：</p>
+<pre><code class="language-sh">pack_dir=&quot;$(mktemp -d)&quot;
+(cd packages/skill-family-contracts &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+(cd packages/skill-family-harness-node &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+(cd packages/skill-family-engineering-kit &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+mkdir &quot;$pack_dir/consumer&quot; &amp;&amp; (cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm init -y)
+(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-harness-node-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-0.14.0.tgz&quot;)
+</code></pre>
+<p>发布后安装精确坐标 <code>skill-family-engineering-kit@0.14.0</code>，再运行下文的 <code>npm exec</code> 命令。</p>
+<h2 id="新项目发现能力并生成骨架">新项目：发现能力并生成骨架<a class="headerlink" href="#新项目发现能力并生成骨架" title="Permanent link">&para;</a></h2>
+<p>先用用途文件查看整个项目可用的能力，再显式选择稳定能力生成骨架。<code>--list-capabilities</code> 只读，不写项目；<code>--uses</code> 文件只保留问题、约束、保留保证和可选筛选词，不要写凭据或私密业务数据。</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project --capability foundation.contracts.object-validation --capability foundation.harness.atomic-write
+npm exec -- skill-family-kit check --root ./my-project
+</code></pre>
+<p><code>supportedMatches</code> 只是候选发现，<code>needsDecision</code> 表示仍需由项目确认用途；它不会写 Profile 或宣称采用完成。<code>scaffold</code> 成功只表示骨架和契约测试接线已写入，适配器、领域保证和消费者测试仍需补齐。</p>
+<h2 id="存量项目采用并完成迁移">存量项目：采用并完成迁移<a class="headerlink" href="#存量项目采用并完成迁移" title="Permanent link">&para;</a></h2>
+<p>先运行只读 <code>adopt-plan</code>，再在 migration manifest 中记录用途和四类 decision。<code>direct-adoption</code> 与 <code>compatibility-layer</code> 才能指向 Foundation 能力；<code>keep-business</code> 和 <code>foundation-gap</code> 保留在消费者侧。</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec -- skill-family-kit check --root ./existing-repo
+</code></pre>
+<p><code>adopt-plan</code> 不写文件，也不自动迁移。迁移状态 <code>complete</code> 只表示 Profile、受管文件、旧实现退出、check 和四类证据都满足；它不等于契约接入完成。契约接入完成要由消费者自己的适配器测试与领域门禁声明。</p>
+<h2 id="日常工作查询单项需求">日常工作：查询单项需求<a class="headerlink" href="#日常工作查询单项需求" title="Permanent link">&para;</a></h2>
+<p>不确定 capability ID 时，用当前语言做确定性子串查询。结果为空是 <code>no-text-match</code>，只命中 unsupported 能力是 <code>boundary-found</code>；这两种结果都不是 <code>foundation-gap</code> decision。</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --locale zh-CN --filter &quot;写文件失败时不能留下残缺文件&quot;
+</code></pre>
+<p>需要证明真实宿主时，必须另行提供完整 request、bindings 和 <code>--native</code>，并使用能力目录声明的资格入口：</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit check qualification \
+  --root &lt;consumer-repo&gt; \
+  --capability foundation.kit.plugin-verification \
+  --request &lt;request-json&gt; \
+  --bindings &lt;private-bindings-json&gt; \
+  --native
+</code></pre>
+<p>该命令的真实资格结论只来自一次显式、受约束的宿主执行；候选发现、迁移 <code>complete</code> 和契约接入完成都不能替代它。</p>
+<h2 id="旧版最短路径生成骨架">旧版最短路径：生成骨架<a class="headerlink" href="#旧版最短路径生成骨架" title="Permanent link">&para;</a></h2>
+<p>若项目已确认不需要先做用途评估，仍可直接从零生成符合 Foundation 契约的骨架。</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project
 npm exec -- skill-family-kit check --root ./my-project
 </code></pre>
 <p>以上命令先生成骨架，再对生成结果做工程诊断。<code>scaffold</code> 只写空目标目录，非空或冲突目标会被拒绝且不被触碰；<code>check</code> 只诊断不修复。验证以 <code>check</code> 退出码 0 为通过。</p>
-<h2 id="存量项目只读盘点">存量项目：只读盘点<a class="headerlink" href="#存量项目只读盘点" title="Permanent link">&para;</a></h2>
+<h2 id="存量项目只读盘点兼容入口">存量项目：只读盘点（兼容入口）<a class="headerlink" href="#存量项目只读盘点兼容入口" title="Permanent link">&para;</a></h2>
 <p>目标是先看清存量仓能否采用，不改动任何字节。</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
 npm exec -- skill-family-kit check --root ./existing-repo

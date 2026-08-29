@@ -1,0 +1,5 @@
+{
+  "name": "foundation-minimal-plugin",
+  "version": "1.0.0",
+  "description": "验证完整插件布局和两个技能的加载，不执行业务任务。"
+}

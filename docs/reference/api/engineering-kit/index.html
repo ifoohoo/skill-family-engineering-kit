@@ -1063,6 +1063,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#能力发现与迁移指引-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        能力发现与迁移指引 (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#显式真实宿主资格" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        显式真实宿主资格
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#完整插件验证-foundationkitplugin-verification" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2384,6 +2406,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#能力发现与迁移指引-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        能力发现与迁移指引 (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#显式真实宿主资格" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        显式真实宿主资格
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#完整插件验证-foundationkitplugin-verification" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2432,7 +2476,7 @@
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 使用 Contracts 1.13.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.13.0</code>。
+<p>provider Profile descriptor 使用 Contracts 1.14.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.14.0</code>。
 Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
@@ -2671,7 +2715,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <p>Kit 错误类型：<code>KitError extends ContractsError</code>（构造未登记码立即抛 <code>TypeError</code>）；<code>KIT_ERROR_KINDS</code> 为稳定 kind 枚举；<code>kitError</code> / <code>invalidParamsError</code> / <code>unknownCommandError</code> / <code>mutationModeError</code> / <code>refusalError</code> 为构造辅助。<code>REFUSED_MUTATION_FLAGS</code> 列出入口即拒的变更旗标（如 <code>--apply</code>）。</p>
 <hr />
 <h2 id="Profile-SPI-公共投影">Profile SPI 公共投影<a class="headerlink" href="#Profile-SPI-公共投影" title="Permanent link">&para;</a></h2>
-<p><code>skill-family-engineering-kit/profile-spi</code> 是 Profile SPI v2 的公共数据入口。它由 Profiles 源实现投影生成，包内同时携带三个 SPI JSON 资源与 Contracts 的 <code>profile-descriptor.schema.json</code>；投影脚本只替换两个公共包导入和一个本地 Schema URL，资源字节保持绑定。</p>
+<p><code>skill-family-engineering-kit/profile-spi</code> 是 Profile SPI v3 的公共数据入口。它由 Profiles 源实现投影生成，包内同时携带三个 SPI JSON 资源与 Contracts 的 <code>profile-descriptor.schema.json</code>；投影脚本只替换两个公共包导入和一个本地 Schema URL，资源字节保持绑定。</p>
 <h3 id="公共入口">公共入口<a class="headerlink" href="#公共入口" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>loadSpiDefinition()</code>：读取 <code>extension-spi.json</code>，返回开放扩展点、核心所有权和 entrypoint 规则。</li>
@@ -2700,6 +2744,22 @@ package identity、来源摘要与 provenance 绑定合同判断。</p>
 <li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.kit.*</code>、<code>foundation.unsupported.*</code>）。</li>
 <li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code> 与 <code>cli.mjs</code>，拒绝引用不存在的入口，并校验 <code>TOP_LEVEL_COMMANDS</code> 未扩张为超 4 个。</li>
 </ul>
+<h2 id="能力发现与迁移指引-Foundation-0140">能力发现与迁移指引 (Foundation 0.14.0)<a class="headerlink" href="#能力发现与迁移指引-Foundation-0140" title="Permanent link">&para;</a></h2>
+<p><code>adopt-plan --list-capabilities</code> 是能力发现的唯一 CLI 入口，不增加第五个顶层命令。
+覆盖参考和项目评估使用 <code>--all --scope &lt;scope&gt; --locale &lt;en|zh-CN&gt;</code>；项目评估另加
+<code>--uses &lt;relative-json-path&gt;</code>，日常单需求查询使用 <code>--filter &lt;text&gt;</code>。输出中的
+<code>supportedMatches</code> 只是候选，<code>needsDecision=true</code> 表示项目仍需明确 disposition；
+<code>boundary-found</code> 和 <code>no-text-match</code> 都不自动生成 <code>foundation-gap</code>。</p>
+<p><code>planAdoption()</code> 返回的 <code>capabilityAssessment</code> 和 <code>capabilityGuidance</code> 仍是只读投影。
+<code>direct-adoption</code>、<code>compatibility-layer</code>、<code>keep-business</code> 与 <code>foundation-gap</code> 的 decision
+由消费者记录。迁移 <code>complete</code> 只表示迁移门禁闭合，<code>consumerVerification.claim</code> 保持
+<code>null</code>；契约接入完成须由消费者适配器测试与领域门禁声明。</p>
+<h2 id="显式真实宿主资格">显式真实宿主资格<a class="headerlink" href="#显式真实宿主资格" title="Permanent link">&para;</a></h2>
+<p><code>check qualification</code> 是挂在 <code>check</code> 下的显式子动作，要求同时提供
+<code>--root</code>、<code>--capability foundation.kit.plugin-verification</code>、<code>--request</code>、<code>--bindings</code>
+与 <code>--native</code>。它先读取三包精确版本、能力目录、request/result Schema 和参数完整性，
+再调用 <code>runPluginVerification</code>。缺少证据、跳过执行或终态不确定时，不得输出
+<code>real-host-qualified</code>；候选发现、迁移 <code>complete</code> 和契约接入完成都不能替代真实资格。</p>
 <h2 id="完整插件验证-foundationkitplugin-verification">完整插件验证 (foundation.kit.plugin-verification)<a class="headerlink" href="#完整插件验证-foundationkitplugin-verification" title="Permanent link">&para;</a></h2>
 <h3 id="runPluginVerification">runPluginVerification<a class="headerlink" href="#runPluginVerification" title="Permanent link">&para;</a></h3>
 <ul>

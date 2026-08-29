@@ -96,6 +96,7 @@ export const KIT_ERROR_KINDS = Object.freeze({
   HOST_CONTRACT_INVALID: "host-contract-invalid",
   HOST_PROBE_FAILED: "host-probe-failed",
   HOST_BUILD_FAILED: "host-build-failed",
+  CAPABILITY_CATALOG_INVALID: "capability-catalog-invalid",
 });
 
 /** Error carrying one frozen SFC code plus a stable kit kind in details. */

@@ -1100,6 +1100,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#0140-Shortest-Entry" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        0.14.0 Shortest Entry
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Classification-Method" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1829,6 +1840,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#0140-Shortest-Entry" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        0.14.0 Shortest Entry
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Classification-Method" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2005,6 +2027,22 @@
 </blockquote>
 <h1 id="Existing-Repository-Adoption-and-Migration-FND-070">Existing-Repository Adoption and Migration (FND-070)<a class="headerlink" href="#Existing-Repository-Adoption-and-Migration-FND-070" title="Permanent link">&para;</a></h1>
 <p>This page describes how an existing project adopts the Skill Family infrastructure, and the gate for judging migration completion. It serves two reader types: a human owner uses it to judge the adoption path and risks; an agent uses it to run a read-only inventory via <code>adopt-plan</code>, without duplicating write actions on this page.</p>
+<p>Foundation 0.14.0 records four different conclusions. A capability-catalog query discovers candidates; migration state <code>complete</code> proves only the migration loop; contract integration is stated by the consumer's adapter tests and domain gate; real-host qualification is proved only by an explicit <code>check qualification --native</code> execution. One conclusion cannot substitute for another.</p>
+<h2 id="0140-Shortest-Entry">0.14.0 Shortest Entry<a class="headerlink" href="#0140-Shortest-Entry" title="Permanent link">&para;</a></h2>
+<p>Declare uses in the migration manifest, then inspect candidates with the same use matrix. <code>adopt-plan</code> remains read-only and never creates a decision or changes the Profile automatically.</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --all --scope all --locale en --uses ./uses.json
+</code></pre>
+<p>Each use must choose <code>direct-adoption</code>, <code>compatibility-layer</code>, <code>keep-business</code>, or <code>foundation-gap</code>. Only the first two require <code>targetCapability</code>; the other two retain consumer ownership or record a Foundation gap. A text match for a capability ID never creates an adoption declaration automatically.</p>
+<p>After migration, the consumer still verifies contract wiring and domain guarantees. For a real host, run the explicit command only when that evidence is required:</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit check qualification \
+  --root &lt;consumer-repo&gt; \
+  --capability foundation.kit.plugin-verification \
+  --request &lt;request-json&gt; \
+  --bindings &lt;private-bindings-json&gt; \
+  --native
+</code></pre>
+<p>The caller supplies the <code>--request</code> and <code>--bindings</code> JSON files. The command preflights exact versions, catalog capability metadata, and complete parameters before touching a host. Missing evidence, a skipped execution, or an indeterminate terminal state cannot produce <code>real-host-qualified</code>.</p>
 <h2 id="Classification-Method">Classification Method<a class="headerlink" href="#Classification-Method" title="Permanent link">&para;</a></h2>
 <p>Before an existing repository connects to Foundation, classify it into one of the four categories below. The classification determines which path to take, whether files are written, and how the legacy implementation is handled.</p>
 <table>
@@ -2099,33 +2137,47 @@
 <h2 id="Migration-Manifest-skill-familymigrationjson">Migration Manifest (skill-family.migration.json)<a class="headerlink" href="#Migration-Manifest-skill-familymigrationjson" title="Permanent link">&para;</a></h2>
 <p>The target repository declares its own migration state in the root directory:</p>
 <pre><code class="language-json">{
+  &quot;schemaVersion&quot;: 1,
   &quot;kind&quot;: &quot;skill-family.migration-manifest&quot;,
-  &quot;legacyInfra&quot;: [
-    { &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;, &quot;replacedBy&quot;: &quot;sf-kit check&quot; }
-  ],
-  &quot;exceptions&quot;: [
+  &quot;manifestVersion&quot;: 4,
+  &quot;capabilityUseContext&quot;: { &quot;scope&quot;: &quot;harness&quot;, &quot;locale&quot;: &quot;en&quot; },
+  &quot;capabilityUses&quot;: [
     {
-      &quot;owner&quot;: &quot;owner&quot;,
-      &quot;reason&quot;: &quot;specific reason&quot;,
-      &quot;deadline&quot;: &quot;2026-12-31&quot;,
-      &quot;migrationTarget&quot;: &quot;wave-m1&quot;
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;problemStatement&quot;: &quot;Write output without leaving a partial file&quot;,
+      &quot;constraints&quot;: [&quot;Tests must not write a real project directory&quot;],
+      &quot;retainedGuarantees&quot;: [&quot;The consumer still chooses the output artifact&quot;],
+      &quot;catalogFilters&quot;: [&quot;atomic write&quot;]
     }
   ],
-  &quot;targetProfile&quot;: &quot;generic&quot;,
-  &quot;foundationPackages&quot;: [
-    { &quot;name&quot;: &quot;skill-family-contracts&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-harness-node&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; },
-    { &quot;name&quot;: &quot;skill-family-engineering-kit&quot;, &quot;version&quot;: &quot;0.3.0&quot;, &quot;digest&quot;: &quot;sha256:&lt;64 hex digits&gt;&quot; }
+  &quot;capabilityDecisions&quot;: [
+    {
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;disposition&quot;: &quot;direct-adoption&quot;,
+      &quot;targetCapability&quot;: &quot;foundation.harness.atomic-write&quot;,
+      &quot;reason&quot;: &quot;The neutral atomic-write mechanism covers the need while artifact selection remains consumer-owned&quot;
+    }
   ],
-  &quot;verification&quot;: {
-    &quot;unit&quot;: &quot;docs/evidence/unit.json&quot;,
-    &quot;integration&quot;: &quot;docs/evidence/integration.json&quot;,
-    &quot;consumer&quot;: &quot;docs/evidence/consumer.json&quot;,
-    &quot;independentAudit&quot;: &quot;docs/evidence/independent-audit.json&quot;
-  }
+  &quot;legacyInfra&quot;: [
+    {
+      &quot;path&quot;: &quot;scripts/old-validator.mjs&quot;,
+      &quot;replacedBy&quot;: null,
+      &quot;useId&quot;: &quot;safe-output-write&quot;,
+      &quot;recoveryRef&quot;: &quot;docs/recovery/old-validator.md&quot;
+    }
+  ],
+  &quot;legacyReferences&quot;: [
+    {
+      &quot;path&quot;: &quot;src/index.mjs&quot;,
+      &quot;text&quot;: &quot;legacyWrite()&quot;,
+      &quot;replacedBy&quot;: &quot;foundation.harness.atomic-write&quot;,
+      &quot;useId&quot;: &quot;safe-output-write&quot;
+    }
+  ],
+  &quot;exceptions&quot;: []
 }
 </code></pre>
-<p>The structure above shows the core fields of the migration manifest; each <code>legacyInfra</code> entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</p>
+<p>This example matches the machine fixture <code>positive-04-capability-adoption.json</code>: <code>replacedBy: null</code> means the legacy implementation has not exited, and <code>recoveryRef</code> records the recovery guidance; the tool only read-only evaluates existence and never deletes on its behalf.</p>
 <p>The Quickstart Profile candidate moves to v2 in 0.3.0. A migration manifest that binds candidate capabilities must pin all three Foundation packages to exactly 0.3.0; an existing integration that still requires v1 must keep all three packages pinned to exactly 0.2.1 and must not mix the two sets.</p>
 <ul>
 <li><code>legacyInfra</code>: each entry gives the legacy-implementation path and its replacement; the tool only read-only evaluates existence and never deletes on its behalf.</li>
@@ -2197,7 +2249,7 @@
 <li><strong>fail-closed default</strong>: any unparseable, out-of-bounds, identity-mismatched, or evidence-missing input makes the corresponding judgment unproven; success is not assumed.</li>
 </ul>
 <h2 id="Profile-Draft">Profile Draft<a class="headerlink" href="#Profile-Draft" title="Permanent link">&para;</a></h2>
-<p><code>adopt-plan</code> output carries a <code>profileDraft</code> sub-block (kind=<code>skill-family.profile-draft</code>, schemaVersion=1): a pre-filled profile.json descriptor draft (<code>descriptorRelPath</code>=<code>profile.json</code>). The adoption-lock concept and its artifact form are deprecated (remediation handoff D-8): the lightweight adoption proof is the descriptor's own adoption declaration, machine-verified by <code>verifyProfile</code> (Profile SPI v2) — field completeness and pin format are schema-checked at the descriptor step (SPE1001), pin digests are compared against the real artifact bytes inside the write set per GK-4 discipline (SPE1006), and the tightening-only overrides policy is adjudicated separately (SPE1007).</p>
+<p><code>adopt-plan</code> output carries a <code>profileDraft</code> sub-block (kind=<code>skill-family.profile-draft</code>, schemaVersion=1): a pre-filled profile.json descriptor draft (<code>descriptorRelPath</code>=<code>profile.json</code>). The adoption-lock concept and its artifact form are deprecated (remediation handoff D-8): the lightweight adoption proof is the descriptor's own adoption declaration, machine-verified by <code>verifyProfile</code> (Profile SPI v3) — field completeness and pin format are schema-checked at the descriptor step (SPE1001), pin digests are compared against the real artifact bytes inside the write set per GK-4 discipline (SPE1006), and the tightening-only overrides policy is adjudicated separately (SPE1007).</p>
 <p>The draft pre-fills everything mechanically derivable from read-only facts:</p>
 <ul>
 <li>Descriptor identity and base: <code>profile.id</code>/<code>profile.name</code> come from the plan inputs, <code>base.contractsVersion</code> is the loaded frozen contracts version; <code>differences</code>/<code>spi</code> start as empty arrays.</li>

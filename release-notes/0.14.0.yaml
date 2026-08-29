@@ -1,0 +1,21 @@
+version: 0.14.0
+date: 2026-08-28
+locales:
+  en:
+    summary: Engineering Kit 0.14.0 adds capability discovery, migration guidance, consumer contract-test wiring, and an explicit qualification entrypoint.
+    changes:
+      added:
+        - Adds read-only capability assessment through adopt-plan and the list-capabilities CLI mode.
+        - Adds consumer contract-test scaffolding guidance and the explicit qualification command for real-host evidence.
+      changed:
+        - Documents separate candidate discovery, migration completion, contract integration, and real-host qualification conclusions.
+    upgradeNotes: Pin all three Foundation packages to 0.14.0. Capability assessment and migration planning write no files; contract vectors and official fakes prove wiring only; qualification remains an explicit consumer-owned activity.
+  zh-CN:
+    summary: Engineering Kit 0.14.0 增加能力发现、迁移指引、消费者契约测试接线和显式资格检查入口。
+    changes:
+      added:
+        - 通过 `adopt-plan` 与 `list-capabilities` CLI 模式增加只读能力评估。
+        - 增加消费者契约测试脚手架指引，以及生成真实宿主证据的显式资格检查命令。
+      changed:
+        - 明确区分候选发现、迁移完成、契约接入完成和真实宿主资格四种结论。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.14.0。能力评估和迁移规划不写文件；契约向量与正式测试替身只证明接线；资格检查仍由消费者显式负责。

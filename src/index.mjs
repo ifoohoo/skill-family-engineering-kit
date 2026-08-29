@@ -146,7 +146,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none — diagnosis only: never writes, never auto-fixes; git is probed read-only (one frozen status query at most); the report sub-action (check report) grades one rendered report against its bound machine result and writes nothing; the entries sub-action (check entries) runs the shared entry contract gate (SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002) over skill-family.entry-contract.json and SKILL.md bytes and writes nothing; the relock sub-action (check relock) is the one controlled exception: one fail-closed transaction writing exactly the two contained state documents (.foundation/file-registry.json and skill-family.managed-file-lock.json), with drift validation before the first write and zero writes on any refusal",
+      "none for ordinary diagnosis — never writes, never auto-fixes; git is probed read-only (one frozen status query at most); report and entries sub-actions remain read-only; relock is the one controlled write transaction; qualification is separately explicit and may invoke the capability-specific native host only after its preflight",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });

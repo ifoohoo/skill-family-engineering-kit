@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.14.0 locale=zh-CN baseline=sha256:c3c9e90c2c1e4c06d34871d18ba4062db46e484cbeccbf25867d8b59db32ccc0 -->
+## [0.14.0] - 2026-08-28
+
+Engineering Kit 0.14.0 增加能力发现、迁移指引、消费者契约测试接线和显式资格检查入口。
+
+### 新增
+
+- 通过 `adopt-plan` 与 `list-capabilities` CLI 模式增加只读能力评估。
+- 增加消费者契约测试脚手架指引，以及生成真实宿主证据的显式资格检查命令。
+
+### 变更
+
+- 明确区分候选发现、迁移完成、契约接入完成和真实宿主资格四种结论。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.14.0。能力评估和迁移规划不写文件；契约向量与正式测试替身只证明接线；资格检查仍由消费者显式负责。
+<!-- release-skill:changelog:end version=0.14.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.13.0 locale=zh-CN baseline=sha256:3493c49151b2ebabddcba806d892ce967c0ae47621b0b2c75086e1cac334ebf9 -->
 ## [0.13.0] - 2026-08-26
 

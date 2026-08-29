@@ -40,7 +40,7 @@ function projectMembers(observation) {
     path: member.path, type: "file", sha256: member.sha256, bytes: member.bytes, executable: (member.statMode & 0o111) !== 0,
   });
 }
-function validateMembers(members) {
+export function validateMembers(members) {
   if (!Array.isArray(members) || members.length === 0) throw fail("sourceMembers must be a nonempty canonical member table");
   const seen = new Map(); let previous = null;
   for (const member of members) {

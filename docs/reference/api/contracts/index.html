@@ -980,6 +980,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#消费方契约测试向量-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        消费方契约测试向量 (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2309,6 +2320,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#消费方契约测试向量-Foundation-0140" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        消费方契约测试向量 (Foundation 0.14.0)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2352,14 +2374,14 @@
 <li><a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同</a> → request/result Schema</li>
 <li><a href="#真实宿主验证合同-foundationcontractshost-verification">真实宿主验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（42 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.13.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（42 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.14.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：<code>validateDocument(document, { schemaId, schema, dialect, policy = "strict" } = {})</code></li>
 <li>输入：任意 JSON 文档；目标契约对象 <code>$id</code> 或 schema 对象；方言（<code>draft-07</code> / <code>2020-12</code>）；策略（<code>strict</code> | <code>tolerant</code>）。</li>
-<li>输出：校验通过返回 <code>{valid:true}</code>（不含 <code>errorCode</code>）；失败返回 <code>{valid:false, errorCode, errors}</code>，<strong>不抛出</strong>（已实测：未知 <code>$id</code> 返回 <code>SFC1002</code>，文档不符返回 <code>SFC1001</code>）。</li>
+<li>输出：始终返回 <code>{valid, errorCode, errors, data}</code>；校验通过时 <code>valid=true</code>，失败时 <code>valid=false</code> 并带稳定 <code>errorCode</code>，<strong>不抛出</strong>（已实测：未知 <code>$id</code> 返回 <code>SFC1002</code>，文档不符返回 <code>SFC1001</code>）。<code>data</code> 是校验使用的规范化副本。</li>
 <li>纯函数：是。仅读取进程内 Ajv 编译缓存，不触外部资源。</li>
 <li>副作用：无文件/Git/网络/进程副作用；首次编译写入内存编译缓存，后续同 <code>(schemaId,dialect,policy)</code> 复用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1002</code>（未知 <code>$id</code>）、<code>SFC1001</code>（文档不符 Schema）。两者均经返回值 <code>errorCode</code> 表达，调用方以 <code>valid</code> 字段判断成败，不以 <code>try/catch</code> 捕获。</li>
@@ -2377,7 +2399,7 @@
 <li>输出：编译后的 Ajv <code>validate</code> 函数；或抛 <code>ContractsError</code>（<code>SFC1012</code> <code>SCHEMA_COMPILE_FAILED</code>，当 schema 自身无法在声明方言下编译）。</li>
 <li>纯函数：是。</li>
 <li>副作用：无外部副作用，仅写入编译缓存。</li>
-<li>稳定错误码与 <code>details.kind</code>：<code>SFC1012</code>（编译失败，抛异常——与 <code>validateDocument</code> 的返回式失败不同）、<code>SFC1006</code>（未知方言，由 <code>detectDialect</code> 抛）。</li>
+<li>稳定错误码与 <code>details.kind</code>：<code>SFC1012</code>（Schema 编译失败，抛异常——与 <code>validateDocument</code> 的返回式失败不同）、<code>SFC1006</code>（不支持的方言；<code>compileSchema</code> 抛出，<code>validateDocument</code> 以返回值报告）。</li>
 <li>前置条件与信任锚：Ajv 8.20.0 固定；<code>dialect</code> 属冻结支持集。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
@@ -2388,10 +2410,10 @@
 <ul>
 <li>签名：<code>detectDialect(schema)</code></li>
 <li>输入：带 <code>$schema</code> 字段的 schema 对象。</li>
-<li>输出：方言字符串（<code>draft-07</code> / <code>2020-12</code>）；未知方言抛 <code>ContractsError</code>（<code>SFC1006</code> <code>UNSUPPORTED_DIALECT</code>）。</li>
+<li>输出：方言字符串（<code>draft-07</code> / <code>2020-12</code>）；缺少或未知方言返回 <code>null</code>。<code>compileSchema</code> 对不支持的方言抛 <code>SFC1006</code>，<code>validateDocument</code> 对同一情况返回 <code>errorCode: "SFC1006"</code>。</li>
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
-<li>稳定错误码与 <code>details.kind</code>：<code>SFC1006</code>（声明方言不在冻结支持集）。</li>
+<li>稳定错误码与 <code>details.kind</code>：调用方直接调用 <code>detectDialect</code> 时未知方言不产生错误码；下游编译/校验分别按上述规则产生 <code>SFC1006</code>。</li>
 <li>前置条件与信任锚：方言集冻结（<code>SUPPORTED_DIALECTS</code>）。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/validator.mjs</code>。</li>
@@ -2433,11 +2455,11 @@
 <li><code>findSchemaByObject(object, registry = REGISTRY)</code></li>
 <li><code>findProtocol(name, version, registry = REGISTRY)</code></li>
 <li>输入：对象名、<code>$id</code>、协议名/版本（其余默认读冻结 <code>REGISTRY</code>）。</li>
-<li>输出：已登记 schema 元信息或协议定义；未命中返回 <code>undefined</code>。</li>
+<li>输出：已登记 schema 元信息或协议定义；未命中返回 <code>null</code>。</li>
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
 <li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
-<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.4.0</code> 为唯一权威；18 类顶层对象集合固定，新增需 ADR。</li>
+<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.14.0</code> 为唯一权威；登记表含 42 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
@@ -2449,11 +2471,11 @@
 <li><code>registerSchema(entry, registry = REGISTRY)</code></li>
 <li><code>registerProtocol(entry, registry = REGISTRY)</code></li>
 <li>输入：schema/protocol 登记项。</li>
-<li>输出：写入后的 registry（默认冻结 <code>REGISTRY</code> 上的副作用）；重复 <code>$id</code>/协议名抛 <code>ContractsError</code>。</li>
-<li>纯函数：否（默认向进程内冻结 registry 登记，属受控内存副作用）。</li>
-<li>副作用：进程内 registry 变更；不落盘。</li>
+<li>输出：包含新登记项的 registry 新副本；输入 registry 与默认冻结 <code>REGISTRY</code> 均不修改。重复 <code>$id</code>/协议名抛 <code>ContractsError</code>。</li>
+<li>纯函数：是（仅返回复制后的内存对象）。</li>
+<li>副作用：无文件、进程、Git、网络或持久化副作用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
-<li>前置条件与信任锚：18 类对象集与协议名集冻结。</li>
+<li>前置条件与信任锚：登记表含 42 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：同上。</li>
 <li>正例/负例测试：同上。</li>
@@ -2713,6 +2735,18 @@ Bundle 让旧新 ID 指向同一编译 validator，不复制 Schema，也不登�
 <p>该能力从 <code>0.2.1</code> 起公开，稳定性仍为 <code>candidate</code>。0.3.0 已用 v2 替换 v1，两者不兼容：仍需 v1 的接入继续精确
 锁定 <code>0.2.1</code>；v2 新接入应使用 0.10.0 规范入口并精确锁定三包。candidate Schema 不进入稳定 <code>src/registry.json</code>。
 主动升级候选版本仍需复验；以后仅晋升 stable 时不再切入口或 Schema 身份。取得 stable 发布承诺仍需更新三包精确 pin。</p>
+<hr />
+<h2 id="消费方契约测试向量-Foundation-0140">消费方契约测试向量 (Foundation 0.14.0)<a class="headerlink" href="#消费方契约测试向量-Foundation-0140" title="Permanent link">&para;</a></h2>
+<p><code>listConsumerContractVectors({ capabilityId, foundationVersion, vectorSetId? })</code> 返回按
+<code>vectorId</code> 的 Unicode 码点顺序排列且深度冻结的公开向量。<code>capabilityId</code> 和
+<code>foundationVersion</code> 必填；未找到匹配向量时返回空数组。</p>
+<p><code>verifyConsumerContractVector(vector, { capabilityId, foundationVersion, vectorSetId? })</code>
+只核对向量身份、精确版本和公开 request/expected 结构，返回
+<code>{ vectorId, ok, expected, observed, mismatchCode }</code>。身份或版本不匹配时
+<code>ok=false</code>、<code>mismatchCode=SFC1013</code>；校验器不会调用消费方、Harness、测试替身（<code>fake</code>）或宿主。</p>
+<p>0.14.0 提供 <code>foundation.contracts.object-validation.consumer-v1</code> 与
+<code>foundation.harness.atomic-write.consumer-v1</code> 两组向量。向量声明的是合同可观察结果；
+原子写正例的 <code>valueRelation</code> 由 Harness 与消费方测试验证，Contracts 不解释该关系。</p>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

@@ -1019,10 +1019,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#New-Project-Generate-a-Skeleton" class="md-nav__link">
+  <a href="#Shared-Installation-Prerequisite" class="md-nav__link">
     <span class="md-ellipsis">
 
-        New Project: Generate a Skeleton
+        Shared Installation Prerequisite
 
     </span>
   </a>
@@ -1030,10 +1030,54 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Existing-Project-Read-Only-Inventory" class="md-nav__link">
+  <a href="#New-Project-Discover-Capabilities-and-Generate-a-Skeleton" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Existing Project: Read-Only Inventory
+        New Project: Discover Capabilities and Generate a Skeleton
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Existing-Project-Adopt-and-Complete-Migration" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Existing Project: Adopt and Complete Migration
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Daily-Work-Query-One-Requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Daily Work: Query One Requirement
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Legacy-Short-Path-Generate-a-Skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Legacy Short Path: Generate a Skeleton
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Existing-Project-Read-Only-Inventory-Compatibility-Entry" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Existing Project: Read-Only Inventory (Compatibility Entry)
 
     </span>
   </a>
@@ -1729,10 +1773,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
-  <a href="#New-Project-Generate-a-Skeleton" class="md-nav__link">
+  <a href="#Shared-Installation-Prerequisite" class="md-nav__link">
     <span class="md-ellipsis">
 
-        New Project: Generate a Skeleton
+        Shared Installation Prerequisite
 
     </span>
   </a>
@@ -1740,10 +1784,54 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#Existing-Project-Read-Only-Inventory" class="md-nav__link">
+  <a href="#New-Project-Discover-Capabilities-and-Generate-a-Skeleton" class="md-nav__link">
     <span class="md-ellipsis">
 
-        Existing Project: Read-Only Inventory
+        New Project: Discover Capabilities and Generate a Skeleton
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Existing-Project-Adopt-and-Complete-Migration" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Existing Project: Adopt and Complete Migration
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Daily-Work-Query-One-Requirement" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Daily Work: Query One Requirement
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Legacy-Short-Path-Generate-a-Skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Legacy Short Path: Generate a Skeleton
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Existing-Project-Read-Only-Inventory-Compatibility-Entry" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Existing Project: Read-Only Inventory (Compatibility Entry)
 
     </span>
   </a>
@@ -1804,15 +1892,51 @@
 <p><a href="../../quickstart/">简体中文</a></p>
 </blockquote>
 <h1 id="Quickstart">Quickstart<a class="headerlink" href="#Quickstart" title="Permanent link">&para;</a></h1>
-<p>This page gives each of three reader types a shortest path to success: new projects, existing projects, and architecture designers. Each path lists only the required actions and verification commands; follow the corresponding documentation for deeper detail.</p>
-<h2 id="New-Project-Generate-a-Skeleton">New Project: Generate a Skeleton<a class="headerlink" href="#New-Project-Generate-a-Skeleton" title="Permanent link">&para;</a></h2>
-<p>The goal is to obtain a Foundation-compliant project skeleton from scratch.</p>
-<pre><code class="language-sh">npm install --save-dev skill-family-engineering-kit
-npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project
+<p>This page gives ordinary developers three executable journeys: discovering capabilities and generating a new project, adopting an existing project, and querying one requirement during daily work. Each journey includes exact commands; architecture routing and API details live in the linked references.</p>
+<h2 id="Shared-Installation-Prerequisite">Shared Installation Prerequisite<a class="headerlink" href="#Shared-Installation-Prerequisite" title="Permanent link">&para;</a></h2>
+<p>For local candidate validation, build the three <code>0.14.0</code> tarballs from the Foundation workspace and install them into a temporary consumer. Run these commands from the Foundation workspace root:</p>
+<pre><code class="language-sh">pack_dir=&quot;$(mktemp -d)&quot;
+(cd packages/skill-family-contracts &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+(cd packages/skill-family-harness-node &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+(cd packages/skill-family-engineering-kit &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
+mkdir &quot;$pack_dir/consumer&quot; &amp;&amp; (cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm init -y)
+(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-harness-node-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-0.14.0.tgz&quot;)
+</code></pre>
+<p>After publication, install the exact coordinate <code>skill-family-engineering-kit@0.14.0</code>, then run the <code>npm exec</code> commands below.</p>
+<h2 id="New-Project-Discover-Capabilities-and-Generate-a-Skeleton">New Project: Discover Capabilities and Generate a Skeleton<a class="headerlink" href="#New-Project-Discover-Capabilities-and-Generate-a-Skeleton" title="Permanent link">&para;</a></h2>
+<p>Start by evaluating the project's uses, then select stable capabilities explicitly. <code>--list-capabilities</code> is read-only; the <code>--uses</code> file should contain problems, constraints, retained guarantees, and optional filters, never credentials or private business data.</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project --capability foundation.contracts.object-validation --capability foundation.harness.atomic-write
+npm exec -- skill-family-kit check --root ./my-project
+</code></pre>
+<p><code>supportedMatches</code> is candidate discovery only, and <code>needsDecision</code> means that the project still has to confirm the use. The command does not write a Profile or claim adoption. A successful <code>scaffold</code> means that the skeleton and contract-test wiring were written; the adapter, domain guarantee, and consumer tests remain to be completed.</p>
+<h2 id="Existing-Project-Adopt-and-Complete-Migration">Existing Project: Adopt and Complete Migration<a class="headerlink" href="#Existing-Project-Adopt-and-Complete-Migration" title="Permanent link">&para;</a></h2>
+<p>Run read-only <code>adopt-plan</code> first, then record uses and one of the four decision dispositions in the migration manifest. Only <code>direct-adoption</code> and <code>compatibility-layer</code> may target a Foundation capability; <code>keep-business</code> and <code>foundation-gap</code> stay with the consumer.</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
+npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec -- skill-family-kit check --root ./existing-repo
+</code></pre>
+<p><code>adopt-plan</code> writes no files and does not migrate automatically. Migration state <code>complete</code> means that the Profile, managed files, legacy exit, checks, and four evidence classes are all satisfied; it does not mean contract integration is complete. The consumer's adapter tests and domain gate must state that conclusion.</p>
+<h2 id="Daily-Work-Query-One-Requirement">Daily Work: Query One Requirement<a class="headerlink" href="#Daily-Work-Query-One-Requirement" title="Permanent link">&para;</a></h2>
+<p>When the capability ID is unknown, use a deterministic substring query in the intended language. An empty result is <code>no-text-match</code>; a result containing only unsupported capabilities is <code>boundary-found</code>. Neither result creates a <code>foundation-gap</code> decision.</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --locale en --filter &quot;must not leave a partial file when a write fails&quot;
+</code></pre>
+<p>To establish real-host qualification, provide a complete request, bindings, and <code>--native</code> to the explicit qualification sub-action:</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit check qualification \
+  --root &lt;consumer-repo&gt; \
+  --capability foundation.kit.plugin-verification \
+  --request &lt;request-json&gt; \
+  --bindings &lt;private-bindings-json&gt; \
+  --native
+</code></pre>
+<p>The real qualification claim comes only from one explicit, bounded host execution. Candidate discovery, migration <code>complete</code>, and contract integration do not replace it.</p>
+<h2 id="Legacy-Short-Path-Generate-a-Skeleton">Legacy Short Path: Generate a Skeleton<a class="headerlink" href="#Legacy-Short-Path-Generate-a-Skeleton" title="Permanent link">&para;</a></h2>
+<p>If the project has already confirmed that a uses assessment is unnecessary, it can still generate a compliant skeleton directly.</p>
+<pre><code class="language-sh">npm exec -- skill-family-kit scaffold --root ./my-project --project-id my-project
 npm exec -- skill-family-kit check --root ./my-project
 </code></pre>
 <p>The commands above first generate a skeleton, then run engineering diagnostics on the generated result. <code>scaffold</code> writes only to an empty target directory; a non-empty or conflicting target is refused and not touched; <code>check</code> diagnoses only, it does not fix. Verification passes when <code>check</code> exits with code 0.</p>
-<h2 id="Existing-Project-Read-Only-Inventory">Existing Project: Read-Only Inventory<a class="headerlink" href="#Existing-Project-Read-Only-Inventory" title="Permanent link">&para;</a></h2>
+<h2 id="Existing-Project-Read-Only-Inventory-Compatibility-Entry">Existing Project: Read-Only Inventory (Compatibility Entry)<a class="headerlink" href="#Existing-Project-Read-Only-Inventory-Compatibility-Entry" title="Permanent link">&para;</a></h2>
 <p>The goal is to first see whether the existing repository can be adopted, without changing any bytes.</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --root ./existing-repo
 npm exec -- skill-family-kit check --root ./existing-repo

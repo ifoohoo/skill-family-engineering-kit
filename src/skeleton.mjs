@@ -1,4 +1,5 @@
 import { CONTRACTS_VERSION } from "skill-family-contracts";
+import { readFile } from "node:fs/promises";
 import { digestBytes } from "skill-family-harness-node";
 import { invalidParamsError, kitError, KIT_ERROR_KINDS } from "./errors.mjs";
 import {
@@ -9,6 +10,7 @@ import {
 } from "./licensing.mjs";
 import { MIGRATION_MANIFEST_PATH } from "./migration.mjs";
 import { KIT_VERSION } from "./version.mjs";
+import { resolveScaffoldCapabilities } from "./capability-assessment.mjs";
 
 /**
  * The planned skeleton of one Skill Family project.
@@ -380,8 +382,8 @@ function renderSourceOfTruth({ projectId, projectName }) {
  * Seeded once by the scaffold; afterwards it is target-held data that no
  * tool ever overwrites (same discipline as the migration manifest).
  */
-function renderProjectProfile({ projectId, profileId }) {
-  return jsonString({
+function renderProjectProfile({ projectId, profileId, includeCapabilities = false }) {
+  const profile = {
     schemaVersion: 1,
     kind: "skill-family.project-profile",
     project: {
@@ -409,7 +411,9 @@ function renderProjectProfile({ projectId, profileId }) {
       },
     ],
     note: "采用声明与自加严覆盖由项目自行维护；engineering kit 只种子化模板，永不覆盖。null 字段必须由项目以真实事实补齐后才构成有效声明：foundation_profile.version/stability 是人的决策；foundation_pin.packages.*.path/sha256 必须从项目写集内真实钉扎工件的字节计算（GK-4 摘要纪律）；adopted_at 是完成采用的 RFC 3339 时间。本文件是项目级声明（kind skill-family.project-profile），不是 Profile SPI descriptor；adoption/overrides 段的形状与 SPI v3 权威定义（Contracts profile-adoption-declaration 的 $defs）逐字段一致。",
-  });
+  };
+  if (includeCapabilities) profile.adoption.capabilities = [];
+  return jsonString(profile);
 }
 
 function renderFileRegistry({ projectId, projenManaged, kitManaged, handwritten }) {
@@ -574,7 +578,16 @@ function renderReadme({ projectId, projectName, licensingProfile }) {
   ].join("\n");
 }
 
-function renderAgents({ projectId }) {
+function renderAgents({ projectId, capabilitySelection = false }) {
+  if (capabilitySelection) {
+    return [
+      "# Project Agent Rules",
+      "",
+      "先阅读 [Quickstart](docs/quickstart.md)，再使用通用能力查询命令：",
+      "`skill-family-kit adopt-plan --list-capabilities --locale zh-CN --filter <需求>`。",
+      "",
+    ].join("\n");
+  }
   // MCR-020: this file carries ONLY the Git safety baseline and a link to
   // the single complete guide (docs/git-lifecycle.md). No automatic Git
   // actions, no duplicated process.
@@ -678,6 +691,107 @@ function renderMkdocsYml({ projectName }) {
 
 function renderDocPage(title, projectName, body) {
   return [`# ${title}`, "", ...body.map((line) => line.replaceAll("{{PROJECT}}", projectName)), ""].join("\n");
+}
+
+function renderFoundationAdapter() {
+  return [
+    "// Consumer-owned adapter seam. Keep domain semantics here; the kit never",
+    "// fills in or interprets the consumer's guarantee.",
+    'import path from "node:path";',
+    "",
+    "export async function invokeConsumerAdapter({ vector, validateDocument, writeFileAtomic }) {",
+    '  if (vector.capabilityId === "foundation.contracts.object-validation") {',
+    "    if (typeof validateDocument !== \"function\") throw new TypeError(\"validateDocument adapter is required\");",
+    "    return validateDocument(vector.request.document, vector.request.options);",
+    "  }",
+    '  if (vector.capabilityId === "foundation.harness.atomic-write") {',
+    "    if (typeof writeFileAtomic !== \"function\") throw new TypeError(\"writeFileAtomic adapter is required\");",
+    "    const root = path.resolve(\".foundation-contract-root\");",
+    "    return writeFileAtomic(root, vector.request.relPath, vector.request.data, vector.request.options);",
+    "  }",
+    "  throw new TypeError(`unsupported consumer contract: ${vector.capabilityId}`);",
+    "}",
+    "",
+    "export function assertConsumerDomainGuarantee() {",
+    '  throw new Error("consumer domain guarantee is not configured; fill this assertion in the adapter");',
+    "}",
+    "",
+  ].join("\n");
+}
+
+function renderObjectValidationContractTest() {
+  return [
+    'import assert from "node:assert/strict";',
+    'import test from "node:test";',
+    'import { FOUNDATION_PACKAGE_VERSION, listConsumerContractVectors, validateDocument, verifyConsumerContractVector } from "skill-family-contracts";',
+    'import { invokeConsumerAdapter, assertConsumerDomainGuarantee } from "../../src/foundation-adapter.mjs";',
+    "",
+    'const capabilityId = "foundation.contracts.object-validation";',
+    'const vectors = listConsumerContractVectors({ capabilityId, foundationVersion: FOUNDATION_PACKAGE_VERSION });',
+    "assert.equal(vectors.length, 3);",
+    "",
+    "for (const vector of vectors) {",
+    "  test(vector.vectorId, async () => {",
+    "    assert.equal(verifyConsumerContractVector(vector, { capabilityId, foundationVersion: FOUNDATION_PACKAGE_VERSION, vectorSetId: vector.vectorSetId }).ok, true);",
+    "    if (vector.expected.outcome === \"indeterminate\") {",
+    "      const outcome = await Promise.resolve()",
+    "        .then(() => invokeConsumerAdapter({ vector, validateDocument }))",
+    "        .then((value) => ({ outcome: \"return\", value }), (error) => ({ outcome: \"throw\", errorCode: error.code }));",
+    "      assert.ok(vector.expected.allowedStates.includes(outcome.outcome));",
+    "      assertConsumerDomainGuarantee({ vector, consumerResult: outcome });",
+    "      return;",
+    "    }",
+    "    const observed = await Promise.resolve().then(() => invokeConsumerAdapter({ vector, validateDocument }));",
+    "    assert.deepEqual(observed, vector.expected.value);",
+    "    if (vector.caseClass === \"positive\") assertConsumerDomainGuarantee({ vector, consumerResult: observed });",
+    "  });",
+    "}",
+    "",
+  ].join("\n");
+}
+
+function renderAtomicWriteContractTest() {
+  return [
+    'import assert from "node:assert/strict";',
+    'import path from "node:path";',
+    'import test from "node:test";',
+    'import { FOUNDATION_PACKAGE_VERSION, listConsumerContractVectors, verifyConsumerContractVector } from "skill-family-contracts";',
+    'import { FOUNDATION_PACKAGE_VERSION as HARNESS_FOUNDATION_VERSION } from "skill-family-harness-node";',
+    'import { createAtomicWriteFake } from "skill-family-harness-node/contract-testing";',
+    'import { invokeConsumerAdapter, assertConsumerDomainGuarantee } from "../../src/foundation-adapter.mjs";',
+    "",
+    'const capabilityId = "foundation.harness.atomic-write";',
+    'const vectorSetId = "foundation.harness.atomic-write.consumer-v1";',
+    "assert.equal(FOUNDATION_PACKAGE_VERSION, HARNESS_FOUNDATION_VERSION);",
+    "const vectors = listConsumerContractVectors({ capabilityId, foundationVersion: FOUNDATION_PACKAGE_VERSION, vectorSetId });",
+    "assert.equal(vectors.length, 3);",
+    "",
+    "for (const vector of vectors) {",
+    "  test(vector.vectorId, async () => {",
+    "    assert.equal(verifyConsumerContractVector(vector, { capabilityId, foundationVersion: FOUNDATION_PACKAGE_VERSION, vectorSetId }).ok, true);",
+    "    const fake = createAtomicWriteFake({ vector });",
+    "    assert.deepEqual(fake.identity, { capabilityId, vectorSetId, foundationVersion: FOUNDATION_PACKAGE_VERSION });",
+    "    const root = path.resolve(\".foundation-contract-root\");",
+    "    if (vector.caseClass === \"negative\") {",
+    "      await assert.rejects(() => invokeConsumerAdapter({ vector, writeFileAtomic: fake.writeFileAtomic }), { code: vector.expected.errorCode });",
+    "      return;",
+    "    }",
+    "    if (vector.expected.outcome === \"indeterminate\") {",
+    "      const outcome = await Promise.resolve()",
+    "        .then(() => invokeConsumerAdapter({ vector, writeFileAtomic: fake.writeFileAtomic }))",
+    "        .then((value) => ({ outcome: \"return\", value }), (error) => ({ outcome: \"throw\", errorCode: error.code }));",
+    "      assert.ok(vector.expected.allowedStates.includes(outcome.outcome));",
+    "      assertConsumerDomainGuarantee({ vector, consumerResult: outcome, observation: fake.observation() });",
+    "      return;",
+    "    }",
+    "    const observed = await Promise.resolve().then(() => invokeConsumerAdapter({ vector, writeFileAtomic: fake.writeFileAtomic }));",
+    "    assert.equal(fake.observation().outcome, \"return\");",
+    "    assert.equal(path.isAbsolute(observed), true);",
+    "    if (vector.caseClass === \"positive\") assertConsumerDomainGuarantee({ vector, consumerResult: observed, observation: fake.observation() });",
+    "  });",
+    "}",
+    "",
+  ].join("\n");
 }
 
 function renderGitLifecycle() {
@@ -798,6 +912,9 @@ export async function describeSkeletonFiles(inputs) {
     licensingProfile,
     licensingVariant,
   } = normalized;
+  const scaffoldSelection = inputs.scaffoldSelection ?? await resolveScaffoldCapabilities(inputs.capabilities ?? []);
+  const capabilitySelection = scaffoldSelection.selectedCapabilities.length > 0;
+  const hasContractTests = scaffoldSelection.generatedContractTests.length > 0;
   const { licensingProfileData, profilesRoot, identityProjections } = inputs;
 
   // Load licensing profile if not provided
@@ -872,10 +989,27 @@ export async function describeSkeletonFiles(inputs) {
     MANAGED_LOCK_PATH,
   ];
 
+  const payloadFiles = [];
+  if (hasContractTests) {
+    handwritten.push(`${leafDir}/src/foundation-adapter.mjs`, `${leafDir}/test/foundation-contract/**`);
+  }
+  // This branch is intentionally unreachable while plugin-verification is a
+  // candidate. It keeps the future stable capability's payload path bound to
+  // the one public source without introducing a second fixture or generator.
+  if (scaffoldSelection.selectedCapabilities.includes("foundation.kit.plugin-verification")) {
+    const payloadRoot = new URL("../data/examples/minimal-plugin-payload/", import.meta.url);
+    for (const relPath of [".claude-plugin/plugin.json", "skills/entry/SKILL.md", "skills/leaf/SKILL.md", "shared/sample.txt"]) {
+      const content = (await readFile(new URL(relPath, payloadRoot))).toString("utf8");
+      const target = `test/fixtures/minimal-plugin/payload/${relPath}`;
+      payloadFiles.push({ path: target, fileClass: "managed", content });
+      kitManaged.push(target);
+    }
+  }
+
   const managedFiles = [...projenManaged, ...kitManaged];
   const files = [
     { path: "README.md", fileClass: "handwritten", content: renderReadme({ projectId, projectName, licensingProfile: profileData }) },
-    { path: "AGENTS.md", fileClass: "handwritten", content: renderAgents({ projectId }) },
+    { path: "AGENTS.md", fileClass: "handwritten", content: renderAgents({ projectId, capabilitySelection }) },
     { path: "LICENSE", fileClass: "handwritten", content: licenseContent },
     { path: ".gitignore", fileClass: "managed", content: renderGitIgnore({ projectId }) },
     { path: ".gitattributes", fileClass: "managed", content: renderGitAttributes() },
@@ -917,8 +1051,16 @@ export async function describeSkeletonFiles(inputs) {
         "Quickstart",
         projectName,
         [
-          "`pnpm install && pnpm synth && pnpm check` 全绿即完成最小验证。",
-          "任何 Git 写操作前先阅读完整指南：[git-lifecycle.md](git-lifecycle.md)。",
+          ...(capabilitySelection ? [
+            "新项目全量评估：先准备 uses JSON，再运行 `skill-family-kit adopt-plan --list-capabilities --scope harness --locale zh-CN --all --uses <uses.json>`。",
+            "存量项目：运行 `skill-family-kit adopt-plan --root <repo>`，读取迁移用途与只读建议。",
+            "日常单需求查询：运行 `skill-family-kit adopt-plan --list-capabilities --locale zh-CN --filter <需求>`。",
+            "确认稳定能力后，在空目录使用可重复的 `--capability <stable-id>` 生成契约接线；Profile 的采用列表仍由项目在真实测试通过后填写。",
+            "任何 Git 写操作前先阅读完整指南：[git-lifecycle.md](git-lifecycle.md)。",
+          ] : [
+            "`pnpm install && pnpm synth && pnpm check` 全绿即完成最小验证。",
+            "任何 Git 写操作前先阅读完整指南：[git-lifecycle.md](git-lifecycle.md)。",
+          ]),
         ],
       ),
     },
@@ -973,10 +1115,21 @@ export async function describeSkeletonFiles(inputs) {
     {
       path: PROJECT_PROFILE_PATH,
       fileClass: "handwritten",
-      content: renderProjectProfile({ projectId, profileId }),
+      content: renderProjectProfile({ projectId, profileId, includeCapabilities: capabilitySelection }),
     },
     { path: RELEASE_INTEGRATION_PATH, fileClass: "managed", content: renderReleaseIntegration({ projectId }) },
   ];
+  if (hasContractTests) {
+    files.push({ path: `${leafDir}/src/foundation-adapter.mjs`, fileClass: "handwritten", content: renderFoundationAdapter() });
+    for (const capabilityId of scaffoldSelection.selectedCapabilities) {
+      if (capabilityId === "foundation.contracts.object-validation") {
+        files.push({ path: `${leafDir}/test/foundation-contract/object-validation.test.mjs`, fileClass: "handwritten", content: renderObjectValidationContractTest() });
+      } else if (capabilityId === "foundation.harness.atomic-write") {
+        files.push({ path: `${leafDir}/test/foundation-contract/atomic-write.test.mjs`, fileClass: "handwritten", content: renderAtomicWriteContractTest() });
+      }
+    }
+  }
+  files.push(...payloadFiles);
   if (noticeContent) {
     files.push({ path: "NOTICE", fileClass: "handwritten", content: noticeContent });
   }
@@ -999,5 +1152,6 @@ export async function describeSkeletonFiles(inputs) {
     managedFiles,
     lockEntries,
     licensing: { profile: profileData.profile.id, variant: profileData.profile.variant },
+    scaffoldSelection,
   };
 }
