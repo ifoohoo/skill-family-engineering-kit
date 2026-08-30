@@ -81,6 +81,8 @@ import {
 import { bundledHostProfilesRoot, describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
 import { runHostVerification, verifyHostVerificationBindings } from "./host-verification.mjs";
 import { runPluginVerification } from "./plugin-verification.mjs";
+import { runSkillFamilyDirectoryVerification } from "./skill-family-directory-verification.mjs";
+import { admitCapabilityTuple, runQualification } from "./qualification.mjs";
 import {
   describeSkeletonFiles,
   IDENTITY_RECORD_PATH,
@@ -102,8 +104,10 @@ import { matchAnyGlob } from "./workspace.mjs";
  * stable error codes) and skill-family-harness-node (atomic contained
  * writes, path containment, resource closure, digests); it re-declares none
  * of them. It owns exactly four top-level commands and their read-only /
- * restricted-write boundaries. It never performs git writes, publishes,
- * deletes user content, or touches a network.
+ * restricted-write boundaries. It never performs git writes, publishes, or
+ * deletes user content. Foundation itself does not issue network requests,
+ * but a bound executable may access the network; callers and the execution
+ * environment own sandbox and egress controls.
  */
 
 export const TOP_LEVEL_COMMANDS = Object.freeze([
@@ -146,7 +150,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none for ordinary diagnosis — never writes, never auto-fixes; git is probed read-only (one frozen status query at most); report and entries sub-actions remain read-only; relock is the one controlled write transaction; qualification is separately explicit and may invoke the capability-specific native host only after its preflight",
+      "none for ordinary diagnosis — never writes, never auto-fixes; git is probed read-only (one frozen status query at most); report and entries sub-actions remain read-only; relock is the one controlled write transaction; qualification is separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -267,6 +271,8 @@ export {
   runHostVerification,
   verifyHostVerificationBindings,
   runPluginVerification,
+  runSkillFamilyDirectoryVerification,
+  runQualification,
 };
 export { ContractsError };
 

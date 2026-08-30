@@ -2060,11 +2060,21 @@
 <td><code>SFC2004</code> (<code>target-not-empty</code>)</td>
 </tr>
 <tr>
-<td><code>planAdoption</code> / <code>buildProfileDraft</code></td>
+<td><code>planAdoption</code></td>
 <td>yes</td>
 <td>no</td>
-<td>no</td>
+<td>default may spawn one frozen read-only Git status probe (disableable)</td>
 <td>read-only probe</td>
+<td>no</td>
+<td>none (stdout output)</td>
+<td><code>SFC</code> completion false</td>
+</tr>
+<tr>
+<td><code>buildProfileDraft</code></td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
 <td>no</td>
 <td>none (stdout output)</td>
 <td><code>SFC</code> completion false</td>
@@ -2083,11 +2093,51 @@
 <td><code>runChecks</code> (<code>check</code>)</td>
 <td>yes</td>
 <td>no</td>
-<td>no</td>
+<td>default may spawn one frozen read-only Git status probe; <code>--no-git-spawn</code> disables it</td>
 <td>read-only allowlist</td>
 <td>no</td>
 <td>none</td>
 <td>exit code 1 (findings) / 2 (mechanism)</td>
+</tr>
+<tr>
+<td><code>check relock</code></td>
+<td>yes</td>
+<td>yes (explicit controlled write)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>controlled relock transaction state</td>
+<td>exit code 0/1/2</td>
+</tr>
+<tr>
+<td><code>check qualification</code> / <code>runQualification</code></td>
+<td>reads request and bindings</td>
+<td>writes private evidence under caller-bound roots</td>
+<td>yes, after preflight</td>
+<td>no</td>
+<td>bound executable may access the network</td>
+<td>evidence is retained when the end state is indeterminate</td>
+<td>exit code 0/1/2; four-state result</td>
+</tr>
+<tr>
+<td><code>runPluginVerification</code></td>
+<td>yes (bound roots)</td>
+<td>yes (fresh workspace, host state, private evidence)</td>
+<td>yes, local executable only</td>
+<td>no</td>
+<td>bound executable may access the network</td>
+<td>uncertain evidence is retained</td>
+<td>four-state <code>plugin-verification-result</code></td>
+</tr>
+<tr>
+<td><code>runSkillFamilyDirectoryVerification</code></td>
+<td>yes (bound roots)</td>
+<td>yes (private raw evidence)</td>
+<td>yes, local executable only</td>
+<td>no</td>
+<td>bound executable may access the network</td>
+<td>uncertain evidence is retained</td>
+<td>four-state directory result</td>
 </tr>
 <tr>
 <td><code>renderReportAction</code> / <code>checkReportAction</code></td>
@@ -2103,7 +2153,7 @@
 <td><code>probeGitState</code> / <code>probeGitFacts</code></td>
 <td>yes</td>
 <td>no</td>
-<td>no</td>
+<td>default may spawn one frozen read-only Git subprocess; disableable</td>
 <td>read-only allowlist</td>
 <td>no</td>
 <td>none</td>
@@ -2151,24 +2201,25 @@
 </tr>
 <tr>
 <td><code>cliMain</code> / <code>runCommand</code></td>
-<td>per command</td>
-<td>per command</td>
-<td>per command</td>
-<td>per command</td>
-<td>no</td>
-<td>per command</td>
+<td>per action</td>
+<td>per action</td>
+<td>per action</td>
+<td>per action</td>
+<td>per action (bound executable may access the network)</td>
+<td>per action</td>
 <td>exit code 0/1/2</td>
 </tr>
 </tbody>
 </table>
 <p>Kit's <code>FORBIDDEN_SIDE_EFFECTS</code> includes git-init/commit/push/tag, publish, remote-write; <code>REFUSED_MUTATION_FLAGS</code> (including <code>--apply</code>) are refused at the CLI entry point. The package API <code>applyHostPlan</code> does not add a fifth command or grant generic/remote apply.</p>
+<p>Foundation itself does not issue network requests, but a bound executable may access the network. Foundation provides no sandbox or egress blocking; callers and the execution environment own that isolation. The Qoder, WorkBuddy, and Kimi entries remain <code>manual/candidate</code>; controlled fixtures prove production wiring only and do not grant real-host qualification.</p>
 <h2 id="Residual-State-Collection">Residual-State Collection<a class="headerlink" href="#Residual-State-Collection" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Atomic write: on failure, rolls back the temp file, leaving no half-product in the target directory.</li>
 <li>Temporary workspaces are cleaned on exit, including exception paths.</li>
 <li>State store: the event log is the sole authority, and the snapshot is a derived cache; a crash-left lock requires the caller, outside Foundation, to confirm the old writer has terminated before explicitly recovering; no silent lock-stealing.</li>
 <li>Projection: any validation failure rejects wholesale, zero writes; overwriting an existing file requires declaring the <code>expect.sha256</code> pre-state.</li>
-<li>adopt-plan / check: structurally read-only, byte-level zero change before and after running.</li>
+<li>adopt-plan, ordinary runChecks, and ordinary check are structurally read-only and write no files; by default they may spawn one frozen read-only Git status subprocess, disabled by <code>--no-git-spawn</code> (or API <code>allowGitSpawn: false</code>), with byte-level zero change before and after running. The side effects of check relock and check qualification are listed above.</li>
 </ul>
 <h2 id="What-the-Caller-Should-Do-After-Failure">What the Caller Should Do After Failure<a class="headerlink" href="#What-the-Caller-Should-Do-After-Failure" title="Permanent link">&para;</a></h2>
 <ul>

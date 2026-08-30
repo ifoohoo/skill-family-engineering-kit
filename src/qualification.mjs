@@ -19,16 +19,20 @@ import {
   validateMembers,
   runPluginVerification as defaultRunPluginVerification,
 } from "./plugin-verification.mjs";
+import { runSkillFamilyDirectoryVerification, SKILL_FAMILY_DIRECTORY_REQUEST_SCHEMA, SKILL_FAMILY_DIRECTORY_RESULT_SCHEMA } from "./skill-family-directory-verification.mjs";
 import { KIT_VERSION } from "./version.mjs";
 
 const CAPABILITY_ID = "foundation.kit.plugin-verification";
+const DIRECTORY_CAPABILITY_ID = "foundation.kit.skill-family-directory-verification";
 const API_ENTRYPOINT = "skill-family-engineering-kit: runPluginVerification";
+const DIRECTORY_API_ENTRYPOINT = "skill-family-engineering-kit: runSkillFamilyDirectoryVerification";
 const BINDING_KIND = "plugin-verification-bindings-v1";
 const RETAINED_STATUSES = new Set(["observed", "failed", "indeterminate"]);
 const QUALIFICATION_NOTICE = Symbol("skill-family.qualification-retention-notice");
 const INPUT_ROOT_FIELDS = new Set([
   "sourceRoot",
   "executableRoot",
+  "interpreterRoot",
   "existingUserStateRoot",
   "fixtureRoot",
   "workspaceRoot",
@@ -114,13 +118,14 @@ function validateContract(value, schemaId, label) {
 
 function requiredBindingFields(request) {
   const required = [...REQUIRED_BINDING_FIELDS];
-  if (request.source.type === "public-channel" || request.goal === "install-and-invoke") {
+  if (request.source.type === "public-channel" || request.goal === "install-and-invoke" || request.goal === "native-lifecycle") {
     required.push("executableRoot", "executableRelPath", "existingUserStateRoot");
   }
   if (request.source.type === "public-channel") required.push("channelLocator");
   if (request.goal === "install-and-invoke") {
     required.push("effectivePrompt", "fixtureRoot", "workspaceRoot", "repositoryRoot", "outputRoot");
   }
+  if (request.goal === "native-lifecycle") required.push("effectivePrompt", "fixtureRoot", "workspaceRoot", "repositoryRoot", "outputRoot", "interpreterRoot");
   return required;
 }
 
@@ -128,7 +133,10 @@ async function validateBindings(request, bindings) {
   if (!bindings || typeof bindings !== "object" || Array.isArray(bindings)) {
     reject("--bindings must contain a private binding object", { field: "bindings" });
   }
-  const required = requiredBindingFields(request);
+  const isDirectory = request.operation === "skill-family-directory-verification";
+  const required = isDirectory
+    ? ["effectivePrompt", "executableRoot", "executableRelPath", "existingUserStateRoot", "fixtureRoot", "workspaceRoot", "repositoryRoot", "outputRoot", "interpreterRoot"]
+    : requiredBindingFields(request);
   const allowed = new Set(required);
   for (const field of GENERATED_BINDING_FIELDS) {
     if (Object.hasOwn(bindings, field)) reject(`bindings.${field} is owned by qualification and must not be supplied`, { field, reason: "generated-root-supplied" });
@@ -142,13 +150,15 @@ async function validateBindings(request, bindings) {
   for (const field of INPUT_ROOT_FIELDS) {
     if (allowed.has(field)) normalized[field] = await canonicalDirectory(bindings[field], `bindings.${field}`);
   }
-  relativePath(bindings.sourceManifestRelPath, "bindings.sourceManifestRelPath");
+  if (!isDirectory) relativePath(bindings.sourceManifestRelPath, "bindings.sourceManifestRelPath");
   if (allowed.has("executableRelPath")) relativePath(bindings.executableRelPath, "bindings.executableRelPath");
-  if (!Array.isArray(bindings.sourceMembers) || bindings.sourceMembers.length === 0) reject("bindings.sourceMembers must be a nonempty member table", { field: "bindings.sourceMembers" });
-  try {
-    validateMembers(bindings.sourceMembers);
-  } catch (cause) {
-    throw cause?.code?.startsWith?.("SFC") ? cause : reject("bindings.sourceMembers must be a valid canonical member table", { field: "bindings.sourceMembers" });
+  if (!isDirectory) {
+    if (!Array.isArray(bindings.sourceMembers) || bindings.sourceMembers.length === 0) reject("bindings.sourceMembers must be a nonempty member table", { field: "bindings.sourceMembers" });
+    try {
+      validateMembers(bindings.sourceMembers);
+    } catch (cause) {
+      throw cause?.code?.startsWith?.("SFC") ? cause : reject("bindings.sourceMembers must be a valid canonical member table", { field: "bindings.sourceMembers" });
+    }
   }
   if (allowed.has("effectivePrompt")) {
     const prompt = bindings.effectivePrompt;
@@ -162,27 +172,57 @@ async function validateBindings(request, bindings) {
   return normalized;
 }
 
-async function loadQualificationCapability(loadCatalog) {
+async function loadQualificationCapability(loadCatalog, requestedCapability = CAPABILITY_ID) {
   const loaded = await loadCatalog({ locale: "en" });
   const capabilities = Array.isArray(loaded) ? loaded : loaded?.capabilities;
   if (!Array.isArray(capabilities)) catalogReject("capability catalog has no capabilities array");
-  const capability = capabilities.find((candidate) => candidate?.id === CAPABILITY_ID);
-  if (!capability) catalogReject(`qualification capability is not declared: ${CAPABILITY_ID}`, { capability: CAPABILITY_ID });
+  const capability = capabilities.find((candidate) => candidate?.id === requestedCapability);
+  if (!capability) catalogReject(`qualification capability is not declared: ${requestedCapability}`, { capability: requestedCapability });
   if (!(capability.stability === "candidate" || capability.stability === "stable") || capability.available !== true) {
-    catalogReject(`qualification capability is not a supported available candidate or stable capability: ${CAPABILITY_ID}`, { capability: CAPABILITY_ID, stability: capability.stability, available: capability.available });
+    catalogReject(`qualification capability is not a supported available candidate or stable capability: ${requestedCapability}`, { capability: requestedCapability, stability: capability.stability, available: capability.available });
   }
   const qualification = capability.consumerTesting?.manualQualification;
-  if (!qualification || qualification.supported !== true) catalogReject(`qualification capability has no supported manualQualification: ${CAPABILITY_ID}`, { capability: CAPABILITY_ID });
+  if (!qualification || qualification.supported !== true) catalogReject(`qualification capability has no supported manualQualification: ${requestedCapability}`, { capability: requestedCapability });
+  const isDirectory = requestedCapability === DIRECTORY_CAPABILITY_ID;
+  const expected = isDirectory
+    ? { apiEntrypoint: DIRECTORY_API_ENTRYPOINT, requestSchemaId: SKILL_FAMILY_DIRECTORY_REQUEST_SCHEMA, resultSchemaId: SKILL_FAMILY_DIRECTORY_RESULT_SCHEMA, bindingKind: "skill-family-directory-verification-bindings-v1" }
+    : { apiEntrypoint: API_ENTRYPOINT, requestSchemaId: PLUGIN_VERIFICATION_REQUEST_SCHEMA, resultSchemaId: PLUGIN_VERIFICATION_RESULT_SCHEMA, bindingKind: BINDING_KIND };
   if (
     qualification.default !== "off" ||
-    qualification.apiEntrypoint !== API_ENTRYPOINT ||
-    qualification.requestSchemaId !== PLUGIN_VERIFICATION_REQUEST_SCHEMA ||
-    qualification.resultSchemaId !== PLUGIN_VERIFICATION_RESULT_SCHEMA ||
-    qualification.bindingKind !== BINDING_KIND
+    qualification.apiEntrypoint !== expected.apiEntrypoint ||
+    qualification.requestSchemaId !== expected.requestSchemaId ||
+    qualification.resultSchemaId !== expected.resultSchemaId ||
+    qualification.bindingKind !== expected.bindingKind
   ) {
-    catalogReject("qualification capability metadata does not bind the fixed plugin-verification API and contracts", { capability: CAPABILITY_ID });
+    catalogReject("qualification capability metadata does not bind the fixed qualification API and contracts", { capability: requestedCapability });
   }
   return capability;
+}
+
+async function admitCapabilityTuple({ capabilityId, request, hostsRoot }) {
+  const rows = capabilityId === CAPABILITY_ID
+    ? [
+      { hostId: "qoder", driverId: "qodercli-print-v1", mode: "native-lifecycle" },
+      { hostId: "workbuddy", driverId: "workbuddy-codebuddy-print-v1", mode: "native-lifecycle" },
+    ]
+    : [{ hostId: "kimi-code", driverId: "kimi-code-print-v1", mode: "skill-family-directory" }];
+  const mode = capabilityId === CAPABILITY_ID ? request.goal === "native-lifecycle" ? "native-lifecycle" : "other" : request.operation === "skill-family-directory-verification" ? "skill-family-directory" : "other";
+  const candidate = rows.find((row) => row.hostId === request.host?.hostId && row.mode === mode);
+  if (!candidate) contractReject("qualification six-tuple is not an admitted capability/host/mode combination", { capabilityId, hostId: request.host?.hostId, mode });
+  const observation = await observeHostDescriptor({ hostId: candidate.hostId, hostsRoot });
+  const driver = getBuiltInHostVerificationDriver(request.host.driverId);
+  const version = driver?.driverVersion;
+  if (
+    request.host.hostId !== candidate.hostId ||
+    request.host.descriptorSha256 !== observation.descriptorSha256 ||
+    request.host.driverId !== candidate.driverId ||
+    request.host.driverVersion !== version ||
+    !driver || driver.hostId !== candidate.hostId || driver.driverId !== candidate.driverId || driver.driverVersion !== version ||
+    (candidate.hostId === "kimi-code" && request.host.cliVersion !== driver.cliVersion)
+  ) {
+    contractReject("qualification six-tuple does not match the observed descriptor and built-in driver", { capabilityId, hostId: candidate.hostId, driverId: candidate.driverId, driverVersion: version });
+  }
+  return { observation, driver };
 }
 
 async function validateHostAndDriver(request) {
@@ -262,8 +302,8 @@ async function disposeWithPrecedence(workspace, original, notice) {
   }
 }
 
-/** Explicit stable-capability qualification adapter; the two function options are test seams only. */
-export async function runQualification({
+/** Package-internal qualification implementation with isolated test seams. */
+export async function runQualificationWithTestSeams({
   root = ".",
   capability,
   requestPath,
@@ -272,18 +312,55 @@ export async function runQualification({
   loadCapabilityCatalog = defaultLoadCapabilityCatalog,
   runPluginVerification = defaultRunPluginVerification,
   } = {}) {
-  if (capability !== CAPABILITY_ID) reject(`--capability must be ${CAPABILITY_ID}`, { field: "capability" });
+  if (capability !== CAPABILITY_ID && capability !== DIRECTORY_CAPABILITY_ID) reject(`--capability must be ${CAPABILITY_ID} or ${DIRECTORY_CAPABILITY_ID}`, { field: "capability" });
   if (native !== true) reject("qualification requires --native", { field: "native" });
   if (typeof requestPath !== "string" || requestPath.length === 0) reject("--request is required", { field: "requestPath" });
   if (typeof bindingsPath !== "string" || bindingsPath.length === 0) reject("--bindings is required", { field: "bindingsPath" });
   const versions = { contracts: CONTRACTS_PACKAGE_VERSION, harness: HARNESS_PACKAGE_VERSION, kit: KIT_VERSION };
-  if (Object.values(versions).some((version) => version !== "0.14.0" || version !== versions.kit)) contractReject("Foundation package versions are not the exact 0.14.0 lockstep", { versions });
+  if (versions.contracts !== KIT_VERSION || versions.harness !== KIT_VERSION) contractReject("Foundation Contracts and Harness versions must exactly match KIT_VERSION", { versions });
   const rootReal = await realpath(root).catch(() => reject("--root must be an existing directory", { field: "root" }));
   if (!(await stat(rootReal)).isDirectory()) reject("--root must be an existing directory", { field: "root" });
-  await loadQualificationCapability(loadCapabilityCatalog);
+  const capabilityKind = capability === DIRECTORY_CAPABILITY_ID ? "directory" : capability === CAPABILITY_ID ? "plugin" : "unknown";
+  if (capabilityKind === "unknown") reject("--capability is not a supported qualification capability", { field: "capability" });
+  await loadQualificationCapability(loadCapabilityCatalog, capability);
   const parsedRequest = await readJson(rootReal, requestPath, "--request");
   const parsedBindings = await readJson(rootReal, bindingsPath, "--bindings");
+  if (capabilityKind === "directory") {
+    const request = validateContract(parsedRequest, SKILL_FAMILY_DIRECTORY_REQUEST_SCHEMA, "skill-family directory verification request");
+    const bindings = await validateBindings(request, parsedBindings);
+    const profile = await admitCapabilityTuple({ capabilityId: capability, request, hostsRoot: bundledHostProfilesRoot() });
+    const { workspace, parentRoot, paths } = await createQualificationRoots();
+    const notice = { parentRoot, privateEvidenceRoot: paths.privateEvidenceRoot };
+    let normalizedResult;
+    try {
+      const output = await runSkillFamilyDirectoryVerification({ request, bindings: { ...bindings, ...paths } });
+      normalizedResult = validateContract(output, SKILL_FAMILY_DIRECTORY_RESULT_SCHEMA, "skill-family directory verification result");
+    } catch (cause) {
+      await disposeWithPrecedence(workspace, cause, notice);
+      throw cause;
+    }
+    if (RETAINED_STATUSES.has(normalizedResult.status)) return attachRetentionNotice(normalizedResult, parentRoot, paths);
+    await disposeWithPrecedence(workspace, normalizedResult, notice);
+    return normalizedResult;
+  }
   const request = validateContract(parsedRequest, PLUGIN_VERIFICATION_REQUEST_SCHEMA, "plugin-verification request");
+  if (request.goal === "native-lifecycle") {
+    const bindings = await validateBindings(request, parsedBindings);
+    const profile = await admitCapabilityTuple({ capabilityId: capability, request, hostsRoot: bundledHostProfilesRoot() });
+    const { workspace, parentRoot, paths } = await createQualificationRoots();
+    const notice = { parentRoot, privateEvidenceRoot: paths.privateEvidenceRoot };
+    let normalizedResult;
+    try {
+      const output = await runPluginVerification({ request, bindings: { ...bindings, ...paths }, hostsRoot: bundledHostProfilesRoot() });
+      normalizedResult = validateContract(output, PLUGIN_VERIFICATION_RESULT_SCHEMA, "plugin-verification result");
+    } catch (cause) {
+      await disposeWithPrecedence(workspace, cause, notice);
+      throw cause;
+    }
+    if (RETAINED_STATUSES.has(normalizedResult.status)) return attachRetentionNotice(normalizedResult, parentRoot, paths);
+    await disposeWithPrecedence(workspace, normalizedResult, notice);
+    return normalizedResult;
+  }
   const bindings = await validateBindings(request, parsedBindings);
   const profile = await validateHostAndDriver(request);
   const { workspace, parentRoot, paths } = await createQualificationRoots();
@@ -301,9 +378,21 @@ export async function runQualification({
   return normalizedResult;
 }
 
+/** Public qualification entry. Runner and catalog injection are prohibited. */
+export async function runQualification(options = {}) {
+  const allowed = new Set(["root", "capability", "requestPath", "bindingsPath", "native"]);
+  if (!options || typeof options !== "object" || Array.isArray(options) || Object.keys(options).some((key) => !allowed.has(key))) {
+    throw invalidParamsError("qualification public options contain prohibited or unknown fields", { reason: "qualification-public-options-invalid" });
+  }
+  return runQualificationWithTestSeams(options);
+}
+
 export {
   API_ENTRYPOINT as QUALIFICATION_API_ENTRYPOINT,
+  DIRECTORY_API_ENTRYPOINT as DIRECTORY_QUALIFICATION_API_ENTRYPOINT,
   BINDING_KIND as QUALIFICATION_BINDING_KIND,
   CAPABILITY_ID as QUALIFICATION_CAPABILITY_ID,
+  DIRECTORY_CAPABILITY_ID as DIRECTORY_QUALIFICATION_CAPABILITY_ID,
+  admitCapabilityTuple,
   QUALIFICATION_NOTICE,
 };

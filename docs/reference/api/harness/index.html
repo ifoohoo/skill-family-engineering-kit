@@ -835,6 +835,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#可执行身份观察-foundationharnessexecutable-identity-observation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        可执行身份观察 (foundation.harness.executable-identity-observation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="可执行身份观察 (foundation.harness.executable-identity-observation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#observeExecutableIdentity" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        observeExecutableIdentity
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2446,6 +2474,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#可执行身份观察-foundationharnessexecutable-identity-observation" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        可执行身份观察 (foundation.harness.executable-identity-observation)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="可执行身份观察 (foundation.harness.executable-identity-observation)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#observeExecutableIdentity" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        observeExecutableIdentity
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#固定集合发布-foundationharnessfixed-set-publication" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2956,13 +3012,14 @@
 
 <h1 id="skill-family-harness-node-公共-API-参考">skill-family-harness-node 公共 API 参考<a class="headerlink" href="#skill-family-harness-node-公共-API-参考" title="Permanent link">&para;</a></h1>
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
-<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（21 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
+<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（23 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#契约校验-foundationharnesscontract-validation">契约校验</a> → <code>validateContractDocument</code> / <code>getValidator</code></li>
 <li><a href="#路径收容-foundationharnesspath-containment">路径收容</a> → <code>classifyPathInput</code> / <code>resolveContained</code> / <code>readFileContained</code></li>
 <li><a href="#严格读取-foundationharnessstrict-read">严格读取</a> → <code>readFileStrict</code></li>
 <li><a href="#身份绑定读取-foundationharnessbound-read">身份绑定读取</a> → <code>createFilesystemRootBinding</code> / <code>readFileBound</code></li>
+<li><a href="#完整树观察-foundationharnessfilesystem-tree-observation">完整树观察</a> → <code>observeFilesystemTree</code></li>
 <li><a href="#固定集合发布-foundationharnessfixed-set-publication">固定集合发布</a> → <code>createFixedSetPublicationManifest</code> / <code>publishFixedSet</code></li>
 <li><a href="#原子写-foundationharnessatomic-write">原子写</a> → <code>writeFileAtomic</code></li>
 <li><a href="#临时工作区-foundationharnesstemporary-workspace">临时工作区</a> → <code>TemporaryWorkspace</code> / <code>withTemporaryWorkspace</code></li>
@@ -2971,6 +3028,7 @@
 <li><a href="#请求管线-foundationharnessrequest-processing">请求管线</a> → <code>parseRequest</code> / <code>processRequest</code></li>
 <li><a href="#报告-foundationharnessreport">报告</a> → <code>validateReportModel</code> / <code>renderReportMarkdown</code> / <code>buildBinding</code> / <code>verifyBinding</code> / <code>checkReport</code></li>
 <li><a href="#宿主适配机制-foundationharnesshost-adapter">宿主适配机制</a> → <code>normalizeAdapterSource</code> / <code>buildAdapterClosure</code> / <code>materializeAdapterBuild</code> / <code>probeVersionVector</code></li>
+<li><a href="#可执行身份观察-foundationharnessexecutable-identity-observation">可执行身份观察</a> → <code>observeExecutableIdentity</code></li>
 <li><a href="#持久状态底座-foundationharnessstate-store">持久状态底座</a> → <code>openStateStore</code> / <code>appendEvent</code> / <code>readSnapshot</code> / <code>verifyStateStore</code> …</li>
 <li><a href="#基线物化-foundationharnessbaseline-materialization">基线物化</a> → <code>computeDirectoryDigest</code> / <code>materializeBaseline</code>（FND-ADR-009）</li>
 <li><a href="#只读-chokepoint-foundationharnessread-chokepoint">只读 chokepoint</a> → <code>createReadChokepoint</code>（FND-ADR-009）</li>
@@ -3052,15 +3110,29 @@
 <h2 id="完整树观察-foundationharnessfilesystem-tree-observation">完整树观察 (foundation.harness.filesystem-tree-observation)<a class="headerlink" href="#完整树观察-foundationharnessfilesystem-tree-observation" title="Permanent link">&para;</a></h2>
 <h3 id="observeFilesystemTree">observeFilesystemTree<a class="headerlink" href="#observeFilesystemTree" title="Permanent link">&para;</a></h3>
 <ul>
-<li>签名：<code>observeFilesystemTree({ root, rootBinding })</code>（async）。调用方先用既有 <code>createFilesystemRootBinding</code> 批准根目录。</li>
+<li>签名：<code>observeFilesystemTree({ root, rootBinding, symlinkPolicy?: { mode: "reject" | "record" } })</code>（async）。调用方先用既有 <code>createFilesystemRootBinding</code> 批准根目录。</li>
 <li>输入：已规范化的真实绝对目录及其根绑定。每次调用重新读取目录和普通文件，空树合法。</li>
-<li>输出：私有 <code>filesystem-tree-observation</code>，含按路径排序的完整成员、根绑定和 <code>membersDigest</code>。文件成员包含同次读取的 <code>contentBase64</code>、<code>sha256</code>、<code>bytes</code> 与完整 POSIX <code>statMode</code>；目录成员只含路径、类型和模式，不伪造文件摘要。</li>
+<li>输出：私有 <code>filesystem-tree-observation</code>，含按路径排序的完整成员、根绑定和 <code>membersDigest</code>。文件成员包含同次读取的 <code>contentBase64</code>、<code>sha256</code>、<code>bytes</code> 与完整 POSIX <code>statMode</code>；目录成员只含路径、类型和模式，不伪造文件摘要。省略 <code>symlinkPolicy</code> 或使用 <code>reject</code> 时保持 0.14 的 UTF-16 关系顺序和既有原生语义；<code>record</code> 在稳定、调用方隔离且无并发 namespace writer 的本地树上走 Node/JS 分支，使用 Unicode 码点顺序，记录 symlink 自身的 <code>targetBase64</code>、<code>bytes</code>、<code>statMode</code>，绝不读取或递归 target。<code>membersDigest</code> 按所选模式的成员顺序推导。</li>
 <li>副作用：只读文件系统，不安装、不启动进程、不访问网络。结果含原始文件内容，调用方必须保护敏感数据。</li>
-<li>失败语义：参数不合法抛 <code>TypeError</code>，机制失败沿 <code>SFC2004</code> 关闭，不把部分观察报告为成功。</li>
-<li>保证边界：每次检查同一根绑定，不使用旧缓存；不承诺整个操作期间的连续路径身份或事务快照。</li>
+<li>失败语义：参数不合法抛 <code>TypeError</code>，机制失败沿 <code>SFC2004</code> 关闭，不把部分观察报告为成功。record 检测到观察期间的漂移即失败关闭，普通文件复用 <code>readFileBound</code>，硬链接与特殊文件继续拒绝。</li>
+<li>保证边界：每次检查同一根绑定，不使用旧缓存；record 是 best-effort candidate，不承诺事务快照、同 UID 恶意并发或 ABA 安全。消费者负责在宿主命令完成后调用，并保留 npm <code>.bin</code> 等领域接受规则；真实恶意并发威胁应交回 Foundation，不在本地复制 walker、native addon、Harness、schema、Registry、runner 或 receipt 链。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.13.0</code> / <code>candidate</code>。观察完成不等于消费者接受载荷。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/filesystem-observation.mjs</code> 与 <code>src/native/bound_read.c</code>。</li>
 <li>正例/负例：<code>packages/skill-family-engineering-kit/test/plugin-verification.test.mjs</code> 的实际树观察与载荷政策组合测试。</li>
+</ul>
+<h2 id="可执行身份观察-foundationharnessexecutable-identity-observation">可执行身份观察 (foundation.harness.executable-identity-observation)<a class="headerlink" href="#可执行身份观察-foundationharnessexecutable-identity-observation" title="Permanent link">&para;</a></h2>
+<h3 id="observeExecutableIdentity">observeExecutableIdentity<a class="headerlink" href="#observeExecutableIdentity" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>observeExecutableIdentity({ boundRoots, lookup, interpreterPolicy? })</code>（async）。</li>
+<li>输入：调用方提供的非重叠真实根绑定、绝对路径或显式 <code>pathEntries</code> 查找，以及可选的显式解释器根策略；不读取 ambient <code>PATH</code>。</li>
+<li>输出：逐次只读的可执行入口观察，含 <code>canonicalEntry</code>、symlinkChain、<code>sha256</code>、<code>bytes</code>、<code>statMode</code>、<code>entryKind</code>、解释器与 <code>launch</code> 计划。<code>/usr/bin/env</code> shebang 通过显式 <code>pathEntries</code> 找到解释器时，解释器观察保留候选入口的完整 symlink chain，不折叠成最终文件。</li>
+<li>副作用：只读 <code>lstat</code> / <code>readlink</code> 与既有 <code>readFileBound</code>；不启动进程、不写文件、不使用跨调用缓存。</li>
+<li>失败语义：路径越界、符号链接漂移或循环、非单链接可执行普通文件、解释器策略不符及字节变化均失败关闭；不返回部分身份结果。</li>
+<li>保证边界：这是逐次点时观察，调用方必须在正式启动前紧邻重观察。它不证明 wrapper 控制流、ambient PATH、fd-exec、内核最终映像、签名信任、跨调用连续身份、宿主支持/生命周期或领域接受。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.15.0</code> / <code>candidate</code>。观察完成不等于宿主资格或启动授权。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/executable-identity.mjs</code>。</li>
+<li>正例/负例：<code>packages/skill-family-harness-node/test/foundation-015-harness.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：命令选择、正式启动、wrapper/argv 语义、签名与认证信任、宿主支持/生命周期资格、领域接受及重观察时机。</li>
 </ul>
 <h2 id="固定集合发布-foundationharnessfixed-set-publication">固定集合发布 (foundation.harness.fixed-set-publication)<a class="headerlink" href="#固定集合发布-foundationharnessfixed-set-publication" title="Permanent link">&para;</a></h2>
 <h3 id="createFixedSetPublicationManifest--publishFixedSet">createFixedSetPublicationManifest / publishFixedSet<a class="headerlink" href="#createFixedSetPublicationManifest--publishFixedSet" title="Permanent link">&para;</a></h3>

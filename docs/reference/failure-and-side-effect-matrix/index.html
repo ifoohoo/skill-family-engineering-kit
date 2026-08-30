@@ -2050,11 +2050,21 @@
 <td><code>SFC2004</code>（<code>target-not-empty</code>）</td>
 </tr>
 <tr>
-<td><code>planAdoption</code> / <code>buildProfileDraft</code></td>
+<td><code>planAdoption</code></td>
 <td>是</td>
 <td>否</td>
-<td>否</td>
+<td>默认可能（冻结只读 git status；可关闭）</td>
 <td>只读探测</td>
+<td>否</td>
+<td>无（stdout 输出）</td>
+<td><code>SFC</code> 完成判定 false</td>
+</tr>
+<tr>
+<td><code>buildProfileDraft</code></td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
 <td>否</td>
 <td>无（stdout 输出）</td>
 <td><code>SFC</code> 完成判定 false</td>
@@ -2073,11 +2083,51 @@
 <td><code>runChecks</code>（<code>check</code>）</td>
 <td>是</td>
 <td>否</td>
-<td>否</td>
+<td>默认可能（冻结只读 git status；可用 <code>--no-git-spawn</code> 关闭）</td>
 <td>只读白名单</td>
 <td>否</td>
 <td>无</td>
 <td>退出码 1（发现）/ 2（机制）</td>
+</tr>
+<tr>
+<td><code>check relock</code></td>
+<td>是</td>
+<td>是（显式受控写）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>受控 relock 事务状态</td>
+<td>退出码 0/1/2</td>
+</tr>
+<tr>
+<td><code>check qualification</code> / <code>runQualification</code></td>
+<td>读取 request 与 bindings</td>
+<td>在调用方绑定根下写私有证据</td>
+<td>是，预检通过后</td>
+<td>否</td>
+<td>绑定的 executable 仍可能联网</td>
+<td>终态不确定时保留证据</td>
+<td>退出码 0/1/2；四态结果</td>
+</tr>
+<tr>
+<td><code>runPluginVerification</code></td>
+<td>是（调用方绑定根）</td>
+<td>是（fresh workspace、宿主状态、私有证据）</td>
+<td>是，仅本地 executable</td>
+<td>否</td>
+<td>绑定的 executable 仍可能联网</td>
+<td>不确定证据会保留</td>
+<td>四态 <code>plugin-verification-result</code></td>
+</tr>
+<tr>
+<td><code>runSkillFamilyDirectoryVerification</code></td>
+<td>是（调用方绑定根）</td>
+<td>是（私有 raw evidence）</td>
+<td>是，仅本地 executable</td>
+<td>否</td>
+<td>绑定的 executable 仍可能联网</td>
+<td>不确定证据会保留</td>
+<td>四态目录结果</td>
 </tr>
 <tr>
 <td><code>renderReportAction</code> / <code>checkReportAction</code></td>
@@ -2093,7 +2143,7 @@
 <td><code>probeGitState</code> / <code>probeGitFacts</code></td>
 <td>是</td>
 <td>否</td>
-<td>否</td>
+<td>默认可能（冻结只读 Git 子进程；可关闭）</td>
 <td>只读白名单</td>
 <td>否</td>
 <td>无</td>
@@ -2131,24 +2181,25 @@
 </tr>
 <tr>
 <td><code>cliMain</code> / <code>runCommand</code></td>
-<td>依命令</td>
-<td>依命令</td>
-<td>依命令</td>
-<td>依命令</td>
-<td>否</td>
-<td>依命令</td>
+<td>依子动作</td>
+<td>依子动作</td>
+<td>依子动作</td>
+<td>依子动作</td>
+<td>绑定 executable 可能联网</td>
+<td>依子动作</td>
 <td>退出码 0/1/2</td>
 </tr>
 </tbody>
 </table>
 <p>Kit 的 <code>FORBIDDEN_SIDE_EFFECTS</code> 含 git-init/commit/push/tag、publish、remote-write；<code>REFUSED_MUTATION_FLAGS</code>（含 <code>--apply</code>）在 CLI 入口即拒。</p>
+<p>Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。Qoder、WorkBuddy 与 Kimi 入口仍为 <code>manual/candidate</code>；受控 fixture 只证明生产接线，不授予真实宿主资格。</p>
 <h2 id="残余状态合集">残余状态合集<a class="headerlink" href="#残余状态合集" title="Permanent link">&para;</a></h2>
 <ul>
 <li>原子写：失败时回滚临时文件，目标目录不留半成品。</li>
 <li>临时工作区：退出（含异常路径）时清理。</li>
 <li>状态存储：事件日志是唯一权威，snapshot 为派生缓存；崩溃遗留锁需调用方在 Foundation 外确认旧写者终止后显式恢复，不自动偷锁。</li>
 <li>投影：任一校验失败整体拒绝、零写入；覆盖既有文件需声明 <code>expect.sha256</code> 前置状态。</li>
-<li>adopt-plan / check：结构性只读，运行前后字节级零变化。</li>
+<li>adopt-plan、普通 runChecks 与普通 check：结构性只读且不写文件；默认可能启动一条冻结参数的只读 Git status 子进程，可由 <code>--no-git-spawn</code>（或 API 的 <code>allowGitSpawn: false</code>）关闭，运行前后字节级零变化。check relock 与 check qualification 的副作用见上表。</li>
 </ul>
 <h2 id="失败后调用方该做什么">失败后调用方该做什么<a class="headerlink" href="#失败后调用方该做什么" title="Permanent link">&para;</a></h2>
 <ul>

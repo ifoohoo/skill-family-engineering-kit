@@ -1894,15 +1894,15 @@
 <h1 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h1>
 <p>本页给普通开发者三条可执行旅程：新项目能力发现与骨架生成、存量项目采用与迁移、日常单需求查询。每条路径都给出精确命令；架构路由与 API 细节转到对应文档。</p>
 <h2 id="公共安装前提">公共安装前提<a class="headerlink" href="#公共安装前提" title="Permanent link">&para;</a></h2>
-<p>本地候选验证从工作区打出三份 <code>0.14.0</code> tarball，并把它们安装到临时 consumer；以下命令从 Foundation 工作区根目录运行：</p>
+<p>本地候选验证从工作区打出三份当前版本 tarball，并把它们安装到临时 consumer；当前版本见唯一状态页 <code>docs/status/current.md</code>。以下命令从 Foundation 工作区根目录运行：</p>
 <pre><code class="language-sh">pack_dir=&quot;$(mktemp -d)&quot;
 (cd packages/skill-family-contracts &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 (cd packages/skill-family-harness-node &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 (cd packages/skill-family-engineering-kit &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 mkdir &quot;$pack_dir/consumer&quot; &amp;&amp; (cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm init -y)
-(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-harness-node-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-0.14.0.tgz&quot;)
+(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-&lt;version&gt;.tgz&quot; &quot;$pack_dir/skill-family-harness-node-&lt;version&gt;.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-&lt;version&gt;.tgz&quot;)
 </code></pre>
-<p>发布后安装精确坐标 <code>skill-family-engineering-kit@0.14.0</code>，再运行下文的 <code>npm exec</code> 命令。</p>
+<p>发布后安装状态页所列的精确坐标，再运行下文的 <code>npm exec</code> 命令。</p>
 <h2 id="新项目发现能力并生成骨架">新项目：发现能力并生成骨架<a class="headerlink" href="#新项目发现能力并生成骨架" title="Permanent link">&para;</a></h2>
 <p>先用用途文件查看整个项目可用的能力，再显式选择稳定能力生成骨架。<code>--list-capabilities</code> 只读，不写项目；<code>--uses</code> 文件只保留问题、约束、保留保证和可选筛选词，不要写凭据或私密业务数据。</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json

@@ -1074,10 +1074,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#显式真实宿主资格" class="md-nav__link">
+  <a href="#显式资格入口" class="md-nav__link">
     <span class="md-ellipsis">
 
-        显式真实宿主资格
+        显式资格入口
 
     </span>
   </a>
@@ -1101,6 +1101,34 @@
     <span class="md-ellipsis">
 
         runPluginVerification
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#技能族目录验证-foundationkitskill-family-directory-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        技能族目录验证 (foundation.kit.skill-family-directory-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="技能族目录验证 (foundation.kit.skill-family-directory-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runSkillFamilyDirectoryVerification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runSkillFamilyDirectoryVerification
 
     </span>
   </a>
@@ -2417,10 +2445,10 @@
 </li>
 
         <li class="md-nav__item">
-  <a href="#显式真实宿主资格" class="md-nav__link">
+  <a href="#显式资格入口" class="md-nav__link">
     <span class="md-ellipsis">
 
-        显式真实宿主资格
+        显式资格入口
 
     </span>
   </a>
@@ -2455,6 +2483,34 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#技能族目录验证-foundationkitskill-family-directory-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        技能族目录验证 (foundation.kit.skill-family-directory-verification)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="技能族目录验证 (foundation.kit.skill-family-directory-verification)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runSkillFamilyDirectoryVerification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runSkillFamilyDirectoryVerification
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2474,9 +2530,10 @@
 
 <h1 id="skill-family-engineering-kit-公共-API-参考">skill-family-engineering-kit 公共 API 参考<a class="headerlink" href="#skill-family-engineering-kit-公共-API-参考" title="Permanent link">&para;</a></h1>
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块、CLI 入口）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
-<p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布、删除用户内容或触网。</p>
+<p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布或删除用户内容。</p>
+<p>Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断；隔离责任由调用方与运行环境承担。仓内受控 fixture 按设计不发起网络请求。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 使用 Contracts 1.14.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.14.0</code>。
+<p>provider Profile descriptor 使用 Contracts 1.15.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.15.0</code>。
 Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
@@ -2488,6 +2545,9 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li><a href="#report-foundationkitreport">report</a> → <code>renderReportAction</code> / <code>checkReportAction</code></li>
 <li><a href="#git-probe-foundationkitgit-probe">git-probe</a> → <code>probeGitState</code> / <code>probeGitFacts</code></li>
 <li><a href="#host-foundationkithost">host</a> → <code>describeHost</code> / <code>resolveHostId</code> / <code>probeHost</code> / <code>planHost</code> / <code>applyHostPlan</code> …</li>
+<li><a href="#完整插件验证-foundationkitplugin-verification">完整插件验证</a> → <code>runPluginVerification</code></li>
+<li><a href="#技能族目录验证-foundationkitskill-family-directory-verification">技能族目录验证</a> → <code>runSkillFamilyDirectoryVerification</code></li>
+<li><a href="#显式资格入口">显式资格入口</a> → <code>runQualification</code></li>
 <li><a href="#licensing-foundationkitlicensing">licensing</a> → <code>loadLicensingProfile</code> / <code>generateLicenseContent</code> …</li>
 <li><a href="#identity-check-foundationkitidentity-check">identity-check</a> → <code>checkIdentityDrift</code> / <code>validateIdentityAgainstProfile</code></li>
 <li><a href="./">CLI</a> → <code>runCommand</code> / <code>cliMain</code></li>
@@ -2525,7 +2585,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>输入：目标根、迁移清单路径。</li>
 <li>输出：采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、profile 草稿（kind=<code>skill-family.profile-draft</code>：预填 D-8 最小采用声明 + 空 overrides 示例，仅输出，不落盘；adoption-lock 形态已废弃）。</li>
 <li>纯函数：分类与评估函数为纯函数；<code>planAdoption</code> 含只读探测。</li>
-<li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；可能触发只读 Git 探测。</li>
+<li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；默认可能启动一条冻结参数的只读 Git 探测，传入 <code>allowGitSpawn: false</code> 可关闭该子进程。</li>
 <li>稳定错误码与 <code>details.kind</code>：例外缺字段 / 未退出旧实现则完成判定 <code>false</code>；硬失败抛 <code>KitError</code>（<code>CONTRACTS_VERSION</code> 不一致等）。</li>
 <li>前置条件与信任锚：目标仓存在且可只读访问；<code>MIGRATION_MANIFEST_PATH</code> / <code>MIGRATION_MANIFEST_SCHEMA_ID</code> 指向契约。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
@@ -2577,7 +2637,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>输入：<code>--only</code> 取值 <code>contracts|drift|closure|version|docs|git|identity|boundary|platform</code>。</li>
 <li>输出：发现清单；退出码 <code>findings=1</code>（有发现）、<code>mechanism=2</code>（某类检查无法完成）、<code>ok=0</code>。</li>
 <li>纯函数：否（读取目标文件与只读 Git 状态）；但<strong>只诊断、不修复、不写</strong>。</li>
-<li>副作用：无文件写入；只读 Git 探测（至多一次冻结 <code>status</code> 查询）。</li>
+<li>副作用：无文件写入；默认可能启动一条冻结参数的只读 Git 探测（至多一次冻结 <code>status</code> 查询），传入 <code>allowGitSpawn: false</code> 可关闭该子进程。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>CHECK_CLASSES</code> 为九类闭集，不扩张（审计整改 C2 依裁决 SG-13/14、SG-17、SFA-PLAT-002 增设 <code>boundary</code>、<code>platform</code> 两类，并为 <code>version</code> 类加装版本单源一致性事实；扩类经治理批准，此后仍不扩张）；机制失败抛 <code>KitError</code>（<code>mechanism</code> 类）。</li>
 <li>前置条件与信任锚：<code>GIT_READ_ONLY_ALLOWLIST</code> 限定可调用子命令。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
@@ -2613,7 +2673,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>输入：目标根。</li>
 <li>输出：Git 状态与事实（只读）。</li>
 <li>纯函数：否（调用 <code>git</code> 只读子命令）；不含任何写操作。</li>
-<li>副作用：只读调用 <code>git status</code> / <code>ls-files</code> / <code>check-ignore</code>；参数向量冻结于 <code>GIT_STATUS_ARGS</code> / <code>GIT_LS_FILES_ARGS</code> / <code>GIT_CHECK_IGNORE_ARGS</code>，不在白名单即拒绝。</li>
+<li>副作用：只读调用 <code>git status</code> / <code>ls-files</code> / <code>check-ignore</code>；默认允许启动冻结参数的只读子进程，<code>allowSpawn: false</code> 可关闭；参数向量冻结于 <code>GIT_STATUS_ARGS</code> / <code>GIT_LS_FILES_ARGS</code> / <code>GIT_CHECK_IGNORE_ARGS</code>，不在白名单即拒绝。</li>
 <li>稳定错误码与 <code>details.kind</code>：非白名单参数向量抛 <code>KitError</code>（<code>unauthorized-git</code> 类）。</li>
 <li>前置条件与信任锚：<code>GIT_READ_ONLY_ALLOWLIST</code> 限定可调用子命令。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
@@ -2704,7 +2764,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>输入：<code>argv</code>。</li>
 <li>输出：命令结果；退出码 <code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>。</li>
 <li>纯函数：否（依命令产生受收容文件写入或只读探测）。</li>
-<li>副作用：依命令而定（scaffold/projection 受收容写；adopt-plan/check 只读）；<code>REFUSED_MUTATION_FLAGS</code>（如 <code>--apply</code>）在 <code>parseOptions</code> 入口即拒。</li>
+<li>副作用：依子动作而定：<code>scaffold</code> / <code>projection</code> 在受收容目标写入；<code>adopt-plan</code> 与普通 <code>check</code> 只读；<code>check relock</code> 是显式受控写事务；<code>check qualification</code> 预检通过后可能启动绑定的 executable。Foundation 自身不发起网络请求，但绑定的 executable 可能联网；Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。<code>REFUSED_MUTATION_FLAGS</code>（如 <code>--apply</code>）在 <code>parseOptions</code> 入口即拒。</li>
 <li>稳定错误码与 <code>details.kind</code>：未知命令 / 拒绝旗标退出码 <code>2</code>（<code>unknown-command</code> / <code>refused-mutation</code>）。</li>
 <li>前置条件与信任锚：Node &gt;= 22.22.2；<code>TOP_LEVEL_COMMANDS</code> 固定 4 个，第 5 个命令禁止新增；<code>REFUSED_MUTATION_FLAGS</code> 在解析入口即拒。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
@@ -2754,24 +2814,45 @@ package identity、来源摘要与 provenance 绑定合同判断。</p>
 <code>direct-adoption</code>、<code>compatibility-layer</code>、<code>keep-business</code> 与 <code>foundation-gap</code> 的 decision
 由消费者记录。迁移 <code>complete</code> 只表示迁移门禁闭合，<code>consumerVerification.claim</code> 保持
 <code>null</code>；契约接入完成须由消费者适配器测试与领域门禁声明。</p>
-<h2 id="显式真实宿主资格">显式真实宿主资格<a class="headerlink" href="#显式真实宿主资格" title="Permanent link">&para;</a></h2>
+<h2 id="显式资格入口">显式资格入口<a class="headerlink" href="#显式资格入口" title="Permanent link">&para;</a></h2>
 <p><code>check qualification</code> 是挂在 <code>check</code> 下的显式子动作，要求同时提供
-<code>--root</code>、<code>--capability foundation.kit.plugin-verification</code>、<code>--request</code>、<code>--bindings</code>
+<code>--root</code>、受支持的 <code>--capability</code>（插件生命周期或技能族目录）、<code>--request</code>、<code>--bindings</code>
 与 <code>--native</code>。它先读取三包精确版本、能力目录、request/result Schema 和参数完整性，
-再调用 <code>runPluginVerification</code>。缺少证据、跳过执行或终态不确定时，不得输出
+再调用固定资格入口。缺少证据、跳过执行或终态不确定时，不得输出
 <code>real-host-qualified</code>；候选发现、迁移 <code>complete</code> 和契约接入完成都不能替代真实资格。</p>
+<p>公共库入口为 <code>runQualification({ root, capability, requestPath, bindingsPath, native })</code>。参数键集闭合；<code>runner</code>、catalog loader、parser、预制 observation 或其它测试接缝会在读取目标文件和创建临时根之前被拒绝。包内测试接缝不从 package root 导出，也不属于公共 API。</p>
+<p>0.15.0 的 <code>foundation.kit.plugin-verification</code> 只保留 Qoder 与 WorkBuddy 的
+<code>native-lifecycle</code> 分支，使用宿主专属生产 driver 与固定十二阶段生命周期结构；
+<code>foundation.kit.skill-family-directory-verification</code> 是 Kimi 的固定目录分支，内置
+<code>driverVersion</code> 为 <code>1.0.0</code>，CLI <code>cliVersion</code> 为 <code>0.39.1</code>。受控 fixture executable 必须走同一生产 driver、<code>superviseProcess</code> 和原始流路径，只证明隔离接线，不是厂商官方 grammar，也不能从公共资格入口伪造正式宿主观察。调用方负责领域接受与真实宿主资格，不得复制通用 runner、Schema、Registry 或 receipt 链。</p>
 <h2 id="完整插件验证-foundationkitplugin-verification">完整插件验证 (foundation.kit.plugin-verification)<a class="headerlink" href="#完整插件验证-foundationkitplugin-verification" title="Permanent link">&para;</a></h2>
 <h3 id="runPluginVerification">runPluginVerification<a class="headerlink" href="#runPluginVerification" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：<code>runPluginVerification({ request, bindings, hostsRoot })</code>（async）。</li>
-<li>输入：注册的 <code>plugin-verification-request</code>、私有路径绑定及显式宿主 Profile 根。请求区分 <code>install-only</code> 与 <code>install-and-invoke</code>；来源区分 <code>local-staged</code> 与有限 <code>public-channel</code>。</li>
-<li>输出：注册的 <code>plugin-verification-result</code>。输入、安装、原生发现和调用事实分别报告；未执行的阶段不填造事实。完整安装观察和原始输出保存于私有证据根。</li>
-<li>副作用：创建新鲜安装、会话和证据目录；公共渠道命令可能访问网络，调用模式启动受限宿主。仅安装模式不运行模型。不覆盖已有安装，不自动重试、回滚或清理不确定现场。</li>
-<li>失败语义：<code>rejected</code> 表示前提拒绝，<code>failed</code> 表示确定失败，<code>indeterminate</code> 表示边界终态无法证明。<code>payloadMatches</code> 记录比较事实，完整观察成功不替代消费者接受政策。</li>
-<li>前提：三包精确锁步；调用方提供冻结源、授权和现有宿主登录态。每个真实宿主与来源组合必须另有资格证据，入口存在不等于全部组合获准。</li>
+<li>输入：注册的 <code>plugin-verification-request</code>、私有路径绑定及显式宿主 Profile 根。请求保留 <code>install-only</code> 与 <code>install-and-invoke</code>，并增加只允许本地 source 的 <code>native-lifecycle</code>。原分支继续区分 <code>local-staged</code> 与有限 <code>public-channel</code>。</li>
+<li>输出：注册的 <code>plugin-verification-result</code>。原分支分别报告输入、安装、发现和调用事实；原生命周期分支恰好报告 <code>preflight</code> 到 <code>absent-after-uninstall</code> 的十二个有序语义阶段。完整树观察和原始输出只保存在私有证据根。</li>
+<li>生产 driver：Qoder 与 WorkBuddy 各自拥有 argv 计划、command step、tree evidence 与 raw stream Oracle，阶段内最多三条命令，两个宿主计划可以不同。每次 spawn 前都重新调用 <code>observeExecutableIdentity</code>；身份或解释器链漂移会阻断下一次启动。Contracts 不保存跨宿主统一命令表，也不解释厂商输出。</li>
+<li>副作用：原生命周期分支只运行调用方绑定的本地 executable，创建 fresh workspace、一次性宿主状态与私有证据。Foundation 自身不发起网络请求，但绑定的 executable 可能联网；Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。所有分支不覆盖已有安装，不自动重试、回滚或清理不确定现场。</li>
+<li>失败语义：<code>rejected</code> 表示前提拒绝，<code>failed</code> 表示确定失败，<code>indeterminate</code> 表示边界终态无法证明。原生命周期的首个非 <code>observed</code> 阶段会使后续阶段保持空的 <code>not-performed</code>；输出未知、重复、缺失、身份漂移、根越界或卸载残留均失败关闭。</li>
+<li>fixture 边界：受控 Qoder/WorkBuddy executable 使用 Foundation 自有的封闭测试协议，并通过真实生产 driver 与 raw-stream 路径执行。该协议不是厂商官方 grammar，不构成真实宿主资格或领域接受。</li>
+<li>前提：三包精确锁步；调用方绑定冻结本地源、可执行文件、解释器、互不重叠的 fresh 根与现有用户状态边界。每个真实宿主与来源组合必须另有资格证据，入口存在不等于全部组合获准。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.13.0</code> / <code>candidate</code>。永久入口身份不因成熟度标签变化而迁移；现有单 Skill 入口及合同保留。</li>
-<li>源文件与正反例：<code>packages/skill-family-engineering-kit/src/plugin-verification.mjs</code>、<code>test/plugin-verification.test.mjs</code>。</li>
+<li>源文件与正反例：<code>packages/skill-family-engineering-kit/src/plugin-verification.mjs</code>、<code>src/host-verification-drivers.mjs</code>、<code>test/plugin-verification.test.mjs</code>、<code>test/foundation-015-kit.test.mjs</code>、<code>test/isolated-install.test.mjs</code>。</li>
 <li>调用方责任：源接受、领域结果、发布新鲜度和状态、消费者迁移及机制退出证明。</li>
+</ul>
+<h2 id="技能族目录验证-foundationkitskill-family-directory-verification">技能族目录验证 (foundation.kit.skill-family-directory-verification)<a class="headerlink" href="#技能族目录验证-foundationkitskill-family-directory-verification" title="Permanent link">&para;</a></h2>
+<h3 id="runSkillFamilyDirectoryVerification">runSkillFamilyDirectoryVerification<a class="headerlink" href="#runSkillFamilyDirectoryVerification" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>runSkillFamilyDirectoryVerification({ request, bindings })</code>（async）。公共键集只有 <code>request</code> 与 <code>bindings</code>；caller observation、runner、parser 或预制 result 均被拒绝。</li>
+<li>输入：注册的 skill-family-directory request，以及调用方绑定的 Kimi executable/interpreter、技能族根、工作区、现有用户状态根、临时根与私有证据根。入口固定 <code>hostId=kimi-code</code>、<code>driverVersion=1.0.0</code>、<code>cliVersion=0.39.1</code>。</li>
+<li>启动：先以固定版本参数检查 CLI；正式调用固定为 <code>-p &lt;prompt&gt; --output-format stream-json --skills-dir &lt;family-root&gt;</code>。环境只投影 <code>NO_COLOR</code>、<code>HOME</code>、<code>TMPDIR</code> 与 <code>KIMI_CODE_HOME</code>，不展开继承 <code>process.env</code>。每次 spawn 前重新观察可执行文件及解释器身份。</li>
+<li>输出：注册的四态 directory result，以及受保护技能族树、工作区和原始流摘要。私有 raw stdout/stderr、绝对路径与完整 observation 不进入公共结果。</li>
+<li>当前判定边界：Foundation 自有受控 raw fixture 协议可验证生产 parser 接线，但不是 Kimi 官方 stream-json grammar。当前缺少可验证的官方 typed call/result 映射，因此即使受控事件完整配对，公共结果仍为 <code>indeterminate</code>，原因为 <code>official-observation-unavailable</code>，逐技能 discovery/load 保持 <code>unknown</code>。</li>
+<li>失败语义：调用方 observation、根重叠或越界、非 fresh evidence 根、来源摘要不符、可执行文件/解释器漂移、raw evidence 变化和 protected snapshot 漂移均失败关闭。边界终态无法证明时保留现场并要求人工检查。</li>
+<li>副作用：只启动本地受约束进程，并在调用方绑定的私有临时根写 raw evidence。Foundation 自身不发起网络请求，但绑定的 executable 可能联网；Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。Foundation 不管理认证、不写全局配置或远端状态。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.15.0</code> / <code>candidate</code>。</li>
+<li>源文件与正反例：<code>packages/skill-family-engineering-kit/src/skill-family-directory-verification.mjs</code>、<code>test/foundation-015-kit.test.mjs</code>、<code>test/isolated-install.test.mjs</code>。</li>
+<li>调用方责任：技能族来源接受、领域结果、真实宿主资格、发布新鲜度与发布决定。</li>
 </ul>
 
 

@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.15.0 locale=zh-CN baseline=sha256:c559c91bed872ab70dac2a4836c636b35ed905282f4aa4cdcf56d21a1ce246b9 -->
+## [0.15.0] - 2026-08-29
+
+Engineering Kit 0.15.0 增加固定的 native-lifecycle 与 Kimi 目录资格入口。
+
+### 新增
+
+- 增加 Qoder 与 WorkBuddy 封闭十二阶段生命周期 fixture 解析。
+- 增加 Kimi 目录资格检查，使用 driverVersion 1.0.0 与 CLI 0.39.1 接纳规则。
+
+### 变更
+
+- 资格检查直接将 Contracts、Harness 版本与 KIT_VERSION 比较。
+
+### 升级说明
+
+fixture 只证明解析器接线；正式进程、目录和领域接受观察仍由消费者负责。
+<!-- release-skill:changelog:end version=0.15.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.14.0 locale=zh-CN baseline=sha256:c3c9e90c2c1e4c06d34871d18ba4062db46e484cbeccbf25867d8b59db32ccc0 -->
 ## [0.14.0] - 2026-08-28
 

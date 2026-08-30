@@ -1,0 +1,21 @@
+version: 0.15.0
+date: 2026-08-29
+locales:
+  en:
+    summary: Engineering Kit 0.15.0 adds fixed native-lifecycle and Kimi directory qualification entries.
+    changes:
+      added:
+        - Adds closed 12-stage Qoder and WorkBuddy lifecycle fixture parsing.
+        - Adds Kimi directory qualification with driverVersion 1.0.0 and CLI 0.39.1 admission.
+      changed:
+        - Qualification compares Contracts and Harness versions directly with KIT_VERSION.
+    upgradeNotes: Fixtures prove parser wiring only; consumers own formal process, directory, and domain acceptance observations.
+  zh-CN:
+    summary: Engineering Kit 0.15.0 增加固定的 native-lifecycle 与 Kimi 目录资格入口。
+    changes:
+      added:
+        - 增加 Qoder 与 WorkBuddy 封闭十二阶段生命周期 fixture 解析。
+        - 增加 Kimi 目录资格检查，使用 driverVersion 1.0.0 与 CLI 0.39.1 接纳规则。
+      changed:
+        - 资格检查直接将 Contracts、Harness 版本与 KIT_VERSION 比较。
+    upgradeNotes: fixture 只证明解析器接线；正式进程、目录和领域接受观察仍由消费者负责。

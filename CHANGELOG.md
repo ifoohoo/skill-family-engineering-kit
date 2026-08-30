@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.15.0 locale=en baseline=sha256:8b3c67e9fe98dd14ad7b43220440311cb046d10070f16dd6c83d47d3351efbf5 -->
+## [0.15.0] - 2026-08-29
+
+Engineering Kit 0.15.0 adds fixed native-lifecycle and Kimi directory qualification entries.
+
+### Added
+
+- Adds closed 12-stage Qoder and WorkBuddy lifecycle fixture parsing.
+- Adds Kimi directory qualification with driverVersion 1.0.0 and CLI 0.39.1 admission.
+
+### Changed
+
+- Qualification compares Contracts and Harness versions directly with KIT_VERSION.
+
+### Upgrade Notes
+
+Fixtures prove parser wiring only; consumers own formal process, directory, and domain acceptance observations.
+<!-- release-skill:changelog:end version=0.15.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.14.0 locale=en baseline=sha256:ae68c432972367cf4f77239dcad446fe4d15fc73e6042f70bd0a7b67041f93b9 -->
 ## [0.14.0] - 2026-08-28
 

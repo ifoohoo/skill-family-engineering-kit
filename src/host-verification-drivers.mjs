@@ -1,5 +1,173 @@
 import path from "node:path";
 
+export const CONTROLLED_NATIVE_LIFECYCLE_FIXTURE_PROTOCOL = "skill-family.controlled-native-lifecycle-fixture/v1";
+
+const NATIVE_TREE_ROLES = Object.freeze({
+  preflight: Object.freeze([]),
+  "validate-v1": Object.freeze(["source-v1"]),
+  "marketplace-add": Object.freeze(["config"]),
+  "install-v1": Object.freeze(["installed", "cache", "config", "data"]),
+  "discover-v1": Object.freeze(["installed", "cache", "config", "data"]),
+  "invoke-v1": Object.freeze(["installed"]),
+  disable: Object.freeze(["installed", "config"]),
+  enable: Object.freeze(["installed", "config"]),
+  "update-v2": Object.freeze(["source-v2", "installed", "cache", "config", "data"]),
+  "invoke-v2": Object.freeze(["installed"]),
+  uninstall: Object.freeze(["installed", "cache", "config", "data"]),
+  "absent-after-uninstall": Object.freeze(["installed", "cache", "config", "data"]),
+});
+
+function nativeStage(name, commands) {
+  return Object.freeze({
+    name,
+    commands: Object.freeze(commands.map(({ step, args }) => Object.freeze({ step, args: Object.freeze(args) }))),
+    treeRoles: NATIVE_TREE_ROLES[name],
+  });
+}
+
+function qoderNativeLifecyclePlan({ request, roots, prompt }) {
+  const global = ["--cwd", roots.workspaceRoot, "--config-dir", roots.temporaryRoot];
+  const plugin = `${request.source.pluginId}@${request.source.marketplaceId}`;
+  const invoke = (step) => ({ step, args: [...global, "-p", "-o", "json", "--no-session-persistence", prompt] });
+  const manage = (step, ...args) => ({ step, args: [...global, "plugins", ...args] });
+  return Object.freeze([
+    nativeStage("preflight", [{ step: "version-probe", args: ["--version"] }]),
+    nativeStage("validate-v1", [manage("plugin-validate", "validate", roots.sourceRoot, "--json", "--strict")]),
+    nativeStage("marketplace-add", [manage("marketplace-add", "marketplace", "add", roots.sourceRoot, "--scope", "local")]),
+    nativeStage("install-v1", [manage("plugin-install", "install", plugin, "--scope", "local", "--json")]),
+    nativeStage("discover-v1", [manage("plugin-list", "list", "--json")]),
+    nativeStage("invoke-v1", [invoke("plugin-invoke")]),
+    nativeStage("disable", [
+      manage("plugin-disable", "disable", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+      invoke("plugin-invoke-negative"),
+    ]),
+    nativeStage("enable", [
+      manage("plugin-enable", "enable", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+      invoke("plugin-invoke-positive"),
+    ]),
+    nativeStage("update-v2", [
+      manage("marketplace-add", "marketplace", "add", roots.fixtureRoot, "--scope", "local"),
+      manage("plugin-update", "update", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+    ]),
+    nativeStage("invoke-v2", [invoke("plugin-invoke")]),
+    nativeStage("uninstall", [manage("plugin-uninstall", "uninstall", plugin, "--scope", "local", "--json")]),
+    nativeStage("absent-after-uninstall", [manage("plugin-list", "list", "--json")]),
+  ]);
+}
+
+function workBuddyNativeLifecyclePlan({ request, roots, prompt }) {
+  const plugin = `${request.source.pluginId}@${request.source.marketplaceId}`;
+  const invoke = (step) => ({ step, args: ["-p", prompt, "--output-format", "stream-json", "--permission-mode", "dontAsk", "--no-session-persistence"] });
+  const manage = (step, ...args) => ({ step, args: ["plugin", ...args] });
+  return Object.freeze([
+    nativeStage("preflight", [{ step: "version-probe", args: ["--version"] }]),
+    nativeStage("validate-v1", [manage("plugin-validate", "validate", roots.sourceRoot)]),
+    nativeStage("marketplace-add", [manage("marketplace-add", "marketplace", "add", roots.sourceRoot, "--name", request.source.marketplaceId)]),
+    nativeStage("install-v1", [manage("plugin-install", "install", plugin, "--scope", "local", "--json")]),
+    nativeStage("discover-v1", [manage("plugin-list", "list", "--json")]),
+    nativeStage("invoke-v1", [invoke("plugin-invoke")]),
+    nativeStage("disable", [
+      manage("plugin-disable", "disable", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+      invoke("plugin-invoke-negative"),
+    ]),
+    nativeStage("enable", [
+      manage("plugin-enable", "enable", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+      invoke("plugin-invoke-positive"),
+    ]),
+    nativeStage("update-v2", [
+      manage("marketplace-add", "marketplace", "add", roots.fixtureRoot, "--name", request.source.marketplaceId),
+      manage("plugin-update", "update", plugin, "--scope", "local"),
+      manage("plugin-list", "list", "--json"),
+    ]),
+    nativeStage("invoke-v2", [invoke("plugin-invoke")]),
+    nativeStage("uninstall", [manage("plugin-uninstall", "uninstall", plugin, "--scope", "local")]),
+    nativeStage("absent-after-uninstall", [manage("plugin-list", "list", "--json")]),
+  ]);
+}
+
+const QODER_NATIVE_LIFECYCLE = Object.freeze({
+  executableBasename: "qodercli",
+  buildPlan: qoderNativeLifecyclePlan,
+  environment: (roots) => Object.freeze({
+    NO_COLOR: "1",
+    HOME: roots.temporaryRoot,
+    TMPDIR: roots.temporaryRoot,
+    QODER_PLUGIN_CACHE_DIR: roots.installContainerRoot,
+  }),
+});
+
+const WORKBUDDY_NATIVE_LIFECYCLE = Object.freeze({
+  executableBasename: "codebuddy",
+  buildPlan: workBuddyNativeLifecyclePlan,
+  environment: (roots) => Object.freeze({
+    NO_COLOR: "1",
+    HOME: roots.temporaryRoot,
+    TMPDIR: roots.temporaryRoot,
+    CODEBUDDY_CONFIG_DIR: roots.temporaryRoot,
+    WORKBUDDY_CONFIG_DIR: roots.temporaryRoot,
+    CODEBUDDY_DISABLE_COMPILE_CACHE: "1",
+  }),
+});
+
+function ownKeys(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? Object.keys(value).sort().join(",")
+    : "";
+}
+
+/**
+ * Parse the explicit controlled-fixture protocol after a real production
+ * driver spawn. This protocol is Foundation-owned isolation evidence; it is
+ * intentionally distinct from, and never presented as, either vendor's
+ * official output grammar.
+ */
+export function evaluateControlledNativeLifecycleFixture({ bytes, hostId, stage, step } = {}) {
+  let text;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return Object.freeze({ status: "indeterminate" });
+  }
+  const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+  if (lines.length !== 1) return Object.freeze({ status: "indeterminate" });
+  let event;
+  try {
+    event = JSON.parse(lines[0]);
+  } catch {
+    return Object.freeze({ status: "indeterminate" });
+  }
+  if (ownKeys(event) !== "hostId,invocation,protocol,stage,stageCode,step" ||
+      event.protocol !== CONTROLLED_NATIVE_LIFECYCLE_FIXTURE_PROTOCOL ||
+      event.hostId !== hostId || event.stage !== stage || event.step !== step ||
+      !Array.isArray(event.invocation)) {
+    return Object.freeze({ status: "indeterminate" });
+  }
+  const invocationStep = step.includes("invoke");
+  if (!invocationStep && event.invocation.length !== 0) return Object.freeze({ status: "indeterminate" });
+  if (invocationStep) {
+    if (event.invocation.length !== 1 || ownKeys(event.invocation[0]) !== "callId,result") {
+      return Object.freeze({ status: "indeterminate" });
+    }
+    const pair = event.invocation[0];
+    if (typeof pair.callId !== "string" || pair.callId.length === 0 || ownKeys(pair.result) !== "callId,outcome" ||
+        pair.result.callId !== pair.callId || !["blocked", "succeeded"].includes(pair.result.outcome)) {
+      return Object.freeze({ status: "indeterminate" });
+    }
+    const expectedOutcome = step === "plugin-invoke-negative" ? "blocked" : "succeeded";
+    if (pair.result.outcome !== expectedOutcome) return Object.freeze({ status: "failed" });
+  }
+  if (event.stageCode === `${stage}:ok`) return Object.freeze({ status: "observed" });
+  if (["disable:call-succeeded", "update-v2:version-v1", "absent-after-uninstall:present"].includes(event.stageCode)) {
+    return Object.freeze({ status: "failed" });
+  }
+  return Object.freeze({ status: "indeterminate" });
+}
+
 /**
  * Closed, built-in real-host driver table.  The table contains mechanism
  * facts only; it does not own a host registry or domain assertions.
@@ -33,6 +201,7 @@ export const KIMI_DRIVER = Object.freeze({
   hostId: "kimi-code",
   driverId: "kimi-code-print-v1",
   driverVersion: "1.0.0",
+  cliVersion: "0.39.1",
   executableBasename: "kimi",
   probeArgs: Object.freeze(["--version"]),
   promptFlag: "-p",
@@ -59,6 +228,7 @@ export const WORKBUDDY_DRIVER = Object.freeze({
   // layout is pre-checked before any spawn and `skills/` must be an empty
   // real (non-symlink) directory before the skill is materialized.
   fixedArgs: Object.freeze(["--permission-mode", "dontAsk", "--no-session-persistence"]),
+  nativeLifecycle: WORKBUDDY_NATIVE_LIFECYCLE,
   versionPattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u,
 });
 
@@ -135,6 +305,7 @@ export const QODER_DRIVER = Object.freeze({
   cwdFlag: "--cwd",
   promptTrailing: true,
   textProtocol: true,
+  nativeLifecycle: QODER_NATIVE_LIFECYCLE,
   versionPattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u,
 });
 

@@ -958,6 +958,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#完整插件验证合同-foundationcontractsplugin-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整插件验证合同 (foundation.contracts.plugin-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        技能族目录验证合同 (foundation.contracts.skill-family-directory-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2298,6 +2320,28 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#完整插件验证合同-foundationcontractsplugin-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        完整插件验证合同 (foundation.contracts.plugin-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        技能族目录验证合同 (foundation.contracts.skill-family-directory-verification)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力成熟度与历史迁移政策" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2373,8 +2417,10 @@
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
 <li><a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同</a> → request/result Schema</li>
 <li><a href="#真实宿主验证合同-foundationcontractshost-verification">真实宿主验证合同</a> → request/result Schema</li>
+<li><a href="#完整插件验证合同-foundationcontractsplugin-verification">完整插件验证合同</a> → request/result Schema</li>
+<li><a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification">技能族目录验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（42 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.14.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（45 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.15.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2459,7 +2505,7 @@
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
 <li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
-<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.14.0</code> 为唯一权威；登记表含 42 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.15.0</code> 为唯一权威；登记表含 45 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
@@ -2475,7 +2521,7 @@
 <li>纯函数：是（仅返回复制后的内存对象）。</li>
 <li>副作用：无文件、进程、Git、网络或持久化副作用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
-<li>前置条件与信任锚：登记表含 42 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：登记表含 45 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：同上。</li>
 <li>正例/负例测试：同上。</li>
@@ -2631,6 +2677,11 @@
 <td>contract</td>
 </tr>
 <tr>
+<td>SFC1013</td>
+<td>CONSUMER_CONTRACT_VERSION_MISMATCH</td>
+<td>contract</td>
+</tr>
+<tr>
 <td>SFC2002</td>
 <td>UNKNOWN_OPERATION</td>
 <td>kernel</td>
@@ -2714,6 +2765,28 @@ peer 顺序不得改变共同闭包摘要或结论；未知字段、重复/缺�
   <code>packages/skill-family-contracts/src/schemas/host-verification-result.schema.json</code>。正反例：
   <code>packages/skill-family-contracts/test/schemas.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：candidate 解引用、workload、领域输出、发布新鲜度、领域 PASS/FAIL 与发布决定。</li>
+</ul>
+<hr />
+<h2 id="完整插件验证合同-foundationcontractsplugin-verification">完整插件验证合同 (foundation.contracts.plugin-verification)<a class="headerlink" href="#完整插件验证合同-foundationcontractsplugin-verification" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.15.0 在保留 <code>install-only</code> 与 <code>install-and-invoke</code> 两个既有 goal 的同时，增加 <code>native-lifecycle</code> 分支。request 只描述闭合的宿主、来源、认证、载荷与工作负载摘要，不携带 runner、parser、预制 observation 或自由 <code>hostState</code>。</p>
+<p>原生命周期 result 的 <code>facts.lifecycle.stages</code> 恰好按以下顺序包含十二项：<code>preflight</code>、<code>validate-v1</code>、<code>marketplace-add</code>、<code>install-v1</code>、<code>discover-v1</code>、<code>invoke-v1</code>、<code>disable</code>、<code>enable</code>、<code>update-v2</code>、<code>invoke-v2</code>、<code>uninstall</code>、<code>absent-after-uninstall</code>。Contracts 只检查闭字段、阶段顺序、局部结构与停止传播；首个非 <code>observed</code> 阶段之后，后续阶段只能为 <code>not-performed</code>，且 <code>commands</code> 与 <code>trees</code> 为空。</p>
+<p>Schema 不固定跨宿主统一命令数或 argv 计划，不根据 command step、退出码、自然语言或 marker 解释厂商语义，也不拥有 Qoder/WorkBuddy Oracle。每个宿主的命令计划、tree evidence 选择与 raw stream 判定由 Engineering Kit 的专属 driver 负责。</p>
+<ul>
+<li><code>since</code> / <code>stability</code>：既有合同自 <code>0.13.0</code> / <code>candidate</code>；<code>native-lifecycle</code> 分支自 <code>0.15.0</code>。</li>
+<li>Schema 文件：<code>packages/skill-family-contracts/src/schemas/plugin-verification-request.schema.json</code>、<code>plugin-verification-result.schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/foundation-015-contracts.test.mjs</code>、<code>schemas.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：来源接受、领域结果、发布新鲜度、真实宿主资格与发布决定。</li>
+</ul>
+<hr />
+<h2 id="技能族目录验证合同-foundationcontractsskill-family-directory-verification">技能族目录验证合同 (foundation.contracts.skill-family-directory-verification)<a class="headerlink" href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.15.0 登记 Kimi 专用的 skill-family-directory request/result。request 绑定 <code>hostId=kimi-code</code>、固定 driver/CLI 身份、技能族树摘要、预期技能来源摘要与工作负载摘要；它不接收 caller observation、runner、parser 结论或 plugin lifecycle 字段。</p>
+<p>result 保持既有四态，逐技能事实只能明确写为 <code>observed</code>、<code>absent</code> 或 <code>unknown</code>。缺少可验证的官方 typed observation 映射时，允许 <code>status=indeterminate</code>、<code>reason=official-observation-unavailable</code>，逐技能 discovery/load 为 <code>unknown</code>，call/result id 为 <code>null</code>。Schema 不从 raw marker 猜测厂商语义。</p>
+<p>进程启动、固定 <code>--skills-dir</code> argv、窄环境、原始流收集与 parser 属 Engineering Kit。Contracts 只验证闭合结构和局部一致性，不把 Foundation 自有受控 fixture 协议登记成 Kimi 官方 grammar。</p>
+<ul>
+<li><code>since</code> / <code>stability</code>：<code>0.15.0</code> / <code>candidate</code>。</li>
+<li>Schema 文件：<code>packages/skill-family-contracts/src/schemas/skill-family-directory-verification-request.schema.json</code>、<code>skill-family-directory-verification-result.schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/foundation-015-contracts.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：技能族来源接受、领域输出、真实宿主资格与发布决定。</li>
 </ul>
 <hr />
 <h2 id="能力成熟度与历史迁移政策">能力成熟度与历史迁移政策<a class="headerlink" href="#能力成熟度与历史迁移政策" title="Permanent link">&para;</a></h2>

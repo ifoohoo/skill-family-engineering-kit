@@ -1,9 +1,9 @@
 import { mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { digestDocument, validateDocument } from "skill-family-contracts";
-import { createFilesystemRootBinding, digestBytes, observeFilesystemTree, publishFileExclusive, readFileBound, superviseProcess } from "skill-family-harness-node";
+import { createFilesystemRootBinding, digestBytes, observeExecutableIdentity, observeFilesystemTree, publishFileExclusive, readFileBound, superviseProcess } from "skill-family-harness-node";
 import { KitError, KIT_ERROR_KINDS, invalidParamsError, kitError } from "./errors.mjs";
-import { driverEnvironment, evaluateDriverStreamProtocol, getBuiltInHostVerificationDriver } from "./host-verification-drivers.mjs";
+import { driverEnvironment, evaluateControlledNativeLifecycleFixture, evaluateDriverStreamProtocol, getBuiltInHostVerificationDriver } from "./host-verification-drivers.mjs";
 import { bundledHostProfilesRoot, observeHostDescriptor } from "./host-profiles.mjs";
 
 const REQUEST_SCHEMA = "https://contracts.skill-family.example/v1/plugin-verification-request.json";
@@ -11,6 +11,10 @@ const RESULT_SCHEMA = "https://contracts.skill-family.example/v1/plugin-verifica
 const ACTION = ["manual-temporary-root-inspection-required"];
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
+export const NATIVE_LIFECYCLE_STAGES = Object.freeze([
+  "preflight", "validate-v1", "marketplace-add", "install-v1", "discover-v1", "invoke-v1",
+  "disable", "enable", "update-v2", "invoke-v2", "uninstall", "absent-after-uninstall",
+]);
 function fail(message, details = {}) { return kitError(KIT_ERROR_KINDS.HOST_CONTRACT_INVALID, message, details); }
 function contract(value, schema, message) {
   const check = validateDocument(value, { ...(typeof schema === "string" ? { schemaId: schema } : { schema }), dialect: "2020-12", policy: "strict" });
@@ -58,11 +62,245 @@ export function validateMembers(members) {
 }
 function validateBindingFields(request, bindings) {
   const required = ["sourceRoot", "sourceManifestRelPath", "sourceMembers", "installContainerRoot", "temporaryRoot", "privateEvidenceRoot"];
+  if (request.goal === "native-lifecycle") required.push("executableRoot", "executableRelPath", "existingUserStateRoot", "fixtureRoot", "workspaceRoot", "repositoryRoot", "outputRoot", "interpreterRoot", "effectivePrompt");
   if (request.source.type === "public-channel" || request.goal === "install-and-invoke") required.push("executableRoot", "executableRelPath", "existingUserStateRoot");
   if (request.source.type === "public-channel") required.push("channelLocator");
   if (request.goal === "install-and-invoke") required.push("effectivePrompt", "fixtureRoot", "workspaceRoot", "repositoryRoot", "outputRoot");
   if (!bindings || typeof bindings !== "object" || Array.isArray(bindings)) throw invalidParamsError("runPluginVerification requires private bindings");
   if (required.some(key => bindings[key] === undefined) || Object.keys(bindings).some(key => !required.includes(key))) throw invalidParamsError("plugin verification bindings have missing, prohibited or unknown fields");
+}
+
+function nativeFallbackLifecycle(firstStatus = "not-performed") {
+  return {
+    scope: "local",
+    stages: NATIVE_LIFECYCLE_STAGES.map((name, index) => ({
+      name,
+      status: index === 0 ? firstStatus : "not-performed",
+      commands: [],
+      trees: [],
+    })),
+    cleanup: { pluginAbsent: false },
+  };
+}
+
+function assertNativeRootIsolation(roots, hostsRoot) {
+  const entries = Object.entries(roots);
+  for (let left = 0; left < entries.length; left += 1) {
+    for (let right = left + 1; right < entries.length; right += 1) {
+      if (contained(entries[left][1], entries[right][1]) || contained(entries[right][1], entries[left][1])) {
+        throw fail("native lifecycle roots overlap", { left: entries[left][0], right: entries[right][0] });
+      }
+    }
+  }
+  for (const name of ["installContainerRoot", "temporaryRoot", "privateEvidenceRoot", "outputRoot"]) {
+    if (contained(roots[name], hostsRoot) || contained(hostsRoot, roots[name])) {
+      throw fail("native lifecycle write root overlaps bundled host profiles", { root: name });
+    }
+  }
+}
+
+function semverTuple(value) {
+  const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u.exec(value);
+  return match ? match.slice(1).map(Number) : null;
+}
+
+function compareSemver(left, right) {
+  for (let index = 0; index < 3; index += 1) if (left[index] !== right[index]) return left[index] - right[index];
+  return 0;
+}
+
+async function observeNativeRevision(root, manifestRelPath, revision, suppliedMembers) {
+  const binding = await createFilesystemRootBinding(root);
+  const manifest = await readFileBound(root, manifestRelPath, { rootBinding: binding });
+  const observation = await observeFilesystemTree({ root, rootBinding: binding });
+  const members = projectMembers(observation);
+  if (manifest.sha256 !== revision.sourceManifestSha256 || digestDocument(members) !== revision.membersDigest ||
+      !members.some((member) => member.path === manifestRelPath && member.type === "file" && member.sha256 === manifest.sha256)) {
+    throw fail("native lifecycle source revision does not match its public digest facts");
+  }
+  if (suppliedMembers) {
+    validateMembers(suppliedMembers);
+    if (digestDocument(suppliedMembers) !== revision.membersDigest || digestDocument(suppliedMembers) !== digestDocument(members)) {
+      throw fail("native lifecycle supplied member table drifted from source v1");
+    }
+  }
+  return { binding, observation };
+}
+
+async function preflightNativeLifecycle(request, bindings, hostsRoot) {
+  const driver = getBuiltInHostVerificationDriver(request.host.driverId);
+  if (!driver?.nativeLifecycle || driver.hostId !== request.host.hostId || driver.driverVersion !== request.host.driverVersion) {
+    throw fail("native lifecycle host and driver are not an admitted built-in pair");
+  }
+  const profileRoot = await directory(hostsRoot ?? bundledHostProfilesRoot(), "hostsRoot");
+  const descriptor = await observeHostDescriptor({ hostId: request.host.hostId, hostsRoot: profileRoot });
+  if (descriptor.descriptorSha256 !== request.host.descriptorSha256 || descriptor.descriptor.verification?.driverId !== driver.driverId ||
+      descriptor.descriptor.verification?.authStrategy !== request.auth.strategy || descriptor.descriptor.verification?.credentialMutation !== request.auth.credentialMutation) {
+    throw fail("native lifecycle request does not match the bundled host descriptor");
+  }
+  const roots = {};
+  for (const name of [
+    "sourceRoot", "fixtureRoot", "executableRoot", "interpreterRoot", "existingUserStateRoot", "workspaceRoot",
+    "repositoryRoot", "outputRoot", "temporaryRoot", "privateEvidenceRoot", "installContainerRoot",
+  ]) roots[name] = await directory(bindings[name], name);
+  assertNativeRootIsolation(roots, profileRoot);
+  for (const name of ["installContainerRoot", "temporaryRoot", "privateEvidenceRoot", "outputRoot"]) {
+    if ((await readdir(roots[name])).length !== 0) throw fail("native lifecycle write roots must be fresh", { root: name });
+  }
+  const manifestRelPath = relative(bindings.sourceManifestRelPath, "sourceManifestRelPath");
+  await observeNativeRevision(roots.sourceRoot, manifestRelPath, request.source.revisions.v1, bindings.sourceMembers);
+  await observeNativeRevision(roots.fixtureRoot, manifestRelPath, request.source.revisions.v2);
+  const v1 = semverTuple(request.source.revisions.v1.version);
+  const v2 = semverTuple(request.source.revisions.v2.version);
+  if (!v1 || !v2 || compareSemver(v1, v2) >= 0 ||
+      request.source.revisions.v1.membersDigest === request.source.revisions.v2.membersDigest ||
+      request.source.revisions.v1.sourceManifestSha256 === request.source.revisions.v2.sourceManifestSha256 ||
+      request.invocation.fixtureClosureDigest !== request.source.revisions.v2.membersDigest) {
+    throw fail("native lifecycle revisions must be an ordered v1/v2 local pair");
+  }
+  const simple = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/u;
+  if (!simple.test(request.source.marketplaceId) || !simple.test(request.source.pluginId)) throw fail("native lifecycle local identities are invalid");
+  const workspace = await observeFilesystemTree({ root: roots.workspaceRoot, rootBinding: await createFilesystemRootBinding(roots.workspaceRoot) });
+  if (workspace.membersDigest !== request.invocation.protectedWorkspaceClosureDigest) throw fail("native lifecycle protected workspace digest drifted");
+  if (!Buffer.isBuffer(bindings.effectivePrompt) || bindings.effectivePrompt.includes(0) || digestBytes(bindings.effectivePrompt) !== request.invocation.effectivePromptSha256) {
+    throw fail("native lifecycle effective prompt does not match its public digest");
+  }
+  let prompt;
+  try { prompt = new TextDecoder("utf-8", { fatal: true }).decode(bindings.effectivePrompt); }
+  catch { throw fail("native lifecycle effective prompt is not valid UTF-8"); }
+  const executableRelPath = relative(bindings.executableRelPath, "executableRelPath");
+  if (path.basename(executableRelPath) !== driver.nativeLifecycle.executableBasename) throw fail("native lifecycle executable basename does not match its driver");
+  const executable = path.join(roots.executableRoot, executableRelPath);
+  const executableBinding = await createFilesystemRootBinding(roots.executableRoot);
+  const interpreterBinding = await createFilesystemRootBinding(roots.interpreterRoot);
+  const identityInput = {
+    boundRoots: [
+      { root: roots.executableRoot, rootBinding: executableBinding },
+      { root: roots.interpreterRoot, rootBinding: interpreterBinding },
+    ],
+    lookup: { mode: "absolute-path", path: executable },
+    interpreterPolicy: { absoluteRoots: [roots.interpreterRoot], pathEntries: [roots.interpreterRoot] },
+  };
+  const plan = driver.nativeLifecycle.buildPlan({ request, roots, prompt });
+  if (!Array.isArray(plan) || plan.length !== NATIVE_LIFECYCLE_STAGES.length ||
+      plan.some((stage, index) => stage.name !== NATIVE_LIFECYCLE_STAGES[index] || !Array.isArray(stage.commands) || stage.commands.length > 3)) {
+    throw fail("native lifecycle driver plan is internally invalid");
+  }
+  return { driver, roots, identityInput, plan, env: driver.nativeLifecycle.environment(roots) };
+}
+
+async function nativeTreeEvidence(roles, roots) {
+  const roleRoots = {
+    "source-v1": roots.sourceRoot,
+    "source-v2": roots.fixtureRoot,
+    installed: roots.installContainerRoot,
+    cache: roots.installContainerRoot,
+    config: roots.temporaryRoot,
+    data: roots.temporaryRoot,
+  };
+  const evidence = [];
+  const observations = {};
+  for (const role of roles) {
+    const root = roleRoots[role];
+    const observation = await observeFilesystemTree({ root, rootBinding: await createFilesystemRootBinding(root) });
+    observations[role] = observation;
+    evidence.push({ role, status: "observed", observationDigest: observation.membersDigest });
+  }
+  return { evidence, observations };
+}
+
+async function runNativeLifecycleProcessVerification(request, bindings, hostsRoot) {
+  const preflight = await preflightNativeLifecycle(request, bindings, hostsRoot);
+  const timeout = (({ schemaVersion: _s, kind: _k, ...policy }) => policy)(request.invocation.timeoutPolicy);
+  const controlledFixture = request.source.candidateRef === "controlled-fixture-only";
+  const stageResults = [];
+  let baselineIdentity = null;
+  let stopped = false;
+  let commandIndex = 0;
+  let finalInstalledAbsent = false;
+  for (const stagePlan of preflight.plan) {
+    if (stopped) {
+      stageResults.push({ name: stagePlan.name, status: "not-performed", commands: [], trees: [] });
+      continue;
+    }
+    const commands = [];
+    let stageStatus = "observed";
+    for (const command of stagePlan.commands) {
+      let identity;
+      try {
+        identity = await observeExecutableIdentity(preflight.identityInput);
+      } catch {
+        stageStatus = "indeterminate";
+        break;
+      }
+      if (baselineIdentity === null) baselineIdentity = identity.observationDigest;
+      else if (identity.observationDigest !== baselineIdentity) {
+        stageStatus = "indeterminate";
+        break;
+      }
+      let run;
+      try {
+        run = await runCommand(
+          { step: command.step, command: identity.launch.file, args: [...identity.launch.argvPrefix, ...command.args] },
+          preflight.roots.workspaceRoot,
+          timeout,
+          null,
+          path.join(preflight.roots.privateEvidenceRoot, `native-${String(commandIndex).padStart(2, "0")}`),
+          preflight.env,
+        );
+      } catch (cause) {
+        if (cause.commandObservation) commands.push(cause.commandObservation);
+        stageStatus = cause?.details?.boundReadDisposition === "boundary-indeterminate" ? "indeterminate" : "failed";
+        commandIndex += 1;
+        break;
+      }
+      commandIndex += 1;
+      commands.push(run.observation);
+      if (run.envelope?.ok !== true) {
+        stageStatus = "failed";
+        break;
+      }
+      const evaluation = controlledFixture
+        ? evaluateControlledNativeLifecycleFixture({ bytes: run.stdout, hostId: request.host.hostId, stage: stagePlan.name, step: command.step })
+        : { status: "indeterminate" };
+      if (evaluation.status !== "observed") {
+        stageStatus = evaluation.status;
+        break;
+      }
+    }
+    let trees = [];
+    let treeObservations = {};
+    try {
+      const observedTrees = await nativeTreeEvidence(stagePlan.treeRoles, preflight.roots);
+      trees = observedTrees.evidence;
+      treeObservations = observedTrees.observations;
+    }
+    catch { if (stageStatus === "observed") stageStatus = "indeterminate"; }
+    if (controlledFixture && stageStatus === "observed" && treeObservations.installed) {
+      const installedMembersDigest = digestDocument(projectMembers(treeObservations.installed));
+      if (["install-v1", "discover-v1", "invoke-v1", "disable", "enable"].includes(stagePlan.name) &&
+          installedMembersDigest !== request.source.revisions.v1.membersDigest) {
+        stageStatus = "failed";
+      } else if (["update-v2", "invoke-v2"].includes(stagePlan.name) &&
+          installedMembersDigest !== request.source.revisions.v2.membersDigest) {
+        stageStatus = "failed";
+      } else if (["uninstall", "absent-after-uninstall"].includes(stagePlan.name) &&
+          treeObservations.installed.members.length !== 0) {
+        stageStatus = "failed";
+      }
+      if (stagePlan.name === "absent-after-uninstall" && stageStatus === "observed") {
+        finalInstalledAbsent = treeObservations.installed.members.length === 0;
+      }
+    }
+    stageResults.push({ name: stagePlan.name, status: stageStatus, commands, trees });
+    if (stageStatus !== "observed") stopped = true;
+  }
+  const cleanup = { pluginAbsent: finalInstalledAbsent };
+  const lifecycle = { scope: "local", stages: stageResults, cleanup };
+  const status = stageResults.every((stage) => stage.status === "observed") && cleanup.pluginAbsent
+    ? "observed"
+    : stageResults.some((stage) => stage.status === "indeterminate") ? "indeterminate" : "failed";
+  return result(request, status, status === "observed" ? null : status === "indeterminate" ? "boundary-state-indeterminate" : "execution-failed", { lifecycle }, status === "indeterminate" ? ACTION : []);
 }
 function assertRootIsolation(roots, sourceRoot, hostsRoot) {
   const writes = ["installContainerRoot", "temporaryRoot", "privateEvidenceRoot", "outputRoot"].filter(key => roots[key]).map(key => roots[key]);
@@ -298,6 +536,13 @@ async function preflightPlugin(request, bindings, hostsRoot, facts) {
 export async function runPluginVerification({ request, bindings, hostsRoot } = {}) {
   const normalized = contract(request, REQUEST_SCHEMA, "plugin verification request fails its registered contract");
   validateBindingFields(normalized, bindings);
+  if (normalized.goal === "native-lifecycle") {
+    try { return await runNativeLifecycleProcessVerification(normalized, bindings, hostsRoot); }
+    catch (cause) {
+      const indeterminate = cause?.details?.boundReadDisposition === "boundary-indeterminate";
+      return result(normalized, indeterminate ? "indeterminate" : "rejected", indeterminate ? "boundary-state-indeterminate" : "preflight-rejected", { lifecycle: nativeFallbackLifecycle(indeterminate ? "indeterminate" : "not-performed") }, indeterminate ? ACTION : []);
+    }
+  }
   const facts = emptyFacts();
   let preflight;
   try { preflight = await preflightPlugin(normalized, bindings, hostsRoot, facts); }
@@ -335,3 +580,16 @@ export async function runPluginVerification({ request, bindings, hostsRoot } = {
   return result(normalized, outcome.status, outcome.reason, facts, outcome.actions || []);
 }
 export { REQUEST_SCHEMA as PLUGIN_VERIFICATION_REQUEST_SCHEMA, RESULT_SCHEMA as PLUGIN_VERIFICATION_RESULT_SCHEMA };
+
+/** Closed WorkBuddy fake parser used by the 3.2 qualification fixtures. */
+export function parseWorkBuddyLifecycleObservation(observation) {
+  if (!observation || typeof observation !== "object" || Array.isArray(observation)) return null;
+  if (Object.keys(observation).sort().join(",") !== "cacheVersionV1,cacheVersionV2,linkResults,manifests,restartRequired,selectedManifestKind") return null;
+  const allowedManifests = new Set([".codebuddy-plugin", ".workbuddy-plugin", ".claude-plugin"]);
+  if (!Array.isArray(observation.manifests) || observation.manifests.length !== 3 || observation.manifests.some((value) => typeof value !== "string" || !allowedManifests.has(value)) || new Set(observation.manifests).size !== 3) return null;
+  if (!allowedManifests.has(observation.selectedManifestKind)) return null;
+  if (typeof observation.cacheVersionV1 !== "string" || typeof observation.cacheVersionV2 !== "string" || observation.cacheVersionV1.length === 0 || observation.cacheVersionV1 === observation.cacheVersionV2) return null;
+  if (!Array.isArray(observation.linkResults) || observation.linkResults.length !== 3 || new Set(observation.linkResults).size !== 3 || observation.linkResults.some((value) => !["preserved-relative", "copied-content", "skipped"].includes(value))) return null;
+  if (typeof observation.restartRequired !== "boolean") return null;
+  return Object.freeze({ selectedManifestKind: observation.selectedManifestKind, cacheVersionV1: observation.cacheVersionV1, cacheVersionV2: observation.cacheVersionV2, linkResults: [...observation.linkResults], restartRequired: observation.restartRequired });
+}

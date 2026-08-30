@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "Compile and validate all 42 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+   "intent": "Compile and validate all 45 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
    "useWhen": [
     "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
     "Need to detect the document dialect and select the strict or tolerant validation policy"
@@ -73,7 +73,8 @@
     "Need to find a kernel protocol definition by protocol name"
    ],
    "doNotUseWhen": [
-    "Need to add a registered top-level object without an ADR (the 42-object set is fixed)"
+    "Need to add a registered top-level object without an ADR (the 42-object set is fixed)",
+    "Need a caller-supplied Registry, Schema or protocol name to override the packaged registry"
    ],
    "prerequisites": [
     "registry.json is shipped with the package",
@@ -98,7 +99,8 @@
     "The set of 42 top-level objects is fixed; additions require an ADR"
    ],
    "ownedByCaller": [
-    "Interpretation of an object's business meaning"
+    "Interpretation of an object's business meaning",
+    "ADR, version and migration decisions for a new registration"
    ],
    "routeElsewhere": [
     "Publish status: route to release-skill"
@@ -184,7 +186,8 @@
     "Need to run positive/negative/dialect-boundary class fixtures"
    ],
    "doNotUseWhen": [
-    "Need to treat a fixture as a business oracle (fixtures only prove structure, not semantics)"
+    "Need to treat a fixture as a business oracle (fixtures only prove structure, not semantics)",
+    "Need copied fixtures or a local runner to replace real consumer qualification"
    ],
    "prerequisites": [
     "The fixtures directory holds public or entirely fictional data"
@@ -205,7 +208,8 @@
     "Fixtures and the auditor's expected results are not shared"
    ],
    "ownedByCaller": [
-    "The business intent behind a fixture"
+    "The business intent behind a fixture",
+    "The real consumer qualification and malicious-input coverage beyond schema structure"
    ],
    "routeElsewhere": [
     "Domain audit semantics: route to an independent audit consumer"
@@ -347,10 +351,12 @@
     "The validator is cached keyed by (schema); the size is queryable"
    ],
    "ownedByCaller": [
-    "Semantics of contract business fields"
+    "Semantics of contract business fields",
+    "Lifetime and invalidation of the process-local validator cache"
    ],
    "routeElsewhere": [
-    "Contract object definition: route to Contracts"
+    "Contract object definition: route to Contracts",
+    "New Schemas, Registry entries or cross-process caches: return to Contracts/architecture decisions"
    ]
   },
   {
@@ -358,7 +364,8 @@
    "intent": "Classify external path inputs and resolve them inside the containment root, rejecting path-traversal, symlink-escape, and realpath-escape.",
    "useWhen": [
     "Need to confine a user/caller-supplied path within a root directory",
-    "Need to safely read a contained file"
+    "Need to safely read a contained file",
+    "Need one boundary before a reader rejects absolute paths, traversal segments and symlink escapes"
    ],
    "doNotUseWhen": [
     "Need to put the business rules for file selection into Foundation (business rules are owned by the caller)"
@@ -386,7 +393,8 @@
     "Which paths are business-permitted selection rules"
    ],
    "routeElsewhere": [
-    "Business file-selection semantics: stay with the caller"
+    "Business file-selection semantics: stay with the caller",
+    "Complete tree facts and symlink record: use filesystem-tree-observation"
    ]
   },
   {
@@ -489,10 +497,12 @@
     "Deduplication and ordering are fixed; identical input always yields the same digest"
    ],
    "ownedByCaller": [
-    "Business meaning of resources"
+    "Business meaning of resources",
+    "Which resources enter the closure and when its digest is recomputed"
    ],
    "routeElsewhere": [
-    "Binary projection: explicitly unsupported"
+    "Binary projection: explicitly unsupported",
+    "Host differences and build lifecycle: use host-adapter/Kit; do not copy closure logic"
    ]
   },
   {
@@ -527,7 +537,8 @@
     "Concrete business semantics of the operation"
    ],
    "routeElsewhere": [
-    "Business state machine / retries: route to loop-agent"
+    "Business state machine / retries: route to loop-agent",
+    "Persistent state, recovery or runners: use state-store or the upper orchestration layer"
    ]
   },
   {
@@ -1027,7 +1038,8 @@
     "Need to throw a HarnessError carrying a stable kind"
    ],
    "doNotUseWhen": [
-    "Need to define business error semantics"
+    "Need to define business error semantics",
+    "Need a local duplicate error-code set or to turn error codes into a business state machine"
    ],
    "prerequisites": [],
    "inputs": [
@@ -1135,7 +1147,8 @@
     "Need to guarantee the projection matches the target"
    ],
    "doNotUseWhen": [
-    "Need to overwrite handwritten files (forbidden)"
+    "Need to overwrite handwritten files (forbidden)",
+    "Need projection to act as a business publication, retry or remote-write runner"
    ],
    "prerequisites": [
     "The projection manifest is registered"
@@ -1173,7 +1186,8 @@
     "Need to narrow the check scope via --only"
    ],
    "doNotUseWhen": [
-    "Need auto-fix (forbidden; check writes no fixes)"
+    "Need auto-fix (forbidden; check writes no fixes)",
+    "Need a new checker, state table or receipt to duplicate existing authoritative facts"
    ],
    "prerequisites": [],
    "inputs": [
@@ -2068,7 +2082,8 @@
    "intent": "Read a complete bound tree and leave payload acceptance to the caller",
    "useWhen": [
     "Need regular-file, directory, empty-directory and mode facts",
-    "Need a fresh observation using the same approved root binding"
+    "Need a fresh observation using the same approved root binding",
+    "The host command has completed, the caller is isolated, and no concurrent namespace writer is active during the scan"
    ],
    "doNotUseWhen": [
     "Need installation, recovery or deletion",
@@ -2076,20 +2091,22 @@
    ],
    "prerequisites": [
     "A canonical real root and its createFilesystemRootBinding result",
-    "The packaged native implementation supports the current Darwin/Linux platform"
+    "The default/reject mode requires the packaged Darwin/Linux native implementation; record uses the Node/JS branch",
+    "Default/reject retains the 0.14 UTF-16 relational order; record uses Unicode code-point order"
    ],
    "inputs": [
-    "{ root, rootBinding }"
+    "{ root, rootBinding, symlinkPolicy?: { mode: \"reject\" | \"record\" } }"
    ],
    "outputs": [
-    "Private filesystem-tree-observation: sorted members, contentBase64 from actual file bytes, sha256, bytes, statMode and membersDigest"
+    "Private filesystem-tree-observation: mode-specific sorted members, contentBase64 from actual file bytes, sha256, bytes, statMode, symlink-self targetBase64 and bytes, plus membersDigest"
    ],
    "sideEffects": [
     "Read-only filesystem access; no writes, processes or network"
    ],
    "failureSemantics": [
     "Invalid parameters throw TypeError; mechanism failures fail closed through SFC2004",
-    "Partial member sets are not successful results"
+    "Partial member sets are not successful results",
+    "Record fails closed when observed drift is detected; it does not promise a transaction snapshot, same-UID malicious-concurrency safety or ABA safety"
    ],
    "invariants": [
     "Every call observes the tree again without cached results",
@@ -2098,48 +2115,100 @@
    ],
    "ownedByCaller": [
     "Payload acceptance policy and business meaning",
-    "Protection of sensitive observation data"
+    "Protection of sensitive observation data",
+    "Consumers such as release-skill own invocation after the host command and domain acceptance rules such as npm .bin"
    ],
    "routeElsewhere": [
     "Use Kit plugin verification for installation and invocation",
-    "Release authorization belongs to release-skill"
+    "Release authorization belongs to release-skill",
+    "Return malicious-concurrency threats to Foundation as a minimal capability gap; do not copy a walker, native addon, Harness, schema, Registry, runner or receipt chain locally"
+   ]
+  },
+  {
+   "id": "foundation.harness.executable-identity-observation",
+   "intent": "Observe an explicitly bound executable entry, symlink chain, interpreter and launch bytes as a read-only point-in-time fact for an immediately pre-launch re-observation",
+   "useWhen": [
+    "Need one observed executable entry and digest from an explicit path or caller-provided pathEntries",
+    "Need to re-observe the entry, symlink chain and script interpreter immediately before the real launch"
+   ],
+   "doNotUseWhen": [
+    "Need to prove wrapper control flow, ambient PATH, fd-exec or the final kernel image",
+    "Need signature trust, cross-call identity caching, host support/lifecycle or domain acceptance"
+   ],
+   "prerequisites": [
+    "Every candidate path comes from non-overlapping caller-provided boundRoots and an explicit lookup; interpreters require a separate explicit policy",
+    "The caller invokes it again immediately before the real launch; one observation is not a continuous identity proof"
+   ],
+   "inputs": [
+    "observeExecutableIdentity({ boundRoots, lookup, interpreterPolicy? })"
+   ],
+   "outputs": [
+    "A point-in-time read-only observation of the executable entry, symlinkChain, sha256/bytes/statMode, entryKind, interpreter with its own preserved symlink chain, and launch plan"
+   ],
+   "sideEffects": [
+    "Read-only lstat/readlink and the existing readFileBound; no process launch, ambient PATH or file writes"
+   ],
+   "failureSemantics": [
+    "Path or symlink drift, escape, a non-executable regular file, an out-of-policy interpreter or byte change fails closed",
+    "The observation does not prove wrapper control flow, fd-exec/kernel image, signature trust or cross-call cache continuity"
+   ],
+   "invariants": [
+    "Only caller-explicit roots and lookup paths are observed; environment PATH and hidden caches are never consulted",
+    "An /usr/bin/env shebang resolved through explicit pathEntries retains the interpreter candidate's complete symlink chain",
+    "The consumer owns the immediate pre-launch re-observation; this candidate grants no host lifecycle qualification"
+   ],
+   "ownedByCaller": [
+    "Command selection, actual launch, wrapper/argv semantics and re-observation timing",
+    "Signature/authentication trust, host support and lifecycle qualification, domain acceptance and observation-data protection"
+   ],
+   "routeElsewhere": [
+    "Host descriptors, lifecycle and real qualification: use Kit host or the relevant consumer",
+    "Malicious-concurrency, kernel-image or signature-proof gaps return to Foundation; do not copy a walker, native addon, Harness, schema, Registry, runner or receipt chain locally"
    ]
   },
   {
    "id": "foundation.kit.plugin-verification",
-   "intent": "Preserve the complete plugin layout and report input, installation, discovery and bounded invocation facts separately",
+   "intent": "Preserve the complete plugin layout and add dedicated Qoder and WorkBuddy production lifecycle drivers while keeping structure and host semantics separate",
    "useWhen": [
     "Need frozen local payload or finite public-channel plugin verification",
-    "Need installation observations without transferring domain acceptance"
+    "Need installation observations without transferring domain acceptance",
+    "Need the local-only Qoder or WorkBuddy native lifecycle through all twelve semantic stages"
    ],
    "doNotUseWhen": [
     "Need arbitrary drivers, retry, recovery or rollback",
-    "Need Foundation to approve domain output or publication"
+    "Need Foundation to approve domain output or publication",
+    "Need one universal cross-host command plan or real-host qualification from a controlled fixture"
    ],
    "prerequisites": [
     "Exact lockstep package versions, a frozen request, private bindings and hostsRoot",
-    "Each actual host/source combination needs separate qualification evidence; an exported candidate API is not qualification"
+    "Each actual host/source combination needs separate qualification evidence; an exported candidate API is not qualification",
+    "Native lifecycle uses a local source, disjoint fresh roots and the driver-bound executable and interpreter"
    ],
    "inputs": [
     "runPluginVerification({ request, bindings, hostsRoot })",
-    "plugin-verification-request: install-only or install-and-invoke; local-staged or public-channel"
+    "plugin-verification-request: install-only, install-and-invoke or native-lifecycle; native-lifecycle is local-only"
    ],
    "outputs": [
     "plugin-verification-result with separate input, installation, discovery and invocation facts",
+    "Native lifecycle result with exactly twelve ordered semantic stages and driver-owned command observations",
     "Raw streams and complete tree observations under private evidence roots"
    ],
    "sideEffects": [
     "Creates a fresh installation, session and private evidence; finite channel commands may access the network",
-    "Invocation mode starts a constrained host; install-only makes no model call"
+    "Foundation itself does not issue network requests, but the bound executable may access the network. Foundation provides no sandbox or egress blocking; callers and the execution environment own that isolation. Repository-controlled fixtures are designed not to issue network requests"
    ],
    "failureSemantics": [
     "rejected, failed and indeterminate distinguish refusal, determined failure and unknown boundary state",
-    "A determined output limit breach cannot become success; unknown terminal state remains indeterminate"
+    "A determined output limit breach cannot become success; unknown terminal state remains indeterminate",
+    "After the first non-observed native stage, every later stage is empty and not-performed"
    ],
    "invariants": [
     "No overwrite of existing installations, automatic retry or cleanup of unknown state",
     "Existing single-Skill runHostVerification and verifyHostVerificationBindings contracts remain intact",
-    "Complete tree observations do not replace caller acceptance policy"
+    "Complete tree observations do not replace caller acceptance policy",
+    "Qoder and WorkBuddy own different argv plans; executable identity is re-observed before every spawn",
+    "Contracts validates structure only; the Kit driver owns its plan and Oracle",
+    "The controlled executable protocol is Foundation-owned fixture evidence, not vendor grammar or real-host qualification"
    ],
    "ownedByCaller": [
     "Source freezing, workload, authorization, authentication and host qualification",
@@ -2148,6 +2217,50 @@
    "routeElsewhere": [
     "Domain review belongs to the consumer",
     "Publication, retry and task orchestration belong to their external skill families"
+   ]
+  },
+  {
+   "id": "foundation.kit.skill-family-directory-verification",
+   "intent": "Run the fixed Kimi skill-family directory production path while keeping the public result indeterminate until an official observation mapping exists",
+   "useWhen": [
+    "Need the fixed Kimi directory qualification entry for CLI 0.39.1 Skill calls",
+    "Need discovery and load evidence separated from plugin lifecycle qualification"
+   ],
+   "doNotUseWhen": [
+    "Need an observed or real-host-qualified Kimi conclusion without an official typed observation mapping",
+    "Need plugin marketplace lifecycle verification or caller-supplied observation"
+   ],
+   "prerequisites": [
+    "Exact lockstep package versions, a frozen directory request and private family bindings",
+    "Caller-bound executable, interpreter, family, workspace, user-state and fresh private roots; Kit starts the process itself"
+   ],
+   "inputs": [
+    "runSkillFamilyDirectoryVerification({ request, bindings }); no caller observation, runner or parser",
+    "skill-family-directory-verification-request with expected skills and workload summaries"
+   ],
+   "outputs": [
+    "Closed directory result; without an official mapping it is indeterminate with official-observation-unavailable and unknown per-skill facts",
+    "Private streams, roots and complete observations remain outside the public result"
+   ],
+   "sideEffects": [
+    "Starts the caller-bound local process and writes raw evidence only under private temporary roots. Foundation itself does not issue network requests, but the bound executable may access the network. Foundation provides no sandbox or egress blocking; callers and the execution environment own that isolation. Repository-controlled fixtures are designed not to issue network requests"
+   ],
+   "failureSemantics": [
+    "Identity drift, root overlap or escape, source mismatch, raw-evidence drift and snapshot drift fail closed",
+    "Unknown or controlled fixture streams remain indeterminate rather than being inferred as observed"
+   ],
+   "invariants": [
+    "Kimi canonical host identity is kimi-code; built-in driverVersion is 1.0.0 and closed cliVersion is 0.39.1",
+    "Production argv is fixed to -p prompt --output-format stream-json --skills-dir family-root and the environment is narrowly projected",
+    "Executable identity is re-observed before every spawn",
+    "The Foundation-owned controlled raw protocol proves parser wiring only and is not official Kimi grammar",
+    "Directory verification remains a separate capability from plugin verification"
+   ],
+   "ownedByCaller": [
+    "Family source freezing, domain acceptance, authorization and real-host qualification"
+   ],
+   "routeElsewhere": [
+    "An observed conclusion requires a separately approved official Kimi typed observation mapping; hostile concurrency or new output facts return to Foundation"
    ]
   }
  ]

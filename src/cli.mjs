@@ -154,9 +154,9 @@ function commandHelp(command) {
       "",
       "显式资格子动作: skill-family-kit check qualification [options]",
       "  --root <dir>          消费方工作区（--request/--bindings 文件必须收容其中）",
-      "  --capability <id>     必须为目录声明的 foundation.kit.plugin-verification",
-      "  --request <relpath>   受注册合同约束的 plugin-verification-request JSON",
-      "  --bindings <relpath>  受既有 runPluginVerification 约束的私有绑定 JSON",
+      "  --capability <id>     foundation.kit.plugin-verification 或 foundation.kit.skill-family-directory-verification",
+      "  --request <relpath>   受注册合同约束的 plugin-verification-request 或目录 request JSON",
+      "  --bindings <relpath>  受对应固定资格入口约束的私有绑定 JSON",
       "  --native              显式确认允许本次真实资格；缺失即零宿主副作用。",
     ],
   };

@@ -1384,10 +1384,35 @@
     "packages/skill-family-harness-node/src/native/bound_read.c"
    ],
    "positiveTestRefs": [
-    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
+    "packages/skill-family-harness-node/test/foundation-015-harness.test.mjs"
    ],
    "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
+    "packages/skill-family-harness-node/test/foundation-015-harness.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.harness.executable-identity-observation",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.15.0",
+   "stability": "candidate",
+   "adoptionScopes": ["harness"],
+   "entrypoints": [
+    "skill-family-harness-node: observeExecutableIdentity (packages/skill-family-harness-node/src/executable-identity.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/executable-identity.mjs",
+    "packages/skill-family-contracts/src/schemas/executable-identity-observation.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/foundation-015-harness.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/foundation-015-harness.test.mjs"
    ],
    "migration": "none",
    "promotionPolicy": "consumer-transparent"
@@ -1402,16 +1427,22 @@
    "entrypoints": [
     "skill-family-engineering-kit: runPluginVerification (packages/skill-family-engineering-kit/src/plugin-verification.mjs)"
    ],
-   "sourceRefs": [
+  "sourceRefs": [
     "packages/skill-family-engineering-kit/src/plugin-verification.mjs",
+    "packages/skill-family-engineering-kit/src/host-verification-drivers.mjs",
+    "packages/skill-family-engineering-kit/src/qualification.mjs",
     "packages/skill-family-contracts/src/schemas/plugin-verification-request.schema.json",
     "packages/skill-family-contracts/src/schemas/plugin-verification-result.schema.json"
-   ],
-   "positiveTestRefs": [
-    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
-   ],
-   "negativeTestRefs": [
-    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs"
+  ],
+  "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
+    "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
+    "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
+  ],
+  "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
+    "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
+    "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
    ],
    "consumerTesting": {
     "manualQualification": {
@@ -1429,6 +1460,44 @@
       "incident-or-mock-drift",
       "user-requested"
      ]
+    }
+   },
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.kit.skill-family-directory-verification",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.15.0",
+   "stability": "candidate",
+   "adoptionScopes": ["engineering-kit"],
+   "entrypoints": [
+    "skill-family-engineering-kit: runSkillFamilyDirectoryVerification (packages/skill-family-engineering-kit/src/skill-family-directory-verification.mjs)"
+   ],
+  "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/skill-family-directory-verification.mjs",
+    "packages/skill-family-engineering-kit/src/qualification.mjs",
+    "packages/skill-family-contracts/src/schemas/skill-family-directory-verification-request.schema.json",
+    "packages/skill-family-contracts/src/schemas/skill-family-directory-verification-result.schema.json"
+  ],
+  "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
+    "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
+  ],
+  "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
+    "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
+   ],
+   "consumerTesting": {
+    "manualQualification": {
+     "supported": true,
+     "apiEntrypoint": "skill-family-engineering-kit: runSkillFamilyDirectoryVerification",
+     "requestSchemaId": "https://contracts.skill-family.example/v1/skill-family-directory-verification-request.json",
+     "resultSchemaId": "https://contracts.skill-family.example/v1/skill-family-directory-verification-result.json",
+     "bindingKind": "skill-family-directory-verification-bindings-v1",
+     "default": "off",
+     "triggerCodes": ["first-host-related-adoption", "incompatible-foundation-change", "consumer-boundary-change", "runtime-or-channel-change", "incident-or-mock-drift", "user-requested"]
     }
    },
    "migration": "none",

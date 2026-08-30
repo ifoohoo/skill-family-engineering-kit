@@ -20,7 +20,7 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 42 类顶层契约对象文档",
+   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 45 类顶层契约对象文档",
    "useWhen": [
     "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
@@ -73,7 +73,8 @@
     "需要按协议名查找 kernel 协议定义"
    ],
    "doNotUseWhen": [
-    "需要在没有 ADR 的情况下新增顶层登记对象（42 类对象集已经固定）"
+    "需要在没有 ADR 的情况下新增顶层登记对象（42 类对象集已经固定）",
+    "需要让调用方自带 Registry、Schema 或协议名覆盖随包登记表"
    ],
    "prerequisites": [
     "registry.json 已随包发布",
@@ -98,7 +99,8 @@
     "42 类顶层对象集合固定，新增需 ADR"
    ],
    "ownedByCaller": [
-    "对象业务含义的解释"
+    "对象业务含义的解释",
+    "新增登记对象的 ADR、版本与迁移决策"
    ],
    "routeElsewhere": [
     "发布状态：转 release-skill"
@@ -184,7 +186,8 @@
     "需要运行 positive/negative/dialect-boundary 类 fixture"
    ],
    "doNotUseWhen": [
-    "需要把 fixture 当作业务 oracle（fixture 只证明结构，不证明语义）"
+    "需要把 fixture 当作业务 oracle（fixture 只证明结构，不证明语义）",
+    "需要用复制 fixture 或本地 runner 替代真实消费者资格"
    ],
    "prerequisites": [
     "fixtures 目录为公开或完全虚构数据"
@@ -347,10 +350,12 @@
     "校验器以 (schema) 为键缓存，size 可查询"
    ],
    "ownedByCaller": [
-    "契约业务字段语义"
+    "契约业务字段语义",
+    "进程内 validator cache 的生命周期与失效时机"
    ],
    "routeElsewhere": [
-    "契约对象定义：转 Contracts"
+    "契约对象定义：转 Contracts",
+    "需要新增 Schema、Registry 或跨进程缓存：回到 Contracts/架构裁决"
    ]
   },
   {
@@ -358,7 +363,8 @@
    "intent": "把外部路径输入分类并解析到受收容根目录内，拒绝路径穿越、symlink 逃逸与 realpath 逃逸",
    "useWhen": [
     "需要把用户/调用方提供的路径限制在某个根目录内",
-    "需要安全读取受收容文件"
+    "需要安全读取受收容文件",
+    "需要在进入具体读取器前统一拒绝绝对路径、穿越段和符号链接逃逸"
    ],
    "doNotUseWhen": [
     "需要把文件选择的业务规则放入 Foundation（业务规则由调用方拥有）"
@@ -386,7 +392,8 @@
     "哪些路径是业务允许的选择规则"
    ],
    "routeElsewhere": [
-    "业务文件选择语义：留在调用方"
+    "业务文件选择语义：留在调用方",
+    "完整树事实与 symlink record：转 filesystem-tree-observation"
    ]
   },
   {
@@ -489,10 +496,12 @@
     "去重与排序固定，相同输入恒得相同摘要"
    ],
    "ownedByCaller": [
-    "资源业务含义"
+    "资源业务含义",
+    "哪些资源进入闭包以及闭包摘要何时重新计算"
    ],
    "routeElsewhere": [
-    "二进制投影：明确 unsupported"
+    "二进制投影：明确 unsupported",
+    "宿主差异与构建生命周期：转 host-adapter/Kit，不复制闭包实现"
    ]
   },
   {
@@ -527,7 +536,8 @@
     "操作的具体业务语义"
    ],
    "routeElsewhere": [
-    "业务状态机/重试：转 loop-agent"
+    "业务状态机/重试：转 loop-agent",
+    "需要持久状态、恢复或 runner：分别转 state-store/上层编排"
    ]
   },
   {
@@ -1027,7 +1037,8 @@
     "需要抛出带稳定 kind 的 HarnessError"
    ],
    "doNotUseWhen": [
-    "需要定义业务错误语义"
+    "需要定义业务错误语义",
+    "需要复制一套本地错误码或把错误码当业务状态机"
    ],
    "prerequisites": [],
    "inputs": [
@@ -1135,7 +1146,8 @@
     "需要保证投影与目标一致"
    ],
    "doNotUseWhen": [
-    "需要覆盖 handwritten 文件（禁止）"
+    "需要覆盖 handwritten 文件（禁止）",
+    "需要把 projection 当作业务发布、重试或远端写入 runner"
    ],
    "prerequisites": [
     "投影清单已登记"
@@ -1173,7 +1185,8 @@
     "需要按 --only 缩小检查范围"
    ],
    "doNotUseWhen": [
-    "需要自动修复（禁止，check 不写修复）"
+    "需要自动修复（禁止，check 不写修复）",
+    "需要用自建 checker、状态表或 receipt 复制既有权威事实"
    ],
    "prerequisites": [],
    "inputs": [
@@ -2068,7 +2081,8 @@
    "intent": "从已绑定目录读取同次完整树事实，供消费者自行判断载荷是否可接受",
    "useWhen": [
     "需要读取普通文件、目录、空目录和权限事实",
-    "需要在同一根绑定下重新观察实际内容"
+    "需要在同一根绑定下重新观察实际内容",
+    "宿主命令已完成，调用方已隔离，且扫描期间没有并发 namespace writer"
    ],
    "doNotUseWhen": [
     "需要安装、恢复或删除目录",
@@ -2076,20 +2090,22 @@
    ],
    "prerequisites": [
     "已规范化真实根目录和 createFilesystemRootBinding 返回的根绑定",
-    "包内固定 Darwin/Linux 四平台原生实现可用"
+    "默认/reject 需要包内固定 Darwin/Linux 四平台原生实现可用；record 使用 Node/JS 分支",
+    "默认/reject 保留 0.14 的 UTF-16 关系顺序；record 使用 Unicode 码点顺序"
    ],
    "inputs": [
-    "{ root, rootBinding }"
+    "{ root, rootBinding, symlinkPolicy?: { mode: \"reject\" | \"record\" } }"
    ],
    "outputs": [
-    "filesystem-tree-observation 私有对象：排序成员、文件原始字节的 contentBase64、sha256、bytes、statMode 及 membersDigest"
+    "filesystem-tree-observation 私有对象：按模式排序的成员、文件原始字节的 contentBase64、sha256、bytes、statMode，symlink 自身的 targetBase64、bytes、statMode 及 membersDigest"
    ],
    "sideEffects": [
     "只读文件系统访问，不写文件、不启动进程、不访问网络"
    ],
    "failureSemantics": [
     "非法参数抛 TypeError；机制失败沿 SFC2004 失败关闭",
-    "不返回部分成员作为成功结果"
+    "不返回部分成员作为成功结果",
+    "record 检测到观察期间漂移即失败关闭；不承诺事务快照、同 UID 恶意并发或 ABA 安全"
    ],
    "invariants": [
     "每次调用重新观察，不返回旧缓存",
@@ -2098,48 +2114,100 @@
    ],
    "ownedByCaller": [
     "载荷比较政策及其业务含义",
-    "保存或公开结果时的敏感数据保护"
+    "保存或公开结果时的敏感数据保护",
+    "release-skill 等消费者负责宿主命令完成后的调用时机，以及 npm .bin 等领域接受规则"
    ],
    "routeElsewhere": [
     "安装与调用使用 Kit 的插件验证入口",
-    "发布授权由 release-skill 负责"
+    "发布授权由 release-skill 负责",
+    "恶意并发威胁交回 Foundation 形成最小能力缺口；不得本地复制 walker、native addon、Harness、schema、Registry、runner 或 receipt 链"
+   ]
+  },
+  {
+   "id": "foundation.harness.executable-identity-observation",
+   "intent": "逐次只读观察显式绑定根中的可执行入口、符号链接链、脚本解释器与启动字节，供消费者在启动前紧邻重观察",
+   "useWhen": [
+    "需要在显式 path 或调用方提供的 pathEntries 中确定一次可执行入口及其逐次观察摘要",
+    "需要在正式启动前紧邻重观察入口、符号链接链与脚本解释器身份"
+   ],
+   "doNotUseWhen": [
+    "需要证明 wrapper 控制流、ambient PATH、fd-exec 或内核最终映像",
+    "需要签名信任、跨调用身份缓存、宿主支持/生命周期或领域接受结论"
+   ],
+   "prerequisites": [
+    "所有候选路径来自调用方提供的非重叠 boundRoots 与显式 lookup；解释器必须另行提供显式策略",
+    "每次正式启动前由调用方重新调用，不把上一次观察当作持续身份证明"
+   ],
+   "inputs": [
+    "observeExecutableIdentity({ boundRoots, lookup, interpreterPolicy? })"
+   ],
+   "outputs": [
+    "逐次只读的可执行入口、symlinkChain、sha256/bytes/statMode、entryKind、保留自身 symlink chain 的解释器与 launch 计划观察"
+   ],
+   "sideEffects": [
+    "只读 lstat/readlink 与既有 readFileBound；不启动进程、不使用 ambient PATH、不写文件"
+   ],
+   "failureSemantics": [
+    "路径、符号链接漂移、越界、非可执行普通文件、解释器不受策略约束或字节变化均失败关闭",
+    "观察对象不证明 wrapper 控制流、fd-exec/内核映像、签名信任或跨调用缓存连续性"
+   ],
+   "invariants": [
+    "只观察调用方显式提供的根和查找路径，不读取环境 PATH 或隐藏缓存",
+    "通过显式 pathEntries 解析 /usr/bin/env shebang 时，保留解释器候选的完整 symlink chain",
+    "启动身份必须由消费者在调用前紧邻重观察，candidate 不赋予宿主生命周期资格"
+   ],
+   "ownedByCaller": [
+    "命令选择、正式启动、wrapper/argv 语义及重观察时机",
+    "签名/认证信任、宿主支持与生命周期资格、领域接受及观察结果保存策略"
+   ],
+   "routeElsewhere": [
+    "宿主 descriptor、生命周期与真实资格：转 Kit host 或相应消费者",
+    "恶意并发、内核映像或签名证明缺口交回 Foundation；不得复制 walker、native addon、Harness、schema、Registry、runner 或 receipt 链"
    ]
   },
   {
    "id": "foundation.kit.plugin-verification",
-   "intent": "保留完整插件布局，分别报告输入、安装、发现与受限调用事实",
+   "intent": "保留完整插件布局，增加 Qoder 与 WorkBuddy 专属生产生命周期 driver，并把结构合同与宿主语义分开",
    "useWhen": [
     "需要验证冻结完整插件的本地载荷或有限公共渠道安装",
-    "需要把安装观察与领域接受判断分开"
+    "需要把安装观察与领域接受判断分开",
+    "需要让本地 Qoder 或 WorkBuddy 原生命周期走完十二个语义阶段"
    ],
    "doNotUseWhen": [
     "需要通用驱动插件、自动重试、恢复或回滚",
-    "需要由 Foundation 判定领域通过或发布完成"
+    "需要由 Foundation 判定领域通过或发布完成",
+    "需要跨宿主统一命令计划，或想用受控 fixture 取得真实宿主资格"
    ],
    "prerequisites": [
     "三包精确版本一致，并提供冻结请求、私有路径绑定及 hostsRoot",
-    "真实宿主和来源组合须另有资格证据；候选入口存在不等于组合已获资格"
+    "真实宿主和来源组合须另有资格证据；候选入口存在不等于组合已获资格",
+    "原生命周期使用本地来源、互不重叠的 fresh 根，以及绑定到 driver 的可执行文件和解释器"
    ],
    "inputs": [
     "runPluginVerification({ request, bindings, hostsRoot })",
-    "plugin-verification-request：install-only 或 install-and-invoke；local-staged 或 public-channel"
+    "plugin-verification-request：install-only、install-and-invoke 或 native-lifecycle；native-lifecycle 只允许本地来源"
    ],
    "outputs": [
     "plugin-verification-result：输入、安装、发现及调用事实分别记录",
+    "原生命周期结果：恰好十二个有序语义阶段，以及由 driver 拥有的命令观察",
     "原始输出和完整树观察保留在私有证据根"
    ],
    "sideEffects": [
     "创建新鲜安装树、会话与私有证据；有限渠道命令可能访问网络",
-    "调用模式启动受限宿主；install-only 不运行模型"
+    "Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断；隔离责任由调用方与运行环境承担。仓内受控 fixture 按设计不发起网络请求"
    ],
    "failureSemantics": [
     "rejected、failed、indeterminate 分别保留拒绝、确定失败与边界不确定",
-    "确定输出超限不能恢复为成功；未知终态保持不确定"
+    "确定输出超限不能恢复为成功；未知终态保持不确定",
+    "首个非 observed 原生阶段之后，所有后续阶段保持空的 not-performed"
    ],
    "invariants": [
     "不覆盖已有安装，不自动重试或清理不确定现场",
     "保留 runHostVerification 和 verifyHostVerificationBindings 的单 Skill 合同",
-    "完整树事实不替代消费者接受政策"
+    "完整树事实不替代消费者接受政策",
+    "Qoder 与 WorkBuddy 拥有不同 argv 计划；每次 spawn 前重新观察可执行文件身份",
+    "Contracts 只检查结构，计划与 Oracle 归 Kit driver",
+    "受控 executable 协议是 Foundation 自有 fixture 证据，不是厂商 grammar 或真实宿主资格"
    ],
    "ownedByCaller": [
     "冻结源、工作负载、授权、认证与宿主资格",
@@ -2148,6 +2216,50 @@
    "routeElsewhere": [
     "领域审阅交消费者",
     "发布、重试和任务编排交对应外部技能族"
+   ]
+  },
+  {
+   "id": "foundation.kit.skill-family-directory-verification",
+   "intent": "运行固定的 Kimi 技能族目录生产路径，在取得官方观察映射前让公共结果保持 indeterminate",
+   "useWhen": [
+    "需要通过固定 Kimi 目录资格入口验证 CLI 0.39.1 的 Skill 调用",
+    "需要将发现与加载事实同插件生命周期资格分开"
+   ],
+   "doNotUseWhen": [
+    "缺少官方 typed observation 映射，却需要 observed 或 real-host-qualified 的 Kimi 结论",
+    "需要插件 marketplace 生命周期验证或调用方提供 observation"
+   ],
+   "prerequisites": [
+    "三包精确锁步版本、冻结目录请求及私有技能族绑定",
+    "调用方绑定 executable、interpreter、技能族、工作区、用户状态和 fresh 私有根；进程由 Kit 启动"
+   ],
+   "inputs": [
+    "runSkillFamilyDirectoryVerification({ request, bindings })；不接收 caller observation、runner 或 parser",
+    "包含预期技能与工作负载摘要的 skill-family-directory-verification-request"
+   ],
+   "outputs": [
+    "封闭目录结果；缺少官方映射时为 indeterminate、原因为 official-observation-unavailable，逐技能事实保持 unknown",
+    "私有流、根路径及完整观察不进入公开结果"
+   ],
+   "sideEffects": [
+    "启动调用方绑定的本地进程，只在私有临时根写 raw evidence；不管理认证或写全局配置。Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断；隔离责任由调用方与运行环境承担。仓内受控 fixture 按设计不发起网络请求"
+   ],
+   "failureSemantics": [
+    "身份漂移、根重叠或越界、来源不符、raw evidence 漂移和快照漂移均失败关闭",
+    "未知流或受控 fixture 流保持 indeterminate，不推断为 observed"
+   ],
+   "invariants": [
+    "Kimi 规范宿主身份为 kimi-code；内置 driverVersion 为 1.0.0，闭合 cliVersion 为 0.39.1",
+    "生产 argv 固定为 -p prompt --output-format stream-json --skills-dir family-root，环境使用窄投影",
+    "每次 spawn 前重新观察可执行文件身份",
+    "Foundation 自有受控 raw 协议只证明 parser 接线，不是 Kimi 官方 grammar",
+    "目录验证保持为独立能力，不并入插件验证"
+   ],
+   "ownedByCaller": [
+    "技能族源冻结、领域接受、授权及真实宿主资格"
+   ],
+   "routeElsewhere": [
+    "observed 结论需要另行批准的 Kimi 官方 typed observation 映射；恶意并发或新增输出事实交回 Foundation"
    ]
   }
  ]

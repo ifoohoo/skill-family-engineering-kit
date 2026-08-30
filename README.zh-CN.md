@@ -5,35 +5,45 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.14.0 -->
+<!-- release-skill:release-version: 0.15.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.14.0** (2026-08-28)
+**0.15.0** (2026-08-29)
 
-Engineering Kit 0.14.0 增加能力发现、迁移指引、消费者契约测试接线和显式资格检查入口。
+Engineering Kit 0.15.0 增加固定的 native-lifecycle 与 Kimi 目录资格入口。
 
 **新增**
 
-- 通过 `adopt-plan` 与 `list-capabilities` CLI 模式增加只读能力评估。
-- 增加消费者契约测试脚手架指引，以及生成真实宿主证据的显式资格检查命令。
+- 增加 Qoder 与 WorkBuddy 封闭十二阶段生命周期 fixture 解析。
+- 增加 Kimi 目录资格检查，使用 driverVersion 1.0.0 与 CLI 0.39.1 接纳规则。
 
 **变更**
 
-- 明确区分候选发现、迁移完成、契约接入完成和真实宿主资格四种结论。
+- 资格检查直接将 Contracts、Harness 版本与 KIT_VERSION 比较。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.14.0。能力评估和迁移规划不写文件；契约向量与正式测试替身只证明接线；资格检查仍由消费者显式负责。
+fixture 只证明解析器接线；正式进程、目录和领域接受观察仍由消费者负责。
 <!-- release-skill:managed:end id=latest-release -->
+
+### Foundation 0.15.0 candidate 资格入口
+
+本候选版本增加两个固定资格入口：`foundation.kit.plugin-verification` 接入 Qoder 与 WorkBuddy 的 native-lifecycle 分支，`foundation.kit.skill-family-directory-verification` 接入 Kimi 目录分支。Qoder 与 WorkBuddy 各有一个生产 driver，各自确定 argv 计划，共用十二个有序语义阶段；每次 spawn 前重新观察可执行文件身份。Contracts 只校验闭合阶段结构、顺序与停止传播。
+
+`runSkillFamilyDirectoryVerification({ request, bindings })` 负责启动本地 Kimi 进程，固定使用 `-p <prompt> --output-format stream-json --skills-dir <family-root>`，投影窄环境，并把原始输出写入私有证据根。调用方提供的 observation 会被拒绝。当前没有官方 typed observation 映射，因此即使受控 fixture stream 已证明 parser 接线，结果仍保持 `indeterminate`，原因为 `official-observation-unavailable`。
+
+消费者绑定可执行文件、目录、来源、工作负载与领域事实，由 Kit 启动有界本地进程。不得复制通用 runner、walker、native addon、Schema、Registry、Oracle、cache、状态机或 receipt 链。受控 fixture 协议是 Foundation 自有的隔离证据，不是 Qoder、WorkBuddy 或 Kimi 的厂商 grammar，也不是真实宿主资格。Harness record 模式适用于稳定隔离树；best-effort 边界不承诺事务快照、同 UID 恶意并发或 ABA 安全。
+
+Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。Qoder、WorkBuddy 与 Kimi 仍为 `manual/candidate`，受控 fixture 不授予真实宿主资格。
 
 | 命令 | 用途 | 副作用 |
 | --- | --- | --- |
 | `scaffold` | 在空目录生成 Skill Family 项目骨架 | 只向空目标目录写入骨架文件（原子写、路径收容）；非空或冲突目标被拒绝且不被触碰 |
-| `adopt-plan` | 严格只读地规划存量仓采用 | 无——不写任何文件（含临时文件），不运行 git 写命令；计划输出到 stdout |
+| `adopt-plan` | 严格只读地规划存量仓采用 | 无——不写任何文件（含临时文件）；默认可能启动一条冻结参数的只读 Git status 探测；`--no-git-spawn` 可关闭；不运行 Git 写命令；计划输出到 stdout |
 | `projection` | 投影受管生成物 | 只写 manifest 授权且被目标声明为受管的路径；未授权、手写与越界路径一律拒绝（拒绝时零写入） |
-| `check` | 契约/漂移/闭包/版本/文档事实/Git 前置状态诊断 | 无——只诊断、绝不自动修复；git 仅只读探测 |
+| `check` | 契约/漂移/闭包/版本/文档事实/Git 前置状态诊断 | 普通诊断只读且不写文件；默认可能启动一条冻结参数的只读 Git status 探测；`--no-git-spawn` 可关闭；`check relock` 是显式受控写事务；`check qualification` 预检通过后可能启动绑定的 executable。Foundation 自身不发起网络请求，但该进程可能联网。 |
 
 ## 解决的问题
 
@@ -45,7 +55,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.14.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.15.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -53,21 +63,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.14.0.tgz" "$pack_dir/skill-family-harness-node-0.14.0.tgz" "$pack_dir/skill-family-engineering-kit-0.14.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.15.0.tgz" "$pack_dir/skill-family-harness-node-0.15.0.tgz" "$pack_dir/skill-family-engineering-kit-0.15.0.tgz")
 ```
 
 发布后再使用 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.14.0
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.15.0
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 
@@ -151,7 +161,7 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实。Qoder 自 0.12.0 起为 `manual`，候选真实验证不授予生命周期能力。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
+Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID 只能解析已登记有限 Profile 中声明的 alias。probe 默认不启动进程；只有同时给出 `--allow-host-spawn --host-executable <绝对路径>` 才执行冻结版本向量。本地 install/update 通过显式授权引用和既有受收容发布原语执行；uninstall 因没有安全的绑定删除原语而返回 `manual-recovery-required`，不删除文件。Claude/Codex 使用受信版本 driver；Kimi Code、WorkBuddy、CodeBuddy 和 DeepSeek Harness 只提供独立手动事实。Qoder 仍为 `manual`；独立的原生插件候选不授予通用 host build、plan、apply、install/update/uninstall、rollback 或真实宿主资格。adapter source 只接受已声明的文本闭包，不支持二进制投影；精确宿主支持矩阵见 [宿主能力矩阵](../../docs/reference/host-capability-matrix.md) 与已登记 Profile。
 
 ### 候选真实宿主验证 API
 
@@ -166,14 +176,14 @@ Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID �
 - 新项目骨架：`scaffold`（不覆盖非空存量仓）。
 - 存量采用盘点：`adopt-plan`（严格只读，不写文件、不自动迁移）。
 - 受管投影：`projection` + Profile（不覆盖 handwritten 文件）。
-- 工程诊断：`check`（只诊断不修复，`--only` 缩小范围）。
+- 工程诊断：普通 `check` 只读；`check relock` 执行显式受控写事务，`check qualification` 预检通过后可能启动绑定的 executable。
 
 ## 边界机制
 
 - `scaffold` 的目标必须是**空目录**（任何条目含点文件都算非空），或其父目录已存在的不存在路径（只创建最后一级）。全部写入经 harness 的原子收容写（`writeFileAtomic`），失败不留半成品，路径不能越出目标根。
-- `adopt-plan` 结构性只读：实现中不存在任何写调用，连临时文件都不产生；计划字节与 `scaffold` 同源（`describeSkeletonFiles` 单一事实源），因此「计划即动作」。dirty 仓运行前后字节级零变化。
+- `adopt-plan` 结构性只读：实现中不存在任何写调用，连临时文件都不产生；计划字节与 `scaffold` 同源（`describeSkeletonFiles` 单一事实源），因此「计划即动作」。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。dirty 仓运行前后字节级零变化。
 - `projection` 采用两阶段执行：先对每个条目做路径分类、收容预检、自投影检查、manifest 授权检查、手写保护与冲突守卫；任一条目违规则整体拒绝、零写入。覆盖既有文件必须声明精确的 `expect.sha256` 前置状态；内容相同的既有文件是幂等 no-op。写入失败时尽力还原已覆盖文件的前置字节。
-- `check` 只诊断：无写调用、无 `--fix/--apply/--repair` 模式（此类标志在入口处被拒绝）。Git 前置状态仅用文件系统事实加至多一次冻结参数矢量的只读 `git status --porcelain=2`（`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`，不刷新索引）。
+- 普通 `check` 只读且无写调用，也没有 `--fix/--apply/--repair` 模式（此类标志在入口处被拒绝）。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。`check relock` 执行显式受控写事务；`check qualification` 预检通过后可能启动绑定的 executable。Git 前置状态仅用文件系统事实加至多一次冻结参数矢量的只读 `git status --porcelain=2`（`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`，不刷新索引）。
 
 ## 错误码与退出码
 
@@ -196,7 +206,9 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 
 ## 禁止项
 
-本包不得执行 git init、commit、push、tag、stash、分支切换、发布、删除、远端写入或发布状态复述；不实现第五个顶层命令；不做业务判断、模型调用、远程网络。
+本包不得执行 git init、commit、push、tag、stash、分支切换、发布、删除、远端写入或发布状态复述；不实现第五个顶层命令；不做业务判断或模型调用。
+
+Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断；隔离责任由调用方与运行环境承担。仓内受控 fixture 按设计不发起网络请求。
 
 ## 故障诊断
 
@@ -221,7 +233,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ### Do not use when
 
 - 需要自动修复（`check` 不修复）、自动迁移（`adopt-plan` 不写文件）。
-- 需要远端宿主发布、自动信任、删除式 uninstall 或 Qoder 完整 driver（明确 unsupported）。
+- 需要通用或远端宿主生命周期、自动信任、删除式 uninstall，或想用受控 fixture 取得真实宿主资格。
 - 需要稳定 Quickstart API，或希望 candidate 辅助函数绕过 `runProjection` 授权。
 
 ### Capability selection
@@ -252,7 +264,7 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 ### Side effects
 
 - scaffold/projection/host-build 在受收容目标写文件（原子 + 收容）。
-- adopt-plan 与 check 严格只读，git 仅只读白名单探测。
+- adopt-plan 与普通 check 严格只读且不写文件；默认可能启动一条冻结参数的只读 Git status 探测，可由 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）关闭。check relock 执行显式受控写事务；check qualification 预检通过后可能启动绑定的 executable。Git 是诊断检查使用的只读白名单探测。
 - `FORBIDDEN_SIDE_EFFECTS` 含 git-init/commit/push/tag、publish、remote-write。
 
 ### Failure semantics
@@ -280,6 +292,8 @@ projection 只写同时满足两个条件的路径：manifest 列出，且目标
 
 ## 完整插件候选能力
 
-新增候选 runPluginVerification({ request, bindings, hostsRoot })，保留完整插件布局并分别报告安装、发现与调用事实。真实宿主与来源组合仍需独立资格证据。
+候选 `runPluginVerification({ request, bindings, hostsRoot })` 保留两个旧目标，并增加只允许本地来源的 `native-lifecycle` 分支。Qoder 与 WorkBuddy 使用不同的生产 driver，由 driver 自己拥有 argv 计划，共用恰好十二个语义阶段；每次 spawn 前重新观察可执行文件身份。Contracts 只拥有结构，宿主计划与 Oracle 归 Kit。受控 executable 协议只证明隔离接线，不是厂商 grammar。真实宿主与来源组合仍需独立资格证据。
 
-0.14.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。
+独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
+
+0.15.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。

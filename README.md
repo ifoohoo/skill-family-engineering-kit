@@ -4,35 +4,45 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.14.0 -->
+<!-- release-skill:release-version: 0.15.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.14.0** (2026-08-28)
+**0.15.0** (2026-08-29)
 
-Engineering Kit 0.14.0 adds capability discovery, migration guidance, consumer contract-test wiring, and an explicit qualification entrypoint.
+Engineering Kit 0.15.0 adds fixed native-lifecycle and Kimi directory qualification entries.
 
 **Added**
 
-- Adds read-only capability assessment through adopt-plan and the list-capabilities CLI mode.
-- Adds consumer contract-test scaffolding guidance and the explicit qualification command for real-host evidence.
+- Adds closed 12-stage Qoder and WorkBuddy lifecycle fixture parsing.
+- Adds Kimi directory qualification with driverVersion 1.0.0 and CLI 0.39.1 admission.
 
 **Changed**
 
-- Documents separate candidate discovery, migration completion, contract integration, and real-host qualification conclusions.
+- Qualification compares Contracts and Harness versions directly with KIT_VERSION.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to 0.14.0. Capability assessment and migration planning write no files; contract vectors and official fakes prove wiring only; qualification remains an explicit consumer-owned activity.
+Fixtures prove parser wiring only; consumers own formal process, directory, and domain acceptance observations.
 <!-- release-skill:managed:end id=latest-release -->
+
+### Foundation 0.15.0 candidate qualification entries
+
+The candidate adds two fixed qualification entries: `foundation.kit.plugin-verification` accepts the Qoder and WorkBuddy native-lifecycle branches, and `foundation.kit.skill-family-directory-verification` accepts the Kimi branch. Qoder and WorkBuddy each use a dedicated production driver with its own argv plan and the same twelve ordered semantic stages; executable identity is re-observed before every spawn. Contracts validates only the closed stage structure, order, and stop propagation.
+
+`runSkillFamilyDirectoryVerification({ request, bindings })` owns the local Kimi process path. It fixes `-p <prompt> --output-format stream-json --skills-dir <family-root>`, projects a narrow environment, and captures raw output under private evidence. Caller observations are rejected. Because no official typed observation mapping is available, current results remain `indeterminate` with `official-observation-unavailable`, even when a controlled fixture stream proves parser wiring.
+
+Consumers bind the executable, directories, source, workload, and domain facts; Kit launches the bounded local process. They must not copy a generic runner, walker, native addon, schema, registry, oracle, cache, state machine, or receipt chain. Controlled fixture protocols are Foundation-owned isolation evidence, not Qoder, WorkBuddy, or Kimi vendor grammar and not real-host qualification. A stable isolated tree is sufficient for Harness record mode; its best-effort boundary does not promise a transaction snapshot, hostile same-UID concurrency, or ABA safety.
+
+Foundation itself does not issue network requests, but a bound executable may access the network. Foundation provides no sandbox or egress blocking; callers and the execution environment own that isolation. Qoder, WorkBuddy, and Kimi remain `manual/candidate`, and controlled fixtures do not grant real-host qualification.
 
 | Command | Purpose | Side effects |
 | --- | --- | --- |
 | `scaffold` | Generate a Skill Family project skeleton in an empty directory | Only writes skeleton files to the empty target directory (atomic write, path containment); non-empty or conflicting targets are rejected and not touched |
-| `adopt-plan` | Strictly read-only planning of adopting an existing repo | None — writes no files (including temp files), runs no git write commands; plan output goes to stdout |
+| `adopt-plan` | Strictly read-only planning of adopting an existing repo | None — writes no files (including temp files); by default it may spawn one frozen read-only Git status probe; `--no-git-spawn` disables it; no Git write commands; plan output goes to stdout |
 | `projection` | Project managed artifacts | Only writes paths authorized by manifest and declared managed by the target; unauthorized, hand-written, and out-of-bounds paths are all rejected (zero writes on rejection) |
-| `check` | Contract/drift/closure/version/doc-fact/Git-precondition diagnostics | None — only diagnoses, never auto-fixes; git is read-only probe only |
+| `check` | Contract/drift/closure/version/doc-fact/Git-precondition diagnostics | Ordinary diagnostics are read-only and write no files; by default they may spawn one frozen read-only Git status probe; `--no-git-spawn` disables it; `check relock` is an explicit controlled write transaction; `check qualification` may spawn a bound executable after preflight. Foundation itself does not issue network requests, but that process may access the network. |
 
 ## Problem It Solves
 
@@ -44,7 +54,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.14.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.15.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -52,21 +62,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.14.0.tgz" "$pack_dir/skill-family-harness-node-0.14.0.tgz" "$pack_dir/skill-family-engineering-kit-0.14.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.15.0.tgz" "$pack_dir/skill-family-harness-node-0.15.0.tgz" "$pack_dir/skill-family-engineering-kit-0.15.0.tgz")
 ```
 
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.14.0
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.15.0
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.14.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 
@@ -150,7 +160,7 @@ npm exec -- skill-family-kit scaffold host-build --root <workspace> --host <id> 
 npm exec -- skill-family-kit adopt-plan host-plan --root <workspace> --host <id> --path-category <id> --build-manifest <relpath> --probe-facts <relpath> --hosts-root <dir>
 ```
 
-The Profile must be provided explicitly; Kit does not bind a specific host by default. Canonical host IDs may resolve only aliases declared by the finite registered Profile set. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. Local install and update use an explicit authorization reference plus the existing contained publication primitives; uninstall is rejected with `manual-recovery-required` because Foundation has no safe bound deletion primitive. Two registered hosts have trusted version drivers; Kimi Code, WorkBuddy, CodeBuddy, and DeepSeek Harness expose independent manual facts. Qoder is `manual` from 0.12.0; its candidate real-host verification grants no lifecycle support. Adapter source only accepts declared text closures; binary projection is not supported; see the [host capability matrix](../../docs/reference/host-capability-matrix.md) and registered Profiles.
+The Profile must be provided explicitly; Kit does not bind a specific host by default. Canonical host IDs may resolve only aliases declared by the finite registered Profile set. Probe starts no process by default; only when both `--allow-host-spawn --host-executable <absolute-path>` are given is the frozen version vector executed. Local install and update use an explicit authorization reference plus the existing contained publication primitives; uninstall is rejected with `manual-recovery-required` because Foundation has no safe bound deletion primitive. Two registered hosts have trusted version drivers; Kimi Code, WorkBuddy, CodeBuddy, and DeepSeek Harness expose independent manual facts. Qoder remains `manual`; the separate native plugin candidate does not grant generic host build, plan, apply, install/update/uninstall, rollback, or real-host qualification. Adapter source only accepts declared text closures; binary projection is not supported; see the [host capability matrix](../../docs/reference/host-capability-matrix.md) and registered Profiles.
 
 ### Candidate real-host verification library API
 
@@ -165,14 +175,14 @@ The API keeps consumer workload, domain output checks, domain PASS/FAIL, release
 - New project skeleton: `scaffold` (does not overwrite a non-empty existing repo).
 - Existing-repo adoption inventory: `adopt-plan` (strictly read-only, no file writes, no auto-migration).
 - Managed projection: `projection` + Profile (does not overwrite handwritten files).
-- Engineering diagnostics: `check` (diagnosis only, no fix, `--only` narrows scope).
+- Engineering diagnostics: ordinary `check` is read-only; `check relock` is an explicit controlled write transaction, and `check qualification` may spawn a bound executable after preflight.
 
 ## Boundary Mechanisms
 
 - `scaffold`'s target must be an **empty directory** (any entry including dotfiles counts as non-empty), or a non-existent path whose parent directory exists (only the last level is created). All writes go through the harness's atomic contained write (`writeFileAtomic`), leaving no half-written artifact on failure, and paths cannot escape the target root.
-- `adopt-plan` is structurally read-only: there is no write call in the implementation, not even a temp file; the plan bytes share the same source as `scaffold` (single source of truth `describeSkeletonFiles`), hence "the plan is the action". A dirty repo has zero byte-level change before and after running.
+- `adopt-plan` is structurally read-only: there is no write call in the implementation, not even a temp file; the plan bytes share the same source as `scaffold` (single source of truth `describeSkeletonFiles`), hence "the plan is the action". By default it may spawn one frozen read-only Git status probe; the CLI `--no-git-spawn` (or API `allowGitSpawn: false`) disables that probe. A dirty repo has zero byte-level change before and after running.
 - `projection` uses two-phase execution: first, for each entry, it performs path classification, containment pre-check, self-projection check, manifest authorization check, hand-written protection, and conflict guard; if any entry violates, the whole is rejected with zero writes. Overwriting an existing file must declare the precise `expect.sha256` precondition; an existing file with identical content is an idempotent no-op. On write failure it best-effort restores the pre-write bytes of already-overwritten files.
-- `check` is diagnosis only: no write calls, no `--fix/--apply/--repair` modes (such flags are rejected at the entry point). Git precondition state uses only filesystem facts plus at most one read-only `git status --porcelain=2` with a frozen parameter vector (`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`, no index refresh).
+- Ordinary `check` is read-only and has no write calls or `--fix/--apply/--repair` modes (such flags are rejected at the entry point). By default it may spawn one frozen read-only Git status probe; the CLI `--no-git-spawn` (or API `allowGitSpawn: false`) disables that probe. `check relock` is the explicit controlled write transaction; `check qualification` may spawn a bound executable after preflight. Git precondition state uses only filesystem facts plus at most one read-only `git status --porcelain=2` with a frozen parameter vector (`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`, no index refresh).
 
 ## Error Codes and Exit Codes
 
@@ -195,7 +205,9 @@ Process exit codes: `0` success / no findings; `1` check has findings; `2` rejec
 
 ## Prohibited Items
 
-This package must not perform git init, commit, push, tag, stash, branch switch, publish, delete, remote write, or publish-state recital; it does not implement a fifth top-level command; it does no business judgments, model calls, or remote networking.
+This package must not perform git init, commit, push, tag, stash, branch switch, publish, delete, remote write, or publish-state recital; it does not implement a fifth top-level command; it does no business judgments or model calls.
+
+Foundation itself does not issue network requests, but the bound executable may access the network. Foundation provides no sandbox or egress blocking; callers and the execution environment own that isolation. Repository-controlled fixtures are designed not to issue network requests.
 
 ## Troubleshooting
 
@@ -220,7 +232,7 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 ### Do not use when
 
 - You need auto-fix (`check` does not fix), or auto-migration (`adopt-plan` writes no files).
-- You need remote host publication, automatic trust confirmation, uninstall deletion, or a full Qoder driver (explicitly unsupported).
+- You need generic or remote host lifecycle, automatic trust confirmation, deleting uninstall, or real-host qualification from a controlled fixture.
 - You need a stable Quickstart API or expect the candidate helper to bypass `runProjection` authorization.
 
 ### Capability selection
@@ -251,7 +263,7 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 ### Side effects
 
 - scaffold/projection/host-build write files to the contained target (atomic + contained).
-- adopt-plan and check are strictly read-only; git is read-only whitelisted probe only.
+- adopt-plan and ordinary check are strictly read-only and write no files; by default they may spawn one frozen read-only Git status probe, disabled by `--no-git-spawn` (or API `allowGitSpawn: false`). check relock is an explicit controlled write transaction; check qualification may spawn a bound executable after preflight. Git is a read-only whitelisted probe for diagnostic checks.
 - `FORBIDDEN_SIDE_EFFECTS` includes git-init/commit/push/tag, publish, remote-write.
 
 ### Failure semantics
@@ -279,6 +291,8 @@ This package must not perform git init, commit, push, tag, stash, branch switch,
 
 ## Complete Plugin Candidate
 
-The candidate runPluginVerification({ request, bindings, hostsRoot }) preserves a complete plugin layout and separates installation, discovery and invocation facts. Each actual host/source combination still needs qualification evidence.
+The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserves the two legacy goals and adds a local-only `native-lifecycle` branch. Qoder and WorkBuddy use separate production drivers with driver-owned argv plans, exactly twelve semantic stages, and executable identity re-observation before every spawn. Contracts owns only structure; Kit owns the host plan and Oracle. The controlled executable protocol proves isolation wiring and is not vendor grammar. Each actual host/source combination still needs qualification evidence.
 
-Version 0.14.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.
+The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
+
+Version 0.15.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.
