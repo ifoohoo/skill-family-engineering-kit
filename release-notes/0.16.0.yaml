@@ -1,0 +1,17 @@
+version: 0.16.0
+date: 2026-08-31
+locales:
+  en:
+    summary: Engineering Kit 0.16.0 tightens the candidate host-verification regression around one common workload and consumer answer across five fixed drivers.
+    changes:
+      changed:
+        - Verifies that all five fixed host drivers consume the same candidate bindings and expose the caller's business answer through the existing runHostVerification path.
+        - Keeps host-managed state, domain acceptance, and real-host qualification outside Foundation; no new Kit command or lifecycle capability is added.
+    upgradeNotes: The five-host check exercises the existing candidate API and does not turn a fixture or test result into real-host qualification. Consumers still own domain assertions and host authorization.
+  zh-CN:
+    summary: Engineering Kit 0.16.0 收紧五个固定 driver 的候选宿主验证回归，要求共用一个 workload 并核对消费者业务答案。
+    changes:
+      changed:
+        - 通过既有 `runHostVerification` 路径核对 Claude、Codex、Kimi、Qoder 与 WorkBuddy 使用同一候选绑定，并暴露调用方的业务答案。
+        - 保持宿主管理状态、领域接受规则和真实宿主资格归调用方负责；不新增 Kit 命令或生命周期能力。
+    upgradeNotes: 五宿主检查只验证现有候选 API，不会把 fixture 或测试结果升级为真实宿主资格；领域断言与宿主授权仍由消费者负责。

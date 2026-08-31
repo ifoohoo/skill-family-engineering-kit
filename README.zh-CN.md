@@ -5,27 +5,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.15.0 -->
+<!-- release-skill:release-version: 0.16.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.15.0** (2026-08-29)
+**0.16.0** (2026-08-31)
 
-Engineering Kit 0.15.0 增加固定的 native-lifecycle 与 Kimi 目录资格入口。
-
-**新增**
-
-- 增加 Qoder 与 WorkBuddy 封闭十二阶段生命周期 fixture 解析。
-- 增加 Kimi 目录资格检查，使用 driverVersion 1.0.0 与 CLI 0.39.1 接纳规则。
+Engineering Kit 0.16.0 收紧五个固定 driver 的候选宿主验证回归，要求共用一个 workload 并核对消费者业务答案。
 
 **变更**
 
-- 资格检查直接将 Contracts、Harness 版本与 KIT_VERSION 比较。
+- 通过既有 `runHostVerification` 路径核对 Claude、Codex、Kimi、Qoder 与 WorkBuddy 使用同一候选绑定，并暴露调用方的业务答案。
+- 保持宿主管理状态、领域接受规则和真实宿主资格归调用方负责；不新增 Kit 命令或生命周期能力。
 
 **升级说明**
 
-fixture 只证明解析器接线；正式进程、目录和领域接受观察仍由消费者负责。
+五宿主检查只验证现有候选 API，不会把 fixture 或测试结果升级为真实宿主资格；领域断言与宿主授权仍由消费者负责。
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate 资格入口
@@ -55,7 +51,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.15.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.16.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -63,21 +59,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.15.0.tgz" "$pack_dir/skill-family-harness-node-0.15.0.tgz" "$pack_dir/skill-family-engineering-kit-0.15.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.16.0.tgz" "$pack_dir/skill-family-harness-node-0.16.0.tgz" "$pack_dir/skill-family-engineering-kit-0.16.0.tgz")
 ```
 
 发布后再使用 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.15.0
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.16.0
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 
@@ -296,4 +292,4 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 
 独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
 
-0.15.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。
+0.16.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。

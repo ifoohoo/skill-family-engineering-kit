@@ -927,14 +927,16 @@
     "Need closed-enum watchdog/termination reasons that consumers can map mechanically"
    ],
    "doNotUseWhen": [
-    "Need the supervisor to retry or restart the process (workflow-orchestration exclusion)"
+    "Need the supervisor to retry or restart the process (workflow-orchestration exclusion)",
+    "Only one consumer wants to redact output before writing evidence: do not add rawStreamSink, a transform sink, a generic sanitizer, a second runner, or new public stdout callbacks"
    ],
    "prerequisites": [
     "The consumer supplies the command, cwd, and a timeout policy with maxSeconds and killGraceSeconds"
    ],
    "inputs": [
     "Command/args/cwd, timeout policy, optional progress and terminal progress paths, optional budget and long-tool hooks, optional evidence path",
-    "The optional 0.13.0 outputByteLimits caps stdout and stderr independently by raw bytes. Equality is allowed; first excess uses the existing termination path. Without caps, no limit fields are added and legacy behavior remains."
+    "The optional 0.13.0 outputByteLimits caps stdout and stderr independently by raw bytes. Equality is allowed; first excess uses the existing termination path. Without caps, no limit fields are added and legacy behavior remains.",
+    "The optional rawSink is for callers that accept 0600 raw stdout/stderr files in a fresh canonical temporary root; it is not a redaction API"
    ],
    "outputs": [
     "One frozen watchdog-termination-envelope per call (single writer)"
@@ -951,10 +953,12 @@
     "Liveness is confirmed only by explicit events and process-group probes; ps is never used for liveness guessing"
    ],
    "ownedByCaller": [
-    "The command, the timeout numbers, budget thresholds, terminal-record semantics and any restart strategy"
+    "The command, the timeout numbers, budget thresholds, terminal-record semantics and any restart strategy",
+    "Domain redaction, cross-stream secret discovery, retrospective masking, and the decision to accept protected raw temporary files"
    ],
    "routeElsewhere": [
-    "Restart/retry orchestration: workflow-orchestration exclusion, stays with the upper orchestration layer"
+    "Restart/retry orchestration: workflow-orchestration exclusion, stays with the upper orchestration layer",
+    "A hard zero-plaintext-on-filesystem requirement: the consumer owns the threat model and implementation; do not reopen a Foundation public capability until a second independent consumer and a shared contract demonstrate the need"
    ]
   },
   {

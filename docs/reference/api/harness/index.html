@@ -3215,7 +3215,12 @@
 <li>身份边界：调用方必须在整个调用期间独占 raw sink 的命名空间。文件句柄保护不会证明调用期间 pathname 或根目录身份始终不变；
   前后检查只用于尽早失败。</li>
 <li>失败语义：选项形状错误抛 <code>TypeError</code>；机制失败抛 <code>SFC2004</code>，沿既有 <code>supervise-process-failed</code> 错误域失败关闭。<code>rawStreamSink</code>
-  兼容别名、绝对路径、多段文件名、相同 stdout/stderr 名称与非 fresh 根均被拒绝。</li>
+  仍是明确拒绝的名称；兼容别名、绝对路径、多段文件名、相同 stdout/stderr 名称与非 fresh 根均被拒绝。</li>
+<li>接线边界：不要因为单一消费者想在写正式证据前脱敏，就新增 <code>rawStreamSink</code>、transform sink、通用 sanitizer、第二个进程
+  runner 或新的公开 stdout 字段/回调。现有 <code>rawSink</code> 适合调用方接受在 fresh canonical 临时根中以 0600 保存原始 stdout/stderr
+  文件的场景；Foundation 不承诺 zero-plaintext-on-filesystem，也不拥有领域脱敏、跨流秘密发现或事后遮盖。</li>
+<li>若消费者有硬性零明文落盘要求，应由消费者基于明确威胁模型拥有该方案并暂停相关路径。至少出现第二个独立消费者和清晰共同合同前，
+  不重开 Foundation 的公共能力。</li>
 <li><code>since</code> / <code>stability</code>：监督入口自 <code>0.5.0</code> / <code>stable</code>；受约束 raw sink 自 <code>0.11.0</code>，仅提供机制，不承诺宿主资格、认证、领域
   判断或发布状态。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/supervise-process.mjs</code>。正反例测试：

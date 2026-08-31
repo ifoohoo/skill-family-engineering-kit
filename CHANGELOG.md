@@ -1,5 +1,21 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.16.0 locale=en baseline=sha256:47c81698bf9458edc28ec1e198e43ad6f961db4249f606426a4b83664872a5d8 -->
+## [0.16.0] - 2026-08-31
+
+Engineering Kit 0.16.0 tightens the candidate host-verification regression around one common workload and consumer answer across five fixed drivers.
+
+### Changed
+
+- Verifies that all five fixed host drivers consume the same candidate bindings and expose the caller's business answer through the existing runHostVerification path.
+- Keeps host-managed state, domain acceptance, and real-host qualification outside Foundation; no new Kit command or lifecycle capability is added.
+
+### Upgrade Notes
+
+The five-host check exercises the existing candidate API and does not turn a fixture or test result into real-host qualification. Consumers still own domain assertions and host authorization.
+<!-- release-skill:changelog:end version=0.16.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.15.0 locale=en baseline=sha256:8b3c67e9fe98dd14ad7b43220440311cb046d10070f16dd6c83d47d3351efbf5 -->
 ## [0.15.0] - 2026-08-29
 

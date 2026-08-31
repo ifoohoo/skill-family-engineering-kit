@@ -4,27 +4,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.15.0 -->
+<!-- release-skill:release-version: 0.16.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.15.0** (2026-08-29)
+**0.16.0** (2026-08-31)
 
-Engineering Kit 0.15.0 adds fixed native-lifecycle and Kimi directory qualification entries.
-
-**Added**
-
-- Adds closed 12-stage Qoder and WorkBuddy lifecycle fixture parsing.
-- Adds Kimi directory qualification with driverVersion 1.0.0 and CLI 0.39.1 admission.
+Engineering Kit 0.16.0 tightens the candidate host-verification regression around one common workload and consumer answer across five fixed drivers.
 
 **Changed**
 
-- Qualification compares Contracts and Harness versions directly with KIT_VERSION.
+- Verifies that all five fixed host drivers consume the same candidate bindings and expose the caller's business answer through the existing runHostVerification path.
+- Keeps host-managed state, domain acceptance, and real-host qualification outside Foundation; no new Kit command or lifecycle capability is added.
 
 **Upgrade Notes**
 
-Fixtures prove parser wiring only; consumers own formal process, directory, and domain acceptance observations.
+The five-host check exercises the existing candidate API and does not turn a fixture or test result into real-host qualification. Consumers still own domain assertions and host authorization.
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate qualification entries
@@ -54,7 +50,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.15.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.16.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -62,21 +58,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.15.0.tgz" "$pack_dir/skill-family-harness-node-0.15.0.tgz" "$pack_dir/skill-family-engineering-kit-0.15.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.16.0.tgz" "$pack_dir/skill-family-harness-node-0.16.0.tgz" "$pack_dir/skill-family-engineering-kit-0.16.0.tgz")
 ```
 
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.15.0
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.16.0
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.15.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.16.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 
@@ -295,4 +291,4 @@ The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserve
 
 The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
 
-Version 0.15.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.
+Version 0.16.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.

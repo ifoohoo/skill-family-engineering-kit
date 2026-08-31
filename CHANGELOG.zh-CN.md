@@ -1,5 +1,21 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.16.0 locale=zh-CN baseline=sha256:1db170e8f4ae8ca25301b4e5893d86a0f486218fa75f9bcc0ced2a5eba7d26d6 -->
+## [0.16.0] - 2026-08-31
+
+Engineering Kit 0.16.0 收紧五个固定 driver 的候选宿主验证回归，要求共用一个 workload 并核对消费者业务答案。
+
+### 变更
+
+- 通过既有 `runHostVerification` 路径核对 Claude、Codex、Kimi、Qoder 与 WorkBuddy 使用同一候选绑定，并暴露调用方的业务答案。
+- 保持宿主管理状态、领域接受规则和真实宿主资格归调用方负责；不新增 Kit 命令或生命周期能力。
+
+### 升级说明
+
+五宿主检查只验证现有候选 API，不会把 fixture 或测试结果升级为真实宿主资格；领域断言与宿主授权仍由消费者负责。
+<!-- release-skill:changelog:end version=0.16.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.15.0 locale=zh-CN baseline=sha256:c559c91bed872ab70dac2a4836c636b35ed905282f4aa4cdcf56d21a1ce246b9 -->
 ## [0.15.0] - 2026-08-29
 

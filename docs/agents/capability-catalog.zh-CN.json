@@ -926,14 +926,16 @@
     "需要可直接机械映射的封闭枚举 watchdog/termination 原因"
    ],
    "doNotUseWhen": [
-    "需要监督器重试或重启进程（workflow-orchestration 排除）"
+    "需要监督器重试或重启进程（workflow-orchestration 排除）",
+    "只有一个消费者想在写证据前脱敏：不要新增 rawStreamSink、transform sink、通用 sanitizer、第二个 runner 或新的公开 stdout 回调"
    ],
    "prerequisites": [
     "消费者提供命令、cwd 与含 maxSeconds 和 killGraceSeconds 的超时策略"
    ],
    "inputs": [
     "命令/参数/cwd、超时策略、可选的进度与终态进度路径、可选的预算与长工具钩子、可选的证据路径",
-    "0.13.0 可选 outputByteLimits 分别限制 stdout/stderr 原始字节；等于上限允许，首次超过上限启动既有终止路径。未配置时不追加限额字段，保持旧行为。"
+    "0.13.0 可选 outputByteLimits 分别限制 stdout/stderr 原始字节；等于上限允许，首次超过上限启动既有终止路径。未配置时不追加限额字段，保持旧行为。",
+    "可选 rawSink 适用于调用方接受在 fresh canonical 临时根中以 0600 保存 stdout/stderr 原始文件的场景；它不是脱敏接口"
    ],
    "outputs": [
     "每次调用恰好一个冻结的 watchdog-termination-envelope（单写者）"
@@ -950,10 +952,12 @@
     "存活只由显式事件与进程组探测确认；ps 绝不用于存活猜测"
    ],
    "ownedByCaller": [
-    "命令本身、超时数值、预算阈值、终态记录语义与任何重启策略"
+    "命令本身、超时数值、预算阈值、终态记录语义与任何重启策略",
+    "领域脱敏、跨流秘密识别、事后遮盖，以及是否接受受保护临时原始文件"
    ],
    "routeElsewhere": [
-    "重启/重试编排：workflow-orchestration 排除，留在上层编排层"
+    "重启/重试编排：workflow-orchestration 排除，留在上层编排层",
+    "硬性零明文落盘要求：由消费者自己定义威胁模型并实现；除非出现第二个独立消费者和清晰共同合同，否则不要重开 Foundation 公共能力"
    ]
   },
   {
