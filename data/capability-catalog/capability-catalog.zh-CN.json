@@ -2128,6 +2128,53 @@
    ]
   },
   {
+   "id": "foundation.harness.fixed-set-publication",
+   "intent": "在目标缺失时发布一个完整固定集合，或把一个完整暂存兄弟目录与既有目标目录原子交换",
+   "useWhen": [
+    "只在目标缺失时发布一棵完整目录树",
+    "用同一规范父目录下的完整暂存兄弟目录替换一个既有目录"
+   ],
+   "doNotUseWhen": [
+    "源目录和目标目录无法成为同一规范父目录下的真实兄弟目录",
+    "需要复制、合并、备份、自动回滚或重试流程"
+   ],
+   "prerequisites": [
+    "在带有固定预构建闭包的 Darwin 或 Linux GNU 平台安装精确匹配的三个 Foundation 包版本",
+    "源树和目标树只含真实目录与单链接普通文件",
+    "调用期间由调用方独占两个目录名称"
+   ],
+   "inputs": [
+    "createFixedSetPublicationManifest 与 publishFixedSet 接收完整源目录、目标父目录、安全目标段和冻结 manifest",
+    "replaceFixedSetAtomic 为既有兄弟目标接收 { sourceRoot, targetParent, targetSegment }"
+   ],
+   "outputs": [
+    "不替换发布返回结构化 publication receipt",
+    "确认替换成功后返回两个路径、发布与被置换闭包摘要，以及 published、committed、verified、namespace-synced 状态"
+   ],
+   "sideEffects": [
+    "不替换发布经验证后，把源目录移动到不存在的目标路径",
+    "替换执行一次原生目录交换，被置换的旧目标留在 sourceRoot；Foundation 不删除任一侧"
+   ],
+   "failureSemantics": [
+    "受支持的提交前替换失败保留原目标路径和字节",
+    "替换机制失败使用 SFC2004 与 atomic-replace-failed，并携带阶段、发布、提交、验证和持久化状态 tuple",
+    "不支持替换的平台使用 SFC2004 与 unsupported-platform"
+   ],
+   "invariants": [
+    "两条路径都不降级到 JavaScript 检查后改名序列",
+    "替换在一个已验证父目录句柄下，通过一次 Darwin RENAME_SWAP 或 Linux RENAME_EXCHANGE 提交",
+    "替换不是幂等操作；相同调用会把两个目录交换回去"
+   ],
+   "ownedByCaller": [
+    "目录内容的含义与接受策略",
+    "暂存目录生命周期、确认成功后的旧目标清理，以及提交后或不确定失败的恢复决定"
+   ],
+   "routeElsewhere": [
+    "远程发布授权与发布动作交给 release-skill",
+    "目录渲染与载荷选择留在消费产品"
+   ]
+  },
+  {
    "id": "foundation.harness.executable-identity-observation",
    "intent": "逐次只读观察显式绑定根中的可执行入口、符号链接链、脚本解释器与启动字节，供消费者在启动前紧邻重观察",
    "useWhen": [

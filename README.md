@@ -4,29 +4,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.17.0 -->
+<!-- release-skill:release-version: 0.18.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.17.0** (2026-09-01)
+**0.18.0** (2026-09-05)
 
-Engineering Kit 0.17.0 separates CodeBuddy from WorkBuddy host verification and adds an opt-in structural comparison against a provider-owned engineering baseline.
+Engineering Kit 0.18.0 projects the stable Harness replaceFixedSetAtomic export into the existing offline Quickstart Bundle.
 
 **Added**
 
-- Adds the codebuddy-print-v1 driver for CodeBuddy project discovery under .codebuddy/skills while preserving the existing workbuddy-codebuddy-print-v1 driver and WorkBuddy layout.
-- Adds describeSkeletonReferenceImplementation and returns its identity from scaffoldTarget.
-- Adds the paired adopt-plan options --engineering-baseline and --compare-skeleton. The result reports reference-only, target-only, entry-type, and file-class differences without declaring compliance, equivalence, severity, or waivers.
+- The existing candidate Bundle now carries the stable fixed-set replacement source, loader, native closure, and replaceFixedSetAtomic export without adding a parallel implementation or a new Kit command.
 
 **Changed**
 
-- Adds skill-family-kit check entries --root . to the generated public-plugin check script; other profiles keep their existing check command.
-- Keeps host-managed login state, domain acceptance, and real-host qualification under consumer ownership.
+- Moves the package version to 0.18.0 together with Contracts and Harness while preserving runProjection as the Bundle write and authorization boundary.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.17.0. CodeBuddy and WorkBuddy are separate host routes even when they consume the same plugin payload. Baseline comparison is read-only and opt-in; the baseline provider still owns rule semantics and publication.
+Pin all three Foundation packages to exactly 0.18.0 and rebuild managed Bundles from those exact installed package bytes. Bundle consumers receive the same non-idempotent replacement semantics and must not retry post-commit or indeterminate outcomes blindly.
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate qualification entries
@@ -56,7 +53,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.17.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.18.0 is a local candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -64,21 +61,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.17.0.tgz" "$pack_dir/skill-family-harness-node-0.17.0.tgz" "$pack_dir/skill-family-engineering-kit-0.17.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.18.0.tgz" "$pack_dir/skill-family-harness-node-0.18.0.tgz" "$pack_dir/skill-family-engineering-kit-0.18.0.tgz")
 ```
 
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.17.0
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.18.0
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 
@@ -297,4 +294,4 @@ The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserve
 
 The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
 
-Version 0.17.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.
+Version 0.18.0 is a local source candidate and is not published. Consume the three locally verified tarballs; a version marker, unit test or successful install is not complete contract integration, migration completion, or real-host qualification.

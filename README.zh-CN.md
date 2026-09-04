@@ -5,29 +5,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.17.0 -->
+<!-- release-skill:release-version: 0.18.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.17.0** (2026-09-01)
+**0.18.0** (2026-09-05)
 
-Engineering Kit 0.17.0 将 CodeBuddy 与 WorkBuddy 的宿主验证分开，并新增按需启用的提供方工程基线结构比较。
+Engineering Kit 0.18.0 将 Harness 稳定的 replaceFixedSetAtomic 导出投影到既有离线 Quickstart Bundle。
 
 **新增**
 
-- 新增 codebuddy-print-v1 driver，按 CodeBuddy 的 .codebuddy/skills 项目目录发现技能；既有 workbuddy-codebuddy-print-v1 driver 与 WorkBuddy 布局保持不变。
-- 新增 describeSkeletonReferenceImplementation，并由 scaffoldTarget 返回该参考骨架身份。
-- adopt-plan 新增须成对使用的 --engineering-baseline 与 --compare-skeleton。结果只报告参考侧独有、目标侧独有、条目类型和文件类别差异，不裁定合规、等价、严重程度或豁免。
+- 既有 candidate Bundle 携带稳定的固定集合替换源码、加载器、原生闭包与 replaceFixedSetAtomic 导出；不新增平行实现，也不增加 Kit 命令。
 
 **变更**
 
-- public-plugin 骨架生成的 check 脚本新增 skill-family-kit check entries --root .；其他 Profile 的检查命令保持不变。
-- 宿主管理的登录态、领域验收和真实宿主资格继续归消费者负责。
+- 包版本与 Contracts、Harness 一同升至 0.18.0，runProjection 继续作为 Bundle 的写入与授权边界。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.17.0。CodeBuddy 与 WorkBuddy 即使消费同一插件载荷，也必须走独立宿主路由。基线比较只读且按需启用；规则语义与基线发布仍由基线提供方负责。
+三个 Foundation 包须一起精确锁定到 0.18.0，并从这些已安装包的精确字节重建受管 Bundle。Bundle 消费者获得相同的非幂等替换语义，不得盲目重试提交后或不确定结果。
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate 资格入口
@@ -57,7 +54,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.17.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.18.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -65,21 +62,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.17.0.tgz" "$pack_dir/skill-family-harness-node-0.17.0.tgz" "$pack_dir/skill-family-engineering-kit-0.17.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.18.0.tgz" "$pack_dir/skill-family-harness-node-0.18.0.tgz" "$pack_dir/skill-family-engineering-kit-0.18.0.tgz")
 ```
 
 发布后再使用 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.17.0
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.18.0
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.17.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 
@@ -298,4 +295,4 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 
 独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
 
-0.17.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。
+0.18.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。

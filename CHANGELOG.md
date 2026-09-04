@@ -1,5 +1,24 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.18.0 locale=en baseline=sha256:9c6fe9859fb75316937790054ae7d45bfc21d38ce97d8e650d7da18757a462c5 -->
+## [0.18.0] - 2026-09-05
+
+Engineering Kit 0.18.0 projects the stable Harness replaceFixedSetAtomic export into the existing offline Quickstart Bundle.
+
+### Added
+
+- The existing candidate Bundle now carries the stable fixed-set replacement source, loader, native closure, and replaceFixedSetAtomic export without adding a parallel implementation or a new Kit command.
+
+### Changed
+
+- Moves the package version to 0.18.0 together with Contracts and Harness while preserving runProjection as the Bundle write and authorization boundary.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.18.0 and rebuild managed Bundles from those exact installed package bytes. Bundle consumers receive the same non-idempotent replacement semantics and must not retry post-commit or indeterminate outcomes blindly.
+<!-- release-skill:changelog:end version=0.18.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.17.0 locale=en baseline=sha256:c09a3edaeab4e9f29527900bff5baaa7f7be185a9270ce81f450fab8ec9fb16f -->
 ## [0.17.0] - 2026-09-01
 

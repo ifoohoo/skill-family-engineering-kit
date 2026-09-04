@@ -1980,7 +1980,7 @@ Contracts（结构、协议、错误码、协议名登记）
 - release-skill   发布状态与全部远端写入，不进入 Foundation
 - Artifact Graph  `artifacts/` 架构制品体系，门禁为 check:artifacts
 </code></pre>
-<p>同一 Git workspace 还包含 <code>packages/foundation-adoption-review/</code>。它是一个独立的 0.1.0 Plugin release unit 和公开镜像源，使用 Foundation 的公开事实，但不属于 Contracts → Harness → Engineering Kit 依赖链，也不计作 Foundation 的第四个机制包。该 Plugin 的公开闭包由自己的 release unit 白名单限定；根目录的计划、制品、测试和其他私有文档不会进入 Plugin 镜像。</p>
+<p>同一 Git workspace 还包含 <code>packages/foundation-adoption-review/</code>。它是独立的 Plugin release unit 和公开镜像源，从 0.17.0 起与 Foundation 数值对齐，历史 0.1.0 发布保持不变。它使用 Foundation 的公开事实，但不属于 Contracts → Harness → Engineering Kit 依赖链，也不计作 Foundation 的第四个机制包。该 Plugin 的公开闭包由自己的 release unit 白名单限定；根目录的计划、制品、测试和其他私有文档不会进入 Plugin 镜像。</p>
 <p>箭头指向被依赖方。公共核心不得反向依赖具体 Profile 或具体技能族；新能力的依赖方向落位见 <code>artifacts/design/FND-DES-001.md</code>，逐资产归属见 FND-ADR-002。</p>
 <h2 id="职责矩阵">职责矩阵<a class="headerlink" href="#职责矩阵" title="Permanent link">&para;</a></h2>
 <p>每个分层只承担下表列出的职责，越界能力一律由外部项目或消费者拥有。</p>

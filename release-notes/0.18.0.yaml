@@ -1,0 +1,19 @@
+version: 0.18.0
+date: 2026-09-05
+locales:
+  en:
+    summary: Engineering Kit 0.18.0 projects the stable Harness replaceFixedSetAtomic export into the existing offline Quickstart Bundle.
+    changes:
+      added:
+        - The existing candidate Bundle now carries the stable fixed-set replacement source, loader, native closure, and replaceFixedSetAtomic export without adding a parallel implementation or a new Kit command.
+      changed:
+        - Moves the package version to 0.18.0 together with Contracts and Harness while preserving runProjection as the Bundle write and authorization boundary.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.18.0 and rebuild managed Bundles from those exact installed package bytes. Bundle consumers receive the same non-idempotent replacement semantics and must not retry post-commit or indeterminate outcomes blindly.
+  zh-CN:
+    summary: Engineering Kit 0.18.0 将 Harness 稳定的 replaceFixedSetAtomic 导出投影到既有离线 Quickstart Bundle。
+    changes:
+      added:
+        - 既有 candidate Bundle 携带稳定的固定集合替换源码、加载器、原生闭包与 replaceFixedSetAtomic 导出；不新增平行实现，也不增加 Kit 命令。
+      changed:
+        - 包版本与 Contracts、Harness 一同升至 0.18.0，runProjection 继续作为 Bundle 的写入与授权边界。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.18.0，并从这些已安装包的精确字节重建受管 Bundle。Bundle 消费者获得相同的非幂等替换语义，不得盲目重试提交后或不确定结果。

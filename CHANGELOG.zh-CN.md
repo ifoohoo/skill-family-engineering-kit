@@ -1,5 +1,24 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.18.0 locale=zh-CN baseline=sha256:c8c2891b64fc31e1fb3754715da04d6ec0727b31e36e011d38735e45795cdd53 -->
+## [0.18.0] - 2026-09-05
+
+Engineering Kit 0.18.0 将 Harness 稳定的 replaceFixedSetAtomic 导出投影到既有离线 Quickstart Bundle。
+
+### 新增
+
+- 既有 candidate Bundle 携带稳定的固定集合替换源码、加载器、原生闭包与 replaceFixedSetAtomic 导出；不新增平行实现，也不增加 Kit 命令。
+
+### 变更
+
+- 包版本与 Contracts、Harness 一同升至 0.18.0，runProjection 继续作为 Bundle 的写入与授权边界。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.18.0，并从这些已安装包的精确字节重建受管 Bundle。Bundle 消费者获得相同的非幂等替换语义，不得盲目重试提交后或不确定结果。
+<!-- release-skill:changelog:end version=0.18.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.17.0 locale=zh-CN baseline=sha256:7c413da3ad02837bdd63a1b49a5dc78cefe15a9779a05ce070876f817d09ae65 -->
 ## [0.17.0] - 2026-09-01
 

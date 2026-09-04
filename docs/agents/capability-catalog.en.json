@@ -2129,6 +2129,53 @@
    ]
   },
   {
+   "id": "foundation.harness.fixed-set-publication",
+   "intent": "Publish one complete fixed set without replacement, or atomically exchange one complete staged sibling with an existing target directory",
+   "useWhen": [
+    "Need to publish a complete directory only when the target is absent",
+    "Need to replace one existing directory with a complete staged sibling under the same canonical parent"
+   ],
+   "doNotUseWhen": [
+    "Source and target cannot be real sibling directories under one canonical parent",
+    "Need a copy, merge, backup, automatic rollback or retry workflow"
+   ],
+   "prerequisites": [
+    "Install exact matching versions of all three Foundation packages on a packaged Darwin or Linux GNU platform",
+    "Source and target trees contain only real directories and single-link regular files",
+    "The caller exclusively controls both directory names for the duration of the call"
+   ],
+   "inputs": [
+    "createFixedSetPublicationManifest and publishFixedSet take a complete source, target parent, safe target segment and frozen manifest",
+    "replaceFixedSetAtomic takes { sourceRoot, targetParent, targetSegment } for an existing target sibling"
+   ],
+   "outputs": [
+    "No-replace publication returns a structured publication receipt",
+    "Verified replacement returns both paths, published and displaced closure digests, and published, committed, verified, namespace-synced state"
+   ],
+   "sideEffects": [
+    "No-replace publication moves the source directory to an absent target after verification",
+    "Replacement performs one native directory exchange and leaves the displaced target at sourceRoot; Foundation deletes neither side"
+   ],
+   "failureSemantics": [
+    "Supported pre-commit replacement failure preserves the original target path and bytes",
+    "Replacement mechanism failures use SFC2004 with atomic-replace-failed and a phase, publication, commit, verification and durability tuple",
+    "Unsupported replacement platforms use SFC2004 with unsupported-platform"
+   ],
+   "invariants": [
+    "Neither path falls back to a JavaScript check-then-rename sequence",
+    "Replacement commits through one Darwin RENAME_SWAP or Linux RENAME_EXCHANGE under one verified parent handle",
+    "Replacement is not idempotent; the same call exchanges the directories back"
+   ],
+   "ownedByCaller": [
+    "Meaning and acceptance of the directory contents",
+    "Staging lifecycle, cleanup of the displaced target after verified success, and recovery decisions after post-commit or indeterminate failure"
+   ],
+   "routeElsewhere": [
+    "Remote release authorization and publication: route to release-skill",
+    "Directory rendering and payload selection: keep in the consuming product"
+   ]
+  },
+  {
    "id": "foundation.harness.executable-identity-observation",
    "intent": "Observe an explicitly bound executable entry, symlink chain, interpreter and launch bytes as a read-only point-in-time fact for an immediately pre-launch re-observation",
    "useWhen": [

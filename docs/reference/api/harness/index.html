@@ -885,6 +885,17 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#replaceFixedSetAtomic" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        replaceFixedSetAtomic
+
+    </span>
+  </a>
+
+</li>
+
       </ul>
     </nav>
 
@@ -2524,6 +2535,17 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#replaceFixedSetAtomic" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        replaceFixedSetAtomic
+
+    </span>
+  </a>
+
+</li>
+
       </ul>
     </nav>
 
@@ -3020,7 +3042,7 @@
 <li><a href="#严格读取-foundationharnessstrict-read">严格读取</a> → <code>readFileStrict</code></li>
 <li><a href="#身份绑定读取-foundationharnessbound-read">身份绑定读取</a> → <code>createFilesystemRootBinding</code> / <code>readFileBound</code></li>
 <li><a href="#完整树观察-foundationharnessfilesystem-tree-observation">完整树观察</a> → <code>observeFilesystemTree</code></li>
-<li><a href="#固定集合发布-foundationharnessfixed-set-publication">固定集合发布</a> → <code>createFixedSetPublicationManifest</code> / <code>publishFixedSet</code></li>
+<li><a href="#固定集合发布-foundationharnessfixed-set-publication">固定集合发布</a> → <code>createFixedSetPublicationManifest</code> / <code>publishFixedSet</code> / <code>replaceFixedSetAtomic</code></li>
 <li><a href="#原子写-foundationharnessatomic-write">原子写</a> → <code>writeFileAtomic</code></li>
 <li><a href="#临时工作区-foundationharnesstemporary-workspace">临时工作区</a> → <code>TemporaryWorkspace</code> / <code>withTemporaryWorkspace</code></li>
 <li><a href="#资源闭包-foundationharnessresource-closure">资源闭包</a> → <code>computeResourceClosure</code> / <code>digestBytes</code> / <code>closureContains</code></li>
@@ -3145,6 +3167,19 @@
 <li><code>since</code> / <code>stability</code>：<code>0.9.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/fixed-set-publication.mjs</code> 与固定原生加载器。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs</code> 与既有固定集合边界测试。</li>
+</ul>
+<h3 id="replaceFixedSetAtomic">replaceFixedSetAtomic<a class="headerlink" href="#replaceFixedSetAtomic" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>replaceFixedSetAtomic({ sourceRoot, targetParent, targetSegment })</code>（async）。包根与 <code>skill-family-harness-node/fixed-set-publication</code> 子路径均导出。</li>
+<li>输入：已经完整生成的真实 <code>sourceRoot</code>、规范 <code>targetParent</code> 和一个安全 <code>targetSegment</code>。源目录与既有目标必须是同一规范父目录下的兄弟目录；两棵树只允许真实目录与单链接普通文件。</li>
+<li>输出：确认成功时返回目标路径、保留旧目标的 <code>displacedTargetPath</code>，以及 <code>publicationState=published</code>、<code>commitState=exchange-committed</code>、<code>verification=verified</code>、<code>durability=namespace-synced</code> 和两棵树的闭包摘要。</li>
+<li>提交语义：复验父目录、源和目标身份后，在同一父目录句柄下只执行一次 Darwin <code>RENAME_SWAP</code> 或 Linux <code>RENAME_EXCHANGE</code>。成功后，新集合完整位于目标路径，被置换的旧目标完整留在原 <code>sourceRoot</code>；Foundation 不删除任一目录。</li>
+<li>失败语义：受支持的提交前失败保持原目标路径和字节不变。机制失败抛 <code>SFC2004</code> + <code>details.kind=atomic-replace-failed</code>；<code>details</code> 同时给出 <code>phase</code>、<code>publicationState</code>、<code>commitState</code>、<code>verification</code> 与 <code>durability</code>。不支持的平台使用 <code>details.kind=unsupported-platform</code>。</li>
+<li>重试边界：该操作不是幂等操作。相同参数再次调用会交换回原状态；确认成功后，或收到提交后及不确定错误时，不得盲目重试。Foundation 不自动执行第二次交换、回滚或清理。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.18.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/fixed-set-publication.mjs</code>、稳定原生加载器与固定预构建闭包。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs</code>；Engineering Kit 离线投影由 <code>packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs</code> 覆盖。</li>
+<li>调用方仍拥有的业务语义：暂存目录的生命周期、成功后的旧目标清理，以及提交后或不确定失败的取证与恢复决定。</li>
 </ul>
 <h2 id="原子写-foundationharnessatomic-write">原子写 (foundation.harness.atomic-write)<a class="headerlink" href="#原子写-foundationharnessatomic-write" title="Permanent link">&para;</a></h2>
 <h3 id="writeFileAtomic">writeFileAtomic<a class="headerlink" href="#writeFileAtomic" title="Permanent link">&para;</a></h3>

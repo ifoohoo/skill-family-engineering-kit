@@ -1396,6 +1396,32 @@
    "promotionPolicy": "consumer-transparent"
   },
   {
+   "id": "foundation.harness.fixed-set-publication",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.9.0",
+   "stability": "stable",
+   "adoptionScopes": ["harness", "engineering-kit"],
+   "entrypoints": [
+    "skill-family-harness-node: createFixedSetPublicationManifest, publishFixedSet, replaceFixedSetAtomic (packages/skill-family-harness-node/src/fixed-set-publication.mjs)",
+    "skill-family-harness-node/fixed-set-publication: createFixedSetPublicationManifest, publishFixedSet, replaceFixedSetAtomic (packages/skill-family-harness-node/src/fixed-set-publication.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/fixed-set-publication.mjs",
+    "packages/skill-family-harness-node/src/fixed-set-publication-loader.mjs",
+    "packages/skill-family-harness-node/src/native/bound_read.c",
+    "packages/skill-family-engineering-kit/candidate/profile-bundle.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.harness.executable-identity-observation",
    "package": "skill-family-harness-node",
    "layer": "harness",
