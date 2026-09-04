@@ -734,10 +734,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" class="md-nav__link">
+  <a href="#scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs" class="md-nav__link">
     <span class="md-ellipsis">
 
-        scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs
+        scaffoldTarget / describeSkeletonFiles / describeSkeletonReferenceImplementation / normalizeSkeletonInputs
 
     </span>
   </a>
@@ -2105,10 +2105,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" class="md-nav__link">
+  <a href="#scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs" class="md-nav__link">
     <span class="md-ellipsis">
 
-        scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs
+        scaffoldTarget / describeSkeletonFiles / describeSkeletonReferenceImplementation / normalizeSkeletonInputs
 
     </span>
   </a>
@@ -2533,13 +2533,13 @@
 <p>Kit 消费 Contracts 与 Harness，只拥有四个顶层命令与它们的只读/受控写边界。包级常量：<code>TOP_LEVEL_COMMANDS</code>（冻结 4 个：<code>scaffold</code> / <code>adopt-plan</code> / <code>projection</code> / <code>check</code>）、<code>FORBIDDEN_SIDE_EFFECTS</code>、<code>COMMAND_SIDE_EFFECTS</code>、<code>KIT_EXIT_CODES</code>（<code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>）。Kit 永不执行 Git 写、发布或删除用户内容。</p>
 <p>Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网。Foundation 不提供 sandbox 或 egress 阻断；隔离责任由调用方与运行环境承担。仓内受控 fixture 按设计不发起网络请求。</p>
 <p>外置 source authority 不增加 Kit API。调用方先用 Contracts <code>parseSourceAuthorityReceipt(receipt, actualSubjects)</code> 核对收据，再把成功结果中的 <code>sourceRepository</code> 与 <code>sourceBaseCommit</code> 传给既有 Quickstart builder。Kit 不读取私有发布 plan，不发现实际包，也不签发 receipt。</p>
-<p>provider Profile descriptor 使用 Contracts 1.15.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.15.0</code>。
+<p>provider Profile descriptor 使用 Contracts 1.16.0 时，须把自身的 <code>base.contractsVersion</code> 字段更新为 <code>1.16.0</code>。
 Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确版本，并在同一 mechanisms CLI 中提供有序
 <code>validate-many-by-schema-id</code>。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
-<li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code></li>
-<li><a href="#adopt-plan-foundationkitadopt-plan">adopt-plan</a> → <code>planAdoption</code> / <code>evaluateMigrationCompletion</code></li>
+<li><a href="#scaffold-foundationkitscaffold">scaffold</a> → <code>scaffoldTarget</code> / <code>describeSkeletonReferenceImplementation</code></li>
+<li><a href="#adopt-plan-foundationkitadopt-plan">adopt-plan</a> → <code>planAdoption</code> / <code>evaluateMigrationCompletion</code> / 按需启用的工程基线结构比较</li>
 <li><a href="#projection-foundationkitprojection">projection</a> → <code>buildProjectionClosure</code> / <code>runProjection</code> / <code>loadProjectionManifest</code></li>
 <li><a href="#check-foundationkitcheck">check</a> → <code>runChecks</code> / <code>runCoreCheck</code></li>
 <li><a href="#report-foundationkitreport">report</a> → <code>renderReportAction</code> / <code>checkReportAction</code></li>
@@ -2554,19 +2554,20 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 </ul>
 <hr />
 <h2 id="scaffold-foundationkitscaffold">scaffold (foundation.kit.scaffold)<a class="headerlink" href="#scaffold-foundationkitscaffold" title="Permanent link">&para;</a></h2>
-<h3 id="scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs">scaffoldTarget / describeSkeletonFiles / normalizeSkeletonInputs<a class="headerlink" href="#scaffoldTarget--describeSkeletonFiles--normalizeSkeletonInputs" title="Permanent link">&para;</a></h3>
+<h3 id="scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs">scaffoldTarget / describeSkeletonFiles / describeSkeletonReferenceImplementation / normalizeSkeletonInputs<a class="headerlink" href="#scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>
-<li><code>scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections } = {})</code>（async）</li>
+<li><code>scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, capabilities } = {})</code>（async）</li>
 <li><code>describeSkeletonFiles(inputs)</code>（async）</li>
+<li><code>describeSkeletonReferenceImplementation({ profile })</code>（async）</li>
 <li><code>normalizeSkeletonInputs({ projectId, projectName, profileId, licensingProfile, licensingVariant, rootBasename })</code></li>
 <li>输入：目标根、骨架选项（<code>projectId</code> 等）。</li>
-<li>输出：精确集合的托管骨架文件（原子 + 路径收容）。含两个目标侧手写种子（<code>handwritten</code> 类，adopt 永不覆写）：<code>SOURCE-OF-TRUTH.md</code>（唯一声明点、真源清单与生成谱系、运行与证据目录约定）与 <code>profile.json</code>（<code>foundation_profile</code> / <code>foundation_pin</code> 采用字段加只收紧方向的 overrides 示例）；<code>.gitignore</code> / <code>.projenrc.js</code> / file-registry 三处同步携带根级唯一忽略基线 <code>/site/</code>、<code>/.qoder/</code>、<code>/.artifacts/</code>、<code>/.runs/</code>、<code>/.evidence/</code>（嵌套同名目录不被忽略）。</li>
-<li>纯函数：<code>normalizeSkeletonInputs</code> 是；<code>scaffoldTarget</code> 落盘。</li>
+<li>输出：精确集合的托管骨架文件（原子 + 路径收容）。<code>scaffoldTarget()</code> 的结果另含 <code>referenceImplementation</code>，字段固定为当前 <code>foundationVersion</code>、所选 <code>profile</code> 与由规范文件清单计算的 <code>skeletonDigest</code>。该身份用于比较，不表示 Audit 合规，也不要求存量项目逐字节复制参考骨架。骨架含两个目标侧手写种子（<code>handwritten</code> 类，adopt 永不覆写）：<code>SOURCE-OF-TRUTH.md</code>（唯一声明点、真源清单与生成谱系、运行与证据目录约定）与 <code>profile.json</code>（<code>foundation_profile</code> / <code>foundation_pin</code> 采用字段加只收紧方向的 overrides 示例）；<code>.gitignore</code> / <code>.projenrc.js</code> / file-registry 三处同步携带根级唯一忽略基线 <code>/site/</code>、<code>/.qoder/</code>、<code>/.artifacts/</code>、<code>/.runs/</code>、<code>/.evidence/</code>（嵌套同名目录不被忽略）。</li>
+<li>纯函数：<code>normalizeSkeletonInputs</code> 是；<code>describeSkeletonReferenceImplementation</code> 只读取包内许可证 Profile 并确定性计算身份；<code>scaffoldTarget</code> 落盘。</li>
 <li>副作用：在受收容目标创建文件（原子 + 收容）；目标非空则拒绝、不覆盖。</li>
 <li>稳定错误码与 <code>details.kind</code>：非法 kebab <code>projectId</code> / 非空目标抛 <code>KitError</code>（<code>KIT_ERROR_KINDS</code> 的 <code>invalid-params</code> / <code>rejected</code>）；非法参数 <code>+ INVALID_PARAMS</code>（<code>SFC2003</code>）。</li>
 <li>前置条件与信任锚：目标为可写空目录；Node &gt;= 22.22.2；骨架集合与 <code>scaffold-conformance</code> fixture 一致（33 个计划文件）。</li>
-<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li><code>since</code> / <code>stability</code>：既有骨架入口自 <code>0.2.0</code> / <code>stable</code>；<code>describeSkeletonReferenceImplementation</code> 与 scaffold 结果中的参考身份自 <code>0.17.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/scaffold.mjs</code>、<code>skeleton.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/scaffold.test.mjs</code>、<code>skeleton-contract.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：业务项目内容（存量仓改用 <code>adopt-plan</code>）。</li>
@@ -2576,21 +2577,21 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <h3 id="planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories">planAdoption / buildProfileDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories<a class="headerlink" href="#planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名（节选）：</li>
-<li><code>planAdoption({ root, manifest, ... } = {})</code>（async）</li>
+<li><code>planAdoption({ root, manifest, engineeringBaseline, compareSkeleton, ... } = {})</code>（async）</li>
 <li><code>buildProfileDraft({ inputs, migrationManifest, writeSet, entries })</code></li>
 <li><code>evaluateMigrationCompletion({ ... })</code></li>
 <li><code>validateException(exception, index, nowMs)</code></li>
 <li><code>assessLegacyExitList(root, legacyItems)</code>（async）</li>
 <li><code>findNestedRepositories(entries)</code></li>
-<li>输入：目标根、迁移清单路径。</li>
-<li>输出：采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、profile 草稿（kind=<code>skill-family.profile-draft</code>：预填 D-8 最小采用声明 + 空 overrides 示例，仅输出，不落盘；adoption-lock 形态已废弃）。</li>
+<li>输入：目标根、迁移清单路径。工程基线比较是按需功能；库调用必须同时传入已验证的 <code>engineeringBaseline</code> 与 <code>compareSkeleton: true</code>，CLI 必须成对使用 <code>--engineering-baseline &lt;relative-json-path&gt;</code> 与 <code>--compare-skeleton</code>。</li>
+<li>输出：默认仍返回采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、profile 草稿（kind=<code>skill-family.profile-draft</code>：预填 D-8 最小采用声明 + 空 overrides 示例，仅输出，不落盘；adoption-lock 形态已废弃）。显式启用比较时才增加 <code>engineeringBaselineComparison</code>：它包含基线身份、Foundation 参考身份，以及参考侧独有、目标侧独有、条目类型和文件类别四类结构差异；不输出合规、等价、严重程度、finding、action、waiver 或 exemption 结论，也不返回规则正文。</li>
 <li>纯函数：分类与评估函数为纯函数；<code>planAdoption</code> 含只读探测。</li>
 <li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；默认可能启动一条冻结参数的只读 Git 探测，传入 <code>allowGitSpawn: false</code> 可关闭该子进程。</li>
-<li>稳定错误码与 <code>details.kind</code>：例外缺字段 / 未退出旧实现则完成判定 <code>false</code>；硬失败抛 <code>KitError</code>（<code>CONTRACTS_VERSION</code> 不一致等）。</li>
-<li>前置条件与信任锚：目标仓存在且可只读访问；<code>MIGRATION_MANIFEST_PATH</code> / <code>MIGRATION_MANIFEST_SCHEMA_ID</code> 指向契约。</li>
-<li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
+<li>稳定错误码与 <code>details.kind</code>：例外缺字段 / 未退出旧实现则完成判定 <code>false</code>；无效或未成对的比较参数使用 <code>SFC2003</code>，无效基线合同使用 <code>SFC1001</code>，基线中的 Foundation 版本或参考骨架摘要与当前 Kit 不一致时使用 <code>SFC1013</code>。</li>
+<li>前置条件与信任锚：目标仓存在且可只读访问；<code>MIGRATION_MANIFEST_PATH</code> / <code>MIGRATION_MANIFEST_SCHEMA_ID</code> 指向契约。比较前由 Contracts 验证基线，Kit 只接受绑定当前 Foundation 版本与参考骨架摘要的文档。</li>
+<li><code>since</code> / <code>stability</code>：既有采用规划自 <code>0.2.0</code> / <code>stable</code>；工程基线结构比较自 <code>0.17.0</code> / <code>stable</code>，默认关闭。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/adopt-plan.mjs</code>、<code>migration.mjs</code>。</li>
-<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/adopt-plan.test.mjs</code>、<code>migration.test.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/adopt-plan.test.mjs</code>、<code>migration.test.mjs</code>、<code>engineering-baseline-adopt-plan.test.mjs</code>、<code>cli.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：存量业务代码的迁移决策（真正迁移执行由调用方负责）。</li>
 </ul>
 <hr />
@@ -2693,7 +2694,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li><code>probeHost({ hostId, hostsRoot, registry, executable, allowSpawn = false, timeoutMs = 5000, runner } = {})</code></li>
 <li><code>buildHostAdapter({ hostId, pathCategoryId, input, hostsRoot, registry } = {})</code></li>
 <li><code>verifyHostPeers({ request, peerRoots, hostsRoot, registry } = {})</code>（async）：<code>hostsRoot</code> 为必需的 Profile 证明根，<code>registry</code> 可选；npm 消费者可以显式传 <code>bundledHostProfilesRoot()</code>，薄包装 Harness 的同级适配器只读验证，不写入目录。</li>
-<li><code>runHostVerification({ request, bindings, hostsRoot } = {})</code>（async）：按已登记的封闭内置 driver 表（<code>kimi-code-print-v1</code>、<code>workbuddy-codebuddy-print-v1</code>、<code>claude-code-print-v1</code>、<code>codex-exec-v1</code>、<code>qodercli-print-v1</code>，均绑定 <code>existing-user-state + host-managed</code>）执行一次受约束调用。请求、候选、fixture、workspace、现有用户状态根和临时根均由调用方绑定；公共结果只返回脱敏的逐宿主事实。</li>
+<li><code>runHostVerification({ request, bindings, hostsRoot } = {})</code>（async）：按已登记的封闭内置 driver 表（<code>kimi-code-print-v1</code>、<code>workbuddy-codebuddy-print-v1</code>、<code>codebuddy-print-v1</code>、<code>claude-code-print-v1</code>、<code>codex-exec-v1</code>、<code>qodercli-print-v1</code>，均绑定 <code>existing-user-state + host-managed</code>）执行一次受约束调用。请求、候选、fixture、workspace、现有用户状态根和临时根均由调用方绑定；公共结果只返回脱敏的逐宿主事实。</li>
 <li><code>verifyHostVerificationBindings({ results, expectedCommon, expectedRequestDigestByHost } = {})</code>：只组合已验证的 <code>observed</code> 结果，要求共同字段和逐宿主 request digest 精确匹配；不同宿主的 driver、安装、Prompt 和可执行文件事实保持独立。</li>
 <li><code>materializeHostBuild(options)</code></li>
 <li><code>planHost({ hostId, pathCategoryId, buildManifest, probeFacts, operation = "install", previousMembers = [], hostsRoot, registry } = {})</code></li>
@@ -2706,10 +2707,10 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>纯函数：只有 <code>assertPlanConsistency</code> 是；<code>resolveHostId</code> 通过受收容的只读 I/O 读取 Profile，不能当作纯函数。其余入口按职责含落盘或进程调用。</li>
 <li>副作用：<code>resolveHostId</code> / <code>verifyHostPeers</code> 只读；<code>build</code> / <code>materialize</code> 在受收容目标写产物；<code>probe</code> 默认 <code>allowSpawn=false</code>，不取 PATH。真实宿主验证只在调用方提供的 fresh 私有根内写原始证据；公共 result 不落盘为 Foundation receipt。</li>
 <li>稳定错误码与 <code>details.kind</code>：缺 probe facts 抛 <code>KitError</code>（<code>missing-probe-facts</code>）；写入失败按 Harness 的 <code>publicationState</code> 返回 <code>partially_applied</code> 或 <code>indeterminate</code>。<code>HOST_DRIVER_IDS</code> 仅两个受信版本 driver（<code>claude-version-v1</code> / <code>codex-version-v1</code>）；<code>manual</code> 宿主（含 Qoder）由 <code>probeHost</code> 生成九项 <code>driver-limited</code> 事实、由 <code>planHost</code> 返回 <code>manual</code> 计划，不授予生命周期能力。</li>
-<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记，并由 synth 投影进 Kit 的 <code>data/hosts</code>；别名必须来自该有限集合；受信 driver 限定；<code>applyHostPlan</code> 要求显式 <code>authorizationRef</code>、已验证 build 与目标根。真实宿主验证还要求显式 <code>hostsRoot</code>、受 Descriptor 约束的封闭内置 driver 表（五个固定组合，均绑定 <code>existing-user-state + host-managed</code>）、canonical 的 <code>existingUserStateRoot</code>（只读根可位于其下；不得等于或位于 output、temporary、private evidence、安装目标、WorkBuddy config root 或 Qoder fresh workspace 内部），以及互不重叠的 fresh 根与最小发现布局预检（每个 driver 的 <code>&lt;skills-root&gt;</code> materialize 前为空；WorkBuddy 的 <code>&lt;config&gt;/skills</code>、Codex 的 <code>&lt;workspace&gt;/.codex/skills</code> 与 Qoder 的 <code>&lt;fresh-ws&gt;/.qoder/skills</code> 布局在 spawn 前预检；Codex 另要求 <code>repositoryRoot/.git</code> 存在，不使用 <code>--skip-git-repo-check</code>，不执行任何 git 命令）。宿主入口不设置默认 <code>hostsRoot</code>。</li>
+<li>前置条件与信任锚：宿主 Profile 已在 <code>profiles/hosts</code> 登记，并由 synth 投影进 Kit 的 <code>data/hosts</code>；别名必须来自该有限集合；受信 driver 限定；<code>applyHostPlan</code> 要求显式 <code>authorizationRef</code>、已验证 build 与目标根。真实宿主验证还要求显式 <code>hostsRoot</code>、受 Descriptor 约束的六个封闭内置 driver、canonical 的 <code>existingUserStateRoot</code>（只读根可位于其下；不得等于或位于 output、temporary、private evidence、安装目标、WorkBuddy config root 或 Qoder fresh workspace 内部），以及互不重叠的 fresh 根与最小发现布局预检。WorkBuddy 使用自身配置根下的 <code>skills</code> 目录与 <code>CODEBUDDY_CONFIG_DIR</code> 投影；CodeBuddy 使用 fresh 项目的 <code>.codebuddy/skills</code>，进程工作目录指向该项目，现有登录态只经 <code>HOME</code> 投影，两者的 driver 和布局不可互换。Codex 使用 <code>&lt;workspace&gt;/.codex/skills</code>，Qoder 使用 <code>&lt;fresh-ws&gt;/.qoder/skills</code>；Codex 另要求 <code>repositoryRoot/.git</code> 存在，不使用 <code>--skip-git-repo-check</code>，不执行任何 git 命令。宿主入口不设置默认 <code>hostsRoot</code>。</li>
 <li>可执行文件身份边界：<code>executableSha256</code> 只绑定启动前严格读取到的字节，是点时观察；实际进程仍按 pathname 启动，不证明进程映像。调用方必须在 probe 与正式调用期间独占可执行文件的命名空间。</li>
 <li>临时目录生命周期：Foundation 保留本次调用的 <code>session-*</code> 目录，不按路径自动删除。调用方完成检查后，统一清理其独占的外层 <code>temporaryRoot</code>。</li>
-<li><code>since</code> / <code>stability</code>：既有宿主能力自 <code>0.10.0</code> 提供；<code>bundledHostProfilesRoot</code> 与真实宿主验证自 <code>0.11.0</code> 提供；0.12.0 把封闭 driver 表扩展到五个（Kimi 与 WorkBuddy 保持回归基线，Claude Code、Codex、Qoder 为新增）。真实宿主验证仍为 <code>candidate</code>：真实发布门（五平台现有登录态复用）未关闭前不得发布。</li>
+<li><code>since</code> / <code>stability</code>：既有宿主能力自 <code>0.10.0</code> 提供；<code>bundledHostProfilesRoot</code> 与真实宿主验证自 <code>0.11.0</code> 提供；0.12.0 把封闭 driver 表扩展到五个（Kimi 与 WorkBuddy 保持回归基线，Claude Code、Codex、Qoder 为新增）；0.17.0 再增加独立的 CodeBuddy driver。真实宿主验证仍为 <code>candidate</code>；生产 driver、源码测试或受控 fixture 都不能替代消费者的真实宿主资格证据。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/host.mjs</code>、<code>host-profiles.mjs</code>、<code>host-drivers.mjs</code>、<code>host-verification.mjs</code>、<code>host-verification-drivers.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/host.test.mjs</code>、<code>host-verification.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：宿主能力是否可用、手动事实的解释与生命周期授权；Foundation 不声明消费者 smoke 或远端发布成功，也不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。</li>

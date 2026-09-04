@@ -11,6 +11,7 @@ import {
 import { KIT_ERROR_KINDS, kitError } from "./errors.mjs";
 import {
   describeSkeletonFiles,
+  describeSkeletonReferenceImplementation,
   KIT_TOOL_NAME,
   KIT_VERSION,
   MANAGED_LOCK_PATH,
@@ -95,6 +96,9 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     profilesRoot,
     identityProjections,
   });
+  const referenceImplementation = await describeSkeletonReferenceImplementation({
+    profile: inputs.profileId,
+  });
 
   // The target may not exist yet; its parent must (the kit creates only
   // the final component, never a chain of directories outside the target).
@@ -164,7 +168,6 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     root: resolvedRoot,
     resources: skeleton.files.map((file) => ({ path: file.path, role: "output" })),
   });
-
   return {
     kind: "skill-family.scaffold-result",
     schemaVersion: 1,
@@ -178,6 +181,7 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     files: written,
     verifications,
     closure: { digest: closure.digest, resourceCount: closure.resources.length },
+    referenceImplementation,
     selectedCapabilities: skeleton.scaffoldSelection.selectedCapabilities,
     generatedContractTests: skeleton.scaffoldSelection.generatedContractTests,
     selectionWarnings: skeleton.scaffoldSelection.selectionWarnings,

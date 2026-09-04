@@ -1,5 +1,27 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.17.0 locale=zh-CN baseline=sha256:7c413da3ad02837bdd63a1b49a5dc78cefe15a9779a05ce070876f817d09ae65 -->
+## [0.17.0] - 2026-09-01
+
+Engineering Kit 0.17.0 将 CodeBuddy 与 WorkBuddy 的宿主验证分开，并新增按需启用的提供方工程基线结构比较。
+
+### 新增
+
+- 新增 codebuddy-print-v1 driver，按 CodeBuddy 的 .codebuddy/skills 项目目录发现技能；既有 workbuddy-codebuddy-print-v1 driver 与 WorkBuddy 布局保持不变。
+- 新增 describeSkeletonReferenceImplementation，并由 scaffoldTarget 返回该参考骨架身份。
+- adopt-plan 新增须成对使用的 --engineering-baseline 与 --compare-skeleton。结果只报告参考侧独有、目标侧独有、条目类型和文件类别差异，不裁定合规、等价、严重程度或豁免。
+
+### 变更
+
+- public-plugin 骨架生成的 check 脚本新增 skill-family-kit check entries --root .；其他 Profile 的检查命令保持不变。
+- 宿主管理的登录态、领域验收和真实宿主资格继续归消费者负责。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.17.0。CodeBuddy 与 WorkBuddy 即使消费同一插件载荷，也必须走独立宿主路由。基线比较只读且按需启用；规则语义与基线发布仍由基线提供方负责。
+<!-- release-skill:changelog:end version=0.17.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.16.0 locale=zh-CN baseline=sha256:1db170e8f4ae8ca25301b4e5893d86a0f486218fa75f9bcc0ced2a5eba7d26d6 -->
 ## [0.16.0] - 2026-08-31
 

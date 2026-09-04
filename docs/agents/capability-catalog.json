@@ -702,6 +702,7 @@
    "entrypoints": [
     "scaffoldTarget (packages/skill-family-engineering-kit/src/scaffold.mjs)",
     "describeSkeletonFiles (packages/skill-family-engineering-kit/src/skeleton.mjs)",
+    "describeSkeletonReferenceImplementation (packages/skill-family-engineering-kit/src/skeleton.mjs)",
     "normalizeSkeletonInputs (packages/skill-family-engineering-kit/src/skeleton.mjs)"
    ],
    "sourceRefs": [

@@ -1,5 +1,27 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.17.0 locale=en baseline=sha256:c09a3edaeab4e9f29527900bff5baaa7f7be185a9270ce81f450fab8ec9fb16f -->
+## [0.17.0] - 2026-09-01
+
+Engineering Kit 0.17.0 separates CodeBuddy from WorkBuddy host verification and adds an opt-in structural comparison against a provider-owned engineering baseline.
+
+### Added
+
+- Adds the codebuddy-print-v1 driver for CodeBuddy project discovery under .codebuddy/skills while preserving the existing workbuddy-codebuddy-print-v1 driver and WorkBuddy layout.
+- Adds describeSkeletonReferenceImplementation and returns its identity from scaffoldTarget.
+- Adds the paired adopt-plan options --engineering-baseline and --compare-skeleton. The result reports reference-only, target-only, entry-type, and file-class differences without declaring compliance, equivalence, severity, or waivers.
+
+### Changed
+
+- Adds skill-family-kit check entries --root . to the generated public-plugin check script; other profiles keep their existing check command.
+- Keeps host-managed login state, domain acceptance, and real-host qualification under consumer ownership.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.17.0. CodeBuddy and WorkBuddy are separate host routes even when they consume the same plugin payload. Baseline comparison is read-only and opt-in; the baseline provider still owns rule semantics and publication.
+<!-- release-skill:changelog:end version=0.17.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.16.0 locale=en baseline=sha256:47c81698bf9458edc28ec1e198e43ad6f961db4249f606426a4b83664872a5d8 -->
 ## [0.16.0] - 2026-08-31
 

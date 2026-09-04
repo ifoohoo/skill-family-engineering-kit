@@ -232,6 +232,21 @@ export const WORKBUDDY_DRIVER = Object.freeze({
   versionPattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u,
 });
 
+export const CODEBUDDY_DRIVER = Object.freeze({
+  hostId: "codebuddy",
+  driverId: "codebuddy-print-v1",
+  driverVersion: "1.0.0",
+  executableBasename: "codebuddy",
+  probeArgs: Object.freeze(["--version"]),
+  promptFlag: "-p",
+  outputArgs: Object.freeze(["--output-format", "stream-json"]),
+  // CodeBuddy's project skill discovery is rooted at the process cwd's
+  // `.codebuddy/skills` directory.  Its user state is projected through
+  // HOME, while the fresh project discovery root remains caller-owned.
+  fixedArgs: Object.freeze(["--permission-mode", "dontAsk", "--no-session-persistence"]),
+  versionPattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u,
+});
+
 export const CLAUDE_DRIVER = Object.freeze({
   hostId: "claude",
   driverId: "claude-code-print-v1",
@@ -312,6 +327,7 @@ export const QODER_DRIVER = Object.freeze({
 export const BUILT_IN_HOST_VERIFICATION_DRIVERS = Object.freeze({
   [KIMI_DRIVER.driverId]: KIMI_DRIVER,
   [WORKBUDDY_DRIVER.driverId]: WORKBUDDY_DRIVER,
+  [CODEBUDDY_DRIVER.driverId]: CODEBUDDY_DRIVER,
   [CLAUDE_DRIVER.driverId]: CLAUDE_DRIVER,
   [CODEX_DRIVER.driverId]: CODEX_DRIVER,
   [QODER_DRIVER.driverId]: QODER_DRIVER,
@@ -335,6 +351,9 @@ export function getBuiltInHostVerificationDriver(driverId) {
  *   That config root shape is proven by the discovery layout pre-check
  *   (assertDiscoveryLayout) before any spawn; no other skill-directory
  *   environment variable is set.
+ * - CodeBuddy points HOME at the existing state root only; its project skill
+ *   discovery is the fresh cwd `.codebuddy/skills` tree and therefore does
+ *   not set CODEBUDDY_CONFIG_DIR.
  * - claude, codex and qoder point HOME at the existing state root only
  *   (their login state lives under HOME); no model override, --config-dir or
  *   CODEX_HOME override is ever projected.

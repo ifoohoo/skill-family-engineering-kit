@@ -1,5 +1,11 @@
 import path from "node:path";
-import { CONTRACTS_VERSION, findSchemaByObject, validateDocument } from "skill-family-contracts";
+import {
+  CONTRACTS_VERSION,
+  ContractsError,
+  findSchemaByObject,
+  validateDocument,
+  validateEngineeringBaseline,
+} from "skill-family-contracts";
 import { digestBytes, readFileContained } from "skill-family-harness-node";
 import { runChecks } from "./check.mjs";
 import { probeGitFacts, probeGitState } from "./gitprobe.mjs";
@@ -17,10 +23,13 @@ import {
 } from "./migration.mjs";
 import {
   describeSkeletonFiles,
+  describeSkeletonReferenceImplementation,
   KIT_TOOL_NAME,
   KIT_VERSION,
   normalizeSkeletonInputs,
 } from "./skeleton.mjs";
+import { bundledProfilesRoot } from "./licensing.mjs";
+import { invalidParamsError } from "./errors.mjs";
 import {
   listTargetEntries,
   loadTargetFacts,
@@ -120,6 +129,139 @@ async function readExistingBytes(rootAbs, relPath) {
   } catch {
     return null;
   }
+}
+
+function assertEngineeringBaselineOptions(engineeringBaseline, compareSkeleton) {
+  const hasBaseline = engineeringBaseline !== undefined;
+  const comparisonEnabled = compareSkeleton === true;
+  if (hasBaseline !== comparisonEnabled || (compareSkeleton !== undefined && compareSkeleton !== true)) {
+    throw invalidParamsError(
+      "engineeringBaseline and compareSkeleton: true must be provided together",
+      { reason: "invalid-option-combination" },
+    );
+  }
+  if (!hasBaseline) return null;
+
+  const validation = validateEngineeringBaseline(engineeringBaseline);
+  if (!validation.valid) {
+    throw new ContractsError(
+      "SFC1001",
+      "engineeringBaseline violates the registered engineering-baseline contract",
+      { errors: validation.errors },
+    );
+  }
+  return validation.data;
+}
+
+async function prepareEngineeringBaselineComparison({
+  engineeringBaseline,
+  compareSkeleton,
+  profileId,
+}) {
+  const baseline = assertEngineeringBaselineOptions(engineeringBaseline, compareSkeleton);
+  if (baseline === null) return null;
+
+  const declaredReference = baseline.referenceImplementation;
+  if (declaredReference.foundationVersion !== KIT_VERSION) {
+    throw new ContractsError(
+      "SFC1013",
+      `engineering baseline Foundation version mismatch (expected ${KIT_VERSION}, received ${declaredReference.foundationVersion})`,
+      {
+        expectedFoundationVersion: KIT_VERSION,
+        receivedFoundationVersion: declaredReference.foundationVersion,
+      },
+    );
+  }
+
+  const referenceImplementation = await describeSkeletonReferenceImplementation({
+    profile: declaredReference.profile,
+  });
+  if (declaredReference.skeletonDigest !== referenceImplementation.skeletonDigest) {
+    throw new ContractsError(
+      "SFC1013",
+      "engineering baseline reference skeleton digest does not match the installed Foundation package",
+      {
+        expectedSkeletonDigest: referenceImplementation.skeletonDigest,
+        receivedSkeletonDigest: declaredReference.skeletonDigest,
+      },
+    );
+  }
+
+  if (profileId !== undefined && profileId !== null && profileId !== declaredReference.profile) {
+    throw invalidParamsError(
+      `explicit profile '${profileId}' conflicts with engineering baseline profile '${declaredReference.profile}'`,
+      { reason: "engineering-baseline-profile-conflict" },
+    );
+  }
+
+  const referenceSkeleton = await describeSkeletonFiles({
+    projectId: "fictional-reference-plugin",
+    projectName: "Fictional Reference Plugin",
+    profileId: declaredReference.profile,
+    licensingProfile: "open-source",
+    licensingVariant: "default",
+    profilesRoot: bundledProfilesRoot(),
+    capabilities: [],
+  });
+  return {
+    baseline,
+    referenceImplementation,
+    referenceSkeleton,
+    effectiveProfileId: declaredReference.profile,
+  };
+}
+
+function targetFileClass(relPath, facts) {
+  if (facts.managedSet.has(relPath)) return "managed";
+  if (matchAnyGlob(facts.handwrittenPatterns, relPath)) return "handwritten";
+  return "unclassified";
+}
+
+function buildStructuralDifferences(referenceFiles, entries, facts) {
+  const referenceByPath = new Map(referenceFiles.map((file) => [normalizeRelPath(file.path), file]));
+  const targetByPath = new Map(entries.map((entry) => [entry.path, entry]));
+  const referenceOnly = [];
+  const entryTypeDifferences = [];
+  const fileClassDifferences = [];
+
+  for (const [relPath, reference] of referenceByPath) {
+    const target = targetByPath.get(relPath);
+    if (!target) {
+      referenceOnly.push({ path: relPath, fileClass: reference.fileClass });
+      continue;
+    }
+    if (target.kind !== "file") {
+      entryTypeDifferences.push({
+        path: relPath,
+        referenceType: "file",
+        targetType: target.kind,
+        referenceFileClass: reference.fileClass,
+      });
+      continue;
+    }
+    const actualFileClass = targetFileClass(relPath, facts);
+    if (actualFileClass !== reference.fileClass) {
+      fileClassDifferences.push({
+        path: relPath,
+        referenceFileClass: reference.fileClass,
+        targetFileClass: actualFileClass,
+      });
+    }
+  }
+
+  const targetOnly = entries
+    .filter((entry) =>
+      !referenceByPath.has(entry.path)
+      && entry.kind !== "directory"
+      && entry.kind !== "directory-opaque")
+    .map((entry) => ({ path: entry.path, entryType: entry.kind }));
+
+  const byPath = (left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
+  referenceOnly.sort(byPath);
+  targetOnly.sort(byPath);
+  entryTypeDifferences.sort(byPath);
+  fileClassDifferences.sort(byPath);
+  return { referenceOnly, targetOnly, entryTypeDifferences, fileClassDifferences };
 }
 
 /**
@@ -223,7 +365,9 @@ export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries
 
 /**
  * Plans the adoption of the skeleton into root.
- * Options: { root, projectId, projectName, profileId, licensingProfile, licensingProfileData, profilesRoot, allowGitSpawn, now }.
+ * Options: { root, projectId, projectName, profileId, licensingProfile,
+ * licensingProfileData, profilesRoot, engineeringBaseline, compareSkeleton,
+ * allowGitSpawn, now }.
  * Returns the plan document; throws KitError only for unusable inputs
  * (an unreadable target). Never writes anywhere.
  */
@@ -237,9 +381,16 @@ export async function planAdoption({
   licensingProfileData,
   profilesRoot,
   identityProjections,
+  engineeringBaseline,
+  compareSkeleton,
   allowGitSpawn = true,
   now = Date.now(),
 } = {}) {
+  const baselineComparison = await prepareEngineeringBaselineComparison({
+    engineeringBaseline,
+    compareSkeleton,
+    profileId,
+  });
   const rootAbs = await resolveTargetRoot(root ?? ".");
   const entries = await listTargetEntries(rootAbs);
   const facts = await loadTargetFacts(rootAbs);
@@ -248,7 +399,7 @@ export async function planAdoption({
   const inputs = normalizeSkeletonInputs({
     projectId,
     projectName,
-    profileId,
+    profileId: baselineComparison?.effectiveProfileId ?? profileId,
     licensingProfile,
     licensingVariant,
     rootBasename: path.basename(rootAbs),
@@ -625,6 +776,24 @@ export async function planAdoption({
     profileDraft,
     ...(capabilityAssessment
       ? { capabilityAssessment, capabilityGuidance, adoptionReminder }
+      : {}),
+    ...(baselineComparison
+      ? {
+          engineeringBaselineComparison: {
+            baseline: {
+              provider: baselineComparison.baseline.provider,
+              id: baselineComparison.baseline.id,
+              version: baselineComparison.baseline.version,
+              digest: baselineComparison.baseline.digest,
+            },
+            referenceImplementation: baselineComparison.referenceImplementation,
+            structuralDifferences: buildStructuralDifferences(
+              baselineComparison.referenceSkeleton.files,
+              entries,
+              facts,
+            ),
+          },
+        }
       : {}),
     traceability: {
       contractsVersion: CONTRACTS_VERSION,

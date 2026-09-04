@@ -85,6 +85,7 @@ import { runSkillFamilyDirectoryVerification } from "./skill-family-directory-ve
 import { admitCapabilityTuple, runQualification } from "./qualification.mjs";
 import {
   describeSkeletonFiles,
+  describeSkeletonReferenceImplementation,
   IDENTITY_RECORD_PATH,
   KIT_TOOL_NAME,
   KIT_VERSION,
@@ -246,6 +247,7 @@ export {
   GIT_LS_FILES_ARGS,
   GIT_CHECK_IGNORE_ARGS,
   describeSkeletonFiles,
+  describeSkeletonReferenceImplementation,
   normalizeSkeletonInputs,
   KIT_TOOL_NAME,
   KIT_VERSION,

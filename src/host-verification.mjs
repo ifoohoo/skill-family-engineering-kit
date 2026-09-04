@@ -12,6 +12,7 @@ import { KitError, KIT_ERROR_KINDS, kitError, invalidParamsError } from "./error
 import { observeHostDescriptor } from "./host-profiles.mjs";
 import {
   CLAUDE_DRIVER,
+  CODEBUDDY_DRIVER,
   CODEX_DRIVER,
   driverEnvironment,
   evaluateDriverStreamProtocol,
@@ -245,6 +246,26 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
     }
     if (isWithin(existingUserStateRoot, configRoot)) throw fail("existingUserStateRoot overlaps WorkBuddy config root");
   }
+  if (driver.driverId === CODEBUDDY_DRIVER.driverId) {
+    if (path.basename(skillsRoot) !== "skills") throw fail("CodeBuddy skills directory must be named skills");
+    const codeBuddyProjectRoot = path.dirname(path.dirname(skillsRoot));
+    if (path.basename(path.dirname(skillsRoot)) !== ".codebuddy") throw fail("CodeBuddy discovery root must be named .codebuddy");
+    await canonicalDirectory(codeBuddyProjectRoot, "CodeBuddy project root");
+    const codeBuddyRoot = path.dirname(skillsRoot);
+    const codeBuddyInfo = await lstat(codeBuddyRoot).catch((cause) => { throw fail("CodeBuddy discovery root cannot be inspected", { cause: cause.code }); });
+    if (!codeBuddyInfo.isDirectory() || codeBuddyInfo.isSymbolicLink()) {
+      throw fail("CodeBuddy discovery root must be a real directory");
+    }
+    const codeBuddySkillsInfo = await lstat(skillsRoot).catch((cause) => { throw fail("CodeBuddy skills directory cannot be inspected", { cause: cause.code }); });
+    if (!codeBuddySkillsInfo.isDirectory() || codeBuddySkillsInfo.isSymbolicLink()) {
+      throw fail("CodeBuddy skills directory must be a real directory");
+    }
+    const projectMembers = await readdir(codeBuddyProjectRoot);
+    if (projectMembers.length !== 1 || projectMembers[0] !== ".codebuddy") {
+      throw fail("CodeBuddy project root must contain only the empty .codebuddy directory");
+    }
+    if (isWithin(existingUserStateRoot, codeBuddyProjectRoot)) throw fail("existingUserStateRoot overlaps CodeBuddy project root");
+  }
   if (driver.driverId === CODEX_DRIVER.driverId) {
     if (path.basename(skillsRoot) !== "skills") throw fail("Codex skills directory must be named skills");
     if (path.basename(path.dirname(skillsRoot)) !== ".codex") throw fail("Codex discovery root must be named .codex");
@@ -262,7 +283,11 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
   }
   await canonicalDirectory(skillsRoot, "skills directory");
   if ((await readdir(skillsRoot)).length !== 0) throw fail("skills directory must be empty before materialization");
-  return { skillsRoot, configRoot };
+  return {
+    skillsRoot,
+    configRoot,
+    projectRoot: driver.driverId === CODEBUDDY_DRIVER.driverId ? path.dirname(path.dirname(skillsRoot)) : null,
+  };
 }
 
 /**
@@ -484,6 +509,13 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
         existingUserStateRoot,
       });
     }
+    if (discovery.projectRoot !== null) {
+      assertRootIsolation({
+        inputRoots,
+        writeRoots: [...baseWriteRoots, ["CodeBuddy project root", discovery.projectRoot]],
+        existingUserStateRoot,
+      });
+    }
     if (driver.driverId === QODER_DRIVER.driverId) {
       // The qoder --cwd target (the fresh workspace, two segments above the
       // installed parent) is a fresh write root under the same one-way state
@@ -566,7 +598,11 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     // S-023: codex exec must start inside the trusted repository tree
     // (R-07), so its process cwd is the candidate workspace, never the fresh
     // session root.  All other drivers keep the fresh session root as cwd.
-    const processCwd = driver.driverId === CODEX_DRIVER.driverId ? workspaceRoot : state.sessionRoot;
+    const processCwd = driver.driverId === CODEX_DRIVER.driverId
+      ? workspaceRoot
+      : driver.driverId === CODEBUDDY_DRIVER.driverId
+        ? discovery.projectRoot
+        : state.sessionRoot;
 
     // Identity probe. superviseProcess rejects only when the process/stream/
     // sink boundary cannot be proven.  The session always stays retained

@@ -936,6 +936,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#工程基线-foundationcontractsengineering-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        工程基线 (foundation.contracts.engineering-baseline)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="工程基线 (foundation.contracts.engineering-baseline)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateEngineeringBaseline--describeEngineeringBaseline" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateEngineeringBaseline / describeEngineeringBaseline
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2298,6 +2326,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#工程基线-foundationcontractsengineering-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        工程基线 (foundation.contracts.engineering-baseline)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="工程基线 (foundation.contracts.engineering-baseline)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#validateEngineeringBaseline--describeEngineeringBaseline" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        validateEngineeringBaseline / describeEngineeringBaseline
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2415,12 +2471,13 @@
 <li><a href="#fixture-校验-foundationcontractsfixture-verification">fixture 校验</a> → <code>listFixtures</code> / <code>verifyFixture</code> / <code>verifyAllFixtures</code></li>
 <li><a href="#错误码-foundationcontractserror-codes">错误码</a> → <code>ContractsError</code> / <code>isRegisteredErrorCode</code> / <code>stableError</code></li>
 <li><a href="#审计表面-foundationcontractsaudit-surface">审计表面</a> → <code>canonicalJson</code> / <code>digestDocument</code> / <code>digestAuditSurface</code></li>
+<li><a href="#工程基线-foundationcontractsengineering-baseline">工程基线</a> → <code>validateEngineeringBaseline</code> / <code>describeEngineeringBaseline</code></li>
 <li><a href="#同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同</a> → request/result Schema</li>
 <li><a href="#真实宿主验证合同-foundationcontractshost-verification">真实宿主验证合同</a> → request/result Schema</li>
 <li><a href="#完整插件验证合同-foundationcontractsplugin-verification">完整插件验证合同</a> → request/result Schema</li>
 <li><a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification">技能族目录验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（45 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.15.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（46 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.16.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2505,7 +2562,7 @@
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
 <li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
-<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.15.0</code> 为唯一权威；登记表含 45 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.16.0</code> 为唯一权威；登记表含 46 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
@@ -2521,7 +2578,7 @@
 <li>纯函数：是（仅返回复制后的内存对象）。</li>
 <li>副作用：无文件、进程、Git、网络或持久化副作用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
-<li>前置条件与信任锚：登记表含 45 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：登记表含 46 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：同上。</li>
 <li>正例/负例测试：同上。</li>
@@ -2733,6 +2790,22 @@
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/audit-surface.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：审计语义结论（接受/拒绝属外部独立审阅）。</li>
 </ul>
+<hr />
+<h2 id="工程基线-foundationcontractsengineering-baseline">工程基线 (foundation.contracts.engineering-baseline)<a class="headerlink" href="#工程基线-foundationcontractsengineering-baseline" title="Permanent link">&para;</a></h2>
+<h3 id="validateEngineeringBaseline--describeEngineeringBaseline">validateEngineeringBaseline / describeEngineeringBaseline<a class="headerlink" href="#validateEngineeringBaseline--describeEngineeringBaseline" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：<code>validateEngineeringBaseline(baseline)</code>；<code>describeEngineeringBaseline({ provider, id, version, canonicalRuleRefs, referenceImplementation })</code>。</li>
+<li>输入：闭合的 <code>skill-family.engineering-baseline</code> 文档，或构造该文档所需的提供方身份、已排序规则谱系引用和 Foundation 参考骨架身份。<code>referenceImplementation</code> 只含 <code>foundationVersion</code>、<code>profile</code> 与 <code>skeletonDigest</code>。</li>
+<li>输出：校验入口返回既有 <code>{ valid, errorCode, errors, data }</code> 结果；构造入口按规则 ID 排序、计算去掉 <code>digest</code> 字段后的规范 JSON 摘要，并返回深度冻结的文档。</li>
+<li>纯函数：是。只复用 Contracts 的 Schema 校验、惰性 JSON 预检、<code>digestDocument()</code> 与进程内编译缓存。</li>
+<li>副作用：无文件、进程、Git 或网络副作用；不读取基线提供方的包、仓库或规则文件。</li>
+<li>稳定错误码与 <code>details.kind</code>：结构、重复规则 ID、非确定性顺序或摘要不一致返回或抛出 <code>SFC1001</code>；未知 Schema 仍按通用校验规则返回 <code>SFC1002</code>。</li>
+<li>前置条件与信任锚：Schema <code>$id</code> 为 <code>https://contracts.skill-family.example/v1/engineering-baseline.json</code>；<code>canonicalRuleRefs</code> 至少一项，按 <code>id</code> 唯一且升序；<code>digest</code> 必须绑定文档自身。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.17.0</code> / <code>stable</code>。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/engineering-baseline.mjs</code>、<code>src/schemas/engineering-baseline.schema.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/engineering-baseline.test.mjs</code>、<code>schemas.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：基线提供方负责规则正文、规则效果、等价关系、豁免和正式基线发布。Foundation 不解释这些语义，也不宣称 Audit 已经发布正式基线；依赖方向保持为基线提供方依赖 Foundation。</li>
+</ul>
 <h2 id="同级适配器验证合同-foundationcontractspeer-adapter-verification">同级适配器验证合同 (foundation.contracts.peer-adapter-verification)<a class="headerlink" href="#同级适配器验证合同-foundationcontractspeer-adapter-verification" title="Permanent link">&para;</a></h2>
 <p>Contracts 1.10.0 登记 <code>adapter-peer-verification-request</code> 与
 <code>adapter-peer-verification-result</code> 两个稳定 Schema。request 至少包含两个显式 peer；每个 peer
@@ -2758,7 +2831,9 @@ peer 顺序不得改变共同闭包摘要或结论；未知字段、重复/缺�
   stream 或 durable receipt；<code>observed</code> 只表示基础设施观察完整，不表示消费者领域 PASS。<code>requiredActions</code> 只允许
   <code>manual-temporary-root-inspection-required</code>。</li>
 <li>request auth 必须精确对应已登记 Descriptor 的单值 <code>driverId/authStrategy/credentialMutation</code>；Descriptor 是认证组合的
-  唯一事实源，Schema 同时机械绑定 <code>kimi-code → kimi-code-print-v1</code> 与 <code>workbuddy → workbuddy-codebuddy-print-v1</code>。
+  唯一事实源。Schema 分别绑定 <code>kimi-code → kimi-code-print-v1</code>、<code>workbuddy → workbuddy-codebuddy-print-v1</code>、
+  <code>codebuddy → codebuddy-print-v1</code>、<code>claude → claude-code-print-v1</code>、<code>codex → codex-exec-v1</code> 与
+  <code>qoder → qodercli-print-v1</code>，CodeBuddy 与 WorkBuddy 的路由不可互换。
   Schema 不提供通用 driver Registry 或认证 SPI。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.11.0</code> / <code>candidate</code>。Schema 文件：
   <code>packages/skill-family-contracts/src/schemas/host-verification-request.schema.json</code>、

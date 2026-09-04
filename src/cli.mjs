@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { realpathSync } from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { readFileContained, resolveContained } from "skill-family-harness-node";
@@ -107,6 +108,8 @@ function commandHelp(command) {
       "  --licensing-variant <id> 多变体 Profile 的必选变体 id",
       "  --profiles-root <dir> 许可证 Profile 根目录",
       "  --no-git-spawn        禁用只读 git status 探测，仅用文件系统事实",
+      "  --engineering-baseline <relative-json-path>  工程基线合同（须与 --compare-skeleton 成对）",
+      "  --compare-skeleton    只读比较基线参考骨架与目标结构",
       "",
       "  能力查询（仍属于 adopt-plan，不增加顶层命令）:",
       "  --list-capabilities --locale <en|zh-CN>",
@@ -242,6 +245,8 @@ const COMMAND_SPECS = {
       "--licensing-variant": { key: "licensingVariant", value: true },
       "--profiles-root": { key: "profilesRoot", value: true },
       "--no-git-spawn": { key: "noGitSpawn", value: false },
+      "--engineering-baseline": { key: "engineeringBaselinePath", value: true },
+      "--compare-skeleton": { key: "compareSkeleton", value: false },
       "--list-capabilities": { key: "listCapabilities", value: false },
       "--scope": { key: "scope", value: true },
       "--locale": { key: "locale", value: true },
@@ -349,8 +354,41 @@ async function readJson(root, relPath, label) {
   }
 }
 
+async function readEngineeringBaselineJson(root, relPath) {
+  if (
+    typeof relPath !== "string"
+    || relPath.length === 0
+    || relPath.includes("\0")
+    || path.posix.isAbsolute(relPath)
+    || path.win32.isAbsolute(relPath)
+  ) {
+    throw invalidParamsError("--engineering-baseline must name a relative JSON path contained in --root", {
+      flag: "--engineering-baseline",
+      reason: "invalid-engineering-baseline-path",
+    });
+  }
+  try {
+    return JSON.parse((await readFileContained(root, relPath)).toString("utf8"));
+  } catch {
+    throw invalidParamsError("--engineering-baseline must name valid JSON contained in --root", {
+      flag: "--engineering-baseline",
+      reason: "invalid-engineering-baseline-json",
+    });
+  }
+}
+
 async function runCapabilityList(options) {
-  const forbidden = ["projectId", "projectName", "profileId", "licensingProfile", "licensingVariant", "profilesRoot", "noGitSpawn"];
+  const forbidden = [
+    "projectId",
+    "projectName",
+    "profileId",
+    "licensingProfile",
+    "licensingVariant",
+    "profilesRoot",
+    "noGitSpawn",
+    "engineeringBaselinePath",
+    "compareSkeleton",
+  ];
   if (forbidden.some((key) => options[key] !== undefined)) {
     throw invalidParamsError("adopt-plan capability query cannot use repository planning options", { reason: "invalid-option-combination" });
   }
@@ -577,10 +615,12 @@ export async function cliMain(argv) {
 
   try {
     const listCapabilitiesRequested = command === "adopt-plan" && argv.slice(1).includes("--list-capabilities");
+    const engineeringBaselineRequested = command === "adopt-plan"
+      && argv.slice(1).some((arg) => arg === "--engineering-baseline" || arg === "--compare-skeleton");
     const options = parseOptions(argv.slice(1), {
       command,
       flags: COMMAND_SPECS[command].flags,
-      rejectDuplicates: listCapabilitiesRequested || COMMAND_SPECS[command].rejectDuplicates === true,
+      rejectDuplicates: listCapabilitiesRequested || engineeringBaselineRequested || COMMAND_SPECS[command].rejectDuplicates === true,
     });
     if (options.help) {
       process.stdout.write(`${commandHelp(command)}\n`);
@@ -592,6 +632,16 @@ export async function cliMain(argv) {
     if (command === "adopt-plan" && argv.slice(1).some((arg) => ["--all", "--scope", "--locale", "--uses", "--filter", "--capability", "--limit"].includes(arg))) {
       throw invalidParamsError("capability query options require --list-capabilities", { reason: "invalid-option-combination" });
     }
+    const hasEngineeringBaseline = options.engineeringBaselinePath !== undefined;
+    const compareSkeleton = options.compareSkeleton === true;
+    if (command === "adopt-plan" && hasEngineeringBaseline !== compareSkeleton) {
+      throw invalidParamsError("--engineering-baseline and --compare-skeleton must be provided together", {
+        reason: "invalid-option-combination",
+      });
+    }
+    const engineeringBaseline = command === "adopt-plan" && hasEngineeringBaseline
+      ? await readEngineeringBaselineJson(options.root ?? ".", options.engineeringBaselinePath)
+      : undefined;
     const { exitCode, output } = await runCommand(command, {
       root: options.root ?? ".",
       projectId: options.projectId,
@@ -604,6 +654,8 @@ export async function cliMain(argv) {
       manifest: options.manifest,
       only: options.only,
       allowGitSpawn: !options.noGitSpawn,
+      engineeringBaseline,
+      compareSkeleton: compareSkeleton ? true : undefined,
     });
     if (output !== undefined) {
       process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);

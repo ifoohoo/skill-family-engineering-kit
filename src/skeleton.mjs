@@ -1,4 +1,4 @@
-import { CONTRACTS_VERSION } from "skill-family-contracts";
+import { CONTRACTS_VERSION, digestDocument } from "skill-family-contracts";
 import { readFile } from "node:fs/promises";
 import { digestBytes } from "skill-family-harness-node";
 import { invalidParamsError, kitError, KIT_ERROR_KINDS } from "./errors.mjs";
@@ -6,6 +6,7 @@ import {
   generateIdentityRecord,
   generateLicenseContent,
   generateNoticeContent,
+  bundledProfilesRoot,
   loadLicensingProfile,
 } from "./licensing.mjs";
 import { MIGRATION_MANIFEST_PATH } from "./migration.mjs";
@@ -136,7 +137,15 @@ function workspaceName(projectId) {
   return `${projectId}-workspace`;
 }
 
-function renderRootPackageJson({ projectId, projectName, licensingProfile }) {
+function renderRootPackageJson({ projectId, projectName, profileId, licensingProfile }) {
+  const checkCommands = [
+    "node scripts/check-core.mjs",
+    "node scripts/check-docs.mjs",
+    "pnpm --recursive --if-present run check",
+  ];
+  if (profileId === "public-plugin") {
+    checkCommands.push("skill-family-kit check entries --root .");
+  }
   return jsonString({
     name: workspaceName(projectId),
     version: "0.0.0",
@@ -151,8 +160,7 @@ function renderRootPackageJson({ projectId, projectName, licensingProfile }) {
       // to discover the default task, but a fresh skeleton has no .projen/ yet.
       // `node .projenrc.js` works for the first synth and every later one.
       synth: "node .projenrc.js",
-      check:
-        "node scripts/check-core.mjs && node scripts/check-docs.mjs && pnpm --recursive --if-present run check",
+      check: checkCommands.join(" && "),
       test: "pnpm --recursive --if-present run test",
       "docs-build": "mkdocs build --strict",
     },
@@ -626,7 +634,7 @@ function renderAgents({ projectId, capabilitySelection = false }) {
   ].join("\n");
 }
 
-function renderProjenrc({ projectId, projectName, licensingProfile }) {
+function renderProjenrc({ projectId, projectName, profileId, licensingProfile }) {
   // Handwritten seed: the generated project's single projen entry. It must
   // reproduce every projen-managed byte of the skeleton, so `pnpm synth`
   // inside the generated workspace is idempotent.
@@ -635,7 +643,7 @@ function renderProjenrc({ projectId, projectName, licensingProfile }) {
   // deletes any file containing that literal, which would remove .projenrc.js
   // itself. The `marker: true` option below injects the identical marker key
   // at synth time instead.
-  const rootPkg = JSON.parse(renderRootPackageJson({ projectId, projectName, licensingProfile }));
+  const rootPkg = JSON.parse(renderRootPackageJson({ projectId, projectName, profileId, licensingProfile }));
   const leafPkg = JSON.parse(renderLeafPackageJson({ projectId, licensingProfile }));
   delete rootPkg["//"];
   delete leafPkg["//"];
@@ -1015,9 +1023,9 @@ export async function describeSkeletonFiles(inputs) {
     { path: ".gitattributes", fileClass: "managed", content: renderGitAttributes() },
     { path: ".npmrc", fileClass: "managed", content: renderNpmrc() },
     { path: ".node-version", fileClass: "managed", content: renderNodeVersion() },
-    { path: "package.json", fileClass: "managed", content: renderRootPackageJson({ projectId, projectName, licensingProfile: profileData }) },
+    { path: "package.json", fileClass: "managed", content: renderRootPackageJson({ projectId, projectName, profileId, licensingProfile: profileData }) },
     { path: "pnpm-workspace.yaml", fileClass: "managed", content: renderPnpmWorkspaceYaml() },
-    { path: ".projenrc.js", fileClass: "handwritten", content: renderProjenrc({ projectId, projectName, licensingProfile: profileData }) },
+    { path: ".projenrc.js", fileClass: "handwritten", content: renderProjenrc({ projectId, projectName, profileId, licensingProfile: profileData }) },
     { path: "mkdocs.yml", fileClass: "handwritten", content: renderMkdocsYml({ projectName }) },
     {
       path: "docs/index.md",
@@ -1154,4 +1162,52 @@ export async function describeSkeletonFiles(inputs) {
     licensing: { profile: profileData.profile.id, variant: profileData.profile.variant },
     scaffoldSelection,
   };
+}
+
+function deepFreeze(value) {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
+}
+
+/**
+ * Describes the deterministic reference skeleton for one Foundation profile.
+ *
+ * The identity is always derived from describeSkeletonFiles using one fixed,
+ * fictional recipe. It is a byte identity for comparison, not an Audit
+ * compliance verdict and not a requirement that an existing project use the
+ * same file layout.
+ */
+export async function describeSkeletonReferenceImplementation({ profile } = {}) {
+  assertKebabId(profile, "profile");
+  const licensingProfileData = await loadLicensingProfile({
+    profilesRoot: bundledProfilesRoot(),
+    profileId: "open-source",
+    variant: "default",
+  });
+  const skeleton = await describeSkeletonFiles({
+    projectId: "fictional-reference-plugin",
+    projectName: "Fictional Reference Plugin",
+    profileId: profile,
+    licensingProfile: "open-source",
+    licensingVariant: "default",
+    licensingProfileData,
+    capabilities: [],
+  });
+  const files = skeleton.files
+    .map((file) => ({
+      path: file.path,
+      fileClass: file.fileClass,
+      contentSha256: digestBytes(Buffer.from(file.content, "utf8")),
+    }))
+    .sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0));
+  const skeletonDigest = digestDocument({
+    schemaVersion: 1,
+    kind: "skill-family.reference-skeleton",
+    profile,
+    files,
+  });
+  return deepFreeze({ foundationVersion: KIT_VERSION, profile, skeletonDigest });
 }
