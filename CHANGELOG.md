@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.19.2 locale=en baseline=sha256:b4a9f795a1264bc28c9d37378a1d92eb4fd8c1e023506fbe6f5752b08842e2f0 -->
+## [0.19.2] - 2026-09-08
+
+Engineering Kit 0.19.2 aligns its package version and generated projections with the Foundation Adoption Review distribution patch. Public commands and behavior are unchanged.
+
+### Changed
+
+- Aligns the package version, release documentation, and necessary generated projections with Foundation 0.19.2 without adding a command, capability, or adapter path.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.19.2 and rebuild official Bundles under the existing source-identity and integrity rules. The capability catalog, host descriptors, drivers, since values, and maturity are unchanged.
+<!-- release-skill:changelog:end version=0.19.2 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.19.1 locale=en baseline=sha256:199e48a82f8d08629d98f1286a964cbf98ba5850efe65183adfc353cfe9f3610 -->
 ## [0.19.1] - 2026-09-08
 

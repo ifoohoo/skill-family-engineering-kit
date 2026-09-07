@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.19.2 locale=zh-CN baseline=sha256:bd0cbfd935e7b9751f6311f3d1114df2db5066448d1830f27b7c92aa3aca9687 -->
+## [0.19.2] - 2026-09-08
+
+Engineering Kit 0.19.2 将包版本和生成投影与 Foundation Adoption Review 分发补丁对齐。公开命令和行为保持不变。
+
+### 变更
+
+- 包版本、发布说明和必要生成投影与 Foundation 0.19.2 数值对齐，不增加命令、能力或 adapter 路径。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.19.2，并按既有来源身份与完整性规则重建官方 Bundle。能力目录、宿主 descriptor、driver、since 字段和成熟度均不变。
+<!-- release-skill:changelog:end version=0.19.2 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.19.1 locale=zh-CN baseline=sha256:832a8dfa16c41d6381cd2b0f00f58b096f45715332d42b7be11595976ab15e1e -->
 ## [0.19.1] - 2026-09-08
 
