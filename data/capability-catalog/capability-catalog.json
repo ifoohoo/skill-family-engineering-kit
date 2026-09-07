@@ -1445,6 +1445,39 @@
    "promotionPolicy": "consumer-transparent"
   },
   {
+   "id": "foundation.harness.mechanism-batch",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.19.0",
+   "stability": "candidate",
+   "adoptionScopes": ["harness"],
+   "entrypoints": [
+    "runMechanismCliBatch (packages/skill-family-harness-node/candidate/mechanisms-cli.mjs)",
+    "mechanisms-cli.mjs --batch (packages/skill-family-harness-node/candidate/mechanisms-cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-contracts/candidate/foundation-mechanisms/mechanism-batch-policy.json",
+    "packages/skill-family-contracts/candidate/foundation-mechanisms/mechanism-batch-request.schema.json",
+    "packages/skill-family-contracts/candidate/foundation-mechanisms/mechanism-batch-result.schema.json",
+    "packages/skill-family-harness-node/candidate/mechanisms-cli.mjs",
+    "packages/skill-family-engineering-kit/candidate/profile-bundle.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-contracts/test/quickstart-profile.test.mjs",
+    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-mechanisms-cli.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-contracts/test/quickstart-profile.test.mjs",
+    "packages/skill-family-harness-node/test/quickstart-profile.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-mechanisms-cli.test.mjs",
+    "packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
    "id": "foundation.kit.plugin-verification",
    "package": "skill-family-engineering-kit",
    "layer": "engineering-kit",

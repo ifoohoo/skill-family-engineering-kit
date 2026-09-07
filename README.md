@@ -4,26 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.18.0 -->
+<!-- release-skill:release-version: 0.19.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.18.0** (2026-09-05)
+**0.19.0** (2026-09-07)
 
-Engineering Kit 0.18.0 projects the stable Harness replaceFixedSetAtomic export into the existing offline Quickstart Bundle.
+Engineering Kit 0.19.0 projects the new batch transport into the official offline Bundle and registers the mechanism-batch capability in the built-in catalog.
 
 **Added**
 
-- The existing candidate Bundle now carries the stable fixed-set replacement source, loader, native closure, and replaceFixedSetAtomic export without adding a parallel implementation or a new Kit command.
+- The official Bundle projection now carries runMechanismCliBatch, the --batch CLI mode, the two mechanism-batch Schemas, and the frozen batch capacity policy with unchanged source identity, digest, and integrity handling.
+- The capability catalog adds foundation.harness.mechanism-batch with since 0.19.0 and stability candidate, together with intent, failure semantics, and direct test references.
 
 **Changed**
 
-- Moves the package version to 0.18.0 together with Contracts and Harness while preserving runProjection as the Bundle write and authorization boundary.
+- Adoption guidance documents batch selection rules: same-process calls keep the existing object entry; independent cross-process canonical-json requests within capacity are batch candidates; dependent or oversized requests keep the original path.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.18.0 and rebuild managed Bundles from those exact installed package bytes. Bundle consumers receive the same non-idempotent replacement semantics and must not retry post-commit or indeterminate outcomes blindly.
+Pin all three Foundation packages to exactly 0.19.0 and rebuild official Bundles after upgrading per the existing package identity and provenance rules. The catalog entry is candidate: a catalog match is not a stable adoption declaration.
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate qualification entries
@@ -67,15 +68,15 @@ mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.18.0
-npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.19.0
+npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.18.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 

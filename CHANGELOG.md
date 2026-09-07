@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.19.0 locale=en baseline=sha256:d3b79ce1564df3e0dc0f0abc1af616817550044de73f9b05b57a5dd65fd47dae -->
+## [0.19.0] - 2026-09-07
+
+Engineering Kit 0.19.0 projects the new batch transport into the official offline Bundle and registers the mechanism-batch capability in the built-in catalog.
+
+### Added
+
+- The official Bundle projection now carries runMechanismCliBatch, the --batch CLI mode, the two mechanism-batch Schemas, and the frozen batch capacity policy with unchanged source identity, digest, and integrity handling.
+- The capability catalog adds foundation.harness.mechanism-batch with since 0.19.0 and stability candidate, together with intent, failure semantics, and direct test references.
+
+### Changed
+
+- Adoption guidance documents batch selection rules: same-process calls keep the existing object entry; independent cross-process canonical-json requests within capacity are batch candidates; dependent or oversized requests keep the original path.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.19.0 and rebuild official Bundles after upgrading per the existing package identity and provenance rules. The catalog entry is candidate: a catalog match is not a stable adoption declaration.
+<!-- release-skill:changelog:end version=0.19.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.18.0 locale=en baseline=sha256:9c6fe9859fb75316937790054ae7d45bfc21d38ce97d8e650d7da18757a462c5 -->
 ## [0.18.0] - 2026-09-05
 

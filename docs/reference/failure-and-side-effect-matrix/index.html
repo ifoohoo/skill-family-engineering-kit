@@ -2021,6 +2021,16 @@
 <td>锁文件（单调 fencing）</td>
 <td><code>SFC2004</code></td>
 </tr>
+<tr>
+<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code>（0.19.0 candidate）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>无（只写调用方提供的 output/error 流）</td>
+<td>退出码 0（全成功）/ 2（至少一项失败或整批拒绝）；<code>details.kind</code> 封闭为 <code>batch-structure-invalid</code>/<code>batch-item-limit</code>/<code>batch-input-limit</code>/<code>batch-output-limit</code></td>
+</tr>
 </tbody>
 </table>
 <p>Harness 的 <code>HARNESS_EXCLUSIONS</code> 明确排除 release-state、remote-network-access、business-semantics、workflow-orchestration、model-calls、git-writes。</p>

@@ -2031,6 +2031,16 @@
 <td>lock file (monotonic fencing)</td>
 <td><code>SFC2004</code></td>
 </tr>
+<tr>
+<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code> (0.19.0 candidate)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>none (only the caller-provided output/error streams are written)</td>
+<td>exit code 0 (all succeeded) / 2 (at least one item failed or whole batch refused); <code>details.kind</code> closed to <code>batch-structure-invalid</code>/<code>batch-item-limit</code>/<code>batch-input-limit</code>/<code>batch-output-limit</code></td>
+</tr>
 </tbody>
 </table>
 <p>Harness's <code>HARNESS_EXCLUSIONS</code> explicitly excludes release-state, remote-network-access, business-semantics, workflow-orchestration, model-calls, git-writes.</p>

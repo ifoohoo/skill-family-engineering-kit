@@ -1344,6 +1344,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#机制批量-foundationharnessmechanism-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        机制批量 (foundation.harness.mechanism-batch)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="机制批量 (foundation.harness.mechanism-batch)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runMechanismCliBatch--mechanisms-climjs---batch" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runMechanismCliBatch / mechanisms-cli.mjs --batch
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2994,6 +3022,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#机制批量-foundationharnessmechanism-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        机制批量 (foundation.harness.mechanism-batch)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="机制批量 (foundation.harness.mechanism-batch)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#runMechanismCliBatch--mechanisms-climjs---batch" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runMechanismCliBatch / mechanisms-cli.mjs --batch
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -3051,6 +3107,7 @@
 <li><a href="#报告-foundationharnessreport">报告</a> → <code>validateReportModel</code> / <code>renderReportMarkdown</code> / <code>buildBinding</code> / <code>verifyBinding</code> / <code>checkReport</code></li>
 <li><a href="#宿主适配机制-foundationharnesshost-adapter">宿主适配机制</a> → <code>normalizeAdapterSource</code> / <code>buildAdapterClosure</code> / <code>materializeAdapterBuild</code> / <code>probeVersionVector</code></li>
 <li><a href="#可执行身份观察-foundationharnessexecutable-identity-observation">可执行身份观察</a> → <code>observeExecutableIdentity</code></li>
+<li><a href="#机制批量-foundationharnessmechanism-batch">机制批量</a> → <code>runMechanismCliBatch</code> / <code>--batch</code>（0.19.0 candidate）</li>
 <li><a href="#持久状态底座-foundationharnessstate-store">持久状态底座</a> → <code>openStateStore</code> / <code>appendEvent</code> / <code>readSnapshot</code> / <code>verifyStateStore</code> …</li>
 <li><a href="#基线物化-foundationharnessbaseline-materialization">基线物化</a> → <code>computeDirectoryDigest</code> / <code>materializeBaseline</code>（FND-ADR-009）</li>
 <li><a href="#只读-chokepoint-foundationharnessread-chokepoint">只读 chokepoint</a> → <code>createReadChokepoint</code>（FND-ADR-009）</li>
@@ -3601,6 +3658,55 @@ stable 承诺，Bundle 是否重建由既有包字节与 provenance 绑定输入
 <p><code>rename-directory-no-replace</code> 的规范入口是
 <code>skill-family-harness-node/rename-directory-no-replace</code>；历史 <code>/candidate/rename-directory-no-replace</code> 入口解析同一原生原语。
 该原语仍不等同于稳定的高层 <code>fixed-set-publication</code>，消费者应根据所需合同选择，不得用别名混淆两个能力层次。</p>
+<hr />
+<h2 id="机制批量-foundationharnessmechanism-batch">机制批量 (foundation.harness.mechanism-batch)<a class="headerlink" href="#机制批量-foundationharnessmechanism-batch" title="Permanent link">&para;</a></h2>
+<p>FND-DES-022。有界、同操作、顺序的跨进程批量传输：把一组相互独立的 <code>canonical-json</code> 请求合并为一次进程启动与传输，逐项结果与错误字节等价于同版本原单请求调用。已经位于同一 Node 进程内的调用不强制改批。本切片只实现该批量合同，不新增常驻服务、并发、缓存、重试、跨项引用、工作流、收据或注册表。</p>
+<h3 id="runMechanismCliBatch--mechanisms-climjs---batch">runMechanismCliBatch / mechanisms-cli.mjs --batch<a class="headerlink" href="#runMechanismCliBatch--mechanisms-climjs---batch" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>runMechanismCliBatch({ input = stdin, output = stdout, error = stderr, invoke } = {})</code>（async，返回整体退出码）</li>
+<li>CLI 显式模式：<code>node &lt;同版本官方 Bundle 内的 mechanisms-cli.mjs&gt; --batch</code>，从标准输入读取恰好一个 JSON 文档，写出一个批次响应后退出。带 <code>--batch</code> 且出现额外参数时在读取输入前拒绝；无 <code>--batch</code> 时仍运行旧 <code>runMechanismCli</code> 单请求入口，不对旧请求新增容量限制。</li>
+<li>输入：恰好含 <code>operation</code>（固定 <code>canonical-json</code>）与 <code>inputs</code>（非空有序数组，每项恰好 <code>{ "document": &lt;任意 JSON 值&gt; }</code>）的一个 JSON 文档。不支持 NDJSON、会话协议、数组自动探测、每项自带操作或嵌套批次。顶层缺/多字段、项缺 <code>document</code>、空数组与未知操作属于整批结构失败。</li>
+<li>输出：<code>{ "results": [{ "inputIndex", "exitCode", "response" }] }</code>，长度与输入一致、序号从 0 连续递增；<code>exitCode</code> 只取 0（成功）或 2（失败）。成功项 <code>response</code> 为原机制结果；失败项为原 CLI 的 <code>{ ok: false, error: { name, message, code?, details? } }</code> 错误对象。逐项还原规则固定为 <code>JSON.stringify(response) + "\n"</code>，退出码 0 对应原 stdout、2 对应原 stderr，另一通道为空；错误对象不重新排序或规范化。</li>
+<li>纯函数：是（逐项经既有固定分派器 <code>invokeFoundationMechanism</code> 执行，不引入第二套算法；测试可注入既有可信 <code>invoke</code>，但输入 JSON 不得指定函数、模块、路径或覆盖分派器）。</li>
+<li>副作用：无文件/网络/进程副作用，无残余状态；只写调用方提供的 <code>output</code>/<code>error</code> 流（默认进程标准流）。</li>
+<li>容量（固定政策，权威值由 Contracts <code>mechanism-batch-policy.json</code> 持有，本页与 Harness 从该权威派生，调用方不可调高）：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>限制</th>
+<th>含边界的最大值</th>
+<th>计量对象与检查时点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入项数</td>
+<td>256</td>
+<td>解析后、逐项调用前</td>
+</tr>
+<tr>
+<td>请求字节</td>
+<td>16 MiB（16,777,216）</td>
+<td>原始 UTF-8 流含空白，拼接与解析前累计</td>
+</tr>
+<tr>
+<td>响应字节</td>
+<td>32 MiB（33,554,432）</td>
+<td>完整 JSON 响应与最后换行，发送前累计确认</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>失败语义：整批结构或容量拒绝在 <code>error</code> 流写一个批次错误对象并整体退出 2，不执行任何项、不交付部分结果；错误为 <code>TypeError</code> 投影，<code>details.kind</code> 封闭为 <code>batch-structure-invalid</code>、<code>batch-item-limit</code>、<code>batch-input-limit</code>、<code>batch-output-limit</code>，不新增 SFC 错误码。畸形 UTF-8、畸形 JSON 与输入流错误属传输失败，保留原异常投影，不伪装为机制业务失败、不伪造某个 <code>inputIndex</code>。单项机制失败（含 unsafe integer 等留给原分派器按项判断的约束）经原 CLI 错误投影写入该项 <code>response</code> 并继续执行后续项。输出流写入失败时已发送字节无法撤回，消费者必须把截断 JSON、通道错误或进程无正常完成结果判为传输失败，不能从前缀认定批次成功。</li>
+<li>整体退出码三分支：所有机制项成功 → 0，stdout 为完整批次结果加一个换行、stderr 空；至少一个机制项失败 → 2，stdout 仍为完整批次结果、stderr 空；输入/结构/容量/传输检查失败 → 2，stdout 空、stderr 为一个批次错误对象与换行。</li>
+<li>前置条件与信任锚：Contracts、Harness 与 Engineering Kit 精确锁定同一版本；程序化函数与 CLI 都经调用方已安装并验证来源的官方 Bundle 消费（Bundle 由同版本三包生成，保留来源身份、摘要与完整性检查），不从 Foundation 工作树导入源码；调用方提供 input/output/error 流。已有 Schema 批量校验（<code>validate-many-by-schema-id</code>）继续使用原入口，不嵌套、不重新包装。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.19.0</code> / <code>candidate</code>。尚未发布、尚未 stable；候选测试通过不自动产生 stable 承诺，任何文档不得把该能力写成已发布稳定能力。</li>
+<li>源文件：Contracts 新 Schema <code>packages/skill-family-contracts/candidate/foundation-mechanisms/mechanism-batch-request.schema.json</code>、<code>mechanism-batch-result.schema.json</code> 与容量权威 <code>mechanism-batch-policy.json</code>；Harness <code>packages/skill-family-harness-node/candidate/mechanisms-cli.mjs</code>；Kit 离线 Bundle 投影 <code>packages/skill-family-engineering-kit/candidate/profile-bundle.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/quickstart-profile.test.mjs</code>、<code>packages/skill-family-harness-node/test/quickstart-profile.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/candidate-mechanisms-cli.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：领域分组与容量切分、请求间依赖关系判断、精确 pin 与来源身份绑定、批次采用完成与领域回归判定。逐项迁移示例：把若干 <code>{ "operation": "canonical-json", "params": { "document": ... } }</code> 单请求合并为 <code>{ "operation": "canonical-json", "inputs": [{ "document": ... }, ...] }</code>，再按 <code>results[i].inputIndex</code> 读回逐项 <code>response</code> 与 <code>exitCode</code>；同一 Node 进程内的直接调用继续使用 <code>invokeFoundationMechanism</code>，不被强制改成批量。</li>
+</ul>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>
 <ul>

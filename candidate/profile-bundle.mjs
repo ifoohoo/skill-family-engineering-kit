@@ -76,6 +76,16 @@ const ADDITIONAL_FOUNDATION_SCHEMA_FILES = Object.freeze([
   ["fixed-set-publication-receipt.schema.json", "src/schemas/fixed-set-publication-receipt.schema.json", "schemas/foundation/fixed-set-publication-receipt.schema.json"],
   ["schema-validation-batch-request.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-request.schema.json", "schemas/foundation/schema-validation-batch-request.schema.json"],
   ["schema-validation-batch-result.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-result.schema.json", "schemas/foundation/schema-validation-batch-result.schema.json"],
+  ["mechanism-batch-request.schema.json", "candidate/foundation-mechanisms/mechanism-batch-request.schema.json", "schemas/foundation/mechanism-batch-request.schema.json"],
+  ["mechanism-batch-result.schema.json", "candidate/foundation-mechanisms/mechanism-batch-result.schema.json", "schemas/foundation/mechanism-batch-result.schema.json"],
+]);
+
+// Non-Schema Foundation assets projected verbatim. They are deliberately kept
+// out of ADDITIONAL_FOUNDATION_SCHEMA_FILES: the schema graph claims a
+// document.$id for every schema row, while the capacity policy is a plain
+// JSON authority with no Schema identity.
+const ADDITIONAL_FOUNDATION_ASSET_FILES = Object.freeze([
+  ["mechanism-batch-policy.json", "candidate/foundation-mechanisms/mechanism-batch-policy.json", "schemas/foundation/mechanism-batch-policy.json"],
 ]);
 
 const HARNESS_IMPORT_MAP = new Map([
@@ -96,6 +106,7 @@ const HARNESS_STRICT_READ_IMPORT_MAP = new Map([
 
 const HARNESS_CLI_IMPORT_MAP = new Map([
   ["./quickstart-profile.mjs", "./runner.mjs"],
+  ["skill-family-contracts/quickstart-profile", "./runtime/contracts-candidate/index.mjs"],
 ]);
 
 const HARNESS_ATOMIC_IMPORT_MAP = new Map([
@@ -980,11 +991,20 @@ function projectContractsCandidateIndex(sourceText) {
       `schema load path ${fileName}`,
     );
   }
-  for (const [fileName] of ADDITIONAL_FOUNDATION_SCHEMA_FILES.filter(([name]) => name.startsWith("schema-validation-batch-"))) {
+  for (const [fileName] of ADDITIONAL_FOUNDATION_SCHEMA_FILES.filter(
+    ([name]) => name.startsWith("schema-validation-batch-") || name.startsWith("mechanism-batch-"),
+  )) {
     applyOnce(
       `load(new URL("../foundation-mechanisms/${fileName}", import.meta.url))`,
       `load(new URL("../../schemas/foundation/${fileName}", import.meta.url))`,
       `schema load path ${fileName}`,
+    );
+  }
+  for (const [fileName] of ADDITIONAL_FOUNDATION_ASSET_FILES) {
+    applyOnce(
+      `load(new URL("../foundation-mechanisms/${fileName}", import.meta.url))`,
+      `load(new URL("../../schemas/foundation/${fileName}", import.meta.url))`,
+      `asset load path ${fileName}`,
     );
   }
 
@@ -1238,6 +1258,10 @@ export async function buildQuickstartProfileProjection({
   for (const [fileName, sourcePath] of ADDITIONAL_FOUNDATION_SCHEMA_FILES) {
     additionalSchemaTexts[fileName] = await readSourceText(contractsRoot, sourcePath);
   }
+  const additionalAssetTexts = {};
+  for (const [fileName, sourcePath] of ADDITIONAL_FOUNDATION_ASSET_FILES) {
+    additionalAssetTexts[fileName] = await readSourceText(contractsRoot, sourcePath);
+  }
   sources.harnessIndex = await readSourceText(harnessRoot, "src/index.mjs");
   sources.harnessCandidate = await readSourceText(harnessRoot, "candidate/quickstart-profile.mjs");
   sources.harnessMechanismsCli = await readSourceText(harnessRoot, "candidate/mechanisms-cli.mjs");
@@ -1453,6 +1477,9 @@ export async function buildQuickstartProfileProjection({
   for (const [fileName, , bundlePath] of ADDITIONAL_FOUNDATION_SCHEMA_FILES) {
     setText(bundlePath, additionalSchemaTexts[fileName]);
   }
+  for (const [fileName, , bundlePath] of ADDITIONAL_FOUNDATION_ASSET_FILES) {
+    setText(bundlePath, additionalAssetTexts[fileName]);
+  }
   setText("schemas/foundation/operation-request.schema.json", sources.operationRequest);
   setText("schemas/foundation/operation-result.schema.json", sources.operationResult);
   setText("schemas/foundation/migration-manifest.schema.json", sources.migrationManifestSchema);
@@ -1589,6 +1616,11 @@ export async function buildQuickstartProfileProjection({
     ...ADDITIONAL_FOUNDATION_SCHEMA_FILES.map(([fileName, sourcePath]) => [
       `packages/skill-family-contracts/${sourcePath}`,
       additionalSchemaTexts[fileName],
+      "projected",
+    ]),
+    ...ADDITIONAL_FOUNDATION_ASSET_FILES.map(([fileName, sourcePath]) => [
+      `packages/skill-family-contracts/${sourcePath}`,
+      additionalAssetTexts[fileName],
       "projected",
     ]),
     ["packages/skill-family-contracts/candidate/quickstart-profile/index.mjs", sources.candidateIndex, "extraction-input"],

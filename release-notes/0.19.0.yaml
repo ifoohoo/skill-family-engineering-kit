@@ -1,0 +1,21 @@
+version: 0.19.0
+date: 2026-09-07
+locales:
+  en:
+    summary: Engineering Kit 0.19.0 projects the new batch transport into the official offline Bundle and registers the mechanism-batch capability in the built-in catalog.
+    changes:
+      added:
+        - The official Bundle projection now carries runMechanismCliBatch, the --batch CLI mode, the two mechanism-batch Schemas, and the frozen batch capacity policy with unchanged source identity, digest, and integrity handling.
+        - The capability catalog adds foundation.harness.mechanism-batch with since 0.19.0 and stability candidate, together with intent, failure semantics, and direct test references.
+      changed:
+        - "Adoption guidance documents batch selection rules: same-process calls keep the existing object entry; independent cross-process canonical-json requests within capacity are batch candidates; dependent or oversized requests keep the original path."
+    upgradeNotes: "Pin all three Foundation packages to exactly 0.19.0 and rebuild official Bundles after upgrading per the existing package identity and provenance rules. The catalog entry is candidate: a catalog match is not a stable adoption declaration."
+  zh-CN:
+    summary: Engineering Kit 0.19.0 把新批量传输投影进官方离线 Bundle，并在内置能力目录登记 mechanism-batch 能力。
+    changes:
+      added:
+        - 官方 Bundle 投影携带 runMechanismCliBatch、--batch CLI 模式、两个机制批量 Schema 与冻结的批量容量政策，来源身份、摘要与完整性处理不变。
+        - 能力目录新增 foundation.harness.mechanism-batch：since 0.19.0、stability candidate，并登记意图、失败语义与直接测试引用。
+      changed:
+        - 采用指导补充批量选择规则：同进程调用保留既有对象入口；跨进程、相互独立且容量允许的 canonical-json 请求可作为批量候选；有依赖或超限请求保留原路径。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.19.0，升级后按既有包身份与 provenance 规则重建官方 Bundle。该目录条目为候选能力：目录命中不构成稳定采用声明。

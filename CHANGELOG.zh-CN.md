@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.19.0 locale=zh-CN baseline=sha256:f000b13d13ce11660aaa4c5a1b450af39f99cb62a5177467783d863e7f411296 -->
+## [0.19.0] - 2026-09-07
+
+Engineering Kit 0.19.0 把新批量传输投影进官方离线 Bundle，并在内置能力目录登记 mechanism-batch 能力。
+
+### 新增
+
+- 官方 Bundle 投影携带 runMechanismCliBatch、--batch CLI 模式、两个机制批量 Schema 与冻结的批量容量政策，来源身份、摘要与完整性处理不变。
+- 能力目录新增 foundation.harness.mechanism-batch：since 0.19.0、stability candidate，并登记意图、失败语义与直接测试引用。
+
+### 变更
+
+- 采用指导补充批量选择规则：同进程调用保留既有对象入口；跨进程、相互独立且容量允许的 canonical-json 请求可作为批量候选；有依赖或超限请求保留原路径。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.19.0，升级后按既有包身份与 provenance 规则重建官方 Bundle。该目录条目为候选能力：目录命中不构成稳定采用声明。
+<!-- release-skill:changelog:end version=0.19.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.18.0 locale=zh-CN baseline=sha256:c8c2891b64fc31e1fb3754715da04d6ec0727b31e36e011d38735e45795cdd53 -->
 ## [0.18.0] - 2026-09-05
 

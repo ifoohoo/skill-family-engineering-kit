@@ -2217,6 +2217,49 @@
    ]
   },
   {
+   "id": "foundation.harness.mechanism-batch",
+   "intent": "把相互独立、需逐项跨进程调用的 canonical-json 请求合并为一次有界、同操作、顺序执行的批量传输，减少重复进程启动与传输开销",
+   "useWhen": [
+    "多个相互独立的 canonical-json 请求需要逐项跨进程调用（每项一次进程启动与传输），且项数与请求/响应字节落在能力目录登记的容量内",
+    "调用方已安装来源明确的同版本官方 Bundle，并承担领域分组与批次切分的调用方责任"
+   ],
+   "doNotUseWhen": [
+    "请求已位于同一 Node 进程内（优先复用既有 invokeFoundationMechanism 对象入口，不引入无收益的流包装）",
+    "后项输入依赖前项结果，或需要并发、缓存、重试、自动拆批或跨项引用",
+    "请求超过批次容量，或包含本批未支持的操作（如 schema 批量校验、self-check、固定集合写入）"
+   ],
+   "prerequisites": [
+    "Contracts、Harness 与 Engineering Kit 精确锁定同一版本；官方 Bundle 由同版本三包生成并保留来源身份、摘要与完整性检查",
+    "调用方提供 input/output/error 流（默认进程标准流）；领域分组、容量切分与流接收责任归调用方"
+   ],
+   "inputs": [
+    "恰好包含 operation（canonical-json）与 inputs（非空有序数组，每项 {document}）的一个 JSON 文档；不支持 NDJSON、会话协议或数组自动探测"
+   ],
+   "outputs": [
+    "{results:[{inputIndex,exitCode,response}]}；成功项 response 为原机制结果，失败项为原 CLI 错误对象，顺序与输入一致"
+   ],
+   "sideEffects": [
+    "无（逐项经既有纯函数分派器执行；只写调用方提供的 output/error 流；无文件、网络、进程或残余状态副作用）"
+   ],
+   "failureSemantics": [
+    "整批结构或容量拒绝向 error 流写一个批次错误对象并整体退出 2（TypeError 投影；details.kind 封闭为 batch-structure-invalid、batch-item-limit、batch-input-limit、batch-output-limit）",
+    "单项机制失败按原 CLI 错误投影写入该项 response 并继续执行后续项；至少一项失败整体退出 2；不交付部分批次结果"
+   ],
+   "invariants": [
+    "全部项的外层形状检查先于第一项执行；项顺序、重复项与逐项调用次数保持不变",
+    "完整响应字节在确认未超输出上限前不发送；错误对象不重新排序或规范化"
+   ],
+   "ownedByCaller": [
+    "领域分组与容量切分、请求间依赖关系的判断",
+    "版本可用性与成熟度判断（since 0.19.0、candidate 由目录与 API 文档携带）、精确 pin 与来源身份绑定",
+    "批次采用完成与领域验收判定"
+   ],
+   "routeElsewhere": [
+    "需要并发、缓存、重试、跨项引用或自动拆分：由消费者保留原路径处理，或把真实共性缺口交回 Foundation 形成最小能力合同",
+    "本批未支持的机制（schema 批量校验、self-check、固定集合写入等）保留各自既有公共入口"
+   ]
+  },
+  {
    "id": "foundation.kit.plugin-verification",
    "intent": "保留完整插件布局，增加 Qoder 与 WorkBuddy 专属生产生命周期 driver，并把结构合同与宿主语义分开",
    "useWhen": [

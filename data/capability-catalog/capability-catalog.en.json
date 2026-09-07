@@ -2218,6 +2218,49 @@
    ]
   },
   {
+   "id": "foundation.harness.mechanism-batch",
+   "intent": "Combine mutually independent canonical-json requests that would otherwise need one cross-process invocation each into a single bounded, same-operation, ordered batch transport, reducing repeated process starts and transfer overhead",
+   "useWhen": [
+    "Multiple mutually independent canonical-json requests need per-item cross-process invocation (one process start and transfer each) and item count plus request/response bytes fit the capacity recorded in the capability catalog",
+    "The caller has the same-version official Bundle with a verified source and takes on the caller responsibility of domain grouping and batch splitting"
+   ],
+   "doNotUseWhen": [
+    "Requests already live in the same Node process (reuse the existing invokeFoundationMechanism object entry point; do not introduce a wrapper with no benefit)",
+    "A later item depends on an earlier item's result, or concurrency, caching, retry, automatic splitting, or cross-item references are needed",
+    "The request exceeds the batch capacity, or contains operations outside this batch (such as schema batch validation, self-check, or fixed-set publication writes)"
+   ],
+   "prerequisites": [
+    "Contracts, Harness, and Engineering Kit are pinned to exactly the same version; the official Bundle is generated from same-version packages and keeps source identity, digest, and integrity checks",
+    "The caller supplies the input/output/error streams (process standard streams by default); domain grouping, capacity splitting, and stream acceptance stay with the caller"
+   ],
+   "inputs": [
+    "One JSON document with exactly operation (canonical-json) and inputs (non-empty ordered array; each item is {document}); NDJSON, session protocols, and automatic array detection are unsupported"
+   ],
+   "outputs": [
+    "{results:[{inputIndex,exitCode,response}]}; successful items carry the original mechanism response and failed items the original CLI error object, in input order"
+   ],
+   "sideEffects": [
+    "None (items execute through the existing pure-function dispatcher; only the caller-provided output/error streams are written; no file, network, process, or residual-state side effects)"
+   ],
+   "failureSemantics": [
+    "Whole-batch shape or capacity refusals write one batch error object to the error stream and exit 2 (TypeError projection; details.kind is closed to batch-structure-invalid, batch-item-limit, batch-input-limit, batch-output-limit)",
+    "Per-item mechanism failures are projected into that item's response and later items still run; at least one failure exits 2; partial batch results are never delivered"
+   ],
+   "invariants": [
+    "Outer shape checks for every item complete before the first item runs; item order, duplicates, and the per-item invocation count stay unchanged",
+    "The complete response bytes are not sent until confirmed within the output limit; error objects are neither reordered nor normalized"
+   ],
+   "ownedByCaller": [
+    "Domain grouping and capacity splitting, and judging dependencies between requests",
+    "Version availability and maturity judgment (since 0.19.0 and candidate status live in the catalog and API documentation), the exact pin, and source-identity binding",
+    "Batch adoption completion and domain acceptance judgment"
+   ],
+   "routeElsewhere": [
+    "Concurrency, caching, retry, cross-item references, or automatic splitting: keep them on the original consumer path, or return a real common gap to Foundation as a minimal capability contract",
+    "Mechanisms outside this batch (schema batch validation, self-check, fixed-set publication writes, and so on) keep their existing public entry points"
+   ]
+  },
+  {
    "id": "foundation.kit.plugin-verification",
    "intent": "Preserve the complete plugin layout and add dedicated Qoder and WorkBuddy production lifecycle drivers while keeping structure and host semantics separate",
    "useWhen": [
