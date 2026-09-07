@@ -1,0 +1,17 @@
+version: 0.19.1
+date: 2026-09-08
+locales:
+  en:
+    summary: Engineering Kit 0.19.1 projects the compatible batch stream and result-contract fixes into the existing official Bundle.
+    changes:
+      fixed:
+        - Carries the corrected Harness transfer behavior and Contracts result Schema without adding a second implementation or a new Kit command.
+        - Clarifies in the bundled capability catalog that preflight rejection invokes no mechanism, output-capacity rejection may follow execution of the current item, and output-channel failure may leave partial bytes sent.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.19.1 and rebuild official Bundles under the existing source-identity and integrity rules. The capability remains candidate with since 0.19.0; a catalog match is not a stable adoption declaration.
+  zh-CN:
+    summary: Engineering Kit 0.19.1 将兼容的批量流与结果合同修复投影到既有官方 Bundle。
+    changes:
+      fixed:
+        - 携带修正后的 Harness 传输行为和 Contracts 结果 Schema，不增加第二份实现或新的 Kit 命令。
+        - 内置能力目录区分三类失败阶段：预检拒绝不会调用机制；输出容量拒绝可能发生在当前项执行后；输出通道失败可能已有部分字节送出。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.19.1，并按既有来源身份与完整性规则重建官方 Bundle。能力仍为 candidate，since 0.19.0 保持不变；目录命中不构成稳定采用声明。

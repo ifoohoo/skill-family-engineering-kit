@@ -1,5 +1,21 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.19.1 locale=zh-CN baseline=sha256:832a8dfa16c41d6381cd2b0f00f58b096f45715332d42b7be11595976ab15e1e -->
+## [0.19.1] - 2026-09-08
+
+Engineering Kit 0.19.1 将兼容的批量流与结果合同修复投影到既有官方 Bundle。
+
+### 修复
+
+- 携带修正后的 Harness 传输行为和 Contracts 结果 Schema，不增加第二份实现或新的 Kit 命令。
+- 内置能力目录区分三类失败阶段：预检拒绝不会调用机制；输出容量拒绝可能发生在当前项执行后；输出通道失败可能已有部分字节送出。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.19.1，并按既有来源身份与完整性规则重建官方 Bundle。能力仍为 candidate，since 0.19.0 保持不变；目录命中不构成稳定采用声明。
+<!-- release-skill:changelog:end version=0.19.1 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.19.0 locale=zh-CN baseline=sha256:f000b13d13ce11660aaa4c5a1b450af39f99cb62a5177467783d863e7f411296 -->
 ## [0.19.0] - 2026-09-07
 

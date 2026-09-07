@@ -2032,7 +2032,7 @@
 <td><code>SFC2004</code></td>
 </tr>
 <tr>
-<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code> (0.19.0 candidate)</td>
+<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code> (since 0.19.0, candidate)</td>
 <td>no</td>
 <td>no</td>
 <td>no</td>
@@ -2043,6 +2043,7 @@
 </tr>
 </tbody>
 </table>
+<p>The failure stage determines the observable effects of the batch entry point. Request-byte, item-count, and structure preflight rejection invokes no mechanism and leaves stdout empty. Output capacity can be checked only after the current item returns, so that item may already have executed; later items are not executed and stdout remains empty. An output-channel failure may leave partial bytes sent and returns 2. If the error channel also fails, delivery of the error object is not guaranteed.</p>
 <p>Harness's <code>HARNESS_EXCLUSIONS</code> explicitly excludes release-state, remote-network-access, business-semantics, workflow-orchestration, model-calls, git-writes.</p>
 <h2 id="Engineering-Kit-Engineering-Command-Layer">Engineering Kit (Engineering Command Layer)<a class="headerlink" href="#Engineering-Kit-Engineering-Command-Layer" title="Permanent link">&para;</a></h2>
 <table>

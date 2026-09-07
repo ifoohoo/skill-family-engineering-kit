@@ -1,5 +1,21 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.19.1 locale=en baseline=sha256:199e48a82f8d08629d98f1286a964cbf98ba5850efe65183adfc353cfe9f3610 -->
+## [0.19.1] - 2026-09-08
+
+Engineering Kit 0.19.1 projects the compatible batch stream and result-contract fixes into the existing official Bundle.
+
+### Fixed
+
+- Carries the corrected Harness transfer behavior and Contracts result Schema without adding a second implementation or a new Kit command.
+- Clarifies in the bundled capability catalog that preflight rejection invokes no mechanism, output-capacity rejection may follow execution of the current item, and output-channel failure may leave partial bytes sent.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.19.1 and rebuild official Bundles under the existing source-identity and integrity rules. The capability remains candidate with since 0.19.0; a catalog match is not a stable adoption declaration.
+<!-- release-skill:changelog:end version=0.19.1 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.19.0 locale=en baseline=sha256:d3b79ce1564df3e0dc0f0abc1af616817550044de73f9b05b57a5dd65fd47dae -->
 ## [0.19.0] - 2026-09-07
 

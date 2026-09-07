@@ -5,27 +5,23 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.19.0 -->
+<!-- release-skill:release-version: 0.19.1 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.19.0** (2026-09-07)
+**0.19.1** (2026-09-08)
 
-Engineering Kit 0.19.0 把新批量传输投影进官方离线 Bundle，并在内置能力目录登记 mechanism-batch 能力。
+Engineering Kit 0.19.1 将兼容的批量流与结果合同修复投影到既有官方 Bundle。
 
-**新增**
+**修复**
 
-- 官方 Bundle 投影携带 runMechanismCliBatch、--batch CLI 模式、两个机制批量 Schema 与冻结的批量容量政策，来源身份、摘要与完整性处理不变。
-- 能力目录新增 foundation.harness.mechanism-batch：since 0.19.0、stability candidate，并登记意图、失败语义与直接测试引用。
-
-**变更**
-
-- 采用指导补充批量选择规则：同进程调用保留既有对象入口；跨进程、相互独立且容量允许的 canonical-json 请求可作为批量候选；有依赖或超限请求保留原路径。
+- 携带修正后的 Harness 传输行为和 Contracts 结果 Schema，不增加第二份实现或新的 Kit 命令。
+- 内置能力目录区分三类失败阶段：预检拒绝不会调用机制；输出容量拒绝可能发生在当前项执行后；输出通道失败可能已有部分字节送出。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.19.0，升级后按既有包身份与 provenance 规则重建官方 Bundle。该目录条目为候选能力：目录命中不构成稳定采用声明。
+三个 Foundation 包须一起精确锁定到 0.19.1，并按既有来源身份与完整性规则重建官方 Bundle。能力仍为 candidate，since 0.19.0 保持不变；目录命中不构成稳定采用声明。
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate 资格入口
@@ -55,7 +51,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.18.0 是本地候选版本。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.19.1 是本地源码候选。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -63,21 +59,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.18.0.tgz" "$pack_dir/skill-family-harness-node-0.18.0.tgz" "$pack_dir/skill-family-engineering-kit-0.18.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.19.1.tgz" "$pack_dir/skill-family-harness-node-0.19.1.tgz" "$pack_dir/skill-family-engineering-kit-0.19.1.tgz")
 ```
 
 发布后再使用 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.19.0
-npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.19.1
+npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.19.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.19.1 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 
@@ -296,4 +292,4 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 
 独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
 
-0.18.0 为本地源码候选，尚未发布。消费本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。
+0.19.1 是本地源码候选，远端可用性须由对应的 release-skill 发布后证据证明。候选检查使用本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。

@@ -2242,12 +2242,14 @@
     "无（逐项经既有纯函数分派器执行；只写调用方提供的 output/error 流；无文件、网络、进程或残余状态副作用）"
    ],
    "failureSemantics": [
-    "整批结构或容量拒绝向 error 流写一个批次错误对象并整体退出 2（TypeError 投影；details.kind 封闭为 batch-structure-invalid、batch-item-limit、batch-input-limit、batch-output-limit）",
-    "单项机制失败按原 CLI 错误投影写入该项 response 并继续执行后续项；至少一项失败整体退出 2；不交付部分批次结果"
+    "请求字节、输入项数或结构预检拒绝不会调用机制，stdout 为空；error 流接收一个 TypeError 投影的批次错误对象，details.kind 分别为 batch-input-limit、batch-item-limit 或 batch-structure-invalid，整体退出 2",
+    "输出容量拒绝发生在当前项返回后；该项可能已经执行，后续项停止，stdout 为空；details.kind 为 batch-output-limit，整体退出 2",
+    "输出通道失败整体退出 2，但可能已有部分字节送出；若错误通道也失败，错误对象不保证能够交付",
+    "单项机制失败按原 CLI 错误投影写入该项 response 并继续执行后续项；至少一项失败整体退出 2"
    ],
    "invariants": [
     "全部项的外层形状检查先于第一项执行；项顺序、重复项与逐项调用次数保持不变",
-    "完整响应字节在确认未超输出上限前不发送；错误对象不重新排序或规范化"
+    "完整响应字节在确认未超输出上限前不发送；开始写入后发生输出通道失败时，已发送字节无法撤回；错误对象不重新排序或规范化"
    ],
    "ownedByCaller": [
     "领域分组与容量切分、请求间依赖关系的判断",

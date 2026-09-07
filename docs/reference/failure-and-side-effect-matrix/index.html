@@ -2022,7 +2022,7 @@
 <td><code>SFC2004</code></td>
 </tr>
 <tr>
-<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code>（0.19.0 candidate）</td>
+<td><code>runMechanismCliBatch</code> / <code>mechanisms-cli.mjs --batch</code>（since 0.19.0，candidate）</td>
 <td>否</td>
 <td>否</td>
 <td>否</td>
@@ -2033,6 +2033,7 @@
 </tr>
 </tbody>
 </table>
+<p>批量入口的失败阶段决定可观察副作用。请求字节、输入项数或结构的预检拒绝不会调用机制，stdout 为空；输出容量只能在当前项返回后确认，因此该项可能已经执行，但后续项不会再执行，stdout 仍为空。输出通道失败时可能已有部分字节送出，整体退出 2；若错误通道也失败，错误对象不保证能够交付。</p>
 <p>Harness 的 <code>HARNESS_EXCLUSIONS</code> 明确排除 release-state、remote-network-access、business-semantics、workflow-orchestration、model-calls、git-writes。</p>
 <h2 id="Engineering-Kit工程命令层">Engineering Kit（工程命令层）<a class="headerlink" href="#Engineering-Kit工程命令层" title="Permanent link">&para;</a></h2>
 <table>

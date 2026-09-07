@@ -2243,12 +2243,14 @@
     "None (items execute through the existing pure-function dispatcher; only the caller-provided output/error streams are written; no file, network, process, or residual-state side effects)"
    ],
    "failureSemantics": [
-    "Whole-batch shape or capacity refusals write one batch error object to the error stream and exit 2 (TypeError projection; details.kind is closed to batch-structure-invalid, batch-item-limit, batch-input-limit, batch-output-limit)",
-    "Per-item mechanism failures are projected into that item's response and later items still run; at least one failure exits 2; partial batch results are never delivered"
+    "Request-byte, item-count, or structure preflight rejection invokes no mechanism and leaves stdout empty; the error stream receives one TypeError-projected batch error with details.kind batch-input-limit, batch-item-limit, or batch-structure-invalid respectively, and the batch exits 2",
+    "Output-capacity rejection occurs after the current item returns; that item may already have executed, later items stop, stdout remains empty, details.kind is batch-output-limit, and the batch exits 2",
+    "An output-channel failure exits 2 but may leave partial bytes sent; if the error channel also fails, delivery of the error object is not guaranteed",
+    "Per-item mechanism failures are projected into that item's response and later items still run; at least one failure exits 2"
    ],
    "invariants": [
     "Outer shape checks for every item complete before the first item runs; item order, duplicates, and the per-item invocation count stay unchanged",
-    "The complete response bytes are not sent until confirmed within the output limit; error objects are neither reordered nor normalized"
+    "The complete response bytes are not sent until confirmed within the output limit; after writing starts, bytes already sent cannot be withdrawn if the output channel fails; error objects are neither reordered nor normalized"
    ],
    "ownedByCaller": [
     "Domain grouping and capacity splitting, and judging dependencies between requests",
