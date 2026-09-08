@@ -1,0 +1,15 @@
+version: 0.19.3
+date: 2026-09-08
+locales:
+  en:
+    summary: Engineering Kit 0.19.3 aligns its package, release documentation, and generated projections with the Foundation Adoption Review Qoder distribution patch. Public commands and behavior are unchanged.
+    changes:
+      changed:
+        - Aligns the package version, release documentation, and verified public package projection with Foundation 0.19.3 without adding a command, capability, or adapter path.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.19.3 and rebuild official Bundles under the existing source-identity and integrity rules. The capability catalog, host descriptors, drivers, since values, and maturity are unchanged.
+  zh-CN:
+    summary: Engineering Kit 0.19.3 将包版本、发布文档和生成投影与 Foundation Adoption Review 的 Qoder 分发补丁对齐。公开命令和行为保持不变。
+    changes:
+      changed:
+        - 包版本、发布文档和经验证的公开 package.json 投影与 Foundation 0.19.3 数值对齐，不增加命令、能力或 adapter 路径。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.19.3，并按既有来源身份与完整性规则重建官方 Bundle。能力目录、宿主 descriptor、driver、since 字段和成熟度均不变。

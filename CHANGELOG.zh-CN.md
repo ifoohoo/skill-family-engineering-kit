@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.19.3 locale=zh-CN baseline=sha256:16f48a8354216cfe0f1354bed02f0a5cee6ef0b9adaaad3339dc9f80c1070e2b -->
+## [0.19.3] - 2026-09-08
+
+Engineering Kit 0.19.3 将包版本、发布文档和生成投影与 Foundation Adoption Review 的 Qoder 分发补丁对齐。公开命令和行为保持不变。
+
+### 变更
+
+- 包版本、发布文档和经验证的公开 package.json 投影与 Foundation 0.19.3 数值对齐，不增加命令、能力或 adapter 路径。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.19.3，并按既有来源身份与完整性规则重建官方 Bundle。能力目录、宿主 descriptor、driver、since 字段和成熟度均不变。
+<!-- release-skill:changelog:end version=0.19.3 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.19.2 locale=zh-CN baseline=sha256:bd0cbfd935e7b9751f6311f3d1114df2db5066448d1830f27b7c92aa3aca9687 -->
 ## [0.19.2] - 2026-09-08
 

@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.19.3 locale=en baseline=sha256:a75e6ad165b31be8764c3f7e1b8048120f431d5da29e7bfdff5e4338d8fa896a -->
+## [0.19.3] - 2026-09-08
+
+Engineering Kit 0.19.3 aligns its package, release documentation, and generated projections with the Foundation Adoption Review Qoder distribution patch. Public commands and behavior are unchanged.
+
+### Changed
+
+- Aligns the package version, release documentation, and verified public package projection with Foundation 0.19.3 without adding a command, capability, or adapter path.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.19.3 and rebuild official Bundles under the existing source-identity and integrity rules. The capability catalog, host descriptors, drivers, since values, and maturity are unchanged.
+<!-- release-skill:changelog:end version=0.19.3 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.19.2 locale=en baseline=sha256:b4a9f795a1264bc28c9d37378a1d92eb4fd8c1e023506fbe6f5752b08842e2f0 -->
 ## [0.19.2] - 2026-09-08
 
