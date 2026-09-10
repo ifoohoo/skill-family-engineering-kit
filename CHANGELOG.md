@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.20.0 locale=en baseline=sha256:4ea3064e77b2e33e76d1476f02f7d22920638e872cb87c098e8260f617081313 -->
+## [0.20.0] - 2026-09-10
+
+Engineering Kit 0.20.0 adds Cursor project Skill projection and a fixed Cursor Agent verification driver on the existing host-verification path.
+
+### Added
+
+- Registers `.cursor/skills` as the Cursor project Skill root while preserving manual lifecycle planning.
+- Adds `cursor-agent-print-v1` with fixed workspace, ask-mode, sandbox, JSON output, version, and failure checks.
+
+### Changed
+
+- Qualifies project-level Skill discovery through Cursor CLI menu discovery and one explicit invocation, without requiring a duplicate IDE check.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.20.0 and rebuild official Bundles. Cursor stays manual/developer-preview; the driver does not add automatic trust, model selection, or Marketplace lifecycle management.
+<!-- release-skill:changelog:end version=0.20.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.19.3 locale=en baseline=sha256:a75e6ad165b31be8764c3f7e1b8048120f431d5da29e7bfdff5e4338d8fa896a -->
 ## [0.19.3] - 2026-09-08
 

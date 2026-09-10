@@ -66,7 +66,7 @@ function workBuddyNativeLifecyclePlan({ request, roots, prompt }) {
     nativeStage("preflight", [{ step: "version-probe", args: ["--version"] }]),
     nativeStage("validate-v1", [manage("plugin-validate", "validate", roots.sourceRoot)]),
     nativeStage("marketplace-add", [manage("marketplace-add", "marketplace", "add", roots.sourceRoot, "--name", request.source.marketplaceId)]),
-    nativeStage("install-v1", [manage("plugin-install", "install", plugin, "--scope", "local", "--json")]),
+    nativeStage("install-v1", [manage("plugin-install", "install", plugin, "--scope", "local")]),
     nativeStage("discover-v1", [manage("plugin-list", "list", "--json")]),
     nativeStage("invoke-v1", [invoke("plugin-invoke")]),
     nativeStage("disable", [
@@ -324,6 +324,27 @@ export const QODER_DRIVER = Object.freeze({
   versionPattern: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u,
 });
 
+export const CURSOR_DRIVER = Object.freeze({
+  hostId: "cursor",
+  driverId: "cursor-agent-print-v1",
+  driverVersion: "1.0.0",
+  executableBasename: "cursor-agent",
+  probeArgs: Object.freeze(["--version"]),
+  // Frozen invocation (S-047): `cursor-agent --print --output-format json
+  // --mode ask --sandbox enabled --workspace <workspace> <prompt>`.  The
+  // workspace is derived from `<workspace>/.cursor/skills/<skill-id>` and is
+  // also the process cwd.  Never add force, trust, model, history, worktree,
+  // remote-session or MCP auto-approval flags.
+  promptFlag: "--print",
+  outputArgs: Object.freeze(["--output-format", "json", "--mode", "ask", "--sandbox", "enabled"]),
+  cwdFlag: "--workspace",
+  promptTrailing: true,
+  textProtocol: true,
+  // Cursor currently reports a date plus a seven-character lowercase commit
+  // abbreviation, for example `2026.09.08-6caf4ff`.
+  versionPattern: /^[0-9]{4}\.(?:0[1-9]|1[0-2])\.(?:0[1-9]|[12][0-9]|3[01])-[0-9a-f]{7}$/u,
+});
+
 export const BUILT_IN_HOST_VERIFICATION_DRIVERS = Object.freeze({
   [KIMI_DRIVER.driverId]: KIMI_DRIVER,
   [WORKBUDDY_DRIVER.driverId]: WORKBUDDY_DRIVER,
@@ -331,6 +352,7 @@ export const BUILT_IN_HOST_VERIFICATION_DRIVERS = Object.freeze({
   [CLAUDE_DRIVER.driverId]: CLAUDE_DRIVER,
   [CODEX_DRIVER.driverId]: CODEX_DRIVER,
   [QODER_DRIVER.driverId]: QODER_DRIVER,
+  [CURSOR_DRIVER.driverId]: CURSOR_DRIVER,
 });
 
 export function getBuiltInHostVerificationDriver(driverId) {
@@ -354,7 +376,7 @@ export function getBuiltInHostVerificationDriver(driverId) {
  * - CodeBuddy points HOME at the existing state root only; its project skill
  *   discovery is the fresh cwd `.codebuddy/skills` tree and therefore does
  *   not set CODEBUDDY_CONFIG_DIR.
- * - claude, codex and qoder point HOME at the existing state root only
+ * - claude, codex, qoder and cursor point HOME at the existing state root only
  *   (their login state lives under HOME); no model override, --config-dir or
  *   CODEX_HOME override is ever projected.
  */
@@ -376,8 +398,8 @@ export function driverEnvironment({ driver, sessionRoot, existingUserStateRoot, 
 }
 
 /**
- * Frozen stream-protocol evaluation, one per admitted driver.  All three
- * 0.12.0 drivers share the minimal "exit status + frozen structure" shape
+ * Frozen stream-protocol evaluation, one per admitted driver.  Text-protocol
+ * drivers share the minimal "exit status + frozen structure" shape
  * (R-04/R-05/R-06): the raw stream text is read from the private evidence
  * only and never enters the public result.  The product never judges any
  * fixed output string: domain output semantics belong to the consumer and
@@ -398,6 +420,9 @@ export function driverEnvironment({ driver, sessionRoot, existingUserStateRoot, 
  *   `is_error`; `is_error: true` (including the frozen quota-exhausted
  *   error_code 118) is a determined failure that maps to the existing
  *   failed + execution-failed, with no account state entering the result.
+ * - cursor: `--output-format json` output must be one object with
+ *   `type=result`, `subtype=success`, `is_error=false` and a string `result`;
+ *   extra fields are allowed and the answer text is never judged.
  */
 export function evaluateDriverStreamProtocol({ driver, stdoutText, exitOk }) {
   if (driver.driverId === CLAUDE_DRIVER.driverId) {
@@ -408,6 +433,9 @@ export function evaluateDriverStreamProtocol({ driver, stdoutText, exitOk }) {
   }
   if (driver.driverId === QODER_DRIVER.driverId) {
     return exitOk && qoderJsonOk(stdoutText);
+  }
+  if (driver.driverId === CURSOR_DRIVER.driverId) {
+    return exitOk && cursorJsonOk(stdoutText);
   }
   return exitOk;
 }
@@ -484,4 +512,20 @@ function qoderJsonOk(stdoutText) {
   // output cannot be judged by the frozen protocol and fails closed.
   if (typeof parsed.is_error !== "boolean") return false;
   return !parsed.is_error;
+}
+
+function cursorJsonOk(stdoutText) {
+  let parsed;
+  try {
+    parsed = JSON.parse(stdoutText);
+  } catch {
+    return false;
+  }
+  return typeof parsed === "object"
+    && parsed !== null
+    && !Array.isArray(parsed)
+    && parsed.type === "result"
+    && parsed.subtype === "success"
+    && parsed.is_error === false
+    && typeof parsed.result === "string";
 }

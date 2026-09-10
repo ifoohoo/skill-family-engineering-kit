@@ -14,6 +14,7 @@ import {
   CLAUDE_DRIVER,
   CODEBUDDY_DRIVER,
   CODEX_DRIVER,
+  CURSOR_DRIVER,
   driverEnvironment,
   evaluateDriverStreamProtocol,
   getBuiltInHostVerificationDriver,
@@ -219,9 +220,10 @@ function assertRootIsolation({ inputRoots, writeRoots, existingUserStateRoot }) 
  * must be a real (non-symlink) directory.  The WorkBuddy config root is a
  * fresh write root under the same one-way state rule.
  *
- * Codex and Qoder freeze their discovery layout structurally: the installed
- * parent must be `<workspace>/.codex/skills` / `<fresh-ws>/.qoder/skills`
- * (basenames `skills` and `.codex` / `.qoder`), so the discovery target can
+ * Codex, Qoder and Cursor freeze their discovery layout structurally: the
+ * installed parent must be `<workspace>/.codex/skills`,
+ * `<fresh-ws>/.qoder/skills` or `<workspace>/.cursor/skills` (basenames
+ * `skills` and `.codex` / `.qoder` / `.cursor`), so the discovery target can
  * never escape the fresh workspace or reach a real user skill root.
  *
  * Claude freezes the classic plugin layout structurally: the installed
@@ -274,6 +276,10 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
     if (path.basename(skillsRoot) !== "skills") throw fail("Qoder skills directory must be named skills");
     if (path.basename(path.dirname(skillsRoot)) !== ".qoder") throw fail("Qoder discovery root must be named .qoder");
   }
+  if (driver.driverId === CURSOR_DRIVER.driverId) {
+    if (path.basename(skillsRoot) !== "skills") throw fail("Cursor skills directory must be named skills");
+    if (path.basename(path.dirname(skillsRoot)) !== ".cursor") throw fail("Cursor discovery root must be named .cursor");
+  }
   if (driver.driverId === CLAUDE_DRIVER.driverId) {
     // Classic Claude plugin layout `<plugin-root>/skills/<skill-id>/SKILL.md`:
     // the skills directory basename is pinned so the --plugin-dir target
@@ -299,7 +305,9 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
  * (`promptTrailing`) so the vector matches the frozen argv byte-for-byte:
  * claude `-p --verbose --no-session-persistence --output-format stream-json
  * <prompt> --plugin-dir <dir>`, codex `exec --json --ephemeral <prompt>`,
- * qoder `-p -o json --no-session-persistence --cwd <fresh-ws> <prompt>`
+ * qoder `-p -o json --no-session-persistence --cwd <fresh-ws> <prompt>`,
+ * cursor `--print --output-format json --mode ask --sandbox enabled
+ * --workspace <workspace> <prompt>`
  * where the --cwd target is the fresh workspace two segments above the
  * installed parent (`<fresh-ws>/.qoder/skills/<skill-id>`).  The claude
  * `--plugin-dir` target is the plugin root one segment above the installed
@@ -484,16 +492,16 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     const installedRoot = requiredBinding(bindings.installedSkillRoot, "installedSkillRoot");
     // The install target is a fresh write root: the same central isolation
     // check covers it against every protected input root, the three other
-    // fresh write roots, and the one-way existing user state rule.  Codex
-    // freezes `<workspace>/.codex/skills/<skill-id>` as its sole discovery
-    // projection (DES-013 §4.2, R-07): the installed target legitimately sits
+    // fresh write roots, and the one-way existing user state rule.  Codex and
+    // Cursor freeze their workspace-local skill roots: the installed target
+    // legitimately sits
     // inside the candidate workspace, which itself sits inside the caller's
-    // repository, and its exact position is pinned by the codex branch below
+    // repository, and its exact position is pinned by the driver branches below
     // (`dirname x3(installedRoot) === workspaceRoot`), so workspaceRoot and
     // repositoryRoot are not compared in this call; every other protected
     // input root stays bidirectionally disjoint.
     assertRootIsolation({
-      inputRoots: driver.driverId === CODEX_DRIVER.driverId
+      inputRoots: [CODEX_DRIVER.driverId, CURSOR_DRIVER.driverId].includes(driver.driverId)
         ? inputRoots.filter(([name]) => name !== "workspaceRoot" && name !== "repositoryRoot")
         : inputRoots,
       writeRoots: [...baseWriteRoots, ["installedSkillRoot", installedRoot]],
@@ -539,12 +547,14 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
       if (gitInfo === null) return rejected();
       if (path.dirname(path.dirname(path.dirname(installedRoot))) !== workspaceRoot) return rejected();
     }
+    if (driver.driverId === CURSOR_DRIVER.driverId
+      && path.dirname(path.dirname(path.dirname(installedRoot))) !== workspaceRoot) return rejected();
     if (await stat(installedRoot).then(() => true, () => false)) return rejected();
     const adapterMembers = requiredMembers(bindings, "adapterMembers");
-    if (driver.driverId === QODER_DRIVER.driverId && !adapterMembers.includes("SKILL.md")) {
-      // R-08: a missing SKILL.md in the adapter table is a statically
-      // decidable preflight failure (the sole discovery projection cannot
-      // exist) — rejected before materialization with zero side effects.
+    if ([QODER_DRIVER.driverId, CURSOR_DRIVER.driverId].includes(driver.driverId) && !adapterMembers.includes("SKILL.md")) {
+      // A missing SKILL.md in the adapter table is a statically decidable
+      // preflight failure for these sole project-level projections — reject
+      // before materialization with zero side effects.
       return rejected();
     }
     if (driver.driverId === CODEX_DRIVER.driverId) {
@@ -595,10 +605,10 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
       existingUserStateRoot,
       installedParent: path.dirname(installedRoot),
     });
-    // S-023: codex exec must start inside the trusted repository tree
-    // (R-07), so its process cwd is the candidate workspace, never the fresh
-    // session root.  All other drivers keep the fresh session root as cwd.
-    const processCwd = driver.driverId === CODEX_DRIVER.driverId
+    // Codex and Cursor must start in the candidate workspace selected by
+    // their frozen invocation vectors; all other drivers keep their existing
+    // cwd rules.
+    const processCwd = [CODEX_DRIVER.driverId, CURSOR_DRIVER.driverId].includes(driver.driverId)
       ? workspaceRoot
       : driver.driverId === CODEBUDDY_DRIVER.driverId
         ? discovery.projectRoot
@@ -734,8 +744,8 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
       if (cause?.code !== "SFC2004") throw cause;
       return finishDeterminedProcess({ status: "failed", reason: "private-evidence-publication-failed", extra: { execution: publicExecution(invocation), snapshots } });
     }
-    // Frozen output-protocol judgement.  Only the three 0.12.0 drivers
-    // (textProtocol) decode the invocation stdout once more from the
+    // Frozen output-protocol judgement.  Drivers marked textProtocol decode
+    // the invocation stdout once more from the
     // private evidence (digest-bound) as UTF-8 text and judge the closed
     // driver protocol; the raw text itself never enters the public result.
     // Kimi and WorkBuddy keep their 0.11.0 raw-byte behavior: no decode, no

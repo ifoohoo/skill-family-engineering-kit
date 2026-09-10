@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.20.0 locale=zh-CN baseline=sha256:7f7e7f2175429d96720b04bb378afcb796e01f642abc0cdd7114fddf4a808b62 -->
+## [0.20.0] - 2026-09-10
+
+Engineering Kit 0.20.0 在既有宿主验证路径上增加 Cursor 项目级 Skill 投影和固定 Cursor Agent 验证驱动。
+
+### 新增
+
+- 登记 `.cursor/skills` 作为 Cursor 项目级 Skill 根，生命周期计划继续保持手动。
+- 增加 `cursor-agent-print-v1`，固定工作区、问答模式、沙箱、JSON 输出、版本与失败检查。
+
+### 变更
+
+- 通过 Cursor CLI 菜单发现和一次显式调用取得项目级 Skill 发现资格，不重复执行 IDE 图形界面检查。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.20.0，并重建官方 Bundle。Cursor 继续保持 manual/developer-preview；驱动不增加自动信任、模型选择或 Marketplace 生命周期管理。
+<!-- release-skill:changelog:end version=0.20.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.19.3 locale=zh-CN baseline=sha256:16f48a8354216cfe0f1354bed02f0a5cee6ef0b9adaaad3339dc9f80c1070e2b -->
 ## [0.19.3] - 2026-09-08
 

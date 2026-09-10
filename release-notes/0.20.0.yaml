@@ -1,0 +1,21 @@
+version: 0.20.0
+date: 2026-09-10
+locales:
+  en:
+    summary: Engineering Kit 0.20.0 adds Cursor project Skill projection and a fixed Cursor Agent verification driver on the existing host-verification path.
+    changes:
+      added:
+        - Registers `.cursor/skills` as the Cursor project Skill root while preserving manual lifecycle planning.
+        - Adds `cursor-agent-print-v1` with fixed workspace, ask-mode, sandbox, JSON output, version, and failure checks.
+      changed:
+        - Qualifies project-level Skill discovery through Cursor CLI menu discovery and one explicit invocation, without requiring a duplicate IDE check.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.20.0 and rebuild official Bundles. Cursor stays manual/developer-preview; the driver does not add automatic trust, model selection, or Marketplace lifecycle management.
+  zh-CN:
+    summary: Engineering Kit 0.20.0 在既有宿主验证路径上增加 Cursor 项目级 Skill 投影和固定 Cursor Agent 验证驱动。
+    changes:
+      added:
+        - 登记 `.cursor/skills` 作为 Cursor 项目级 Skill 根，生命周期计划继续保持手动。
+        - 增加 `cursor-agent-print-v1`，固定工作区、问答模式、沙箱、JSON 输出、版本与失败检查。
+      changed:
+        - 通过 Cursor CLI 菜单发现和一次显式调用取得项目级 Skill 发现资格，不重复执行 IDE 图形界面检查。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.20.0，并重建官方 Bundle。Cursor 继续保持 manual/developer-preview；驱动不增加自动信任、模型选择或 Marketplace 生命周期管理。

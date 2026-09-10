@@ -1894,15 +1894,16 @@
 <h1 id="Quickstart">Quickstart<a class="headerlink" href="#Quickstart" title="Permanent link">&para;</a></h1>
 <p>This page gives ordinary developers three executable journeys: discovering capabilities and generating a new project, adopting an existing project, and querying one requirement during daily work. Each journey includes exact commands; architecture routing and API details live in the linked references.</p>
 <h2 id="Shared-Installation-Prerequisite">Shared Installation Prerequisite<a class="headerlink" href="#Shared-Installation-Prerequisite" title="Permanent link">&para;</a></h2>
-<p>For local candidate validation, build the three <code>0.14.0</code> tarballs from the Foundation workspace and install them into a temporary consumer. Run these commands from the Foundation workspace root:</p>
-<pre><code class="language-sh">pack_dir=&quot;$(mktemp -d)&quot;
+<p>For local candidate validation, build the three current-version tarballs from the Foundation workspace and install them into a temporary consumer. Run these commands from the Foundation workspace root; <code>foundation_version</code> reads the root <code>package.json</code> and supplies the version for all three tarballs:</p>
+<pre><code class="language-sh">foundation_version=&quot;$(node -p &quot;require('./package.json').version&quot;)&quot;
+pack_dir=&quot;$(mktemp -d)&quot;
 (cd packages/skill-family-contracts &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 (cd packages/skill-family-harness-node &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 (cd packages/skill-family-engineering-kit &amp;&amp; pnpm pack --pack-destination &quot;$pack_dir&quot;)
 mkdir &quot;$pack_dir/consumer&quot; &amp;&amp; (cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm init -y)
-(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-harness-node-0.14.0.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-0.14.0.tgz&quot;)
+(cd &quot;$pack_dir/consumer&quot; &amp;&amp; npm install &quot;$pack_dir/skill-family-contracts-${foundation_version}.tgz&quot; &quot;$pack_dir/skill-family-harness-node-${foundation_version}.tgz&quot; &quot;$pack_dir/skill-family-engineering-kit-${foundation_version}.tgz&quot;)
 </code></pre>
-<p>After publication, install the exact coordinate <code>skill-family-engineering-kit@0.14.0</code>, then run the <code>npm exec</code> commands below.</p>
+<p>After publication, install the exact coordinates listed on the Current Product Status page, then run the <code>npm exec</code> commands below.</p>
 <h2 id="New-Project-Discover-Capabilities-and-Generate-a-Skeleton">New Project: Discover Capabilities and Generate a Skeleton<a class="headerlink" href="#New-Project-Discover-Capabilities-and-Generate-a-Skeleton" title="Permanent link">&para;</a></h2>
 <p>Start by evaluating the project's uses, then select stable capabilities explicitly. <code>--list-capabilities</code> is read-only; the <code>--uses</code> file should contain problems, constraints, retained guarantees, and optional filters, never credentials or private business data.</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --all --scope all --locale en --uses ./uses.json
