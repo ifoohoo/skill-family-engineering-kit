@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.21.0 locale=en baseline=sha256:308114b76ba97466f58479dd0d5e4251ea8efba6ad291afc65236f26170229c5 -->
+## [0.21.0] - 2026-09-11
+
+Engineering Kit 0.21.0 adds `prepareHostVerification` for preparing one bounded Cursor invocation and reading its digest-bound private output through the existing host-verification path.
+
+### Added
+
+- Adds `prepareHostVerification`, which derives the fixed driver request, contained invocation directories, frozen snapshots, and private bindings from caller-owned candidate, workload, Skill, workspace, fixture, prompt, executable, and state-root inputs.
+- Adds `readInvocationStream` to the frozen preparation object so callers can read stdout or stderr only after the result, request, evidence-root binding, stream digest, and byte count match.
+
+### Changed
+
+- Rechecks bindings and source snapshots before process spawn, then compares the installed Skill closure digest before session creation or probing; drift and post-install digest mismatches fail closed.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.21.0. The new preparation API supports only one declared Cursor Skill with the packaged `cursor-agent-print-v1` driver; workload meaning, domain assertions, release freshness, and cleanup remain caller responsibilities.
+<!-- release-skill:changelog:end version=0.21.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.20.0 locale=en baseline=sha256:4ea3064e77b2e33e76d1476f02f7d22920638e872cb87c098e8260f617081313 -->
 ## [0.20.0] - 2026-09-10
 

@@ -1290,7 +1290,8 @@
    "useWhen": [
     "Need to resolve a registered host or finite Profile alias",
     "Need to probe, build, plan, or locally install/update host integration",
-    "Need to verify caller-owned peer adapter projection roots without writing them"
+    "Need to verify caller-owned peer adapter projection roots without writing them",
+    "Need the unreleased Cursor single-Skill prepare → run → private stream reading API"
    ],
    "doNotUseWhen": [
     "Need remote host publication, automatic trust, or uninstall deletion",
@@ -1299,30 +1300,41 @@
    ],
    "prerequisites": [
     "The host Profile is registered in profiles/hosts and aliases are finite; npm consumers may explicitly select the Kit's packaged projection root",
-    "Trusted drivers are only claude-version-v1 / codex-version-v1"
+    "Trusted version-probe drivers are only claude-version-v1 / codex-version-v1",
+    "prepareHostVerification is an unreleased addition, not shipped in 0.20.0; it uses the packaged Cursor Descriptor and fixed cursor-agent-print-v1 verification driver",
+    "Preparation requires existing canonical roots, an empty exclusive sessionRoot, a workspace within repositoryRoot, and caller-authorized existing user state"
    ],
    "inputs": [
-    "Host identifier, finite Profile, probe/plan options, or a verified local operation input"
+    "Host identifier, finite Profile, probe/plan options, or a verified local operation input",
+    "Preparation: candidate ref and manifest bytes, declared Skill members including SKILL.md, workload and fixture bytes, protected workspace members, platform bytes, effectivePrompt, an explicitly bound cursor-agent executable, sessionRoot, existingUserStateRoot, and timeoutPolicy"
    ],
    "outputs": [
-    "Canonical host identity, independent probe facts, build artifacts, plan, local operation result, or a read-only peer-verification result"
+    "Canonical host identity, independent probe facts, build artifacts, plan, local operation result, or a read-only peer-verification result",
+    "Preparation returns frozen request/bindings, the packaged hostsRoot, and a private readInvocationStream(result, stdout|stderr) method returning a Buffer; runHostVerification retains observed/rejected/failed/indeterminate"
    ],
    "sideEffects": [
     "build/materialize writes artifacts at the contained target",
     "Probe does not spawn by default",
-    "verifyHostPeers reads caller-owned peer roots and writes no peer directory"
+    "verifyHostPeers reads caller-owned peer roots and writes no peer directory",
+    "Preparation copies opaque bytes and creates contained documents and missing discovery parents without spawning or installing Skill bytes; execution installs declared members and performs the fixed probe and invocation"
    ],
    "failureSemantics": [
-    "Hosts without a bound verification driver (e.g. codebuddy) are rejected before spawn with preflight-rejected",
+    "Hosts without a bound verification driver (e.g. deepseek-harness) are rejected before spawn with preflight-rejected",
     "Uninstall returns manual-recovery-required without deleting files",
-    "Missing probe facts, unknown projection categories, identity spoofing, or scope/anchor conflicts fail closed"
+    "Missing probe facts, unknown projection categories, identity spoofing, or scope/anchor conflicts fail closed",
+    "Preparation uses SFC2003 for invalid fields, SFC1001 for Schema failure, and SFC2004 for mechanism failure; partial private files may remain",
+    "Stream reads reject request/result mismatch, missing streams, replaced evidence roots, or digest/byte-count drift; unreadable required business evidence means incomplete verification, not acceptance"
    ],
    "invariants": [
     "HOST_DRIVER_IDS contains only the two trusted drivers",
-    "The nine capability facts are emitted independently; update operations require prior digests; manual projection categories do not grant build/plan/apply lifecycle support"
+    "The nine capability facts are emitted independently; update operations require prior digests; manual projection categories do not grant build/plan/apply lifecycle support",
+    "Preparation accepts only cursor, copies byte inputs and freezes bindings; the seven-driver runHostVerification remains compatible and checks installed bytes before the first spawn",
+    "No custom arguments, driver injection, model override, credential handling, or domain verdict; only validated four-state results are public, while prepared objects, streams, and error details remain private"
    ],
    "ownedByCaller": [
-    "Host business semantics"
+    "Host business semantics",
+    "Candidate-to-payload binding, workload semantics, business answer assertions, release freshness, and authorization to use existing user state",
+    "Exclusive namespaces and resource cleanup after evidence reading and confirmation that no process uses them; preserve indeterminate scenes for manual actions, and retry only with fresh roots and preparation"
    ],
    "routeElsewhere": [
     "Remote host publication and automatic trust: explicitly unsupported",

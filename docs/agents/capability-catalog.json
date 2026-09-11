@@ -855,6 +855,7 @@
     "probeHost (packages/skill-family-engineering-kit/src/host.mjs)",
     "buildHostAdapter (packages/skill-family-engineering-kit/src/host.mjs)",
     "verifyHostPeers (packages/skill-family-engineering-kit/src/host.mjs)",
+    "prepareHostVerification (packages/skill-family-engineering-kit/src/host-verification.mjs)",
     "runHostVerification (packages/skill-family-engineering-kit/src/host-verification.mjs)",
     "verifyHostVerificationBindings (packages/skill-family-engineering-kit/src/host-verification.mjs)",
     "materializeHostBuild (packages/skill-family-engineering-kit/src/host.mjs)",
@@ -873,7 +874,8 @@
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/host.test.mjs",
-    "packages/skill-family-engineering-kit/test/host-verification.test.mjs"
+    "packages/skill-family-engineering-kit/test/host-verification.test.mjs",
+    "scripts/release-artifact-build.mjs"
    ],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/host.test.mjs",

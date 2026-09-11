@@ -79,7 +79,7 @@ import {
   refuseHostApply,
 } from "./host.mjs";
 import { bundledHostProfilesRoot, describeHost, loadHostRegistry, resolveHostId } from "./host-profiles.mjs";
-import { runHostVerification, verifyHostVerificationBindings } from "./host-verification.mjs";
+import { prepareHostVerification, runHostVerification, verifyHostVerificationBindings } from "./host-verification.mjs";
 import { runPluginVerification } from "./plugin-verification.mjs";
 import { runSkillFamilyDirectoryVerification } from "./skill-family-directory-verification.mjs";
 import { admitCapabilityTuple, runQualification } from "./qualification.mjs";
@@ -271,6 +271,7 @@ export {
   assertPlanConsistency,
   refuseHostApply,
   runHostVerification,
+  prepareHostVerification,
   verifyHostVerificationBindings,
   runPluginVerification,
   runSkillFamilyDirectoryVerification,

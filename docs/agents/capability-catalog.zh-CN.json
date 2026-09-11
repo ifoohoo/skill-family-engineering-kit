@@ -1289,7 +1289,8 @@
    "useWhen": [
     "需要解析已登记宿主或有限 Profile alias",
     "需要探测、构建、规划或本地 install/update 宿主接入",
-    "需要在不写入目录的前提下验证调用方拥有的同级适配器投影根"
+    "需要在不写入目录的前提下验证调用方拥有的同级适配器投影根",
+    "需要尚未发布的 Cursor 单 Skill 调用准备、执行及私有流读取 API"
    ],
    "doNotUseWhen": [
     "需要远端宿主发布、自动信任或删除式 uninstall",
@@ -1298,30 +1299,41 @@
    ],
    "prerequisites": [
     "宿主 Profile 已在 profiles/hosts 登记，alias 也必须来自有限集合；npm 消费者可显式选择 Kit 随包投影根",
-    "受信 driver 仅 claude-version-v1 / codex-version-v1"
+    "受信版本探测 driver 仅 claude-version-v1 / codex-version-v1",
+    "prepareHostVerification 是未发布增量，不属于 0.20.0 已发布 API；使用随包 Cursor Descriptor 和固定 cursor-agent-print-v1 验证驱动",
+    "准备需要已存在的规范根目录、为空且独占的 sessionRoot、位于 repositoryRoot 内的工作区，以及调用方授权使用的现有用户状态"
    ],
    "inputs": [
-    "宿主标识、有限 Profile、probe/plan 选项或已验证的本地操作输入"
+    "宿主标识、有限 Profile、probe/plan 选项或已验证的本地操作输入",
+    "准备输入：候选引用和清单字节、包含 SKILL.md 的 Skill 声明成员、工作负载与夹具字节、工作区受保护成员、平台文档字节、effectivePrompt、显式绑定的 cursor-agent 可执行文件、sessionRoot、existingUserStateRoot 和 timeoutPolicy"
    ],
    "outputs": [
-    "规范宿主身份、独立 probe fact、构建产物、plan、本地操作结果或只读同级验证结果"
+    "规范宿主身份、独立 probe fact、构建产物、plan、本地操作结果或只读同级验证结果",
+    "准备返回冻结的 request/bindings、随包 hostsRoot 及私有 readInvocationStream(result, stdout|stderr) 方法；该方法返回 Buffer，runHostVerification 仍返回 observed/rejected/failed/indeterminate 四态"
    ],
    "sideEffects": [
     "build/materialize 在受收容目标写产物",
     "probe 默认不 spawn",
-    "verifyHostPeers 只读取调用方拥有的 peer 根，不写入 peer 目录"
+    "verifyHostPeers 只读取调用方拥有的 peer 根，不写入 peer 目录",
+    "准备复制不透明字节，在限定目录内写入文档并补齐发现父目录，不启动进程或安装 Skill 字节；执行阶段安装声明成员并按固定参数探测和调用"
    ],
    "failureSemantics": [
-    "未绑定验证 driver 的宿主（如 codebuddy）在 spawn 前拒绝，标记 preflight-rejected",
+    "未绑定验证 driver 的宿主（如 deepseek-harness）在 spawn 前拒绝，标记 preflight-rejected",
     "uninstall 返回 manual-recovery-required 且不删除文件",
-    "缺 probe facts、未知投影类别、身份伪造或 scope/anchor 冲突均失败关闭"
+    "缺 probe facts、未知投影类别、身份伪造或 scope/anchor 冲突均失败关闭",
+    "准备阶段的字段错误、Schema 失败和机制失败分别沿用 SFC2003、SFC1001、SFC2004；失败可能留下部分私有文件",
+    "流读取拒绝请求与结果不匹配、缺少流、证据根被替换及摘要或字节数漂移；必要业务证据不可读表示验证未完成，不能据此通过验收"
    ],
    "invariants": [
     "HOST_DRIVER_IDS 仅两个受信 driver",
-    "九项能力事实逐项输出，update 必须绑定既有摘要；manual 投影类别不授予 build/plan/apply 生命周期能力"
+    "九项能力事实逐项输出，update 必须绑定既有摘要；manual 投影类别不授予 build/plan/apply 生命周期能力",
+    "准备入口只接受 cursor，复制输入字节并冻结绑定；原七驱动的 runHostVerification 保持兼容，并在首次启动前检查安装字节",
+    "不允许自定义参数、驱动注入、模型覆盖、凭据处理或领域裁决；只有经过校验的四态结果可公开，准备对象、流及错误细节均保持私有"
    ],
    "ownedByCaller": [
-    "宿主业务语义"
+    "宿主业务语义",
+    "候选引用与载荷绑定、工作负载语义、业务答案断言、发布新鲜度及现有用户状态的使用授权",
+    "命名空间独占与资源清理：读取证据并确认没有进程继续使用目录后再清理；indeterminate 保留现场供人工处理，重试须使用新目录并重新准备"
    ],
    "routeElsewhere": [
     "远端宿主发布和自动信任：明确 unsupported",

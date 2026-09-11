@@ -9,7 +9,7 @@ import {
   superviseProcess,
 } from "skill-family-harness-node";
 import { KitError, KIT_ERROR_KINDS, kitError, invalidParamsError } from "./errors.mjs";
-import { observeHostDescriptor } from "./host-profiles.mjs";
+import { bundledHostProfilesRoot, observeHostDescriptor } from "./host-profiles.mjs";
 import {
   CLAUDE_DRIVER,
   CODEBUDDY_DRIVER,
@@ -111,8 +111,12 @@ async function rootClosure(root, members, name) {
     const read = await readFileBound(root, relative, { rootBinding: binding });
     entries.push({ path: relative, sha256: read.sha256, bytes: read.bytes });
   }
+  return { digest: memberDigest(entries), entries, binding, name };
+}
+
+function memberDigest(entries) {
   entries.sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0));
-  return { digest: digestDocument(entries), entries, binding, name };
+  return digestDocument(entries);
 }
 
 async function readBound(root, relative, expectedSha256) {
@@ -231,7 +235,7 @@ function assertRootIsolation({ inputRoots, writeRoots, existingUserStateRoot }) 
  * `--plugin-dir` target (the plugin root above it) always matches the
  * materialization path `<plugin-root>/skills/<skill-id>/SKILL.md`.
  */
-async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateRoot }) {
+async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateRoot, allowMissing = false }) {
   const skillsRoot = path.dirname(installedRoot);
   let configRoot = null;
   if (driver.driverId === WORKBUDDY_DRIVER.driverId) {
@@ -279,6 +283,15 @@ async function assertDiscoveryLayout({ driver, installedRoot, existingUserStateR
   if (driver.driverId === CURSOR_DRIVER.driverId) {
     if (path.basename(skillsRoot) !== "skills") throw fail("Cursor skills directory must be named skills");
     if (path.basename(path.dirname(skillsRoot)) !== ".cursor") throw fail("Cursor discovery root must be named .cursor");
+    // Preparation checks the same layout before creating missing parents.
+    for (const directory of [path.dirname(skillsRoot), skillsRoot]) {
+      const info = await lstat(directory).catch((cause) => {
+        if (allowMissing && cause.code === "ENOENT") return null;
+        throw cause;
+      });
+      if (info === null) return { skillsRoot, configRoot: null, projectRoot: null };
+      await canonicalDirectory(directory, "Cursor discovery directory");
+    }
   }
   if (driver.driverId === CLAUDE_DRIVER.driverId) {
     // Classic Claude plugin layout `<plugin-root>/skills/<skill-id>/SKILL.md`:
@@ -372,6 +385,166 @@ async function publishEnvelope(root, rootBinding, member, envelope) {
     createParents: false,
     mode: 0o600,
   });
+}
+
+function preparationObject(value, keys, name) {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || Reflect.ownKeys(value).length !== keys.length
+    || keys.some((key) => !Object.hasOwn(value, key))) {
+    throw invalidParamsError(`${name} must contain exactly ${keys.join(", ")}`);
+  }
+  return value;
+}
+
+function preparationBytes(value, name) {
+  if (typeof value !== "string" && !Buffer.isBuffer(value)) throw invalidParamsError(`${name} must be a string or Buffer`);
+  return Buffer.from(value);
+}
+
+function freezePreparation(value) {
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) freezePreparation(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+/** Prepares one process-local Cursor invocation; the caller owns all roots. */
+export async function prepareHostVerification(options) {
+  preparationObject(options, ["hostId", "verificationSetId", "candidate", "skill", "workloadDocument", "fixtureFiles", "workspace", "platformManifest", "effectivePrompt", "executable", "existingUserStateRoot", "sessionRoot", "timeoutPolicy"], "options");
+  preparationObject(options.candidate, ["ref", "manifest"], "candidate");
+  preparationObject(options.skill, ["root", "entrySkill", "members"], "skill");
+  preparationObject(options.workspace, ["repositoryRoot", "root", "protectedMembers"], "workspace");
+  preparationObject(options.executable, ["root", "relPath"], "executable");
+  if (options.hostId !== CURSOR_DRIVER.hostId) throw invalidParamsError("preparation supports only cursor");
+  if (!Array.isArray(options.fixtureFiles) || options.fixtureFiles.length === 0) throw invalidParamsError("fixtureFiles must be non-empty");
+  // Copy all caller-owned values before the first await, including Buffers.
+  const candidateBytes = preparationBytes(options.candidate.manifest, "candidate.manifest");
+  const workloadBytes = preparationBytes(options.workloadDocument, "workloadDocument");
+  const platformBytes = preparationBytes(options.platformManifest, "platformManifest");
+  const promptBytes = preparationBytes(options.effectivePrompt, "effectivePrompt");
+  const fixtures = options.fixtureFiles.map((file) => {
+    preparationObject(file, ["path", "content"], "fixtureFiles member");
+    return { path: file.path, content: preparationBytes(file.content, "fixture content") };
+  });
+  let input;
+  let prompt;
+  try {
+    input = structuredClone({
+      verificationSetId: options.verificationSetId, candidateRef: options.candidate.ref,
+      skill: options.skill, workspace: options.workspace, executable: options.executable,
+      existingUserStateRoot: options.existingUserStateRoot, sessionRoot: options.sessionRoot,
+      timeoutPolicy: options.timeoutPolicy,
+    });
+    requiredMembers({ members: input.skill.members }, "members");
+    requiredMembers({ members: input.workspace.protectedMembers }, "members");
+    requiredMembers({ members: fixtures.map((file) => file.path) }, "members");
+    if (fixtures.some((file) => fixtures.some((other) => other.path !== file.path && other.path.startsWith(`${file.path}/`)))) throw invalidParamsError("fixture file paths must not contain another fixture file");
+    for (const relative of [...input.skill.members, ...input.workspace.protectedMembers, ...fixtures.map((file) => file.path), input.skill.entrySkill, input.executable.relPath]) {
+      requiredRelative(relative, "member");
+      if (relative.includes("\0") || relative.split("/").some((part) => /^[A-Za-z]:/u.test(part))) throw invalidParamsError("member contains an invalid path segment");
+    }
+    if (input.skill.entrySkill.includes("/") || !input.skill.members.includes("SKILL.md")) throw invalidParamsError("skill requires one entry segment and a SKILL.md member");
+    if (path.posix.basename(input.executable.relPath) !== CURSOR_DRIVER.executableBasename) throw invalidParamsError("executable must name cursor-agent inside its explicit root");
+    prompt = strictUtf8(promptBytes, "effectivePrompt");
+    if (prompt.includes("\0")) throw invalidParamsError("effectivePrompt must not contain NUL");
+    for (const root of [input.skill.root, input.workspace.root, input.workspace.repositoryRoot, input.executable.root, input.sessionRoot, input.existingUserStateRoot]) {
+      requiredBinding(root, "root");
+      if (root.includes("\\")) throw invalidParamsError("root must not contain backslashes");
+    }
+  } catch (cause) {
+    if (cause?.code === "SFC2003") throw cause;
+    throw invalidParamsError("invalid host verification preparation fields", { cause: cause.message });
+  }
+  const timeoutPolicy = validateExternalContract(input.timeoutPolicy, "https://contracts.skill-family.example/v1/timeout-policy.json", "timeoutPolicy fails its registered contract");
+  try {
+    const hostsRoot = bundledHostProfilesRoot();
+    const { descriptor, descriptorSha256 } = await observeHostDescriptor({ hostId: CURSOR_DRIVER.hostId, hostsRoot });
+    const driver = getBuiltInHostVerificationDriver(descriptor.verification?.driverId);
+    if (driver !== CURSOR_DRIVER) throw fail("Cursor descriptor does not select the fixed driver");
+    const repositoryRoot = await canonicalDirectory(input.workspace.repositoryRoot, "repositoryRoot");
+    const workspaceRoot = await canonicalDirectory(input.workspace.root, "workspaceRoot");
+    const adapterRoot = await canonicalDirectory(input.skill.root, "skill.root");
+    const executableRoot = await canonicalDirectory(input.executable.root, "executable.root");
+    const existingUserStateRoot = await canonicalDirectory(input.existingUserStateRoot, "existingUserStateRoot");
+    const sessionRoot = await canonicalDirectory(input.sessionRoot, "sessionRoot");
+    if (!isWithin(workspaceRoot, repositoryRoot)) throw fail("repositoryRoot must contain workspaceRoot");
+    await assertEmptyDirectory(sessionRoot, "sessionRoot");
+    const inputRoots = [["hostsRoot", hostsRoot], ["repositoryRoot", repositoryRoot], ["workspaceRoot", workspaceRoot], ["adapterRoot", adapterRoot], ["executableRoot", executableRoot]];
+    const installedSkillRoot = path.join(workspaceRoot, ".cursor", "skills", input.skill.entrySkill);
+    assertRootIsolation({ inputRoots, writeRoots: [["sessionRoot", sessionRoot]], existingUserStateRoot });
+    assertRootIsolation({ inputRoots: inputRoots.filter(([name]) => name !== "repositoryRoot" && name !== "workspaceRoot"), writeRoots: [["sessionRoot", sessionRoot], ["installedSkillRoot", installedSkillRoot]], existingUserStateRoot });
+    await assertDiscoveryLayout({ driver, installedRoot: installedSkillRoot, existingUserStateRoot, allowMissing: true });
+    const adapter = await rootClosure(adapterRoot, input.skill.members, "adapterMembers");
+    const workspace = await rootClosure(workspaceRoot, input.workspace.protectedMembers, "protectedWorkspaceMembers");
+    const executable = await readBound(executableRoot, input.executable.relPath);
+    const request = validateExternalContract({
+      schemaVersion: 1, kind: "skill-family.host-verification-request", operation: "host-verification",
+      common: {
+        verificationSetId: input.verificationSetId, candidateRef: input.candidateRef,
+        candidateManifestSha256: digestBytes(candidateBytes), workloadDocumentSha256: digestBytes(workloadBytes),
+        fixtureClosureDigest: memberDigest(fixtures.map((file) => ({ path: file.path, sha256: digestBytes(file.content), bytes: file.content.length }))),
+        protectedWorkspaceClosureDigest: workspace.digest,
+      },
+      host: {
+        hostId: driver.hostId, descriptorSha256, driverId: driver.driverId, driverVersion: driver.driverVersion,
+        platformManifestSha256: digestBytes(platformBytes), adapterClosureDigest: adapter.digest,
+        installedSkillClosureDigest: adapter.digest, effectivePromptSha256: digestBytes(promptBytes), executableSha256: executable.sha256,
+      },
+      auth: { strategy: descriptor.verification.authStrategy, credentialMutation: descriptor.verification.credentialMutation },
+      execution: { timeoutPolicy, modelOverridePolicy: "forbidden" },
+    }, REQUEST_SCHEMA, "host verification request fails its registered contract");
+    const sessionBinding = await createFilesystemRootBinding(sessionRoot);
+    const bindings = {
+      repositoryRoot, workspaceRoot, adapterRoot, executableRoot, existingUserStateRoot,
+      installedSkillRoot, effectivePrompt: prompt, executableRelPath: input.executable.relPath,
+      adapterMembers: input.skill.members, protectedWorkspaceMembers: input.workspace.protectedMembers,
+      fixtureMembers: fixtures.map((file) => file.path),
+      candidateManifestRelPath: "candidate.bin", workloadDocumentRelPath: "workload.bin", platformManifestRelPath: "platform.bin",
+    };
+    for (const name of ["candidateRoot", "workloadRoot", "fixtureRoot", "platformManifestRoot", "outputRoot", "temporaryRoot", "privateEvidenceRoot"]) {
+      if ((await createFilesystemRootBinding(sessionRoot)).digest !== sessionBinding.digest) throw fail("sessionRoot changed during preparation");
+      const root = path.join(sessionRoot, name);
+      await mkdir(root, { recursive: false, mode: 0o700 });
+      bindings[name] = await canonicalDirectory(root, name);
+    }
+    const evidenceBinding = await createFilesystemRootBinding(bindings.privateEvidenceRoot);
+    for (const [root, relative, bytes, expected] of [
+      [bindings.candidateRoot, bindings.candidateManifestRelPath, candidateBytes, request.common.candidateManifestSha256],
+      [bindings.workloadRoot, bindings.workloadDocumentRelPath, workloadBytes, request.common.workloadDocumentSha256],
+      [bindings.platformManifestRoot, bindings.platformManifestRelPath, platformBytes, request.host.platformManifestSha256],
+      ...fixtures.map((file) => [bindings.fixtureRoot, file.path, file.content, digestBytes(file.content)]),
+    ]) {
+      await publishFileExclusive(root, relative, bytes, { createParents: true, mode: 0o600 });
+      await readBound(root, relative, expected);
+    }
+    if ((await rootClosure(bindings.fixtureRoot, bindings.fixtureMembers, "fixtureMembers")).digest !== request.common.fixtureClosureDigest) throw fail("fixture bytes changed during preparation");
+    await canonicalDirectory(workspaceRoot, "workspaceRoot");
+    assertRootIsolation({ inputRoots, writeRoots: [["sessionRoot", sessionRoot]], existingUserStateRoot });
+    await assertDiscoveryLayout({ driver, installedRoot: installedSkillRoot, existingUserStateRoot, allowMissing: true });
+    for (const directory of [path.join(workspaceRoot, ".cursor"), path.dirname(installedSkillRoot)]) {
+      await mkdir(directory, { recursive: false, mode: 0o700 }).catch((cause) => { if (cause.code !== "EEXIST") throw cause; });
+      await canonicalDirectory(directory, "Cursor discovery directory");
+    }
+    await assertDiscoveryLayout({ driver, installedRoot: installedSkillRoot, existingUserStateRoot });
+    freezePreparation(request);
+    freezePreparation(bindings);
+    const requestDigest = digestDocument(request);
+    async function readInvocationStream(result, stream) {
+      if (!["stdout", "stderr"].includes(stream)) throw invalidParamsError("stream must be stdout or stderr");
+      const normalized = validateExternalContract(result, RESULT_SCHEMA_ID, "host verification result fails its registered contract");
+      if (normalized.requestDigest !== requestDigest || canonicalJson(normalized.common) !== canonicalJson(request.common) || canonicalJson(normalized.host) !== canonicalJson(request.host)) throw fail("result does not match this prepared request");
+      const summary = normalized.streams?.[stream];
+      if (!summary) throw fail("result has no invocation stream summary");
+      const read = await readFileBound(bindings.privateEvidenceRoot, `invocation/${stream}.bin`, { rootBinding: evidenceBinding, expectedSha256: summary.sha256 });
+      if (read.bytes !== summary.bytes) throw fail("invocation stream byte count differs from its summary");
+      return read.content;
+    }
+    return Object.freeze({ request, bindings, hostsRoot, readInvocationStream });
+  } catch (cause) {
+    if (cause?.code?.startsWith?.("SFC")) throw cause;
+    throw fail("host verification preparation failed", { cause: cause?.code ?? cause?.message });
+  }
 }
 
 /**
@@ -582,6 +755,7 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     let installed;
     try {
       installed = await materializeMembers(adapterRoot, installedRoot, adapterMembers);
+      if (installed.digest !== normalized.host.installedSkillClosureDigest) return rejected();
       // The session root is tracked only after mkdir succeeded, so a failed
       // mkdir never pretends there is something to clean.
       const sessionCandidate = path.join(temporaryRoot, `session-${process.pid}-${Date.now()}`);

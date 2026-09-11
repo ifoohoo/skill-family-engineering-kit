@@ -1139,6 +1139,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Host-Invocation-Preparation-Unreleased-Addition" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Host Invocation Preparation (Unreleased Addition)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Capability-Identity-and-Maturity" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1872,6 +1883,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#Host-Invocation-Preparation-Unreleased-Addition" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Host Invocation Preparation (Unreleased Addition)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Capability-Identity-and-Maturity" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2091,6 +2113,10 @@ Carries limited domain semantics? ──yes──▶ finite closed semantics: co
 <li><strong>Domain auditing</strong>: an independent audit consumer owns the semantics and final accept/reject; Foundation provides only a deterministic audit surface (<code>foundation.unsupported.domain-audit-semantics</code>).</li>
 <li><strong>Host application and lifecycle</strong>: Hosts own their semantics and lifecycle behavior. Foundation only unifies structural differences through bounded host identity/alias resolution, contained local projection, bound reads, atomic writes, and fixed-driver constrained verification. Only a Descriptor with <code>support=supported</code> can make <code>planHost</code> produce an install/update plan with <code>status=planned</code>; a <code>support=manual</code> host such as Qoder receives an empty <code>status=manual</code> plan, and <code>applyHostPlan</code> returns <code>rejected</code> with <code>publicationState=not-attempted</code> for it. <code>applyHostPlan</code> executes only <code>status=planned</code> plans; install/update still requires digest binding, a verified build, and explicit authorization, while uninstall returns <code>manual-recovery-required</code> without deleting files. Real-host verification uses six closed built-in drivers with fixed-argument, fresh, constrained calls and <code>existing-user-state + host-managed</code>. The skill family (caller) interprets business results and performs final domain acceptance from infrastructure observations and business answers. Qoder's Descriptor is <code>manual</code>, and <code>qodercli-print-v1</code> is a <code>candidate</code> real-verification driver. WorkBuddy and CodeBuddy use separate drivers and discovery layouts. Post-publish plugin discovery, installation, updates, marketplace operations, and release state in real user environments are managed by release-skill.</li>
 </ul>
+<h2 id="Host-Invocation-Preparation-Unreleased-Addition">Host Invocation Preparation (Unreleased Addition)<a class="headerlink" href="#Host-Invocation-Preparation-Unreleased-Addition" title="Permanent link">&para;</a></h2>
+<p>The Kit package-root <code>prepareHostVerification</code> API is unreleased and was not shipped in 0.20.0. It prepares one declared Skill for Cursor by reusing member closures, bound reads, exclusive writes, and the fixed driver. Contracts Schemas, Harness mechanisms, the existing seven drivers, and four-state results remain unchanged; there is no new top-level command.</p>
+<p>The caller supplies business bytes, declared members, exclusive directories, and an existing user-state root. Kit copies bytes, derives digests, prepares directories, and returns a frozen object without spawning a process. The existing <code>runHostVerification</code> entrypoint rechecks bindings and compares the actual installed digest before the first process starts. The returned private <code>readInvocationStream</code> method binds reads to the request, captured evidence root, and stream digest without interpreting business answers.</p>
+<p>The caller retains business semantics, candidate-to-payload binding, domain acceptance, release freshness, and cleanup. Public reports may contain only validated four-state results; prepared objects, raw streams, and error details stay private. Unavailable required streams mean verification is incomplete. Preserve an <code>indeterminate</code> scene rather than cleaning it unconditionally. Controlled fixtures prove public API wiring, not new real-host qualification.</p>
 <h2 id="Capability-Identity-and-Maturity">Capability Identity and Maturity<a class="headerlink" href="#Capability-Identity-and-Maturity" title="Permanent link">&para;</a></h2>
 <p>Capability identity and maturity are separate dimensions (FND-ADR-016). Consumers of historical <code>./candidate/**</code> entrypoints migrate once to the canonical entrypoints introduced in 0.10.0, while the old entrypoints remain same-source compatibility surfaces during deprecation. Capabilities introduced from 0.10.0 onward use their final canonical entrypoint, Schema <code>$id</code>, and operation from the first candidate release. Stable promotion changes the compatibility promise only and does not trigger another source or contract-identity migration. A consumer must still update all three exact package pins to obtain a newly published stable promise. Existing package-identity, source-digest, and provenance bindings continue to determine whether a Bundle rebuild is required; the maturity label does not add a separate rebuild condition.</p>
 <p>The physical <code>candidate/</code> directory is not an architecture layer and does not determine public stability. The Contracts machine policy and capability-catalog <code>stability</code> field are authoritative. Removing a historical entrypoint requires a separate major-version decision and consumer-exit evidence; it cannot be bundled into promotion.</p>

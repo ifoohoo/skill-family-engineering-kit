@@ -491,6 +491,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#宿主验证调用准备未发布增量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        宿主验证调用准备（未发布增量）
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力身份与成熟度" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1872,6 +1883,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#宿主验证调用准备未发布增量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        宿主验证调用准备（未发布增量）
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#能力身份与成熟度" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2091,6 +2113,10 @@ Contracts（结构、协议、错误码、协议名登记）
 <li><strong>同级适配器只读验证</strong>：Contracts 1.10.0 增加成熟度中立的 request/result；Harness 复用真实根绑定、路径收容、读取、闭包和 manifest，按 peer 归一化后验证共同来源与唯一 <code>SKILL.md</code> mapping；Kit 只提供薄入口。Foundation 不拥有 canonical source，不写目录，不产生 receipt，也不接管旧 manifest 的业务迁移。</li>
 <li><strong>真实宿主验证</strong>：Contracts 1.11.0 增加 <code>host-verification-request</code> 与 <code>host-verification-result</code>；Harness 在既有 <code>superviseProcess</code> 上提供原始字节 sink，Kit 维护六个封闭内置 candidate driver：其中包含 <code>qodercli-print-v1</code>、WorkBuddy 与 CodeBuddy 各自独立的 driver，以及另外三个已登记 driver。调用方创建、提供并独占本次验证所需的 fresh roots，完成检查后清理其独占的外层 <code>temporaryRoot</code>；Foundation 只在该根下创建并保留受跟踪的 session root。Foundation 校验 canonical/fresh 路径、路径收容、根重叠隔离、摘要与 Descriptor/driver 绑定，再按固定参数执行受约束调用；这些路径检查是路径边界，不是 OS sandbox。调用方根据基础设施观察和业务答案作最终领域验收。WorkBuddy 与 CodeBuddy 的 driver、发现目录和工作目录保持独立。Foundation 返回基础设施观察结果，不拥有领域输出、发布状态或真实用户环境中的插件发布后行为，也不宣称认证状态隔离、凭证未变化、模型身份固定或宿主工具能力已关闭。</li>
 </ul>
+<h2 id="宿主验证调用准备未发布增量">宿主验证调用准备（未发布增量）<a class="headerlink" href="#宿主验证调用准备未发布增量" title="Permanent link">&para;</a></h2>
+<p>Kit 包根新增的 <code>prepareHostVerification</code> 尚未发布，不属于 0.20.0 已发布 API。它只为 Cursor 的单 Skill 调用准备输入，复用现有成员闭包、绑定读取、独占写入和固定驱动。Contracts Schema、Harness 机制、原有七驱动和四态结果不变，也不增加顶层命令。</p>
+<p>调用方提供业务字节、声明成员、独占目录及现有用户状态根。Kit 复制字节、派生摘要、准备目录并返回冻结对象，不启动进程；原 <code>runHostVerification</code> 入口重新校验绑定，并在首次启动前核对实际安装摘要。返回对象的私有 <code>readInvocationStream</code> 方法按请求、证据根和流摘要读取字节，不解释业务答案。</p>
+<p>调用方继续拥有业务语义、候选与载荷绑定、领域验收、发布新鲜度及资源清理。公共报告只能使用经校验的四态结果；准备对象、原始流和错误细节保持私有。必要业务流不可读时验证未完成；<code>indeterminate</code> 须保留现场，不能无条件清理。受控夹具只证明公开 API 接线，不新增真实宿主资格。</p>
 <h2 id="能力身份与成熟度">能力身份与成熟度<a class="headerlink" href="#能力身份与成熟度" title="Permanent link">&para;</a></h2>
 <p>能力身份和成熟度是两个维度（FND-ADR-016）。历史 <code>./candidate/**</code> 消费者迁移一次到 0.10.0 提供的规范入口；旧入口
 只作为同源兼容面进入弃用窗口。0.10.0 以后新增能力从第一个 candidate 版本起就使用最终规范入口、Schema <code>$id</code> 和

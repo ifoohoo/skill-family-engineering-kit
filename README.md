@@ -4,27 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.20.0 -->
+<!-- release-skill:release-version: 0.21.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.20.0** (2026-09-10)
+**0.21.0** (2026-09-11)
 
-Engineering Kit 0.20.0 adds Cursor project Skill projection and a fixed Cursor Agent verification driver on the existing host-verification path.
+Engineering Kit 0.21.0 adds `prepareHostVerification` for preparing one bounded Cursor invocation and reading its digest-bound private output through the existing host-verification path.
 
 **Added**
 
-- Registers `.cursor/skills` as the Cursor project Skill root while preserving manual lifecycle planning.
-- Adds `cursor-agent-print-v1` with fixed workspace, ask-mode, sandbox, JSON output, version, and failure checks.
+- Adds `prepareHostVerification`, which derives the fixed driver request, contained invocation directories, frozen snapshots, and private bindings from caller-owned candidate, workload, Skill, workspace, fixture, prompt, executable, and state-root inputs.
+- Adds `readInvocationStream` to the frozen preparation object so callers can read stdout or stderr only after the result, request, evidence-root binding, stream digest, and byte count match.
 
 **Changed**
 
-- Qualifies project-level Skill discovery through Cursor CLI menu discovery and one explicit invocation, without requiring a duplicate IDE check.
+- Rechecks bindings and source snapshots before process spawn, then compares the installed Skill closure digest before session creation or probing; drift and post-install digest mismatches fail closed.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.20.0 and rebuild official Bundles. Cursor stays manual/developer-preview; the driver does not add automatic trust, model selection, or Marketplace lifecycle management.
+Pin all three Foundation packages to exactly 0.21.0. The new preparation API supports only one declared Cursor Skill with the packaged `cursor-agent-print-v1` driver; workload meaning, domain assertions, release freshness, and cleanup remain caller responsibilities.
 <!-- release-skill:managed:end id=latest-release -->
 
 ### Foundation 0.15.0 candidate qualification entries
@@ -54,7 +54,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.20.0 is the local source candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.21.0 is the local source candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -62,21 +62,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.20.0.tgz" "$pack_dir/skill-family-harness-node-0.20.0.tgz" "$pack_dir/skill-family-engineering-kit-0.20.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.21.0.tgz" "$pack_dir/skill-family-harness-node-0.21.0.tgz" "$pack_dir/skill-family-engineering-kit-0.21.0.tgz")
 ```
 
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.20.0
-npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.21.0
+npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.20.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 
@@ -169,6 +169,38 @@ The Profile must be provided explicitly; Kit does not bind a specific host by de
 The API keeps consumer workload, domain output checks, domain PASS/FAIL, release freshness, and release state outside Foundation. The caller supplies a canonical `existingUserStateRoot` that is projected into the child environment but never read, digested, modified or cleaned by Foundation; it does not grant manual Profiles any build, plan, apply, install, update, or uninstall capability. Version 0.12.0 requires real-host verification of all five fixed drivers before publication; the API does not own that release decision.
 
 `executableSha256` binds only the bytes observed by the strict preflight read; the actual process is still spawned by pathname, so the caller must exclusively control the executable namespace through probe and invocation. Foundation retains the call's `session-*` directory and never deletes it by pathname. After inspection, the caller cleans its exclusively owned outer `temporaryRoot`.
+
+#### 0.21.0 candidate: prepare a Cursor invocation
+
+`prepareHostVerification` is a 0.21.0 candidate public API and has not yet been published remotely. The published 0.20.0 package does not contain this API. It prepares one declared Skill for `cursor`, using the packaged Descriptor and fixed `cursor-agent-print-v1` driver. It accepts no custom driver, arguments, model override, credential handling, or domain validator. The existing seven-driver `runHostVerification` entrypoint remains compatible.
+
+The caller supplies the following values; document and fixture content is an opaque UTF-8 string or Buffer. `skillMembers` must include `SKILL.md`; only declared members are installed. All roots must already exist as canonical absolute paths. `sessionRoot` must be empty and exclusively owned, and the workspace must be inside `repositoryRoot` (equality is allowed). The caller authorizes use of the existing user-state root and exclusively controls the executable namespace.
+
+```js
+import { prepareHostVerification, runHostVerification } from "skill-family-engineering-kit";
+
+const prepared = await prepareHostVerification({
+  hostId: "cursor", verificationSetId,
+  candidate: { ref: candidateRef, manifest: candidateManifest },
+  skill: { root: skillRoot, entrySkill, members: skillMembers },
+  workloadDocument, fixtureFiles, // [{ path: "input.json", content: fixtureBytes }]
+  workspace: { repositoryRoot, root: workspaceRoot, protectedMembers },
+  platformManifest, effectivePrompt,
+  executable: { root: executableRoot, relPath: "cursor-agent" },
+  existingUserStateRoot, sessionRoot,
+  timeoutPolicy: { schemaVersion: 1, kind: "skill-family.timeout-policy", maxSeconds: 60, killGraceSeconds: 1 },
+});
+const result = await runHostVerification(prepared);
+const stdout = result.streams
+  ? await prepared.readInvocationStream(result, "stdout")
+  : null;
+```
+
+Preparation copies input bytes, computes digests, freezes the request and private bindings, and creates contained documents and missing `.cursor/skills` parents without spawning a process or installing the Skill. Execution rechecks bindings and compares the installed Skill digest before any probe. Invalid fields, Schema failures, and mechanism failures use `SFC2003`, `SFC1001`, and `SFC2004`, respectively; preparation may leave partial files on a mechanism failure.
+
+`readInvocationStream(result, "stdout" | "stderr")` returns a Buffer only after checking the result, request binding, captured evidence root, stream digest, and byte count. It does not parse the answer or decide domain correctness. Missing streams or a read failure mean required business evidence is unavailable, not acceptance. The four states remain `observed`, `rejected`, `failed`, and `indeterminate`; `observed` is not a domain PASS. Only the validated result may enter a public report: the prepared object, raw streams, and error details stay private.
+
+The caller owns workload semantics, candidate-to-payload binding, domain assertions, release freshness, and resource cleanup. Keep the outer session and workspace handles before preparation; after a known outcome, read the evidence and confirm no process still uses the directories before cleanup. Preserve an `indeterminate` scene for the required manual actions; do not wrap the call in unconditional cleanup. A retry needs fresh roots and a new prepared object. These local fixture checks do not qualify a real host or prove model-driven Skill discovery.
 
 ## Typical Use Cases
 
@@ -295,4 +327,4 @@ The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserve
 
 The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
 
-Version 0.20.0 is the local source candidate. Remote availability must be established by the corresponding release-skill post-release evidence. Consume the three locally verified tarballs for candidate checks; a version marker, unit test, or successful install is not complete contract integration, migration completion, or real-host qualification.
+Version 0.21.0 is the local source candidate. Remote availability must be established by the corresponding release-skill post-release evidence. Consume the three locally verified tarballs for candidate checks; a version marker, unit test, or successful install is not complete contract integration, migration completion, or real-host qualification.

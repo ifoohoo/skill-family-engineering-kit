@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.21.0 locale=zh-CN baseline=sha256:1f50ac51db5691c5c9dbe1014d0ab43e6cfa4eab1d60eb37a9ca74d30bc75890 -->
+## [0.21.0] - 2026-09-11
+
+Engineering Kit 0.21.0 增加 `prepareHostVerification`，在既有宿主验证路径上准备一次受约束的 Cursor 调用，并读取经过摘要绑定的私有输出。
+
+### 新增
+
+- 增加 `prepareHostVerification`。它从调用方持有的候选、工作负载、Skill、工作区、夹具、提示词、可执行文件和状态根输入派生固定驱动请求、受收容调用目录、冻结快照与私有绑定。
+- 冻结的准备对象增加 `readInvocationStream`。只有结果、请求、证据根绑定、流摘要和字节数一致时，调用方才能读取 stdout 或 stderr。
+
+### 变更
+
+- 启动进程前重新校验绑定与来源快照；创建会话或探测前比较安装后的 Skill 闭包摘要。发现漂移或摘要不匹配时失败关闭。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.21.0。新准备接口只支持一个已声明的 Cursor Skill，并固定使用随包 `cursor-agent-print-v1` 驱动；工作负载含义、领域断言、发布新鲜度和清理由调用方负责。
+<!-- release-skill:changelog:end version=0.21.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.20.0 locale=zh-CN baseline=sha256:7f7e7f2175429d96720b04bb378afcb796e01f642abc0cdd7114fddf4a808b62 -->
 ## [0.20.0] - 2026-09-10
 
