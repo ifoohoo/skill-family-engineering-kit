@@ -20,9 +20,9 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验 Foundation 已登记的全部 45 类顶层契约对象文档",
+      "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验当前本地 Foundation 合同源码已登记的 53 类顶层对象文档",
    "useWhen": [
-    "需要校验 project-manifest、profile-descriptor、report-model 等已登记契约对象",
+        "需要校验 project-manifest、professional-conclusion、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
    ],
    "doNotUseWhen": [
@@ -1183,10 +1183,11 @@
   },
   {
    "id": "foundation.kit.check",
-   "intent": "只诊断不修复：运行 contracts/drift/closure/version/docs/git/identity/boundary/platform 九类检查，输出发现（findings）",
+      "intent": "只诊断不修复：保留九类 legacy 检查，并增加显式 declared 版本分支，只读取项目声明的发行单元",
    "useWhen": [
     "需要发现工程不一致但不自动修改",
-    "需要按 --only 缩小检查范围"
+        "需要按 --only 缩小 legacy 检查范围",
+        "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1194,19 +1195,23 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "--only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform"
+        "legacy --only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform",
+        "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits"
    ],
    "outputs": [
-    "发现清单；退出码 findings=1、mechanism=2"
+        "发现清单；退出码 findings=1、mechanism=2",
+        "runCommand check 包装入口在显式提供输出根与相对路径时返回可选 professional-conclusion 路径"
    ],
    "sideEffects": [
-    "无文件写入（只读诊断）"
+        "runChecks 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
+        "只有 runCommand check 包装入口可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
    ],
    "failureSemantics": [
     "findings 退出码 1；mechanism 拒绝退出码 2"
    ],
    "invariants": [
-    "CHECK_CLASSES 为九类闭集，不扩张"
+        "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
+        "declared 检查只读取具名单元，并区分 partial 与 not-performed"
    ],
    "ownedByCaller": [
     "发现项的业务处置"
@@ -1410,30 +1415,34 @@
   },
   {
    "id": "foundation.kit.entry-check",
-   "intent": "读取入口契约声明，并对每个入口执行物理存在、逻辑名一致、人工入口注册、副作用类别与令牌预算五项检查",
+      "intent": "保留 legacy 入口契约检查，并增加显式 declared 分支，只静态读取项目清单登记的物理入口",
    "useWhen": [
     "需要校验入口契约声明与物理 SKILL.md 的一致性",
-    "需要检查入口逻辑名、副作用类别与令牌预算"
+        "需要检查入口逻辑名、副作用类别与令牌预算",
+        "需要核对声明的物理文件，且不执行 Skill、脚本、hook 或模型"
    ],
    "doNotUseWhen": [
     "需要修复声明或入口（check 只诊断不修复）"
    ],
    "prerequisites": [],
    "inputs": [
-    "项目根（携带 skill-family.entry-contract.json 与 package.json）"
+        "legacy 项目根（携带 skill-family.entry-contract.json 与 package.json）",
+        "declared 项目根（项目清单含 engineering.entries）"
    ],
    "outputs": [
-    "入口检查报告（kind skill-family.entry-check-report）与 findings"
+        "入口检查报告（kind skill-family.entry-check-report）与 findings",
+        "checkEntriesAction 在显式授权结论输出时返回可选 professional-conclusion 路径"
    ],
    "sideEffects": [
-    "只读读取声明、package.json 与入口文件"
+        "runEntryContractCheck 只读声明与入口文件，不执行目标内容",
+        "只有 checkEntriesAction 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
    ],
    "failureSemantics": [
     "声明缺失时作为数据而非发现",
     "各项检查失败产出不同 kind 的 finding"
    ],
    "invariants": [
-    "不修改任何文件",
+        "纯检查函数不修改任何文件",
     "不新增第五个顶层命令，落在 check entries 子动作"
    ],
    "ownedByCaller": [
@@ -2368,6 +2377,66 @@
    ],
    "routeElsewhere": [
     "observed 结论需要另行批准的 Kimi 官方 typed observation 映射；恶意并发或新增输出事实交回 Foundation"
+   ]
+  },
+  {
+   "id": "foundation.harness.file-set-recovery",
+   "intent": "在一个公共入口内按序应用同一项目根内普通文件的创建、替换与删除，并在捕获失败或进程强制终止后依据持久恢复材料恢复原字节与模式，或按逐路径事实报告冲突与未知",
+   "useWhen": [
+    "需要在同一真实项目根内按固定顺序创建、替换或删除一组分散普通文件，并要求整组前检与逐项意图事实",
+    "需要在调用方已建立合作式独占的前提下阻止写者交错，而不是依赖瞬时多文件可见性",
+    "需要进程重启后由显式公共入口恢复未提交操作，且恢复再次中断仍可重入",
+    "需要机制层默认保留恢复材料，并只清理指定已终结操作的材料"
+   ],
+   "doNotUseWhen": [
+    "需要瞬时多文件可见性、跨文件事务快照或目录级操作",
+    "需要抵御不合作的并发写者或同权限恶意进程（本能力只提供合作式独占前提）",
+    "需要处理符号链接、硬链接、跨设备目标或机制保留路径",
+    "需要在 Foundation 定义领域验证语义、业务重试策略或恢复材料的最终去处"
+   ],
+   "prerequisites": [
+    "调用方已用 createFilesystemRootBinding 批准规范绝对真实根，并在 apply 与 recover 请求中显式给出固定 recoveryRelPath 与 allowAdjacentStaging",
+    "environment 声明 filesystem 为 apfs 或 ext4、cooperativeWriters 为 true；业务根与恢复材料同设备且父目录已存在",
+    "apply 必须提供只读 validate 函数；recover 必须先在外部建立排他维护区间，并传入本次维护的完整观察；prune 在无残留时直接取得正常 writer，只有需要故障接管时才要求同一维护观察",
+    "目标属于执行用户、owner-read 位已设置，且原/新模式的全部置位都不被进程当前 umask 屏蔽"
+   ],
+   "inputs": [
+    "file-set-apply-request：operationId、root、rootBinding、recoveryRelPath、allowAdjacentStaging、environment、validationTimeoutMs 与最多 1024 条有序操作（path/action/expected/next，bytes 只存在于 JS 调用参数）",
+    "file-set-recovery-request：同一根绑定与 environment，外加 allowAdjacentStaging 与 maintenance 观察；file-set-prune-request：同一根绑定与 environment，只有需要故障接管时才要求显式 maintenance",
+    "调用方提供的 validate({root, operationId, signal})，可同步或异步，返回闭对象 {passed}"
+   ],
+   "outputs": [
+    "file-set-result：operation、outcome、preflight、businessWrite、validation、recovery、paths、errors 与 materials",
+    "paths 按原请求顺序逐项给出 apply、restore、current 与 errorKinds，分别表达历史意图、恢复动作与最近一次安全观察",
+    "materials 给出恢复材料相对路径、none/retained/partial/pruned、durable 与 adjacentStaging 事实"
+   ],
+   "sideEffects": [
+    "在根内固定 .foundation-file-apply 下写入 journal 与 operations/<id>/{before,after}/<index> 恢复材料，并对业务路径执行严格的单文件发布或原子替换写入",
+    "默认保留恢复材料，只有显式 prune 才清理精确的已终结材料；journal 保留",
+    "不发起网络、不启动子进程、不写 Git，也不修改进程 umask"
+   ],
+   "failureSemantics": [
+    "可捕获的机制失败返回 file-set-result，而不是只抛一个错误；外码沿用 SFC2004，details 携带闭枚举 kind 与 phase，消息不用于分支",
+    "整组前检失败、环境不支持、容量越限与路径或前提不符时业务零写入，并报告具体前置失败",
+    "领域验证返回 false、抛错、超时、非法结果或迟到完成时自动恢复且不提交，验证状态与恢复状态分开报告",
+    "恢复遇冲突路径保留外部内容并继续其他安全项；全局独占或根身份问题停止整组",
+    "有效提交事件决定不再回滚；目标复核或持久化未确认时报告 commit-unconfirmed 并保留材料"
+   ],
+   "invariants": [
+    "未为该路径写入持久 apply-intent 事实前不触碰任何业务路径；已 committed 的操作绝不被恢复回滚",
+    "整组只使用一个协作式单写者与既有事件链，不新增第二套日志、锁、序号或摘要链，也不清理 state-store 内部文件",
+    "结果中的逐路径字段分开表达历史与当前观察，不合成单一布尔值；恢复完成不把 businessWrite 改回 none",
+    "不承诺瞬时多文件可见性，也不承诺抵御不合作或同权限的恶意并发写者"
+   ],
+   "ownedByCaller": [
+    "业务计划、原状态与新字节的冻结，以及恢复材料的最终去处",
+    "validate 的领域判断与其异常详情、只读前提与超时值选择",
+    "维护区间的建立、旧参与者与旧恢复者的停止确认，以及提交不确定时的运维决定",
+    "精确 pin、采用资格与领域验收判定"
+   ],
+   "routeElsewhere": [
+    "目录操作、符号链接、跨设备写入或完整元数据备份由消费者保留原路径处理，或交回 Foundation 形成新的最小能力合同",
+    "业务状态机与编排转 loop-agent；分发与发布状态转 release-skill"
    ]
   }
  ]

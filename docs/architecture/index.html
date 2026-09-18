@@ -513,6 +513,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#治理采用本地未发布增量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        治理采用（本地未发布增量）
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#下一阶段能力线架构-hand-off" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1905,6 +1916,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#治理采用本地未发布增量" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        治理采用（本地未发布增量）
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#下一阶段能力线架构-hand-off" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2017,7 +2039,7 @@ Contracts（结构、协议、错误码、协议名登记）
 <tbody>
 <tr>
 <td>Contracts</td>
-<td>结构、协议、错误码、协议名登记；46 类顶层对象；9 条 mandatory rule</td>
+<td>结构、协议、错误码、协议名登记；当前本地合同源码为 53 类顶层对象；9 条 mandatory rule</td>
 <td>业务字段语义、领域审计、远端写入、模型生成</td>
 </tr>
 <tr>
@@ -2124,6 +2146,17 @@ operation。后续晋升 stable 只提高兼容承诺，不再触发消费者源
 更新三包精确 pin；Bundle 是否重建由既有 package identity、来源摘要与 provenance 绑定输入决定，而非成熟度标签决定。</p>
 <p>物理 <code>candidate/</code> 目录不是新的架构层，也不决定公开稳定性。Contracts 的机器政策和能力目录 <code>stability</code> 字段才是成熟度
 真源；删除历史入口需要独立主版本决策和消费者退出证据，不能夹带在晋升中。</p>
+<h2 id="治理采用本地未发布增量">治理采用（本地未发布增量）<a class="headerlink" href="#治理采用本地未发布增量" title="Permanent link">&para;</a></h2>
+<p>当前工作树把 Contracts 规格推进到 <code>1.20.0</code>、53 类顶层对象。新增的
+<code>professional-conclusion</code> 只统一专业方与消费方之间的六字段交换结构；专业 code、详情、
+适用范围和整改解释仍由提供方拥有。<code>project-manifest</code> 可选的 <code>engineering</code> 声明只列出要检查的
+发行单元版本来源与物理入口，不要求所有项目复制 Foundation 的仓库布局。</p>
+<p>Engineering Kit 在既有 <code>check</code> 下增加显式 <code>declared</code> 分支。版本分支只读取声明的文本或 JSON
+版本来源及镜像；入口分支只静态读取声明的普通文件，均不运行目标脚本、Skill、hook 或模型。
+纯读取 API 与缺省命令不写文件。只有 <code>runCommand("check")</code> 与 <code>checkEntriesAction</code> 在调用方同时
+给出已存在输出根和根内相对路径时，才独占创建一份公共结论；不自动建目录，也不覆盖现有文件。</p>
+<p>这组源码不是已发布 <code>0.21.0</code> 的组成部分。已发布 <code>0.21.0</code> 仍对应 Contracts <code>1.18.0</code> 与 46 类
+对象；新协议的发布、跨方正式采用，以及跨操作类别的权限交集均不在本地实现完成结论内。</p>
 <h2 id="下一阶段能力线架构-hand-off">下一阶段能力线（架构 hand-off）<a class="headerlink" href="#下一阶段能力线架构-hand-off" title="Permanent link">&para;</a></h2>
 <p>三条能力线均经 FND-ADR-001 能力纳入门裁决纳入，全部在既有分层内落位：</p>
 <ul>
@@ -2135,7 +2168,7 @@ operation。后续晋升 stable 只提高兼容承诺，不再触发消费者源
 <p>三包机制结构保持、不拆第四个机制包（FND-ADR-007）；同一 workspace 内的独立 Plugin release unit 不改变这条依赖链。制品治理采用 artifact-graph CLI 与版本锁（FND-ADR-006）。</p>
 <h2 id="首版预算">首版预算<a class="headerlink" href="#首版预算" title="Permanent link">&para;</a></h2>
 <ul>
-<li>顶层 Contracts 对象：46 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）、filesystem-root-binding、fixed-set-publication-manifest、fixed-set-publication-receipt（1.9.0 纳入）、adapter-peer-verification-request、adapter-peer-verification-result（FND-ADR-018，1.10.0 纳入）、host-verification-request、host-verification-result（FND-ADR-019，1.11.0 纳入）、plugin-verification-request、plugin-verification-result、filesystem-tree-observation（FND-ADR-021，1.13.0 纳入）、executable-identity-observation、skill-family-directory-verification-request、skill-family-directory-verification-result、engineering-baseline；</li>
+<li>顶层 Contracts 对象：53 类（完整清单以 <code>packages/skill-family-contracts/src/registry.json</code> 为唯一真源）：project-manifest、profile-descriptor、project-profile（FND-ADR-013，1.7.0 纳入）、managed-file-lock、operation-request、operation-result、migration-manifest、adapter-source、report-model、report-binding、host-descriptor、host-registry、host-capability-fact、host-probe-result、adapter-build-manifest、host-operation-plan、host-operation-receipt、state-event-envelope、state-snapshot-metadata、token-estimate-result、surface-scan-policy、declared-read-surface-result、structured-scan-policy（FND-ADR-010/011）、timeout-policy、watchdog-termination-envelope（FND-ADR-012，append-only 保持 1.5.0）、public-boundary-declaration、platform-difference-registry、observation-scope、profile-adoption-declaration、audit-baseline-pin、token-estimate-record（审计规则裁决与整改 1.6.0 纳入）、source-authority-receipt（1.8.0 纳入）、filesystem-root-binding、fixed-set-publication-manifest、fixed-set-publication-receipt（1.9.0 纳入）、adapter-peer-verification-request、adapter-peer-verification-result（FND-ADR-018，1.10.0 纳入）、host-verification-request、host-verification-result（FND-ADR-019，1.11.0 纳入）、plugin-verification-request、plugin-verification-result、filesystem-tree-observation（FND-ADR-021，1.13.0 纳入）、executable-identity-observation、skill-family-directory-verification-request、skill-family-directory-verification-result、engineering-baseline、professional-conclusion（本地 Contracts 1.19.0 候选）、file-set-apply-request、file-set-recovery-request、file-set-prune-request、file-set-result、file-set-event-payload、state-store-recovery-observation（FND-ADR-032，本地 Contracts 1.20.0 候选纳入）；</li>
 <li>Kit 顶层命令：4 个（scaffold、adopt-plan、projection、check）；</li>
 <li>强制机械规则：当前 9 条，预算不超过 20 条，绝对上限 30 条；CR-001 对登记表内全部 Schema 做统一编译；</li>
 <li>叶子包：3 个（skill-family-contracts、skill-family-harness-node、skill-family-engineering-kit）；</li>

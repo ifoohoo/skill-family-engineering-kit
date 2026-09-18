@@ -1046,6 +1046,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#Choose-an-Entry-Point-First" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Choose an Entry Point First
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Governance-Checks-and-Development-Self-Tests" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Governance Checks and Development Self-Tests
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Triage-by-Stable-Error-Code" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1729,6 +1751,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#Choose-an-Entry-Point-First" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Choose an Entry Point First
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Governance-Checks-and-Development-Self-Tests" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Governance Checks and Development Self-Tests
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#Triage-by-Stable-Error-Code" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1804,7 +1848,44 @@
 <p><a href="../../help/">简体中文</a></p>
 </blockquote>
 <h1 id="Help-and-Triage">Help and Triage<a class="headerlink" href="#Help-and-Triage" title="Permanent link">&para;</a></h1>
-<p>This page provides triage paths by error code, process exit code, and symptom. Foundation's error-code system is frozen in Contracts (<code>src/error-codes.json</code>) and does not drift; mechanism failures are unified as <code>SFC2004</code> with a stable <code>details.kind</code>.</p>
+<p>This page helps developers choose the right entry point before using the error-code, process-exit, and symptom triage paths. Foundation's error-code system is frozen in Contracts (<code>src/error-codes.json</code>) and does not drift; mechanism failures are unified as <code>SFC2004</code> with a stable <code>details.kind</code>.</p>
+<h2 id="Choose-an-Entry-Point-First">Choose an Entry Point First<a class="headerlink" href="#Choose-an-Entry-Point-First" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Entry point</th>
+<th>Boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Determine whether an existing capability fits</td>
+<td><code>foundation-adoption-review</code></td>
+<td>The single natural-language adoption-diagnosis Skill. It reads caller-provided exact-version facts, capability-catalog query results, and <code>adopt-plan</code> results, then reports a full match, partial match, candidate match, no match, or a missed existing capability</td>
+</tr>
+<tr>
+<td>Inventory an existing project and compare it with the reference skeleton</td>
+<td><code>planAdoption({ root, allowGitSpawn: false })</code> or <code>adopt-plan --no-git-spawn</code></td>
+<td>Read-only output covering the write set, conflicts, risks, and migration completion conditions. The reference skeleton is not a mandatory directory standard for every project</td>
+</tr>
+<tr>
+<td>Compare engineering declarations with physical files</td>
+<td><code>runChecks</code>, <code>runCoreCheck</code>, <code>runEntryContractCheck</code>, or <code>check</code></td>
+<td>Reads files and configuration statically and reports findings within the selected check policy. It does not run target Skills, business scripts, or hooks</td>
+</tr>
+<tr>
+<td>Initialize an empty directory or materialize a managed projection</td>
+<td><code>scaffold</code> or <code>projection</code></td>
+<td>Use only after the caller authorizes the corresponding writes. There is no generic <code>apply</code> for existing projects</td>
+</tr>
+</tbody>
+</table>
+<p>The adoption-diagnosis Skill does not install or initialize a project, run <code>check</code>, probe qualification, or invoke a host. It also does not decide Audit compliance. It interprets supplied facts and points to a concrete public entry point; incomplete evidence remains a candidate or an open fact.</p>
+<h2 id="Governance-Checks-and-Development-Self-Tests">Governance Checks and Development Self-Tests<a class="headerlink" href="#Governance-Checks-and-Development-Self-Tests" title="Permanent link">&para;</a></h2>
+<p>Governance checks inspect the target project's declarations, paths, and files. Ordinary <code>check</code> is read-only. It neither launches target programs nor proves that every file operation, permission, or internal procedure across a host is controlled by Foundation.</p>
+<p>Development self-tests exercise Foundation itself. Package tests, host drivers, and qualification tests run only in an authorized development or verification workflow and establish facts about Foundation's implementation. A passing self-test does not replace the target project's domain gate, real-host qualification, or independent audit.</p>
+<p>Existing checks retain their policy assumptions, including Foundation-style version sources, entry shapes, and the nine check classes. Interpret those results as policy findings only when the target project has adopted the corresponding policy. Do not force a single-package project, an independently versioned unit, a non-npm version source, or another entry shape into that policy. Treat stable capabilities, candidate capabilities, and the current source tree as separate states; see Current Product Status and the capability catalog for the exact version in use.</p>
 <h2 id="Triage-by-Stable-Error-Code">Triage by Stable Error Code<a class="headerlink" href="#Triage-by-Stable-Error-Code" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1965,6 +2046,7 @@
 </ul>
 <h2 id="Project-Routing">Project Routing<a class="headerlink" href="#Project-Routing" title="Permanent link">&para;</a></h2>
 <ul>
+<li>Published-capability fit / duplicate proposed mechanism → <code>foundation-adoption-review</code>.</li>
 <li>Publishing remote state / npm publish → release-skill.</li>
 <li>Tasks / retries / rework / acceptance → loop-agent.</li>
 <li>Artifact relationships / version-lock → artifact-graph.</li>

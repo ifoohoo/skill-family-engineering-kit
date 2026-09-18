@@ -1867,7 +1867,7 @@
 <td><code>verifyAllFixtures</code> / <code>verifyFixture</code></td>
 <td>否</td>
 <td>否</td>
-<td>否? 否</td>
+<td>否</td>
 <td>否</td>
 <td>否</td>
 <td>无</td>
@@ -2031,8 +2031,19 @@
 <td>无（只写调用方提供的 output/error 流）</td>
 <td>退出码 0（全成功）/ 2（至少一项失败或整批拒绝）；<code>details.kind</code> 封闭为 <code>batch-structure-invalid</code>/<code>batch-item-limit</code>/<code>batch-input-limit</code>/<code>batch-output-limit</code></td>
 </tr>
+<tr>
+<td><code>applyFileSet</code> / <code>recoverFileSet</code> / <code>pruneFileSetRecovery</code>（since 0.21.0，candidate）</td>
+<td>是（受收容只读；含恢复材料与根绑定复核）</td>
+<td>是（业务目标严格发布/原子替换 + 根内固定 <code>.foundation-file-apply</code> 材料）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>恢复材料（journal 与 <code>operations/&lt;id&gt;/{before,after}/&lt;index&gt;</code>）默认保留，只有显式 prune 清理已终结操作的材料</td>
+<td>可捕获失败返回 <code>file-set-result</code>；外码沿用 <code>SFC2004</code>，<code>details.kind</code> 与 <code>details.phase</code> 为闭枚举，<code>outcome</code>/<code>paths</code>/<code>materials</code> 报告逐路径事实</td>
+</tr>
 </tbody>
 </table>
+<p>文件集合入口同样按失败阶段决定可观察副作用。整组前检失败、环境不支持与容量越限在任何业务写入前返回，业务零写入；领域验证返回 false、抛错、超时或非法结果会触发自动恢复，验证状态与恢复状态分开报告；恢复遇冲突路径保留外部内容并继续其他安全项；有效提交事件决定不再回滚，目标复核或持久化未确认时报告 <code>commit-unconfirmed</code> 并保留材料。未为该路径写入持久 <code>apply-intent</code> 事实前不触碰业务路径，也不承诺瞬时多文件可见性，更不抵御不合作的并发写者；恢复要求调用方先建立排他维护区间，清理在无残留时直接取得正常 writer，只在需要故障接管时才要求同一维护前提。</p>
 <p>批量入口的失败阶段决定可观察副作用。请求字节、输入项数或结构的预检拒绝不会调用机制，stdout 为空；输出容量只能在当前项返回后确认，因此该项可能已经执行，但后续项不会再执行，stdout 仍为空。输出通道失败时可能已有部分字节送出，整体退出 2；若错误通道也失败，错误对象不保证能够交付。</p>
 <p>Harness 的 <code>HARNESS_EXCLUSIONS</code> 明确排除 release-state、remote-network-access、business-semantics、workflow-orchestration、model-calls、git-writes。</p>
 <h2 id="Engineering-Kit工程命令层">Engineering Kit（工程命令层）<a class="headerlink" href="#Engineering-Kit工程命令层" title="Permanent link">&para;</a></h2>
@@ -2099,6 +2110,36 @@
 <td>否</td>
 <td>无</td>
 <td>退出码 1（发现）/ 2（机制）</td>
+</tr>
+<tr>
+<td><code>runChecks</code>（declared version）</td>
+<td>是（只读声明引用）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>无</td>
+<td>退出码 1（发现）/ 2（机制）</td>
+</tr>
+<tr>
+<td><code>runEntryContractCheck</code>（legacy / declared）</td>
+<td>是</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>无</td>
+<td>退出码 1（发现）/ 2（机制）</td>
+</tr>
+<tr>
+<td><code>runCommand("check")</code> / <code>checkEntriesAction</code> + <code>conclusionOutput</code></td>
+<td>是</td>
+<td>是（已存在输出根内独占创建一个文件）</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+<td>成功后保留结论文件；冲突时零覆盖</td>
+<td>退出码 0/1/2；结构失败 <code>SFC1001</code>，发布失败 <code>SFC2004</code></td>
 </tr>
 <tr>
 <td><code>check relock</code></td>
@@ -2209,8 +2250,10 @@
 <li>原子写：失败时回滚临时文件，目标目录不留半成品。</li>
 <li>临时工作区：退出（含异常路径）时清理。</li>
 <li>状态存储：事件日志是唯一权威，snapshot 为派生缓存；崩溃遗留锁需调用方在 Foundation 外确认旧写者终止后显式恢复，不自动偷锁。</li>
+<li>文件集合：恢复材料默认保留在业务根内固定 <code>.foundation-file-apply</code> 下，只有显式 prune 清理精确的已终结操作且保留 journal；未终结与冲突项的材料不清理。机制不按后缀删除未知邻接暂存文件，只报告 <code>possible-unknown</code>。</li>
 <li>投影：任一校验失败整体拒绝、零写入；覆盖既有文件需声明 <code>expect.sha256</code> 前置状态。</li>
 <li>adopt-plan、普通 runChecks 与普通 check：结构性只读且不写文件；默认可能启动一条冻结参数的只读 Git status 子进程，可由 <code>--no-git-spawn</code>（或 API 的 <code>allowGitSpawn: false</code>）关闭，运行前后字节级零变化。check relock 与 check qualification 的副作用见上表。</li>
+<li>declared 分支的 <code>runChecks</code> 与 <code>runEntryContractCheck</code> 不探测 Git、不执行目标，也不写文件。只有两个既有包装入口在 <code>conclusionOutput</code> 完整明确时独占创建结论文件。</li>
 </ul>
 <h2 id="失败后调用方该做什么">失败后调用方该做什么<a class="headerlink" href="#失败后调用方该做什么" title="Permanent link">&para;</a></h2>
 <ul>

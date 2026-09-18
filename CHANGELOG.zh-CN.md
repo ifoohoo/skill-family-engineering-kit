@@ -1,5 +1,26 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.22.0 locale=zh-CN baseline=sha256:1926982b72cf2756963b204c22c9bfdf2969d690d3b336cf9bdc098fe4d256a0 -->
+## [0.22.0] - 2026-09-18
+
+Engineering Kit 0.22.0 保持四个顶层命令不变，在既有 `check` 命令内增加声明式工程检查与显式的专业结论输出。
+
+### 新增
+
+- 增加不含价格的声明式工程检查，带声明版本与入口分支；只读取项目明确登记的版本来源与物理入口，不执行目标。
+- 增加可选的专业结论输出。只有 `runCommand('check')` 和入口动作可以独占创建，且必须由调用方提供已存在的输出根与受收容的相对路径。
+
+### 变更
+
+- 默认 `check` 诊断与纯函数 `runChecks`/`runEntryContractCheck` 仍然只读；输出根不存在或结论条目已存在时拒绝，不创建、不覆盖。
+- 随 0.22.0 发布新的能力目录，按 Contracts 1.20.0 投影新增 `foundation.harness.file-set-recovery` 条目。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.22.0。声明式检查只证明已登记的版本来源与入口在结构上一致，不证明目标已执行；结论的业务解释不属于 Foundation。
+<!-- release-skill:changelog:end version=0.22.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.21.0 locale=zh-CN baseline=sha256:1f50ac51db5691c5c9dbe1014d0ab43e6cfa4eab1d60eb37a9ca74d30bc75890 -->
 ## [0.21.0] - 2026-09-11
 

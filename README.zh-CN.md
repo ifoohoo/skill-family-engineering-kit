@@ -5,28 +5,40 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.21.0 -->
+<!-- release-skill:release-version: 0.22.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.21.0** (2026-09-11)
+**0.22.0** (2026-09-18)
 
-Engineering Kit 0.21.0 增加 `prepareHostVerification`，在既有宿主验证路径上准备一次受约束的 Cursor 调用，并读取经过摘要绑定的私有输出。
+Engineering Kit 0.22.0 保持四个顶层命令不变，在既有 `check` 命令内增加声明式工程检查与显式的专业结论输出。
 
 **新增**
 
-- 增加 `prepareHostVerification`。它从调用方持有的候选、工作负载、Skill、工作区、夹具、提示词、可执行文件和状态根输入派生固定驱动请求、受收容调用目录、冻结快照与私有绑定。
-- 冻结的准备对象增加 `readInvocationStream`。只有结果、请求、证据根绑定、流摘要和字节数一致时，调用方才能读取 stdout 或 stderr。
+- 增加不含价格的声明式工程检查，带声明版本与入口分支；只读取项目明确登记的版本来源与物理入口，不执行目标。
+- 增加可选的专业结论输出。只有 `runCommand('check')` 和入口动作可以独占创建，且必须由调用方提供已存在的输出根与受收容的相对路径。
 
 **变更**
 
-- 启动进程前重新校验绑定与来源快照；创建会话或探测前比较安装后的 Skill 闭包摘要。发现漂移或摘要不匹配时失败关闭。
+- 默认 `check` 诊断与纯函数 `runChecks`/`runEntryContractCheck` 仍然只读；输出根不存在或结论条目已存在时拒绝，不创建、不覆盖。
+- 随 0.22.0 发布新的能力目录，按 Contracts 1.20.0 投影新增 `foundation.harness.file-set-recovery` 条目。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.21.0。新准备接口只支持一个已声明的 Cursor Skill，并固定使用随包 `cursor-agent-print-v1` 驱动；工作负载含义、领域断言、发布新鲜度和清理由调用方负责。
+三个 Foundation 包须一起精确锁定到 0.22.0。声明式检查只证明已登记的版本来源与入口在结构上一致，不证明目标已执行；结论的业务解释不属于 Foundation。
 <!-- release-skill:managed:end id=latest-release -->
+
+## 本地未发布治理检查
+
+当前工作树在既有 `check` 命令下增加显式 `declared` 政策。版本检查只读取
+`skill-family.project-manifest.json` 声明的发行单元及其文本或 JSON 版本引用；入口检查只读取
+声明的物理文件。两个分支都不运行目标脚本、Skill、hook、模型，也不先跑未选择的 legacy 检查。
+
+`runChecks` 与 `runEntryContractCheck` 仍然只读。只有既有 `runCommand("check")` 和
+`checkEntriesAction` 包装入口可以创建一份 `professional-conclusion` 文件，而且调用方必须同时
+给出已存在输出根与根内相对路径。写入采用独占创建，不建父目录、不覆盖现有条目。这组实现随
+0.22.0 制品发布；此前已发布的 0.21.0 制品不包含它。
 
 ### Foundation 0.15.0 candidate 资格入口
 
@@ -55,7 +67,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.21.0 是本地源码候选。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.22.0 是本地源码候选。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -63,21 +75,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.21.0.tgz" "$pack_dir/skill-family-harness-node-0.21.0.tgz" "$pack_dir/skill-family-engineering-kit-0.21.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.22.0.tgz" "$pack_dir/skill-family-harness-node-0.22.0.tgz" "$pack_dir/skill-family-engineering-kit-0.22.0.tgz")
 ```
 
 发布后再使用 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.21.0
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.22.0
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 
@@ -173,7 +185,7 @@ Profile 必须显式提供，Kit 不默认绑定具体宿主。规范宿主 ID �
 
 #### 0.21.0 候选：准备 Cursor 调用
 
-`prepareHostVerification` 是 0.21.0 候选公开 API，尚未发布到远端；已发布的 0.20.0 包不包含该接口。它只为 `cursor` 准备单个已声明 Skill，使用随包 Descriptor（宿主描述符）和固定 `cursor-agent-print-v1` 驱动，不接受自定义驱动、参数、模型覆盖、凭据处理或领域验证器。原有七驱动的 `runHostVerification` 入口保持兼容。
+`prepareHostVerification` 已随 0.21.0 发布，并在 0.22.0 中继续可用。它只为 `cursor` 准备单个已声明 Skill，使用随包 Descriptor（宿主描述符）和固定 `cursor-agent-print-v1` 驱动，不接受自定义驱动、参数、模型覆盖、凭据处理或领域验证器。原有七驱动的 `runHostVerification` 入口保持兼容。
 
 下例变量由调用方提供，文档和夹具内容为不透明的 UTF-8 字符串或 Buffer。`skillMembers` 必须包含 `SKILL.md`，安装只覆盖声明成员。各根目录须已存在，并使用规范绝对路径；`sessionRoot` 必须为空且由调用方独占，工作区必须位于 `repositoryRoot` 内，也允许两者相等。调用方授权使用现有用户状态根，并独占可执行文件命名空间。
 
@@ -211,6 +223,7 @@ const stdout = result.streams
 - 存量采用盘点：`adopt-plan`（严格只读，不写文件、不自动迁移）。
 - 受管投影：`projection` + Profile（不覆盖 handwritten 文件）。
 - 工程诊断：普通 `check` 只读；`check relock` 执行显式受控写事务，`check qualification` 预检通过后可能启动绑定的 executable。
+- 声明式治理诊断：版本检查显式选择 `policy: "declared"`，入口检查走 declared 子动作。目标只被静态读取；可选结论文件须由调用方明确授权输出位置。
 
 ## 边界机制
 
@@ -218,6 +231,7 @@ const stdout = result.streams
 - `adopt-plan` 结构性只读：实现中不存在任何写调用，连临时文件都不产生；计划字节与 `scaffold` 同源（`describeSkeletonFiles` 单一事实源），因此「计划即动作」。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。dirty 仓运行前后字节级零变化。
 - `projection` 采用两阶段执行：先对每个条目做路径分类、收容预检、自投影检查、manifest 授权检查、手写保护与冲突守卫；任一条目违规则整体拒绝、零写入。覆盖既有文件必须声明精确的 `expect.sha256` 前置状态；内容相同的既有文件是幂等 no-op。写入失败时尽力还原已覆盖文件的前置字节。
 - 普通 `check` 只读且无写调用，也没有 `--fix/--apply/--repair` 模式（此类标志在入口处被拒绝）。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。`check relock` 执行显式受控写事务；`check qualification` 预检通过后可能启动绑定的 executable。Git 前置状态仅用文件系统事实加至多一次冻结参数矢量的只读 `git status --porcelain=2`（`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`，不刷新索引）。
+- 未发布的 declared 分支中，两个纯检查函数仍只读，也不探测 Git。只有调用方显式要求结论时，两个既有包装入口才通过独占创建产生本轮唯一新增持久副作用。
 
 ## 错误码与退出码
 
@@ -330,4 +344,4 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 
 独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
 
-0.21.0 是本地源码候选，远端可用性须由对应的 release-skill 发布后证据证明。候选检查使用本地已验证的三包 tarball；版本标记、单元测试或安装成功都不等于契约接入完成、迁移完成或真实宿主资格。
+声明式治理分支与结论输出随 0.22.0 制品发布；此前已发布的 0.21.0 制品不包含它们。远端可用性须由对应的 release-skill 发布后证据证明。本地测试或工作树 tarball 不等于契约接入完成、迁移完成或真实宿主资格。

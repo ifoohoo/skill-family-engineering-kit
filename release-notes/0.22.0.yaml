@@ -1,0 +1,23 @@
+version: 0.22.0
+date: 2026-09-18
+locales:
+  en:
+    summary: Engineering Kit 0.22.0 keeps the four top-level commands and adds declared engineering-declaration checking plus explicit professional-conclusion output inside the existing `check` command.
+    changes:
+      added:
+        - Adds declared engineering-declaration checking with a declaration version and an entry branch, reading only the version source and physical entry a project explicitly registers and never executing the target.
+        - Adds optional professional-conclusion output that only `runCommand('check')` and the entry action may exclusively create, and only when the caller supplies an existing output root and a contained relative path.
+      changed:
+        - The default `check` diagnosis and the pure `runChecks`/`runEntryContractCheck` functions remain read-only; a missing output root or an existing conclusion entry is rejected instead of created or overwritten.
+        - Publishes the 0.22.0 capability catalog with the new `foundation.harness.file-set-recovery` entry projected from Contracts 1.20.0.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.22.0. Declarative checking proves only that a registered version source and entry agree structurally; it does not prove the target executed, and business interpretation of a conclusion remains outside Foundation.
+  zh-CN:
+    summary: Engineering Kit 0.22.0 保持四个顶层命令不变，在既有 `check` 命令内增加声明式工程检查与显式的专业结论输出。
+    changes:
+      added:
+        - 增加不含价格的声明式工程检查，带声明版本与入口分支；只读取项目明确登记的版本来源与物理入口，不执行目标。
+        - 增加可选的专业结论输出。只有 `runCommand('check')` 和入口动作可以独占创建，且必须由调用方提供已存在的输出根与受收容的相对路径。
+      changed:
+        - 默认 `check` 诊断与纯函数 `runChecks`/`runEntryContractCheck` 仍然只读；输出根不存在或结论条目已存在时拒绝，不创建、不覆盖。
+        - 随 0.22.0 发布新的能力目录，按 Contracts 1.20.0 投影新增 `foundation.harness.file-set-recovery` 条目。
+    upgradeNotes: 三个 Foundation 包须一起精确锁定到 0.22.0。声明式检查只证明已登记的版本来源与入口在结构上一致，不证明目标已执行；结论的业务解释不属于 Foundation。

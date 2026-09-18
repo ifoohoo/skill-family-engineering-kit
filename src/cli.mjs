@@ -57,19 +57,24 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                中立 Markdown（FND-ADR-005）；默认只写 stdout，给定 --out/
                --binding 时只写这两个显式且被 --root 收容的路径（原子写）。
   check        契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。
-               副作用: 无 —— 只诊断、绝不自动修复，git 仅只读探测。
+               副作用: 默认诊断及 runChecks/runEntryContractCheck 纯读取函数零写入，
+               绝不自动修复，git 仅只读探测。declared 模式下，只有
+               runCommand("check")/checkEntriesAction 包装入口在显式提供已有输出根
+               和根内相对路径时独占创建一份结论；不建父目录、不覆盖既有项。
                报告子动作: check report 对一份已渲染报告做分级诊断：
                硬失败（SFC3001/3002/3003）计为发现（退出码 1）；
                风格告警只报告、绝不阻塞机器正确的报告。
                入口契约子动作: check entries 运行共享入口契约门禁
                （SFA-ENTRY-003/004/005/007 + SFA-CONTEXT-001/002），
-               读取 skill-family.entry-contract.json 声明；声明缺失是数据、不是发现。
+               legacy 读取 skill-family.entry-contract.json；declared 从项目清单
+               静态核对 engineering.entries，不运行目标文件。
                受控重锁子动作: check relock 运行受控 relock 事务（SG-36）：
                把新手写文件登记进 .foundation/file-registry.json，并以当前字节
                重算 skill-family.managed-file-lock.json（单次 fail-closed 事务；
                只写这两个收容状态文档，任何拒绝都零写入）。
                显式资格子动作: check qualification 仅在显式提供
-               capability/request/bindings/native 后适配目录声明的能力特定入口。
+               capability/request/bindings/native 后适配目录声明的能力特定入口，
+               可在预检后调用能力特定的原生宿主。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -146,6 +151,9 @@ function commandHelp(command) {
       "  --only <class>        只运行一个诊断类: contracts|drift|closure|version|docs|git|identity|boundary|platform",
       "  --profiles-root <dir> 许可证 Profile 根目录",
       "  --no-git-spawn        禁用只读 git status 探测，仅用文件系统事实",
+      "  --policy <legacy|declared>  检查政策；declared 版本检查须与 --only version 配对",
+      "  --conclusion-root <dir>    专业结论输出根（须与 --conclusion-output 配对）",
+      "  --conclusion-output <rel>  在输出根内独占创建专业结论文件",
       "",
       "报告子动作: skill-family-kit check report [options]",
       "  --report <relpath>    已渲染报告 Markdown（必填，只读）",
@@ -267,6 +275,9 @@ const COMMAND_SPECS = {
     flags: {
       "--root": { key: "root", value: true },
       "--only": { key: "only", value: true },
+      "--policy": { key: "policy", value: true },
+      "--conclusion-root": { key: "conclusionRoot", value: true },
+      "--conclusion-output": { key: "conclusionOutputPath", value: true },
       "--profiles-root": { key: "profilesRoot", value: true },
       "--no-git-spawn": { key: "noGitSpawn", value: false },
     },
@@ -292,6 +303,9 @@ const COMMAND_SPECS = {
   "check entries": {
     flags: {
       "--root": { key: "root", value: true },
+      "--policy": { key: "policy", value: true },
+      "--conclusion-root": { key: "conclusionRoot", value: true },
+      "--conclusion-output": { key: "conclusionOutputPath", value: true },
     },
   },
   "check relock": {
@@ -343,6 +357,17 @@ const COMMAND_SPECS = {
   },
   "adopt-plan host-apply": { flags: {} },
 };
+
+function conclusionOutputFromOptions(options) {
+  const hasRoot = options.conclusionRoot !== undefined;
+  const hasPath = options.conclusionOutputPath !== undefined;
+  if (hasRoot !== hasPath) {
+    throw invalidParamsError("--conclusion-root and --conclusion-output must be provided together", {
+      reason: "invalid-option-combination",
+    });
+  }
+  return hasRoot ? { root: options.conclusionRoot, path: options.conclusionOutputPath } : undefined;
+}
 
 async function readJson(root, relPath, label) {
   if (!relPath) throw invalidParamsError(`${label} is required`);
@@ -486,7 +511,11 @@ async function runEntriesSubAction(rest) {
       process.stdout.write(`${commandHelp("check")}\n`);
       return KIT_EXIT_CODES.ok;
     }
-    const { status, output } = await checkEntriesAction({ root: options.root });
+    const { status, output } = await checkEntriesAction({
+      root: options.root,
+      policy: options.policy,
+      conclusionOutput: conclusionOutputFromOptions(options),
+    });
     process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
     if (status === "ok") return KIT_EXIT_CODES.ok;
     if (status === "findings") return KIT_EXIT_CODES.findings;
@@ -642,6 +671,7 @@ export async function cliMain(argv) {
     const engineeringBaseline = command === "adopt-plan" && hasEngineeringBaseline
       ? await readEngineeringBaselineJson(options.root ?? ".", options.engineeringBaselinePath)
       : undefined;
+    const conclusionOutput = command === "check" ? conclusionOutputFromOptions(options) : undefined;
     const { exitCode, output } = await runCommand(command, {
       root: options.root ?? ".",
       projectId: options.projectId,
@@ -653,6 +683,8 @@ export async function cliMain(argv) {
       capabilities: options.capabilities,
       manifest: options.manifest,
       only: options.only,
+      policy: options.policy,
+      conclusionOutput,
       allowGitSpawn: !options.noGitSpawn,
       engineeringBaseline,
       compareSkeleton: compareSkeleton ? true : undefined,

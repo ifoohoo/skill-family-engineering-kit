@@ -3,6 +3,7 @@ import {
   computeResourceClosure,
   digestBytes,
   readFileContained,
+  readFileStrict,
   validateContractDocument,
 } from "skill-family-harness-node";
 import { readFileSync } from "node:fs";
@@ -30,6 +31,7 @@ import {
   loadIdentityRecord,
   validateIdentityAgainstProfile,
 } from "./identity-check.mjs";
+import { loadEngineeringDeclaration } from "./engineering-declaration.mjs";
 
 /**
  * check — diagnosis only, never auto-fix.
@@ -118,6 +120,183 @@ export const DOCUMENT_STATES = Object.freeze([
   "incomplete",
   "ok",
 ]);
+
+function decodePointerToken(token) {
+  if (/(?:~[^01])|(?:~$)/.test(token)) return null;
+  return token.replaceAll("~1", "/").replaceAll("~0", "~");
+}
+
+function resolveJsonPointer(document, pointer) {
+  if (typeof pointer !== "string" || !pointer.startsWith("/") || pointer.length < 1) return null;
+  let cursor = document;
+  for (const encoded of pointer.slice(1).split("/")) {
+    const decodedSegment = decodePointerToken(encoded);
+    if (decodedSegment === null || cursor === null || typeof cursor !== "object") return null;
+    if (Array.isArray(cursor)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(decodedSegment)) return null;
+      const index = Number(decodedSegment);
+      if (!Number.isSafeInteger(index) || index >= cursor.length || !Object.hasOwn(cursor, index)) return null;
+      cursor = cursor[index];
+    } else {
+      if (!Object.hasOwn(cursor, decodedSegment)) return null;
+      cursor = cursor[decodedSegment];
+    }
+  }
+  return typeof cursor === "string" && cursor.length > 0 ? cursor : null;
+}
+
+async function readDeclaredVersion(rootAbs, reference) {
+  let receipt;
+  try {
+    receipt = await readFileStrict(rootAbs, reference.path, { encoding: "utf8" });
+  } catch (cause) {
+    if (cause?.details?.kind === "missing-resource") return { version: null, reason: "missing" };
+    throw cause;
+  }
+  if (reference.format === "text") {
+    const version = receipt.content.trim();
+    if (version.length === 0 || /[\r\n]/.test(version)) return { version: null, reason: "invalid-text-version" };
+    return { version, reason: null };
+  }
+  let document;
+  try {
+    document = JSON.parse(receipt.content);
+  } catch {
+    return { version: null, reason: "invalid-json" };
+  }
+  const version = resolveJsonPointer(document, reference.jsonPointer);
+  return version === null ? { version: null, reason: "invalid-json-pointer-value" } : { version, reason: null };
+}
+
+function declaredPrerequisiteFinding(state, problems) {
+  if (state === "missing") {
+    return finding("version", KIT_ERROR_KINDS.CONTRACTS_MISSING, "SFC2004", "project manifest is absent; declared version check cannot run", {
+      path: PROJECT_MANIFEST_PATH,
+      documentState: state,
+    });
+  }
+  if (state === "parse-failed") {
+    return finding("version", KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED, "SFC2004", "project manifest is not valid JSON; declared version check cannot run", {
+      path: PROJECT_MANIFEST_PATH,
+      documentState: state,
+    });
+  }
+  if (state === "incomplete") {
+    return finding("version", KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE, "SFC2004", "project manifest lacks engineering.releaseUnits", {
+      path: PROJECT_MANIFEST_PATH,
+      field: "engineering.releaseUnits",
+      documentState: state,
+    });
+  }
+  return finding("version", "schema-validation-failed", "SFC1001", "project manifest is invalid for declared version checking", {
+    path: PROJECT_MANIFEST_PATH,
+    documentState: state,
+    errors: problems,
+  });
+}
+
+async function runDeclaredVersionChecks(rootAbs) {
+  const findings = [];
+  const releaseUnits = [];
+  const selected = new Set(["version"]);
+  let completed = false;
+  let mechanism = false;
+  let documentState = "missing";
+  try {
+    const loaded = await loadEngineeringDeclaration(rootAbs, "releaseUnits");
+    documentState = loaded.state;
+    if (loaded.state !== "ok") {
+      findings.push(declaredPrerequisiteFinding(loaded.state, loaded.problems));
+    } else {
+      for (const unit of loaded.declaration) {
+        const unitResult = {
+          id: unit.id,
+          versionSource: { ...unit.versionSource, version: null },
+          versionMirrors: [],
+        };
+        releaseUnits.push(unitResult);
+        try {
+          const source = await readDeclaredVersion(rootAbs, unit.versionSource);
+          unitResult.versionSource.version = source.version;
+          if (source.reason !== null) {
+            findings.push(finding("version", KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE, "SFC2004", `release unit '${unit.id}' version source is not a readable non-empty version string`, {
+              unit: unit.id,
+              path: unit.versionSource.path,
+              reference: unit.versionSource,
+              reason: source.reason,
+            }));
+          }
+          for (const mirror of unit.versionMirrors ?? []) {
+            const observed = await readDeclaredVersion(rootAbs, mirror);
+            const mirrorResult = {
+              ...mirror,
+              version: observed.version,
+              matches: source.version !== null && observed.version !== null ? observed.version === source.version : null,
+            };
+            unitResult.versionMirrors.push(mirrorResult);
+            if (observed.reason !== null) {
+              findings.push(finding("version", KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE, "SFC2004", `release unit '${unit.id}' version mirror is not a readable non-empty version string`, {
+                unit: unit.id,
+                path: mirror.path,
+                reference: mirror,
+                reason: observed.reason,
+              }));
+            } else if (source.version !== null && observed.version !== source.version) {
+              findings.push(finding("version", KIT_ERROR_KINDS.VERSION_SINGLE_SOURCE_DRIFT, "SFC2004", `release unit '${unit.id}' mirror version ${observed.version} differs from its declared source version ${source.version}`, {
+                unit: unit.id,
+                path: mirror.path,
+                declared: observed.version,
+                expected: source.version,
+                sourceRef: unit.versionSource,
+                mirrorRef: mirror,
+              }));
+            }
+          }
+        } catch (cause) {
+          mechanism = true;
+          findings.push(finding("version", KIT_ERROR_KINDS.CHECK_CLASS_FAILED, "SFC2004", `release unit '${unit.id}' could not complete: ${cause?.message ?? String(cause)}`, {
+            unit: unit.id,
+            path: cause?.details?.input ?? null,
+            causeKind: cause?.details?.kind ?? "unknown",
+          }));
+          break;
+        }
+      }
+      completed = !mechanism;
+    }
+  } catch (cause) {
+    mechanism = true;
+    findings.push(finding("version", KIT_ERROR_KINDS.CHECK_CLASS_FAILED, "SFC2004", `declared version check could not complete: ${cause?.message ?? String(cause)}`, {
+      path: cause?.details?.input ?? PROJECT_MANIFEST_PATH,
+      causeKind: cause?.details?.kind ?? "unknown",
+    }));
+  }
+
+  return {
+    kind: "skill-family.check-report",
+    schemaVersion: 1,
+    generatedBy: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
+    target: { root: rootAbs },
+    ok: findings.length === 0,
+    mechanism,
+    classes: CHECK_CLASSES.map((name) => ({
+      name,
+      selected: selected.has(name),
+      completed: name === "version" && completed,
+      findings: findings.filter((item) => item.class === name).length,
+    })),
+    findings,
+    data: {
+      closure: { digest: null, note: "not-selected" },
+      git: null,
+      version: { policy: "declared", documentState, releaseUnits },
+      identity: null,
+      boundary: { declared: false, declarationId: null, declaredVersion: null, documentState: "missing" },
+      platform: { declared: false, project: null, released: [], missing: [], declaredVersion: null, documentState: "missing" },
+    },
+    policy: "check is diagnosis only: declared version references are read statically and no target code, hooks, Git probes, or writes are performed",
+  };
+}
 
 function finding(checkClass, kind, code, message, extra) {
   return { class: checkClass, kind, code, message, ...(extra ?? {}) };
@@ -916,7 +1095,18 @@ async function checkPlatform(rootAbs, findings) {
  * throws mid-flight stays completed=false and contributes a mechanism
  * finding; the report's mechanism flag maps to exit code 2.
  */
-export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot } = {}) {
+export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot, policy } = {}) {
+  const selectedPolicy = policy ?? "legacy";
+  if (selectedPolicy !== "legacy" && selectedPolicy !== "declared") {
+    throw invalidParamsError("policy must be 'legacy' or 'declared'", { value: policy });
+  }
+  if (selectedPolicy === "declared") {
+    if (only !== "version") {
+      throw invalidParamsError("declared check policy requires only: 'version'", { value: only });
+    }
+    const rootAbs = await resolveTargetRoot(root ?? ".");
+    return runDeclaredVersionChecks(rootAbs);
+  }
   if (only !== undefined && !CHECK_CLASSES.includes(only)) {
     throw invalidParamsError(`--only must be one of: ${CHECK_CLASSES.join(", ")}`, { value: only });
   }

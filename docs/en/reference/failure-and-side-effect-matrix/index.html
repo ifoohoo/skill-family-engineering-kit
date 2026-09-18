@@ -2041,8 +2041,19 @@
 <td>none (only the caller-provided output/error streams are written)</td>
 <td>exit code 0 (all succeeded) / 2 (at least one item failed or whole batch refused); <code>details.kind</code> closed to <code>batch-structure-invalid</code>/<code>batch-item-limit</code>/<code>batch-input-limit</code>/<code>batch-output-limit</code></td>
 </tr>
+<tr>
+<td><code>applyFileSet</code> / <code>recoverFileSet</code> / <code>pruneFileSetRecovery</code> (since 0.21.0, candidate)</td>
+<td>yes (contained read-only; recovery materials and root-binding re-verification)</td>
+<td>yes (strict publication / atomic replacement on business targets plus recovery materials under the fixed in-root <code>.foundation-file-apply</code>)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>recovery materials (journal and <code>operations/&lt;id&gt;/{before,after}/&lt;index&gt;</code>) are retained by default; only an explicit prune removes the materials of a terminal operation</td>
+<td>catchable failures return a <code>file-set-result</code>; the outer code stays <code>SFC2004</code> with closed <code>details.kind</code> and <code>details.phase</code> enums, and <code>outcome</code>/<code>paths</code>/<code>materials</code> report per-path facts</td>
+</tr>
 </tbody>
 </table>
+<p>The file-set entry point likewise determines observable effects by failure stage. Whole-group preflight failure, unsupported environment, and capacity breach return before any business write and leave zero business writes. Domain validation that returns false, throws, times out, or returns an invalid result triggers automatic recovery, with validation state reported separately from recovery state. Recovery keeps external content for conflicting paths and continues with the remaining safe paths. A valid commit event is never rolled back; when target re-verification or durability is unconfirmed the result is <code>commit-unconfirmed</code> and the materials are retained. No business path is touched before a durable <code>apply-intent</code> fact exists for that path, instantaneous multi-file visibility is not promised, and uncooperative concurrent writers are not resisted; recovery requires the caller to establish an exclusive maintenance interval first, while prune takes the normal writer when nothing is left over and requires that same maintenance precondition only for a fault takeover.</p>
 <p>The failure stage determines the observable effects of the batch entry point. Request-byte, item-count, and structure preflight rejection invokes no mechanism and leaves stdout empty. Output capacity can be checked only after the current item returns, so that item may already have executed; later items are not executed and stdout remains empty. An output-channel failure may leave partial bytes sent and returns 2. If the error channel also fails, delivery of the error object is not guaranteed.</p>
 <p>Harness's <code>HARNESS_EXCLUSIONS</code> explicitly excludes release-state, remote-network-access, business-semantics, workflow-orchestration, model-calls, git-writes.</p>
 <h2 id="Engineering-Kit-Engineering-Command-Layer">Engineering Kit (Engineering Command Layer)<a class="headerlink" href="#Engineering-Kit-Engineering-Command-Layer" title="Permanent link">&para;</a></h2>
@@ -2109,6 +2120,36 @@
 <td>no</td>
 <td>none</td>
 <td>exit code 1 (findings) / 2 (mechanism)</td>
+</tr>
+<tr>
+<td><code>runChecks</code> (declared version)</td>
+<td>yes (declared references only)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>none</td>
+<td>exit code 1 (findings) / 2 (mechanism)</td>
+</tr>
+<tr>
+<td><code>runEntryContractCheck</code> (legacy / declared)</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>none</td>
+<td>exit code 1 (findings) / 2 (mechanism)</td>
+</tr>
+<tr>
+<td><code>runCommand("check")</code> / <code>checkEntriesAction</code> + <code>conclusionOutput</code></td>
+<td>yes</td>
+<td>yes (exclusive creation of one file under an existing output root)</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>conclusion file retained on success; conflicts never overwrite</td>
+<td>exit code 0/1/2; structure <code>SFC1001</code>, publication <code>SFC2004</code></td>
 </tr>
 <tr>
 <td><code>check relock</code></td>
@@ -2229,8 +2270,10 @@
 <li>Atomic write: on failure, rolls back the temp file, leaving no half-product in the target directory.</li>
 <li>Temporary workspaces are cleaned on exit, including exception paths.</li>
 <li>State store: the event log is the sole authority, and the snapshot is a derived cache; a crash-left lock requires the caller, outside Foundation, to confirm the old writer has terminated before explicitly recovering; no silent lock-stealing.</li>
+<li>File set: recovery materials are retained by default under the fixed in-root <code>.foundation-file-apply</code>; only an explicit prune removes the exact materials of a terminal operation and keeps the journal. Materials of unfinished or conflicting operations are never cleaned. The mechanism never deletes unknown adjacent staging files by suffix; it only reports <code>possible-unknown</code>.</li>
 <li>Projection: any validation failure rejects wholesale, zero writes; overwriting an existing file requires declaring the <code>expect.sha256</code> pre-state.</li>
 <li>adopt-plan, ordinary runChecks, and ordinary check are structurally read-only and write no files; by default they may spawn one frozen read-only Git status subprocess, disabled by <code>--no-git-spawn</code> (or API <code>allowGitSpawn: false</code>), with byte-level zero change before and after running. The side effects of check relock and check qualification are listed above.</li>
+<li>Declared <code>runChecks</code> and <code>runEntryContractCheck</code> do not probe Git, execute the target, or write files. Only the two existing wrappers exclusively create a conclusion file when <code>conclusionOutput</code> is complete.</li>
 </ul>
 <h2 id="What-the-Caller-Should-Do-After-Failure">What the Caller Should Do After Failure<a class="headerlink" href="#What-the-Caller-Should-Do-After-Failure" title="Permanent link">&para;</a></h2>
 <ul>

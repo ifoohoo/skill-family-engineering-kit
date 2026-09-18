@@ -1791,7 +1791,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 源码候选版本（当前 <code>1.18.0</code>）</td>
+<td>Contracts 源码候选版本（当前 <code>1.20.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -1806,7 +1806,9 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出，审计侧把它们与当前 Contracts 版本对应的基线 pin 比对（当前源码候选为 <code>baseline/contracts-1.18.0.pin.json</code>；最近已发布规格的 <code>contracts-1.17.0.pin.json</code> 保持只读）。</p>
+<p>三者都由 <code>describeAuditSurface()</code> 一次性给出。审计侧把它们与当前 Contracts 版本对应的基线 pin 比对：
+当前源码候选为 <code>baseline/contracts-1.20.0.pin.json</code>；此前未发布候选的 <code>contracts-1.19.0.pin.json</code>、
+<code>contracts-1.18.0.pin.json</code> 和最近已发布规格的 <code>contracts-1.17.0.pin.json</code> 均保持只读。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -1876,6 +1878,16 @@
 <li><strong>Contracts 1.16.0（2026-09-07）</strong>：新增 <code>engineering-baseline</code> 顶层契约，顶层对象由 45 类增至 46 类；它只登记中立身份、规则谱系引用与 Foundation 参考骨架身份，不把 Audit 规则正文或发布状态复制进 Contracts。<code>contracts-1.16.0.pin.json</code> 保持历史只读。</li>
 <li><strong>Contracts 1.17.0（2026-09-07）</strong>：为有界机制批量候选重记版本承载文档，稳定顶层对象仍为 46 类，批量合同保持 candidate-only，不进入稳定登记表。<code>contracts-1.17.0.pin.json</code> 是最近已发布规格的只读基线。</li>
 <li><strong>Contracts 1.18.0（2026-09-10，未发布候选）</strong>：扩展稳定 <code>host-descriptor</code> 的封闭验证组合，允许 <code>cursor</code> 与 <code>cursor-agent-print-v1</code> 的唯一配对；顶层对象、错误码、规则、Kernel 协议和 <code>auditSurfaceVersion</code> 不变。<code>contracts-1.18.0.pin.json</code> 从公开 Contracts 表面机械生成并指向不可变的 1.17.0 pin；Cursor CLI 的 <code>/</code> 菜单发现与显式调用已通过，Foundation npm 包版本仍由发布计划单独递增。</li>
+<li><strong>Contracts 1.19.0（2026-09-15，本地未发布候选）</strong>：新增 <code>professional-conclusion</code>
+  顶层契约，其登记状态为 candidate，登记对象由 46 类增至 47 类。<code>project-manifest</code> 同期增加可选 <code>engineering</code> 声明，
+  用于登记发布单元的版本来源和工程入口。错误码、规则、Kernel 协议和 <code>auditSurfaceVersion</code> 不变。
+  <code>contracts-1.19.0.pin.json</code> 从当前公开 Contracts 表面机械生成并指向只读的 1.18.0 pin；该 pin 只记录
+  本地候选消费面，不代表独立审计结论或发布完成。</li>
+<li><strong>Contracts 1.20.0（2026-09-17，本地未发布候选）</strong>：新增 <code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、
+  <code>file-set-prune-request</code>、<code>file-set-result</code>、<code>file-set-event-payload</code> 和 <code>state-store-recovery-observation</code>
+  六个顶层契约，登记状态均为 candidate，登记对象由 47 类增至 53 类。错误码、规则、Kernel 协议和
+  <code>auditSurfaceVersion</code> 不变。<code>contracts-1.20.0.pin.json</code> 从当前公开 Contracts 表面机械生成并指向只读的
+  1.19.0 pin；该 pin 只记录本地候选消费面，不代表独立审计结论或发布完成。</li>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
 <h2 id="profile-行为变更纪律2026-08-19D6">profile 行为变更纪律（2026-08-19，D6）<a class="headerlink" href="#profile-行为变更纪律2026-08-19D6" title="Permanent link">&para;</a></h2>

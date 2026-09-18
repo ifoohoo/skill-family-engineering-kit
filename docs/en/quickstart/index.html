@@ -1893,6 +1893,14 @@
 </blockquote>
 <h1 id="Quickstart">Quickstart<a class="headerlink" href="#Quickstart" title="Permanent link">&para;</a></h1>
 <p>This page gives ordinary developers three executable journeys: discovering capabilities and generating a new project, adopting an existing project, and querying one requirement during daily work. Each journey includes exact commands; architecture routing and API details live in the linked references.</p>
+<p>Choose the entry point before running a command:</p>
+<ul>
+<li>If the input is a natural-language requirement and it is unclear whether Foundation already covers it, call the single <code>foundation-adoption-review</code> Skill. Supply an explicit exact Foundation version, a same-version capability-catalog query result, and an <code>adopt-plan</code> result. The Skill diagnoses read-only; it does not install, initialize, run <code>check</code>, or probe qualification.</li>
+<li>If the capability ID is known and the target is an empty directory, use <code>scaffold</code>.</li>
+<li>If an existing project needs an inventory of structure, conflicts, and migration conditions, start with read-only <code>adopt-plan</code>. Decide later whether to authorize <code>projection</code> or let the project modify existing files itself.</li>
+<li>If declarations must be compared with physical files, use <code>check</code>. It performs static governance checks without running target Skills, business scripts, or hooks.</li>
+</ul>
+<p><code>stable</code> in the capability catalog means that the entry point is stable in the queried release; <code>candidate</code> remains a candidate. A candidate match, migration <code>complete</code>, source present in a local tree, or passing development self-tests does not by itself prove publication, whole-host control, or target-project compliance. Read the current release and candidate boundary only from Current Product Status and the exact-version capability catalog.</p>
 <h2 id="Shared-Installation-Prerequisite">Shared Installation Prerequisite<a class="headerlink" href="#Shared-Installation-Prerequisite" title="Permanent link">&para;</a></h2>
 <p>For local candidate validation, build the three current-version tarballs from the Foundation workspace and install them into a temporary consumer. Run these commands from the Foundation workspace root; <code>foundation_version</code> reads the root <code>package.json</code> and supplies the version for all three tarballs:</p>
 <pre><code class="language-sh">foundation_version=&quot;$(node -p &quot;require('./package.json').version&quot;)&quot;
@@ -1918,6 +1926,7 @@ npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabiliti
 npm exec -- skill-family-kit check --root ./existing-repo
 </code></pre>
 <p><code>adopt-plan</code> writes no files and does not migrate automatically. Migration state <code>complete</code> means that the Profile, managed files, legacy exit, checks, and four evidence classes are all satisfied; it does not mean contract integration is complete. The consumer's adapter tests and domain gate must state that conclusion.</p>
+<p>Reference-skeleton comparison reports structural differences; it does not turn the reference layout into a mandatory standard for every language, release shape, or host. Published checks still carry existing Foundation engineering-policy assumptions, including version-source and entry-shape conventions. A single package, an independently versioned package, a Python project, or another non-npm version source should first use adoption diagnosis to establish policy fit. Do not reshape it into this repository's private parent-workspace topology merely because a legacy-policy check reports findings.</p>
 <h2 id="Daily-Work-Query-One-Requirement">Daily Work: Query One Requirement<a class="headerlink" href="#Daily-Work-Query-One-Requirement" title="Permanent link">&para;</a></h2>
 <p>When the capability ID is unknown, use a deterministic substring query in the intended language. An empty result is <code>no-text-match</code>; a result containing only unsupported capabilities is <code>boundary-found</code>. Neither result creates a <code>foundation-gap</code> decision.</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --locale en --filter &quot;must not leave a partial file when a write fails&quot;
@@ -1953,6 +1962,7 @@ npm exec -- skill-family-kit check --root ./existing-repo
 <blockquote>
 <p>The hard boundary of routing: Foundation does not own remote writes, business state machines, model orchestration, or domain-audit semantics. Capabilities that fall into <code>keep-business</code> or <code>foundation-gap</code> do not forcibly expand Foundation.</p>
 </blockquote>
+<p>Path containment, usage estimation, and upper-bound guards cover only the calls routed through them. The caller still routes all relevant reads through the entry point, defines usage events and limits, and decides what to do after a limit is exceeded. Foundation does not turn those mechanisms into a claim of comprehensive cross-language governance, cross-host permission intersection, or a security sandbox.</p>
 <h2 id="Authoritative-Facts-and-Specifications">Authoritative Facts and Specifications<a class="headerlink" href="#Authoritative-Facts-and-Specifications" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Current product status (versions, package set, mirror coordinates, gates): Current Product Status (the single status page; not duplicated here).</li>

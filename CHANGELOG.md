@@ -1,5 +1,26 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.22.0 locale=en baseline=sha256:5eeae7aaee659b91fd9d412ff5a0651d49e90fbcb020ffdb335d25845d590ef3 -->
+## [0.22.0] - 2026-09-18
+
+Engineering Kit 0.22.0 keeps the four top-level commands and adds declared engineering-declaration checking plus explicit professional-conclusion output inside the existing `check` command.
+
+### Added
+
+- Adds declared engineering-declaration checking with a declaration version and an entry branch, reading only the version source and physical entry a project explicitly registers and never executing the target.
+- Adds optional professional-conclusion output that only `runCommand('check')` and the entry action may exclusively create, and only when the caller supplies an existing output root and a contained relative path.
+
+### Changed
+
+- The default `check` diagnosis and the pure `runChecks`/`runEntryContractCheck` functions remain read-only; a missing output root or an existing conclusion entry is rejected instead of created or overwritten.
+- Publishes the 0.22.0 capability catalog with the new `foundation.harness.file-set-recovery` entry projected from Contracts 1.20.0.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.22.0. Declarative checking proves only that a registered version source and entry agree structurally; it does not prove the target executed, and business interpretation of a conclusion remains outside Foundation.
+<!-- release-skill:changelog:end version=0.22.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.21.0 locale=en baseline=sha256:308114b76ba97466f58479dd0d5e4251ea8efba6ad291afc65236f26170229c5 -->
 ## [0.21.0] - 2026-09-11
 

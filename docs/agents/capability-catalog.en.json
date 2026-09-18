@@ -20,9 +20,9 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-   "intent": "Compile and validate all 45 registered top-level Foundation contract object documents under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
+      "intent": "Compile and validate all 53 top-level objects registered in the current local Foundation contract source under both the draft-07 and 2020-12 dialects using Ajv 8.20.0 (exact pin).",
    "useWhen": [
-    "Need to validate registered contract objects such as project-manifest, profile-descriptor, report-model",
+        "Need to validate registered contract objects such as project-manifest, professional-conclusion, profile-descriptor, or report-model",
     "Need to detect the document dialect and select the strict or tolerant validation policy"
    ],
    "doNotUseWhen": [
@@ -1184,10 +1184,11 @@
   },
   {
    "id": "foundation.kit.check",
-   "intent": "Diagnose only, do not fix: run the nine check classes contracts/drift/closure/version/docs/git/identity/boundary/platform and output findings.",
+      "intent": "Diagnose only, do not fix: retain the nine legacy check classes and add an explicit declared version branch that reads only project-listed release units.",
    "useWhen": [
     "Need to surface engineering inconsistencies without auto-modifying",
-    "Need to narrow the check scope via --only"
+        "Need to narrow a legacy check via --only",
+        "Need to compare declared text or JSON version sources and mirrors without scanning undeclared units"
    ],
    "doNotUseWhen": [
     "Need auto-fix (forbidden; check writes no fixes)",
@@ -1195,19 +1196,23 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "--only values: contracts|drift|closure|version|docs|git|identity|boundary|platform"
+        "Legacy --only values: contracts|drift|closure|version|docs|git|identity|boundary|platform",
+        "Declared version input: policy declared, only version, and project-manifest engineering.releaseUnits"
    ],
    "outputs": [
-    "Findings list; exit code findings=1, mechanism=2"
+        "Findings list; exit code findings=1, mechanism=2",
+        "Optional professional-conclusion path from the runCommand check wrapper when an explicit output root and relative path are provided"
    ],
    "sideEffects": [
-    "No file writes (read-only diagnosis)"
+        "runChecks is read-only; the declared branch does not spawn, probe Git, or execute target content",
+        "Only the runCommand check wrapper may exclusively create one conclusion under an explicitly supplied existing output root; it creates no parent and overwrites nothing"
    ],
    "failureSemantics": [
     "findings exit code 1; mechanism rejection exit code 2"
    ],
    "invariants": [
-    "CHECK_CLASSES is a closed set of nine classes, not expanded"
+        "CHECK_CLASSES is a closed set of nine legacy classes, not expanded",
+        "Declared checking reads only named units and preserves partial versus not-performed completion"
    ],
    "ownedByCaller": [
     "Business disposition of each finding"
@@ -1411,30 +1416,34 @@
   },
   {
    "id": "foundation.kit.entry-check",
-   "intent": "Read the entry-contract declaration and run five checks per entry: physical existence, logical-name consistency, human-entry registration, side-effect class, and token budget.",
+      "intent": "Retain the legacy entry-contract checks and provide an explicit declared branch that statically reads only physical entries listed by project-manifest.",
    "useWhen": [
     "Need to verify the entry-contract declaration against the physical SKILL.md",
-    "Need to check entry logical names, side-effect classes, and token budgets"
+        "Need to check entry logical names, side-effect classes, and token budgets",
+        "Need to verify declared physical files without executing a Skill, script, hook, or model"
    ],
    "doNotUseWhen": [
     "Need to fix the declaration or entries (check only diagnoses, it does not fix)"
    ],
    "prerequisites": [],
    "inputs": [
-    "Project root (carrying skill-family.entry-contract.json and package.json)"
+        "Legacy project root (carrying skill-family.entry-contract.json and package.json)",
+        "Declared project root (carrying project-manifest engineering.entries)"
    ],
    "outputs": [
-    "Entry-check report (kind skill-family.entry-check-report) and findings"
+        "Entry-check report (kind skill-family.entry-check-report) and findings",
+        "Optional professional-conclusion path from checkEntriesAction when explicit conclusion output is authorized"
    ],
    "sideEffects": [
-    "Read-only read of the declaration, package.json, and entry files"
+        "runEntryContractCheck only reads declarations and entry files; it never executes target content",
+        "Only checkEntriesAction may exclusively create one conclusion under an explicitly supplied existing output root; it creates no parent and overwrites nothing"
    ],
    "failureSemantics": [
     "A missing declaration is data, never a finding",
     "Each failed check produces a finding of a distinct kind"
    ],
    "invariants": [
-    "Does not modify any file",
+        "The pure check function does not modify any file",
     "Adds no fifth top-level command; it runs as the check entries sub-action"
    ],
    "ownedByCaller": [
@@ -2369,6 +2378,66 @@
    ],
    "routeElsewhere": [
     "An observed conclusion requires a separately approved official Kimi typed observation mapping; hostile concurrency or new output facts return to Foundation"
+   ]
+  },
+  {
+   "id": "foundation.harness.file-set-recovery",
+   "intent": "Apply ordered create, replace, and delete operations for scattered ordinary files under one project root through a single public entry point, and, after a caught failure or a forced process termination, restore the original bytes and modes from durable recovery materials or report per-path conflicts and unknowns",
+   "useWhen": [
+    "A set of scattered ordinary files must be created, replaced, or deleted in fixed order under one real project root, with whole-group preflight and per-path intent facts",
+    "Writer interleaving must be prevented under a cooperative-exclusion precondition the caller has already established, rather than relying on instantaneous multi-file visibility",
+    "An uncommitted operation must be recoverable through an explicit public entry point after a process restart, and recovery must stay re-entrant when it is itself interrupted",
+    "Recovery materials should be retained by default and only the materials of a specified terminal operation should be cleaned"
+   ],
+   "doNotUseWhen": [
+    "Instantaneous multi-file visibility, cross-file transactional snapshots, or directory-level operations are needed",
+    "Protection against uncooperative concurrent writers or same-privilege hostile processes is needed (this capability offers only a cooperative-exclusion precondition)",
+    "Symbolic links, hard links, cross-device targets, or mechanism-reserved paths must be handled",
+    "Foundation must define domain validation semantics, business retry policy, or the final destination of recovery materials"
+   ],
+   "prerequisites": [
+    "The caller has approved a canonical absolute real root with createFilesystemRootBinding and passes the fixed recoveryRelPath and allowAdjacentStaging explicitly in the apply and recover requests",
+    "environment declares filesystem as apfs or ext4 and cooperativeWriters as true; the business root and the recovery materials share one device and parent directories already exist",
+    "apply requires a read-only validate function; recover requires an externally established exclusive maintenance interval and the complete observation of that interval; prune takes the normal writer when nothing is left over and requires the same maintenance observation only when a fault takeover is needed",
+    "Targets belong to the executing user, the owner-read bit is set, and no bit of the original or new mode is masked by the process umask"
+   ],
+   "inputs": [
+    "file-set-apply-request: operationId, root, rootBinding, recoveryRelPath, allowAdjacentStaging, environment, validationTimeoutMs, and up to 1024 ordered operations (path/action/expected/next, with bytes only in the JS call arguments)",
+    "file-set-recovery-request: the same root binding and environment plus allowAdjacentStaging and the maintenance observation; file-set-prune-request: the same root binding and environment, with an explicit maintenance observation required only for a fault takeover",
+    "The caller-supplied validate({root, operationId, signal}), synchronous or asynchronous, returning the closed object {passed}"
+   ],
+   "outputs": [
+    "file-set-result: operation, outcome, preflight, businessWrite, validation, recovery, paths, errors, and materials",
+    "paths in original request order, each with apply, restore, current, and errorKinds, separating historical intent, the restore action, and the last safe observation",
+    "materials with the recovery-material relative path, none/retained/partial/pruned, durable, and adjacentStaging facts"
+   ],
+   "sideEffects": [
+    "Writes journal and operations/<id>/{before,after}/<index> recovery materials under the fixed .foundation-file-apply directory inside the root, and performs strict single-file publication or atomic replacement writes on business paths",
+    "Retains recovery materials by default; only an explicit prune removes the exact materials of a terminal operation, and the journal is kept",
+    "Issues no network requests, starts no subprocesses, performs no Git writes, and never changes the process umask"
+   ],
+   "failureSemantics": [
+    "Catchable mechanism failures return a file-set-result instead of only throwing; the outer code stays SFC2004 and details carries the closed kind and phase enumerations, which are the branching inputs rather than the message",
+    "Whole-group preflight failure, unsupported environment, capacity breach, and path or precondition mismatch leave zero business writes and report the specific precondition failure",
+    "Domain validation that returns false, throws, times out, returns an invalid result, or completes late triggers automatic recovery without committing, and validation state is reported separately from recovery state",
+    "Recovery keeps external content for conflicting paths and continues with the remaining safe paths, while global exclusivity or root-identity problems stop the whole group",
+    "A valid commit event is never rolled back; when target re-verification or durability is unconfirmed the result is commit-unconfirmed and the materials are retained"
+   ],
+   "invariants": [
+    "No business path is touched before a durable apply-intent fact exists for that path, and a committed operation is never rolled back by recovery",
+    "The whole group uses one cooperative single writer and the existing event chain; no second log, lock, sequence, or digest chain is added and no state-store internal file is cleaned",
+    "Per-path result fields separate historical and current observations instead of collapsing into one boolean, and a completed restore never rewrites businessWrite back to none",
+    "Instantaneous multi-file visibility is not promised, nor is protection against uncooperative or same-privilege hostile concurrent writers"
+   ],
+   "ownedByCaller": [
+    "Freezing the business plan, the original state, and the new bytes, plus the final destination of recovery materials",
+    "The domain judgment inside validate, its exception details, the read-only precondition, and the chosen timeout value",
+    "Establishing the maintenance interval, confirming that old participants and old recoverers have stopped, and operational decisions when the commit is unconfirmed",
+    "The exact pin, adoption qualification, and domain acceptance judgment"
+   ],
+   "routeElsewhere": [
+    "Directory operations, symbolic links, cross-device writes, or complete metadata backup stay on the consumer path, or return to Foundation as a new minimal capability contract",
+    "Business state machines and orchestration go to loop-agent; distribution and release state go to release-skill"
    ]
   }
  ]

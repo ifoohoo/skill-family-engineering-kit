@@ -1,5 +1,6 @@
 import {
   readFileContained,
+  readFileStrict,
   estimateTokens,
   TOKEN_ESTIMATOR_ID,
   TOKEN_ESTIMATOR_VERSION,
@@ -9,9 +10,11 @@ import {
   consumeTokenEstimateStrict,
   TOKEN_ESTIMATE_CONSUMPTION,
 } from "skill-family-contracts";
-import { KIT_ERROR_KINDS } from "./errors.mjs";
+import { invalidParamsError, KIT_ERROR_KINDS } from "./errors.mjs";
 import { KIT_TOOL_NAME, KIT_VERSION } from "./skeleton.mjs";
 import { readOptionalJson, resolveTargetRoot } from "./workspace.mjs";
+import { loadEngineeringDeclaration } from "./engineering-declaration.mjs";
+import { publishProfessionalConclusion } from "./professional-conclusion.mjs";
 
 /**
  * runEntryContractCheck — the shared entry contract gate (SG-34; audit
@@ -75,7 +78,16 @@ function isPlainObject(value) {
  * Throws only for unusable inputs (an unreadable target root) and for
  * fail-closed token consumption failures (mechanism errors, exit 2).
  */
-export async function runEntryContractCheck({ root } = {}) {
+export async function runEntryContractCheck({ root, policy } = {}) {
+  const selectedPolicy = policy ?? "legacy";
+  if (selectedPolicy !== "legacy" && selectedPolicy !== "declared") {
+    throw invalidParamsError("policy must be 'legacy' or 'declared'", { value: policy });
+  }
+  if (selectedPolicy === "declared") return runDeclaredEntryContractCheck({ root });
+  return runLegacyEntryContractCheck({ root });
+}
+
+async function runLegacyEntryContractCheck({ root } = {}) {
   const rootAbs = await resolveTargetRoot(root ?? ".");
   const findings = [];
   const data = {
@@ -355,6 +367,93 @@ export async function runEntryContractCheck({ root } = {}) {
   return entryReport(data, findings);
 }
 
+function declaredEntryReport(rootAbs, { declared, documentState, entries, findings, mechanism }) {
+  return {
+    kind: "skill-family.entry-check-report",
+    schemaVersion: 1,
+    generatedBy: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
+    target: { root: rootAbs },
+    declared,
+    documentState,
+    ok: findings.length === 0,
+    exitCode: mechanism ? 2 : findings.length === 0 ? 0 : 1,
+    mechanism,
+    findings,
+    data: { policy: "declared", entries },
+    policy: "declared entry checking is diagnosis only: physical references are strictly read as static files and target code is never executed",
+  };
+}
+
+async function runDeclaredEntryContractCheck({ root } = {}) {
+  const rootAbs = await resolveTargetRoot(root ?? ".");
+  const entries = [];
+  const findings = [];
+  let declared = false;
+  let documentState = "missing";
+  let mechanism = false;
+  try {
+    const loaded = await loadEngineeringDeclaration(rootAbs, "entries");
+    declared = loaded.declared;
+    documentState = loaded.state;
+    if (loaded.state !== "ok") {
+      const kind = loaded.state === "missing"
+        ? KIT_ERROR_KINDS.CONTRACTS_MISSING
+        : loaded.state === "parse-failed"
+          ? KIT_ERROR_KINDS.CONTRACT_PARSE_FAILED
+          : loaded.state === "incomplete"
+            ? KIT_ERROR_KINDS.DOCUMENT_INCOMPLETE
+            : KIT_ERROR_KINDS.ENTRY_CONTRACT_INVALID;
+      findings.push(finding(kind, loaded.state === "schema-invalid" ? "SFC1001" : "SFC2004", `project manifest cannot supply declared entries (${loaded.state})`, {
+        path: "skill-family.project-manifest.json",
+        documentState: loaded.state,
+        field: "engineering.entries",
+        errors: loaded.problems,
+      }));
+      return declaredEntryReport(rootAbs, { declared, documentState, entries, findings, mechanism });
+    }
+
+    for (const declaration of loaded.declaration) {
+      const observed = { ...declaration, readable: false };
+      entries.push(observed);
+      try {
+        await readFileStrict(rootAbs, declaration.physicalRef, { encoding: "utf8" });
+        observed.readable = true;
+      } catch (cause) {
+        if (cause?.details?.kind === "missing-resource") {
+          findings.push(finding(
+            KIT_ERROR_KINDS.ENTRY_PHYSICAL_MISSING,
+            "SFC2004",
+            `entry '${declaration.name}' physical file is absent: ${declaration.physicalRef}`,
+            { entry: declaration.name, path: declaration.physicalRef, form: declaration.form },
+          ));
+          continue;
+        }
+        mechanism = true;
+        findings.push(finding(
+          KIT_ERROR_KINDS.CHECK_CLASS_FAILED,
+          "SFC2004",
+          `entry '${declaration.name}' could not be safely read: ${cause?.message ?? String(cause)}`,
+          {
+            entry: declaration.name,
+            path: declaration.physicalRef,
+            causeKind: cause?.details?.kind ?? "unknown",
+          },
+        ));
+        break;
+      }
+    }
+  } catch (cause) {
+    mechanism = true;
+    findings.push(finding(
+      KIT_ERROR_KINDS.CHECK_CLASS_FAILED,
+      "SFC2004",
+      `declared entry check could not complete: ${cause?.message ?? String(cause)}`,
+      { path: cause?.details?.input ?? "skill-family.project-manifest.json", causeKind: cause?.details?.kind ?? "unknown" },
+    ));
+  }
+  return declaredEntryReport(rootAbs, { declared, documentState, entries, findings, mechanism });
+}
+
 function entryReport(data, findings) {
   return {
     kind: "skill-family.entry-check-report",
@@ -378,7 +477,17 @@ function entryReport(data, findings) {
  * stable kit exit codes: ok -> 0, findings -> 1; mechanism failures throw
  * and the CLI maps them to 2.
  */
-export async function checkEntriesAction({ root } = {}) {
-  const output = await runEntryContractCheck({ root });
-  return { status: output.ok ? "ok" : "findings", output };
+export async function checkEntriesAction({ root, policy, conclusionOutput } = {}) {
+  if (conclusionOutput !== undefined && policy !== "declared") {
+    throw invalidParamsError("conclusion output is supported only with policy: 'declared'");
+  }
+  const output = await runEntryContractCheck({ root, policy });
+  if (conclusionOutput !== undefined) {
+    output.conclusionPath = await publishProfessionalConclusion({
+      conclusionOutput,
+      report: output,
+      entry: "checkEntriesAction",
+    });
+  }
+  return { status: output.exitCode === 2 ? "rejected" : output.ok ? "ok" : "findings", output };
 }

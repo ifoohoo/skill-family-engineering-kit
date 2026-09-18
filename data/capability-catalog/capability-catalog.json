@@ -25,13 +25,16 @@
    "since": "0.2.0",
    "stability": "stable",
    "adoptionScopes": ["contracts"],
-   "entrypoints": [
-    "validateDocument (packages/skill-family-contracts/src/validator.mjs)",
-    "compileSchema (packages/skill-family-contracts/src/validator.mjs)",
-    "detectDialect (packages/skill-family-contracts/src/validator.mjs)"
-   ],
-   "sourceRefs": [
-    "packages/skill-family-contracts/src/validator.mjs"
+      "entrypoints": [
+        "validateDocument (packages/skill-family-contracts/src/validator.mjs)",
+        "compileSchema (packages/skill-family-contracts/src/validator.mjs)",
+        "detectDialect (packages/skill-family-contracts/src/validator.mjs)",
+        "professional-conclusion Schema (packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json)"
+      ],
+      "sourceRefs": [
+        "packages/skill-family-contracts/src/validator.mjs",
+        "packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json",
+        "packages/skill-family-contracts/src/schemas/project-manifest.schema.json"
    ],
    "positiveTestRefs": [
     "packages/skill-family-contracts/test/validator.test.mjs",
@@ -779,14 +782,17 @@
    "since": "0.2.0",
    "stability": "stable",
    "adoptionScopes": ["engineering-kit"],
-   "entrypoints": [
-    "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
-    "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
-    "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)"
-   ],
-   "sourceRefs": [
-    "packages/skill-family-engineering-kit/src/check.mjs",
-    "packages/skill-family-engineering-kit/src/core-check.mjs"
+      "entrypoints": [
+        "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
+        "runCommand check wrapper (packages/skill-family-engineering-kit/src/index.mjs)",
+        "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
+        "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)"
+      ],
+      "sourceRefs": [
+        "packages/skill-family-engineering-kit/src/check.mjs",
+        "packages/skill-family-engineering-kit/src/core-check.mjs",
+        "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
+        "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
@@ -939,14 +945,16 @@
    "since": "0.6.0",
    "stability": "stable",
    "adoptionScopes": ["engineering-kit"],
-   "entrypoints": [
-    "runEntryContractCheck (packages/skill-family-engineering-kit/src/entry-check.mjs)",
-    "checkEntriesAction (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+      "entrypoints": [
+        "runEntryContractCheck (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+        "checkEntriesAction (packages/skill-family-engineering-kit/src/entry-check.mjs)",
     "ENTRY_CONTRACT_DECLARATION_PATH (packages/skill-family-engineering-kit/src/entry-check.mjs)",
     "ENTRY_CONTRACT_DECLARATION_KIND (packages/skill-family-engineering-kit/src/entry-check.mjs)"
    ],
-   "sourceRefs": [
-    "packages/skill-family-engineering-kit/src/entry-check.mjs"
+      "sourceRefs": [
+        "packages/skill-family-engineering-kit/src/entry-check.mjs",
+        "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
+        "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/entry-check.test.mjs"
@@ -1562,6 +1570,41 @@
      "triggerCodes": ["first-host-related-adoption", "incompatible-foundation-change", "consumer-boundary-change", "runtime-or-channel-change", "incident-or-mock-drift", "user-requested"]
     }
    },
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.harness.file-set-recovery",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.22.0",
+   "stability": "candidate",
+   "adoptionScopes": ["harness"],
+   "entrypoints": [
+    "applyFileSet (packages/skill-family-harness-node/src/file-set-recovery.mjs)",
+    "recoverFileSet (packages/skill-family-harness-node/src/file-set-recovery.mjs)",
+    "pruneFileSetRecovery (packages/skill-family-harness-node/src/file-set-recovery.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/file-set-recovery.mjs",
+    "packages/skill-family-harness-node/src/index.mjs",
+    "packages/skill-family-contracts/src/schemas/file-set-apply-request.schema.json",
+    "packages/skill-family-contracts/src/schemas/file-set-recovery-request.schema.json",
+    "packages/skill-family-contracts/src/schemas/file-set-prune-request.schema.json",
+    "packages/skill-family-contracts/src/schemas/file-set-result.schema.json",
+    "packages/skill-family-contracts/src/schemas/file-set-event-payload.schema.json",
+    "packages/skill-family-contracts/src/schemas/state-store-recovery-observation.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/file-set-recovery.test.mjs",
+    "packages/skill-family-harness-node/test/file-set-recovery-crash.test.mjs",
+    "packages/skill-family-contracts/test/file-set-contract.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/file-set-recovery.test.mjs",
+    "packages/skill-family-harness-node/test/file-set-recovery-crash.test.mjs",
+    "packages/skill-family-contracts/test/file-set-contract.test.mjs"
+   ],
    "migration": "none",
    "promotionPolicy": "consumer-transparent"
   }

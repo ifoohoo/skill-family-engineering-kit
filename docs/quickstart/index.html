@@ -1893,6 +1893,14 @@
 </blockquote>
 <h1 id="快速开始">快速开始<a class="headerlink" href="#快速开始" title="Permanent link">&para;</a></h1>
 <p>本页给普通开发者三条可执行旅程：新项目能力发现与骨架生成、存量项目采用与迁移、日常单需求查询。每条路径都给出精确命令；架构路由与 API 细节转到对应文档。</p>
+<p>先判断需要哪种入口：</p>
+<ul>
+<li>只有一段自然语言需求，还不确定 Foundation 是否已经覆盖时，调用唯一的 <code>foundation-adoption-review</code> Skill。向它提供明确的 Foundation 精确版本、同版本能力目录查询结果和 <code>adopt-plan</code> 结果；它只读分析，不安装、不初始化、不运行 <code>check</code> 或资格探测。</li>
+<li>已经知道能力 ID，准备初始化空目录时，使用 <code>scaffold</code>。</li>
+<li>已有项目需要盘点结构、冲突和迁移条件时，先使用只读 <code>adopt-plan</code>。得到计划后再决定是否授权 <code>projection</code> 或由项目自己修改存量文件。</li>
+<li>已有声明需要与物理文件核对时，使用 <code>check</code>。它执行静态治理检查，不运行目标 Skill、业务脚本或 hooks。</li>
+</ul>
+<p>能力目录中的 <code>stable</code> 表示该入口在所查发布版本中稳定；<code>candidate</code> 仍是候选。候选命中、迁移 <code>complete</code>、本地源码存在和研发自测通过，都不能单独证明能力已经发布、整个宿主已经受管或目标项目已经合规。当前发布与候选边界只从当前产品状态和所用精确版本的能力目录读取。</p>
 <h2 id="公共安装前提">公共安装前提<a class="headerlink" href="#公共安装前提" title="Permanent link">&para;</a></h2>
 <p>本地候选验证从工作区打出三份当前版本 tarball，并把它们安装到临时 consumer。以下命令从 Foundation 工作区根目录运行；<code>foundation_version</code> 会读取根 <code>package.json</code>，作为三份 tarball 共用的版本：</p>
 <pre><code class="language-sh">foundation_version=&quot;$(node -p &quot;require('./package.json').version&quot;)&quot;
@@ -1918,6 +1926,7 @@ npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabiliti
 npm exec -- skill-family-kit check --root ./existing-repo
 </code></pre>
 <p><code>adopt-plan</code> 不写文件，也不自动迁移。迁移状态 <code>complete</code> 只表示 Profile、受管文件、旧实现退出、check 和四类证据都满足；它不等于契约接入完成。契约接入完成要由消费者自己的适配器测试与领域门禁声明。</p>
+<p>参考骨架比较只报告结构差异，不把参考目录解释成所有语言、发行形式或宿主必须采用的规范。当前发布检查仍带有既有 Foundation 工程政策，例如版本源和入口形态的假设。单包、独立版本包、Python 项目或其他非 npm 版本源应先由采用诊断确认适用范围。旧政策检查产生发现时，不要直接把目标改造为本仓私有父工作区的结构。</p>
 <h2 id="日常工作查询单项需求">日常工作：查询单项需求<a class="headerlink" href="#日常工作查询单项需求" title="Permanent link">&para;</a></h2>
 <p>不确定 capability ID 时，用当前语言做确定性子串查询。结果为空是 <code>no-text-match</code>，只命中 unsupported 能力是 <code>boundary-found</code>；这两种结果都不是 <code>foundation-gap</code> decision。</p>
 <pre><code class="language-sh">npm exec -- skill-family-kit adopt-plan --list-capabilities --locale zh-CN --filter &quot;写文件失败时不能留下残缺文件&quot;
@@ -1953,6 +1962,7 @@ npm exec -- skill-family-kit check --root ./existing-repo
 <blockquote>
 <p>路由的硬边界：Foundation 不拥有远端写入、业务状态机、模型编排与领域审计语义。落入 <code>keep-business</code> 或 <code>foundation-gap</code> 的能力不强行扩张 Foundation。</p>
 </blockquote>
+<p>路径收容、用量估算或上限守卫只保证调用它们的那条路径。调用方仍负责让相关读取统一经过入口、定义事件和上限，并决定超限后的业务动作。Foundation 没有据此承诺全量跨语言治理、跨宿主权限交集或安全沙箱。</p>
 <h2 id="权威事实与规范">权威事实与规范<a class="headerlink" href="#权威事实与规范" title="Permanent link">&para;</a></h2>
 <ul>
 <li>当前产品状态（版本、包集合、镜像坐标、门禁）：当前产品状态（唯一状态页，本页不复制）。</li>

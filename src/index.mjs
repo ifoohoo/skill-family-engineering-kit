@@ -97,6 +97,7 @@ import {
   PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import { matchAnyGlob } from "./workspace.mjs";
+import { publishProfessionalConclusion } from "./professional-conclusion.mjs";
 
 /**
  * skill-family-engineering-kit: the four build-time engineering commands.
@@ -151,7 +152,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none for ordinary diagnosis — never writes, never auto-fixes; git is probed read-only (one frozen status query at most); report and entries sub-actions remain read-only; relock is the one controlled write transaction; qualification is separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
+      "none for default diagnosis and the pure runChecks/runEntryContractCheck functions — they never write or auto-fix, and git is probed read-only (one frozen status query at most); with policy declared, only the runCommand('check') and checkEntriesAction wrappers may exclusively create one conclusion when callers explicitly provide an existing output root plus a contained relative path, never creating parent directories or overwriting an existing entry; relock remains a separately explicit controlled write transaction; qualification remains separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -186,7 +187,17 @@ export async function runCommand(command, options = {}) {
       return { exitCode: KIT_EXIT_CODES.ok, output };
     }
     case "check": {
+      if (options.conclusionOutput !== undefined && options.policy !== "declared") {
+        throw invalidParamsError("conclusion output is supported only with policy: 'declared'");
+      }
       const output = await runChecks(options);
+      if (options.conclusionOutput !== undefined) {
+        output.conclusionPath = await publishProfessionalConclusion({
+          conclusionOutput: options.conclusionOutput,
+          report: output,
+          entry: "runCommand.check",
+        });
+      }
       // 0 clean; 2 mechanism (a selected class could not complete); 1 findings.
       const exitCode = output.mechanism
         ? KIT_EXIT_CODES.rejected

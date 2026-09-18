@@ -398,6 +398,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#先选入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        先选入口
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#治理检查与研发自测" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        治理检查与研发自测
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#按稳定错误码分诊" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1729,6 +1751,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#先选入口" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        先选入口
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#治理检查与研发自测" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        治理检查与研发自测
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#按稳定错误码分诊" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1804,7 +1848,44 @@
 <p><a href="../en/help/">English</a></p>
 </blockquote>
 <h1 id="帮助与分诊">帮助与分诊<a class="headerlink" href="#帮助与分诊" title="Permanent link">&para;</a></h1>
-<p>本页按错误码、进程退出码与现象给分诊路径。Foundation 的错误码体系冻结在 Contracts（<code>src/error-codes.json</code>），不漂移；机制失败统一为 <code>SFC2004</code> 加稳定 <code>details.kind</code>。</p>
+<p>本页帮助开发者先选对入口，再按错误码、进程退出码与现象处理问题。Foundation 的错误码体系冻结在 Contracts（<code>src/error-codes.json</code>），不漂移；机制失败统一为 <code>SFC2004</code> 加稳定 <code>details.kind</code>。</p>
+<h2 id="先选入口">先选入口<a class="headerlink" href="#先选入口" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>要解决的问题</th>
+<th>入口</th>
+<th>入口边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不了解现有能力是否适用</td>
+<td><code>foundation-adoption-review</code></td>
+<td>唯一的自然语言采用诊断 Skill。它读取调用方提供的精确版本、能力目录查询结果和 <code>adopt-plan</code> 结果，给出完整匹配、部分匹配、候选匹配、无匹配或漏看已有能力</td>
+</tr>
+<tr>
+<td>需要盘点存量项目与参考骨架的结构差异</td>
+<td><code>planAdoption({ root, allowGitSpawn: false })</code> 或 <code>adopt-plan --no-git-spawn</code></td>
+<td>只读输出写集、冲突、风险和迁移完成条件；参考骨架不是所有项目必须复制的目录规范</td>
+</tr>
+<tr>
+<td>需要核对现有工程声明和物理文件</td>
+<td><code>runChecks</code>、<code>runCoreCheck</code>、<code>runEntryContractCheck</code> 或 <code>check</code></td>
+<td>静态读取文件与配置，报告当前检查政策范围内的发现；不运行目标 Skill、业务脚本或 hooks</td>
+</tr>
+<tr>
+<td>需要初始化空目录或写入受管投影</td>
+<td><code>scaffold</code>、<code>projection</code></td>
+<td>只有调用方已经授权对应写入时才使用；存量项目不存在通用 <code>apply</code></td>
+</tr>
+</tbody>
+</table>
+<p>采用诊断不安装或初始化项目，不执行 <code>check</code>、资格探测或宿主调用，也不替代 Audit（独立审计）的领域判断。它只解释调用方提供的事实，并把下一步指向具体公共入口。输入不完整时，结论保持候选或待确认。</p>
+<h2 id="治理检查与研发自测">治理检查与研发自测<a class="headerlink" href="#治理检查与研发自测" title="Permanent link">&para;</a></h2>
+<p>治理检查面向被检查项目，核对声明、路径和实际文件是否一致。普通 <code>check</code> 只读；它不会启动目标程序，也不会证明整个宿主的所有文件操作、权限或内部工序已受 Foundation 约束。</p>
+<p>研发自测面向 Foundation 自身。包测试、宿主驱动和资格测试只在项目明确授权的开发或验证流程中运行，用来验证 Foundation 的产品实现。研发自测通过不能替代目标项目的领域门禁、真实宿主资格或独立审计。</p>
+<p>现有检查保留其既有政策假设，例如 Foundation 风格的版本源、入口形态和九类检查。只有目标项目确实采用这些政策时，结果才能据此解释；单包、独立发布单元、非 npm 版本源或其他入口形态不能被强行套入。稳定能力、候选能力和当前源码状态分别判断，精确边界以当前产品状态和所用版本的能力目录为准。</p>
 <h2 id="按稳定错误码分诊">按稳定错误码分诊<a class="headerlink" href="#按稳定错误码分诊" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1965,6 +2046,7 @@
 </ul>
 <h2 id="项目路由">项目路由<a class="headerlink" href="#项目路由" title="Permanent link">&para;</a></h2>
 <ul>
+<li>精确版本中的能力是否适用 / 现有方案是否重复 → <code>foundation-adoption-review</code>。</li>
 <li>发布远端状态 / npm 发布 → release-skill。</li>
 <li>任务 / 重试 / 返工 / 验收 → loop-agent。</li>
 <li>制品关系 / 版本锁 → artifact-graph。</li>

@@ -1372,6 +1372,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#多路径文件集合应用与恢复-foundationharnessfile-set-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        多路径文件集合应用与恢复 (foundation.harness.file-set-recovery)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="多路径文件集合应用与恢复 (foundation.harness.file-set-recovery)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#applyFileSet--recoverFileSet--pruneFileSetRecovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        applyFileSet / recoverFileSet / pruneFileSetRecovery
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -3050,6 +3078,34 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#多路径文件集合应用与恢复-foundationharnessfile-set-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        多路径文件集合应用与恢复 (foundation.harness.file-set-recovery)
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="多路径文件集合应用与恢复 (foundation.harness.file-set-recovery)">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#applyFileSet--recoverFileSet--pruneFileSetRecovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        applyFileSet / recoverFileSet / pruneFileSetRecovery
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#与机器事实层的互链" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -3090,7 +3146,7 @@
 
 <h1 id="skill-family-harness-node-公共-API-参考">skill-family-harness-node 公共 API 参考<a class="headerlink" href="#skill-family-harness-node-公共-API-参考" title="Permanent link">&para;</a></h1>
 <p>本页从真实导出（<code>src/index.mjs</code> 与各源模块）核对，不手写无法证明新鲜度的全集。每个公共入口按 hand-off §4.3 说明：签名、输入与输出、是否纯函数、文件/进程/Git/网络副作用、稳定错误码与 <code>details.kind</code>、前置条件与信任锚、<code>since</code> 与 <code>stability</code>、源文件与正例/负例测试、调用方仍拥有的业务语义。</p>
-<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（23 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
+<p>Harness 是薄运行时：消费 Contracts，只实现业务中立机制；不拥有业务语义、编排、Git、网络与第二语言。包级常量：<code>HARNESS_CAPABILITIES</code>（22 项能力，闭集）、<code>HARNESS_EXCLUSIONS</code>（明确排除 <code>business-semantics</code> / <code>workflow-orchestration</code> / <code>git-writes</code> / <code>model-calls</code> / <code>release-state</code> / <code>remote-network-access</code>）。</p>
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#契约校验-foundationharnesscontract-validation">契约校验</a> → <code>validateContractDocument</code> / <code>getValidator</code></li>
@@ -3109,6 +3165,7 @@
 <li><a href="#可执行身份观察-foundationharnessexecutable-identity-observation">可执行身份观察</a> → <code>observeExecutableIdentity</code></li>
 <li><a href="#机制批量-foundationharnessmechanism-batch">机制批量</a> → <code>runMechanismCliBatch</code> / <code>--batch</code>（0.19.0 candidate）</li>
 <li><a href="#持久状态底座-foundationharnessstate-store">持久状态底座</a> → <code>openStateStore</code> / <code>appendEvent</code> / <code>readSnapshot</code> / <code>verifyStateStore</code> …</li>
+<li><a href="#多路径文件集合应用与恢复-foundationharnessfile-set-recovery">多路径文件集合应用与恢复</a> → <code>applyFileSet</code> / <code>recoverFileSet</code> / <code>pruneFileSetRecovery</code>（0.21.0 candidate）</li>
 <li><a href="#基线物化-foundationharnessbaseline-materialization">基线物化</a> → <code>computeDirectoryDigest</code> / <code>materializeBaseline</code>（FND-ADR-009）</li>
 <li><a href="#只读-chokepoint-foundationharnessread-chokepoint">只读 chokepoint</a> → <code>createReadChokepoint</code>（FND-ADR-009）</li>
 <li><a href="#策略化表面扫描-foundationharnesssurface-scan">策略化表面扫描</a> → <code>scanSurface</code>（FND-ADR-009）</li>
@@ -3396,15 +3453,20 @@
 <li><code>writeSnapshot(store, state, { hostSessionRef, reducer, initial = null } = {})</code>（async）</li>
 <li><code>verifyStateStore(store, { reducer, initial = null } = {})</code>（async）</li>
 <li><code>rebuildSnapshot(store, reducer, { initial = null } = {})</code>（async）</li>
-<li><code>inspectStateStoreLock(root, { clock } = {})</code>（async）</li>
-<li><code>recoverStateStoreLock(root, { ... } = {})</code>（async）</li>
+<li><code>inspectStateStoreLock(root, { clock, recoveryObservation = false } = {})</code>（async）</li>
+<li><code>recoverStateStoreLock(root, options = {})</code>（async）<ul>
+<li>两种<strong>互斥</strong>接管模式，只能取其一：旧模式 <code>{ expectedOwner, expectedFencing, confirmOwnerTerminated: true, payloadSchemas }</code>；维护模式 <code>{ observation, confirmAllParticipantsStopped: true, confirmExclusiveMaintenance: true, payloadSchemas }</code>。两种模式都必填 <code>payloadSchemas</code>（与 <code>openStateStore</code> 相同的注册表，至少一个 eventType/版本对），<code>newOwner</code> 与 <code>clock</code> 可选。</li>
+</ul>
+</li>
 <li><code>closeStateStore(store)</code> / <code>close(store)</code>（async）</li>
 <li>输入：事件负载、快照、锁令牌。</li>
 <li>输出：事件、hash chain 校验结果、快照；<code>STATE_GENESIS_DIGEST</code> 作为链起点。</li>
 <li>纯函数：否（读写事件日志与快照文件，写协作式单写者锁）。</li>
 <li>副作用：在受收容路径读写事件日志与快照；写锁文件用于本地协作式单写者。</li>
 <li>稳定错误码与 <code>details.kind</code>：hash chain 断裂 <code>+ CHAIN_BROKEN</code>；锁 fencing 冲突 <code>+ STORE_LOCKED</code>；锁损坏 <code>+ LOCK_CORRUPT</code>；恢复拒绝 <code>+ LOCK_RECOVERY_REFUSED</code>；非法事件 <code>+ UNSAFE_STATE_ENTRY</code> / <code>EVENT_SCHEMA_INVALID</code>；重复序号 <code>+ DUPLICATE_SEQUENCE</code>；幂等冲突 <code>+ IDEMPOTENCY_CONFLICT</code>；快照不一致 <code>+ SNAPSHOT_MISMATCH</code>；已关闭 <code>+ STORE_CLOSED</code>；以上均包于 <code>SFC2004</code>。</li>
-<li>前置条件与信任锚：事件日志为唯一权威，snapshot 为派生缓存；fencing 不承诺抵御同权限恶意进程；<code>confirmOwnerTerminated</code> 信任锚由调用方提供。</li>
+<li>恢复接管模式（互斥，不得混用）：旧模式 <code>recoverStateStoreLock(root, { expectedOwner, expectedFencing, confirmOwnerTerminated: true, payloadSchemas })</code> 要求 owner 与 fencing 精确匹配当前观测值；维护模式 <code>recoverStateStoreLock(root, { observation, confirmAllParticipantsStopped: true, confirmExclusiveMaintenance: true, payloadSchemas, newOwner?, clock? })</code> 用完整观察覆盖 writer 缺失与部分写入的控制文件，不只核对 owner/fencing。显式写出但值为 <code>undefined</code> 的旧模式字段同样计入混用并被拒绝（<code>legacy and maintenance recovery options cannot be mixed</code>），构造维护模式 options 时必须整体省略旧模式字段。</li>
+<li>完整观察获取：对同一 root 调用 <code>inspectStateStoreLock(root, { recoveryObservation: true })</code> 返回 <code>state-store-recovery-observation</code> 对象（闭字段 <code>schemaVersion</code>、<code>kind</code>、<code>root</code>、<code>directories</code>、<code>controls</code>；只读，不整理残留、不创建目录）。默认调用（不传该选项）返回的是诊断结果，不是有效观察，不能用于维护模式。维护模式的组织范围限于已验证的事件临时别名与 <code>writer.lock</code>、<code>writer-mutation.lock</code>、<code>writer-recovery.lock</code> 三种可处置控制残留；未知格式的控制记录或 fencing 计数器拒绝接管，未知文件不删除。</li>
+<li>前置条件与信任锚：事件日志为唯一权威，snapshot 为派生缓存；fencing 不承诺抵御同权限恶意进程；<code>confirmOwnerTerminated</code> 信任锚由调用方提供。维护模式的两项确认同样是外部信任前提，不是布尔字段自动实现的锁：<code>confirmAllParticipantsStopped</code> 声明旧写者、旧恢复者及其子进程均已停止，<code>confirmExclusiveMaintenance</code> 声明排他维护区间仍成立；区间从取得观察之前开始，到本次调用取得新写者句柄或失败返回结束，期间禁止其他恢复、正常打开、状态存储写入与相关业务写入。PID、年龄或 owner/fencing 比较都不能替代该前提。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-harness-node/src/state-store.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-harness-node/test/state-store.test.mjs</code>。</li>
@@ -3706,6 +3768,25 @@ stable 承诺，Bundle 是否重建由既有包字节与 provenance 绑定输入
 <li>源文件：Contracts 新 Schema <code>packages/skill-family-contracts/candidate/foundation-mechanisms/mechanism-batch-request.schema.json</code>、<code>mechanism-batch-result.schema.json</code> 与容量权威 <code>mechanism-batch-policy.json</code>；Harness <code>packages/skill-family-harness-node/candidate/mechanisms-cli.mjs</code>；Kit 离线 Bundle 投影 <code>packages/skill-family-engineering-kit/candidate/profile-bundle.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/quickstart-profile.test.mjs</code>、<code>packages/skill-family-harness-node/test/quickstart-profile.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/candidate-mechanisms-cli.test.mjs</code>、<code>packages/skill-family-engineering-kit/test/candidate-profile-bundle.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：领域分组与容量切分、请求间依赖关系判断、精确 pin 与来源身份绑定、批次采用完成与领域回归判定。逐项迁移示例：把若干 <code>{ "operation": "canonical-json", "params": { "document": ... } }</code> 单请求合并为 <code>{ "operation": "canonical-json", "inputs": [{ "document": ... }, ...] }</code>，再按 <code>results[i].inputIndex</code> 读回逐项 <code>response</code> 与 <code>exitCode</code>；同一 Node 进程内的直接调用继续使用 <code>invokeFoundationMechanism</code>，不被强制改成批量。</li>
+</ul>
+<hr />
+<h2 id="多路径文件集合应用与恢复-foundationharnessfile-set-recovery">多路径文件集合应用与恢复 (foundation.harness.file-set-recovery)<a class="headerlink" href="#多路径文件集合应用与恢复-foundationharnessfile-set-recovery" title="Permanent link">&para;</a></h2>
+<h3 id="applyFileSet--recoverFileSet--pruneFileSetRecovery">applyFileSet / recoverFileSet / pruneFileSetRecovery<a class="headerlink" href="#applyFileSet--recoverFileSet--pruneFileSetRecovery" title="Permanent link">&para;</a></h3>
+<ul>
+<li>签名：</li>
+<li><code>applyFileSet(request, { validate })</code>（async；<code>validate</code> 必填，缺省不得自动通过）</li>
+<li><code>recoverFileSet(request)</code>（async）</li>
+<li><code>pruneFileSetRecovery(request)</code>（async）</li>
+<li>输入：Contracts 登记的 <code>file-set-apply-request</code>、<code>file-set-recovery-request</code> 与 <code>file-set-prune-request</code>。请求携带 <code>operationId</code>、规范绝对真实 <code>root</code> 与已批准的 <code>rootBinding</code>、固定 <code>recoveryRelPath</code>（<code>.foundation-file-apply</code>）、<code>allowAdjacentStaging</code>、<code>environment</code>（<code>filesystem</code> 为 <code>apfs</code> 或 <code>ext4</code>，<code>cooperativeWriters</code> 为 true）与 <code>validationTimeoutMs</code>；apply 另有最多 1024 条有序操作（<code>path</code>/<code>action</code>/<code>expected</code>/<code>next</code>）。<code>bytes</code> 只存在于 JS 调用参数，不进入机器 JSON；原字节与新字节合计上限 256 MiB。恢复必须另有 <code>maintenance</code> 观察（<code>observation</code> 加两项确认）；该观察由调用方在排他维护区间内对根内固定 <code>.foundation-file-apply/journal</code> 调用 <code>inspectStateStoreLock(journalRoot, { recoveryObservation: true })</code> 取得，<code>observation.root</code> 必须等于该 journal 目录，默认诊断结果不是有效观察、不能用于故障接管；prune 请求只接受同一根绑定与 <code>environment</code>，在无残留时直接取得正常 writer，只有需要故障接管时才要求显式提供同一 <code>maintenance</code>。</li>
+<li>输出：<code>file-set-result</code>。<code>outcome</code> 取 <code>committed</code>、<code>commit-unconfirmed</code>、<code>rejected</code>、<code>rolled-back</code>、<code>recovery-required</code>、<code>already-committed</code>、<code>already-rolled-back</code>、<code>pruned</code> 或 <code>already-pruned</code>；<code>paths</code> 按原请求顺序逐项给出 <code>apply</code>、<code>restore</code>、<code>current</code> 与 <code>errorKinds</code>，分别表达历史意图、恢复动作与最近一次安全观察，不合成单一布尔值；<code>materials</code> 给出材料相对路径、<code>none|retained|partial|pruned</code>、<code>durable</code> 与 <code>adjacentStaging: none-observed|possible-unknown</code>。</li>
+<li>恢复材料布局：根内固定 <code>.foundation-file-apply/</code> 下使用 <code>journal/</code>（既有 state-store 事件账）与 <code>operations/&lt;id&gt;/{before,after}/&lt;index&gt;</code>。材料默认保留，只有显式 <code>pruneFileSetRecovery</code> 清理精确的已终结操作，journal 保留；机制不按后缀删除归属不明的邻接暂存文件，只报告 <code>possible-unknown</code>。</li>
+<li>副作用：业务路径上的写入复用既有严格单文件原语（<code>publishFileOrReplace</code> / <code>replaceFileAtomic</code>），恢复材料写在根内受收容路径。不发起网络、不启动子进程、不写 Git、不修改进程 umask。</li>
+<li>失败语义：可捕获的机制失败返回 <code>file-set-result</code>，不只抛一个错误。外码沿用 <code>SFC2004</code>，<code>details</code> 携带闭枚举 <code>kind</code> 与 <code>phase</code>（<code>input</code>/<code>preflight</code>/<code>prepare</code>/<code>apply</code>/<code>validate</code>/<code>restore</code>/<code>finalize</code>/<code>prune</code>），消息仅供人阅读、不能用于分支。整组前检失败、环境不支持与容量越限在任何业务写入前返回；领域验证返回 false、抛错、超时、非法结果或迟到完成触发自动恢复且不提交，验证状态与恢复状态分开报告；恢复遇冲突路径保留外部内容并继续其他安全项；全局独占或根身份问题停止整组；有效提交事件决定不回滚，目标复核或持久化未确认时报告 <code>commit-unconfirmed</code> 并保留材料。释放锁失败不改写已确认终态，只追加 <code>lock-release-failed</code>。</li>
+<li>保证边界：未为该路径写入持久 <code>apply-intent</code> 事实前不触碰任何业务路径。不承诺瞬时多文件可见性，也不承诺抵御不合作或同权限恶意并发写者——写者交错只由调用方的合作式独占前提阻止。恢复要求调用方先停止旧参与者与旧恢复者、在外部建立排他维护区间并提交该区间的完整观察与确认；清理在无残留时直接取得正常 writer，只有需要故障接管时才要求同一维护前提。机制不自动偷锁、不竞争恢复、不猜测损坏材料。</li>
+<li><code>since</code> / <code>stability</code>：<code>0.21.0</code> / <code>candidate</code>。<code>candidate</code> 不等于 <code>stable</code>，本地候选测试通过也不改变成熟度；是否发布须查对应版本的发布后验证证据。消费者在评估期必须精确锁定三个 Foundation 包。</li>
+<li>源文件：<code>packages/skill-family-harness-node/src/file-set-recovery.mjs</code>（根导出见 <code>src/index.mjs</code>）；Contracts 侧 <code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、<code>file-set-prune-request</code>、<code>file-set-result</code>、<code>file-set-event-payload</code> 与 <code>state-store-recovery-observation</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-harness-node/test/file-set-recovery.test.mjs</code>、<code>packages/skill-family-harness-node/test/file-set-recovery-crash.test.mjs</code>、<code>packages/skill-family-contracts/test/file-set-contract.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：业务计划与原/新字节的冻结、<code>validate</code> 的领域判断与异常详情、维护区间的建立与旧参与者停止确认、恢复材料的最终去处、精确 pin、采用资格与领域验收判定。</li>
 </ul>
 <hr />
 <h2 id="与机器事实层的互链">与机器事实层的互链<a class="headerlink" href="#与机器事实层的互链" title="Permanent link">&para;</a></h2>

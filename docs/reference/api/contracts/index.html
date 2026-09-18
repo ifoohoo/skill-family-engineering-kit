@@ -718,6 +718,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#公共专业结论-professional-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        公共专业结论 (professional-conclusion)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#来源权威收据-foundationcontractssource-authority" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -750,6 +761,17 @@
     <span class="md-ellipsis">
 
         文件系统契约 (foundation.contracts.filesystem)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#文件集合应用与恢复合同-file-set-applyrecovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        文件集合应用与恢复合同 (file-set apply/recovery)
 
     </span>
   </a>
@@ -2108,6 +2130,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#公共专业结论-professional-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        公共专业结论 (professional-conclusion)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#来源权威收据-foundationcontractssource-authority" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2140,6 +2173,17 @@
     <span class="md-ellipsis">
 
         文件系统契约 (foundation.contracts.filesystem)
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#文件集合应用与恢复合同-file-set-applyrecovery" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        文件集合应用与恢复合同 (file-set apply/recovery)
 
     </span>
   </a>
@@ -2463,8 +2507,10 @@
 <p>能力分组（与 <code>docs/agents/capability-catalog.json</code> 对应）：</p>
 <ul>
 <li><a href="#对象校验-foundationcontractsobject-validation">对象校验</a> → <code>validateDocument</code> / <code>compileSchema</code> / <code>detectDialect</code></li>
+<li><a href="#公共专业结论-professional-conclusion">公共专业结论</a> → <code>professional-conclusion</code> Schema / <code>validateDocument</code></li>
 <li><a href="#来源权威收据-foundationcontractssource-authority">来源权威收据</a> → <code>validateSourceAuthorityReceipt</code> / <code>parseSourceAuthorityReceipt</code></li>
 <li><a href="#文件系统契约-foundationcontractsfilesystem">文件系统契约</a> → 根绑定与固定集合 manifest/receipt Schema</li>
+<li><a href="#文件集合应用与恢复合同-file-set-applyrecovery">文件集合应用与恢复合同</a> → apply/recover/prune request、result、事件载荷与状态恢复观察 Schema</li>
 <li><a href="#登记与协议-foundationcontractsregistry-protocol">登记与协议</a> → <code>loadRegistry</code> / <code>findSchemaByObject</code> / <code>findProtocol</code> / <code>registerSchema</code> / <code>registerProtocol</code></li>
 <li><a href="#内核协议-foundationcontractskernel-protocol">内核协议</a> → <code>loadKernelProtocol</code> / <code>findOperation</code> / <code>checkOperation</code></li>
 <li><a href="#强制检查-foundationcontractsmandatory-checks">强制检查</a> → <code>runChecks</code> / <code>collectUnresolvedRefs</code></li>
@@ -2477,7 +2523,7 @@
 <li><a href="#完整插件验证合同-foundationcontractsplugin-verification">完整插件验证合同</a> → request/result Schema</li>
 <li><a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification">技能族目录验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（46 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.16.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（当前本地合同源码为 53 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.20.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。已发布 Foundation 0.21.0 仍对应 Contracts 1.18.0 与 46 类对象；本页新增内容描述尚无发布坐标的本地实现。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2524,6 +2570,28 @@
 <li>调用方仍拥有的业务语义：方言选择策略（何时用 tolerant）。</li>
 </ul>
 <hr />
+<h2 id="公共专业结论-professional-conclusion">公共专业结论 (professional-conclusion)<a class="headerlink" href="#公共专业结论-professional-conclusion" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.20.0 在当前本地源码登记 <code>professional-conclusion</code>，Schema <code>$id</code> 为
+<code>https://contracts.skill-family.example/v1/professional-conclusion.json</code>。它固定六个外层字段：
+<code>schemaVersion</code>、<code>kind</code>、<code>provider</code>、<code>subject</code>、<code>scope</code>、<code>outcome</code> 与可选 <code>details</code>。其中
+<code>scope.checked</code> 和 <code>scope.limitations</code> 说明真正完成的检查与限制；<code>outcome.completion</code> 只能是
+<code>complete</code>、<code>partial</code> 或 <code>not-performed</code>。<code>outcome.code</code> 与 <code>details</code> 保持对专业方开放，
+Contracts 不维护领域代码表，也不根据结构有效推断专业结果通过。</p>
+<p>消费方应从专业入口的真实返回值取得显式路径，在自身授权的允许根内读取 JSON，再调用
+<code>findSchemaByObject("professional-conclusion")</code> 与 <code>validateDocument</code>。校验是纯函数，不读取引用、
+不发现结果文件，也不执行提供方或目标程序。检查范围与完成程度不相容、缺少公共字段、未知外层
+字段或错误结构版本时返回 <code>valid:false</code> 与 <code>SFC1001</code>。</p>
+<p><code>project-manifest</code> 同期增加可选 <code>engineering</code> 声明。<code>releaseUnits</code> 每项声明独立的 text 或 JSON
+版本来源和可选镜像；<code>entries</code> 每项声明名称、<code>physicalRef</code> 与普通文件形态。Schema 只校验结构与
+安全的相对引用形状，不读取这些路径，不要求外部项目采用 Foundation 的仓库布局。</p>
+<ul>
+<li>副作用：无文件、Git、网络或进程副作用；仅复用 Ajv 进程内编译缓存。</li>
+<li>正例/负例：<code>packages/skill-family-contracts/test/report-contracts.test.mjs</code>、<code>schemas.test.mjs</code>、
+  <code>fixtures.test.mjs</code> 与 <code>registry.test.mjs</code>。</li>
+<li>调用方仍拥有：提供方身份信任、领域 code 与详情解释、显式路径传递、根内读取授权，以及是否
+  接受或整改该专业结论。</li>
+</ul>
+<hr />
 <h2 id="来源权威收据-foundationcontractssource-authority">来源权威收据 (foundation.contracts.source-authority)<a class="headerlink" href="#来源权威收据-foundationcontractssource-authority" title="Permanent link">&para;</a></h2>
 <h3 id="validateSourceAuthorityReceipt--parseSourceAuthorityReceipt">validateSourceAuthorityReceipt / parseSourceAuthorityReceipt<a class="headerlink" href="#validateSourceAuthorityReceipt--parseSourceAuthorityReceipt" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2547,6 +2615,48 @@
 <li>固定集合 manifest/receipt Schema：<code>https://contracts.skill-family.example/v1/fixed-set-publication-manifest.json</code> 与 <code>https://contracts.skill-family.example/v1/fixed-set-publication-receipt.json</code>。发布回执的终态只允许 <code>succeeded</code>、<code>refused</code>、<code>failed</code>、<code>indeterminate</code>。</li>
 <li>这三个 Schema 的真实登记与 fixture 由 <code>packages/skill-family-contracts/src/registry.json</code>、<code>src/schemas/</code> 和 <code>test/</code> 共同核验；批量校验 Schema 保持 candidate，不进入稳定 Registry。</li>
 </ul>
+<h2 id="文件集合应用与恢复合同-file-set-applyrecovery">文件集合应用与恢复合同 (file-set apply/recovery)<a class="headerlink" href="#文件集合应用与恢复合同-file-set-applyrecovery" title="Permanent link">&para;</a></h2>
+<p>Contracts 1.20.0 登记六个已登记顶层对象：<code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、
+<code>file-set-prune-request</code>、<code>file-set-result</code>、<code>file-set-event-payload</code> 与
+<code>state-store-recovery-observation</code>。六个 Schema 均为顶层封装，必填 <code>schemaVersion=1</code> 与
+<code>kind=skill-family.&lt;对象名&gt;</code>，闭字段、未知字段拒绝；登记状态为 <code>candidate</code>，本地规格坐标
+<code>contractsVersion=1.20.0</code> 尚无 registry 发布坐标。状态恢复观察对象由状态恢复合同单独定义，
+不塞进文件业务 Schema 反向依赖。</p>
+<ul>
+<li>apply request：<code>operationId</code>（调用方生成的 UUID v4 小写字符串，journal 内不复用）、<code>root</code>（规范绝对真实路径）、
+  <code>rootBinding</code>（<code>createFilesystemRootBinding</code> 返回的原对象）、固定 <code>recoveryRelPath=".foundation-file-apply"</code>、
+  固定 <code>allowAdjacentStaging=true</code>、<code>environment={filesystem: "apfs"|"ext4", cooperativeWriters: true}</code>、
+  1～2147483647 的 <code>validationTimeoutMs</code>，以及 1～1024 条有序 <code>operations</code>。每条含
+  <code>path</code>、<code>action=create|replace|delete</code>、<code>expected</code> 与 <code>next</code>；替换的新模式必须等于原模式。</li>
+<li>字节与摘要只在 JS 调用参数中绑定，不进机器 JSON Schema：<code>sha256</code> 为 64 位小写十六进制，<code>size</code> 按原始字节计数，
+  <code>bytes</code> 接受 Buffer 或 Uint8Array（调用开始即复制，SharedArrayBuffer 及其视图拒绝）；<code>mode</code> 为
+  <code>0000</code>～<code>0777</code> 的 POSIX 整数，且要求目标属于执行用户、owner-read 位置位且不被进程 umask 屏蔽。
+  1024 条与新旧字节合计 256 MiB 是首轮容量上限，超限在任何业务写入前拒绝。</li>
+<li>recover / prune request 共有 <code>schemaVersion</code>、<code>operationId</code>、<code>root</code>、<code>rootBinding</code>、<code>recoveryRelPath</code> 与
+  <code>environment</code>。recover 必填 <code>maintenance={observation, confirmAllParticipantsStopped:true,
+  confirmExclusiveMaintenance:true}</code>，并要求 <code>allowAdjacentStaging:true</code>；prune 在无残留时不需要
+  <code>maintenance</code>，只有故障接管才要求同一观察，不能自动升级成恢复。完整观察由调用方在排他维护区间内对
+  <code>&lt;root&gt;/.foundation-file-apply/journal</code> 调用 <code>inspectStateStoreLock(journalRoot, { recoveryObservation: true })</code>
+  取得，<code>observation.root</code> 必须等于该 journal 目录，默认诊断结果不是有效观察；获取方式见
+  <code>docs/reference/api/harness.md</code>。</li>
+<li>result 固定包含 <code>schemaVersion</code>、<code>operationId</code>、<code>operation</code>、<code>outcome</code>、<code>preflight</code>、<code>businessWrite</code>、
+  <code>validation</code>、<code>recovery</code>、<code>paths</code>、<code>errors</code> 与 <code>materials</code>。<code>outcome</code> 封闭为
+  <code>committed|commit-unconfirmed|rejected|rolled-back|recovery-required|already-committed|already-rolled-back|pruned|already-pruned</code>；
+  <code>materials={relPath, status:none|retained|partial|pruned, durable, adjacentStaging:none-observed|possible-unknown}</code>；
+  <code>paths</code> 按请求顺序给出每项的 <code>apply</code>/<code>restore</code>/<code>current</code> 与 <code>errorKinds</code>。错误复用 <code>SFC2004</code> 外码，
+  闭枚举 <code>details.kind</code> 与 <code>details.phase</code>
+  （<code>input|preflight|prepare|apply|validate|restore|finalize|prune</code>）。</li>
+<li>事件载荷使用一个闭 union Schema，<code>eventType</code> 固定前缀 <code>file-set.</code>、<code>payloadSchemaVersion</code> 固定 1；
+  封装、顺序、摘要链与写者代次沿用 state-store，不另立第二套序号、摘要链或身份账本。</li>
+<li>纯函数：Schema 校验与登记查询是纯函数，无文件、进程、Git 或网络副作用；Contracts 不执行应用、恢复或清理。</li>
+<li>前置条件与信任锚：合同只描述结构与稳定枚举；<code>bytes</code> 的真实性、根绑定、维护区间、领域判定
+  （<code>validate</code> 返回的 <code>{passed}</code>）与接受决定均由调用方与 Harness 机制承担。</li>
+<li>源文件：<code>packages/skill-family-contracts/src/schemas/file-set-*.schema.json</code>、<code>state-store-recovery-observation.schema.json</code> 与
+  <code>src/registry.json</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-contracts/test/file-set-contract.test.mjs</code>、<code>schemas.test.mjs</code>。</li>
+<li>调用方仍拥有的业务语义：领域 code 与详情、显式路径传递、根内读取授权、维护区间的建立与确认，
+  以及接受或整改本次文件集合结果。</li>
+</ul>
 <h2 id="登记与协议-foundationcontractsregistry-protocol">登记与协议 (foundation.contracts.registry-protocol)<a class="headerlink" href="#登记与协议-foundationcontractsregistry-protocol" title="Permanent link">&para;</a></h2>
 <h3 id="loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol">loadRegistry / listSchemas / listProtocols / findSchemaRegistration / findSchemaByObject / findProtocol<a class="headerlink" href="#loadRegistry--listSchemas--listProtocols--findSchemaRegistration--findSchemaByObject--findProtocol" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2562,7 +2672,7 @@
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
 <li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
-<li>前置条件与信任锚：<code>registry.json</code> 随包发布；<code>schemaVersion=1</code>、<code>contractsVersion=1.16.0</code> 为唯一权威；登记表含 46 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：当前本地 <code>registry.json</code> 的 <code>schemaVersion=1</code>、<code>contractsVersion=1.20.0</code>；登记表含 53 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。正式发布前不能把本地坐标当作 registry 可用版本。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
@@ -2578,7 +2688,7 @@
 <li>纯函数：是（仅返回复制后的内存对象）。</li>
 <li>副作用：无文件、进程、Git、网络或持久化副作用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
-<li>前置条件与信任锚：登记表含 46 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：当前本地登记表含 53 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：同上。</li>
 <li>正例/负例测试：同上。</li>

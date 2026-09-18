@@ -317,6 +317,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#先判断是否需要调整环境" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        先判断是否需要调整环境
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#必需环境" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1740,6 +1751,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
 
         <li class="md-nav__item">
+  <a href="#先判断是否需要调整环境" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        先判断是否需要调整环境
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#必需环境" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1823,6 +1845,15 @@
 
 
 <h1 id="安装与环境">安装与环境<a class="headerlink" href="#安装与环境" title="Permanent link">&para;</a></h1>
+<p>本页用于准备 Foundation 私有工作区的研发环境。项目只想判断某项已发布能力是否适用时，无需先初始化或升级。把已发布版本、同版本能力目录查询结果和只读 <code>adopt-plan</code> 结果交给唯一的 <code>foundation-adoption-review</code> Skill。该 Skill 没有要初始化的项目对象，也不代为安装依赖、运行 <code>check</code> 或执行资格探测。</p>
+<h2 id="先判断是否需要调整环境">先判断是否需要调整环境<a class="headerlink" href="#先判断是否需要调整环境" title="Permanent link">&para;</a></h2>
+<ol>
+<li>先对照下方版本约束，确认现有 Node.js、pnpm 与项目依赖是否已经满足要求。满足时保持现状，不重复安装。</li>
+<li>需要分析存量仓时，先运行只读 <code>adopt-plan</code>，查看写集、冲突和迁移条件。参考骨架差异只用于规划，不要求项目复制本仓目录。</li>
+<li>版本不满足但现有已发布能力仍够用时，可选择继续锁定原发布版本。只有目标能力或安全修复明确要求新版本时，才安排升级。</li>
+<li>安装、升级、<code>scaffold</code>、<code>projection</code> 和存量文件修改都属于工程动作。调用方必须先明确授权、写集和验证入口，再执行对应命令；Foundation 不提供存量仓通用 <code>apply</code>。</li>
+</ol>
+<p>普通 <code>check</code> 静态读取声明、配置和文件，不运行目标 Skill、业务脚本或 hooks。下文的包测试、宿主驱动和根门禁属于 Foundation 研发自测，只验证本工作区产品。它们不能替代消费者的领域门禁、真实宿主资格或独立审计。已发布能力、候选能力与本地未发布源码分别判断，当前状态以当前产品状态为准。</p>
 <h2 id="必需环境">必需环境<a class="headerlink" href="#必需环境" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

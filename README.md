@@ -4,28 +4,42 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.21.0 -->
+<!-- release-skill:release-version: 0.22.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.21.0** (2026-09-11)
+**0.22.0** (2026-09-18)
 
-Engineering Kit 0.21.0 adds `prepareHostVerification` for preparing one bounded Cursor invocation and reading its digest-bound private output through the existing host-verification path.
+Engineering Kit 0.22.0 keeps the four top-level commands and adds declared engineering-declaration checking plus explicit professional-conclusion output inside the existing `check` command.
 
 **Added**
 
-- Adds `prepareHostVerification`, which derives the fixed driver request, contained invocation directories, frozen snapshots, and private bindings from caller-owned candidate, workload, Skill, workspace, fixture, prompt, executable, and state-root inputs.
-- Adds `readInvocationStream` to the frozen preparation object so callers can read stdout or stderr only after the result, request, evidence-root binding, stream digest, and byte count match.
+- Adds declared engineering-declaration checking with a declaration version and an entry branch, reading only the version source and physical entry a project explicitly registers and never executing the target.
+- Adds optional professional-conclusion output that only `runCommand('check')` and the entry action may exclusively create, and only when the caller supplies an existing output root and a contained relative path.
 
 **Changed**
 
-- Rechecks bindings and source snapshots before process spawn, then compares the installed Skill closure digest before session creation or probing; drift and post-install digest mismatches fail closed.
+- The default `check` diagnosis and the pure `runChecks`/`runEntryContractCheck` functions remain read-only; a missing output root or an existing conclusion entry is rejected instead of created or overwritten.
+- Publishes the 0.22.0 capability catalog with the new `foundation.harness.file-set-recovery` entry projected from Contracts 1.20.0.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.21.0. The new preparation API supports only one declared Cursor Skill with the packaged `cursor-agent-print-v1` driver; workload meaning, domain assertions, release freshness, and cleanup remain caller responsibilities.
+Pin all three Foundation packages to exactly 0.22.0. Declarative checking proves only that a registered version source and entry agree structurally; it does not prove the target executed, and business interpretation of a conclusion remains outside Foundation.
 <!-- release-skill:managed:end id=latest-release -->
+
+## Governance Check (0.22.0)
+
+Version 0.22.0 adds an explicit `declared` policy under the existing `check` command. Version
+checking reads only the release units and text or JSON version references listed in
+`skill-family.project-manifest.json`; entry checking reads only the listed physical files. Neither branch
+runs target scripts, Skills, hooks, models, or unselected legacy checks.
+
+`runChecks` and `runEntryContractCheck` remain read-only. Only the existing `runCommand("check")` and
+`checkEntriesAction` wrappers may create one `professional-conclusion` file, and only when the caller
+provides both an existing output root and a contained relative path. The write is exclusive: parent
+directories are not created and existing entries are not overwritten. This implementation ships with the
+0.22.0 artifact; the earlier published 0.21.0 artifact does not contain it.
 
 ### Foundation 0.15.0 candidate qualification entries
 
@@ -54,7 +68,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.21.0 is the local source candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.22.0 is the local source candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -62,21 +76,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.21.0.tgz" "$pack_dir/skill-family-harness-node-0.21.0.tgz" "$pack_dir/skill-family-engineering-kit-0.21.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.22.0.tgz" "$pack_dir/skill-family-harness-node-0.22.0.tgz" "$pack_dir/skill-family-engineering-kit-0.22.0.tgz")
 ```
 
 After publication, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.21.0
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.22.0
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.21.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 
@@ -172,7 +186,7 @@ The API keeps consumer workload, domain output checks, domain PASS/FAIL, release
 
 #### 0.21.0 candidate: prepare a Cursor invocation
 
-`prepareHostVerification` is a 0.21.0 candidate public API and has not yet been published remotely. The published 0.20.0 package does not contain this API. It prepares one declared Skill for `cursor`, using the packaged Descriptor and fixed `cursor-agent-print-v1` driver. It accepts no custom driver, arguments, model override, credential handling, or domain validator. The existing seven-driver `runHostVerification` entrypoint remains compatible.
+`prepareHostVerification` was published with 0.21.0 and remains available in 0.22.0. It prepares one declared Skill for `cursor`, using the packaged Descriptor and fixed `cursor-agent-print-v1` driver. It accepts no custom driver, arguments, model override, credential handling, or domain validator. The existing seven-driver `runHostVerification` entrypoint remains compatible.
 
 The caller supplies the following values; document and fixture content is an opaque UTF-8 string or Buffer. `skillMembers` must include `SKILL.md`; only declared members are installed. All roots must already exist as canonical absolute paths. `sessionRoot` must be empty and exclusively owned, and the workspace must be inside `repositoryRoot` (equality is allowed). The caller authorizes use of the existing user-state root and exclusively controls the executable namespace.
 
@@ -208,6 +222,7 @@ The caller owns workload semantics, candidate-to-payload binding, domain asserti
 - Existing-repo adoption inventory: `adopt-plan` (strictly read-only, no file writes, no auto-migration).
 - Managed projection: `projection` + Profile (does not overwrite handwritten files).
 - Engineering diagnostics: ordinary `check` is read-only; `check relock` is an explicit controlled write transaction, and `check qualification` may spawn a bound executable after preflight.
+- Declared governance diagnostics: select `policy: "declared"` with version-only checking, or use the declared entry sub-action. The target is inspected statically; an optional conclusion file requires explicit output authorization.
 
 ## Boundary Mechanisms
 
@@ -215,6 +230,7 @@ The caller owns workload semantics, candidate-to-payload binding, domain asserti
 - `adopt-plan` is structurally read-only: there is no write call in the implementation, not even a temp file; the plan bytes share the same source as `scaffold` (single source of truth `describeSkeletonFiles`), hence "the plan is the action". By default it may spawn one frozen read-only Git status probe; the CLI `--no-git-spawn` (or API `allowGitSpawn: false`) disables that probe. A dirty repo has zero byte-level change before and after running.
 - `projection` uses two-phase execution: first, for each entry, it performs path classification, containment pre-check, self-projection check, manifest authorization check, hand-written protection, and conflict guard; if any entry violates, the whole is rejected with zero writes. Overwriting an existing file must declare the precise `expect.sha256` precondition; an existing file with identical content is an idempotent no-op. On write failure it best-effort restores the pre-write bytes of already-overwritten files.
 - Ordinary `check` is read-only and has no write calls or `--fix/--apply/--repair` modes (such flags are rejected at the entry point). By default it may spawn one frozen read-only Git status probe; the CLI `--no-git-spawn` (or API `allowGitSpawn: false`) disables that probe. `check relock` is the explicit controlled write transaction; `check qualification` may spawn a bound executable after preflight. Git precondition state uses only filesystem facts plus at most one read-only `git status --porcelain=2` with a frozen parameter vector (`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`, no index refresh).
+- In the unreleased declared branch, the two pure check functions remain read-only and do not probe Git. An explicitly requested conclusion is the only added persistent effect and is performed by the two existing wrappers through exclusive creation.
 
 ## Error Codes and Exit Codes
 
@@ -327,4 +343,4 @@ The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserve
 
 The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
 
-Version 0.21.0 is the local source candidate. Remote availability must be established by the corresponding release-skill post-release evidence. Consume the three locally verified tarballs for candidate checks; a version marker, unit test, or successful install is not complete contract integration, migration completion, or real-host qualification.
+The declared governance branch and conclusion output ship with the 0.22.0 artifact; the earlier published 0.21.0 artifact does not contain them. Remote availability must be established by the corresponding release-skill post-release evidence. Local tests or working-tree tarballs do not prove contract integration, migration completion, or real-host qualification.
