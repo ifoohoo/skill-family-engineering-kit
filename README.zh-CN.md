@@ -5,28 +5,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.22.0 -->
+<!-- release-skill:release-version: 0.23.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.22.0** (2026-09-18)
+**0.23.0** (2026-09-26)
 
-Engineering Kit 0.22.0 保持四个顶层命令不变，在既有 `check` 命令内增加声明式工程检查与显式的专业结论输出。
+Engineering Kit 0.23.0 保持四个顶层命令，并增加完整静态专业审阅所需的本族证明出证和读取。本说明只记录本地锁步候选，不表示已经远端发布，也不表示真实宿主已经接受。
 
 **新增**
 
-- 增加不含价格的声明式工程检查，带声明版本与入口分支；只读取项目明确登记的版本来源与物理入口，不执行目标。
-- 增加可选的专业结论输出。只有 `runCommand('check')` 和入口动作可以独占创建，且必须由调用方提供已存在的输出根与受收容的相对路径。
+- 增加 `check proof-create`。它把调用方提供的一份静态审阅结果投影成一份排他的 Foundation 结论，只检查审阅结构并写入本族结果；不再次扫描目标，不鉴定作者，也不覆盖已有结论。
+- 增加 `check proof`。它读取一份已有的本族证明并解释公开领域码；不扫描目标，不追随 `details` 里的路径，不鉴定作者。
+- 全部适用且选中的静态项通过时记录 `FOUNDATION_STATIC_CLEAR`；存在真实发现时记录 `FOUNDATION_STATIC_FINDINGS`；覆盖未完成、证据不足，或选中项全部不适用时记录 `FOUNDATION_STATIC_INCOMPLETE`。既有 `ENGINEERING_*` 仍只表示原来的局部声明检查。
 
 **变更**
 
-- 默认 `check` 诊断与纯函数 `runChecks`/`runEntryContractCheck` 仍然只读；输出根不存在或结论条目已存在时拒绝，不创建、不覆盖。
-- 随 0.22.0 发布新的能力目录，按 Contracts 1.20.0 投影新增 `foundation.harness.file-set-recovery` 条目。
+- 包坐标与 Contracts、Harness 和采用 Plugin 一起前移到 0.23.0。Contracts 规格仍是 1.20.0。本包不新增合同对象，也不新增 Harness 机制。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.22.0。声明式检查只证明已登记的版本来源与入口在结构上一致，不证明目标已执行；结论的业务解释不属于 Foundation。
+三个 Foundation 包须一起精确锁定到 0.23.0。Kit 负责投影和读取本族结果；工程判断仍由 `foundation-engineering-check` 作出。远端发布和真实宿主验证不在本说明范围内。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 本地未发布治理检查
@@ -67,7 +67,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.22.0 是本地源码候选。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.23.0 是尚未正式发布的本地源码候选；0.22.0 是已发布包。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -75,21 +75,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.22.0.tgz" "$pack_dir/skill-family-harness-node-0.22.0.tgz" "$pack_dir/skill-family-engineering-kit-0.22.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.23.0.tgz" "$pack_dir/skill-family-harness-node-0.23.0.tgz" "$pack_dir/skill-family-engineering-kit-0.23.0.tgz")
 ```
 
-发布后再使用 registry 坐标：
+0.23.0 正式发布后，再使用对应的 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.22.0
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.23.0
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help`。
 
 ### 三条采用旅程
 

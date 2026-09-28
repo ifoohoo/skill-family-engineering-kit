@@ -4,28 +4,28 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.22.0 -->
+<!-- release-skill:release-version: 0.23.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.22.0** (2026-09-18)
+**0.23.0** (2026-09-26)
 
-Engineering Kit 0.22.0 keeps the four top-level commands and adds declared engineering-declaration checking plus explicit professional-conclusion output inside the existing `check` command.
+Engineering Kit 0.23.0 keeps the four top-level commands and adds family proof creation and proof reading for a complete static professional review. This note records the local lockstep candidate only; it does not claim remote publication or real-host acceptance.
 
 **Added**
 
-- Adds declared engineering-declaration checking with a declaration version and an entry branch, reading only the version source and physical entry a project explicitly registers and never executing the target.
-- Adds optional professional-conclusion output that only `runCommand('check')` and the entry action may exclusively create, and only when the caller supplies an existing output root and a contained relative path.
+- Adds `check proof-create`, which projects one caller-supplied static review result into a single exclusive Foundation conclusion. It checks the review structure and writes the family result; it does not scan the target again, authenticate authorship, or overwrite an existing conclusion.
+- Adds `check proof`, which reads one existing Foundation-family proof and explains its public code. It does not scan the target, follow paths inside `details`, or authenticate authorship.
+- Records `FOUNDATION_STATIC_CLEAR` only when every applicable selected static item passes, `FOUNDATION_STATIC_FINDINGS` when a real finding is present, and `FOUNDATION_STATIC_INCOMPLETE` when coverage is unfinished, evidence is insufficient, or every selected item is not applicable. Existing `ENGINEERING_*` codes stay limited to the previous declaration branches.
 
 **Changed**
 
-- The default `check` diagnosis and the pure `runChecks`/`runEntryContractCheck` functions remain read-only; a missing output root or an existing conclusion entry is rejected instead of created or overwritten.
-- Publishes the 0.22.0 capability catalog with the new `foundation.harness.file-set-recovery` entry projected from Contracts 1.20.0.
+- Moves the package coordinate to 0.23.0 together with Contracts, Harness, and the adoption Plugin. The Contracts specification remains 1.20.0, and this package adds no new contract object or Harness mechanism.
 
 **Upgrade Notes**
 
-Pin all three Foundation packages to exactly 0.22.0. Declarative checking proves only that a registered version source and entry agree structurally; it does not prove the target executed, and business interpretation of a conclusion remains outside Foundation.
+Pin all three Foundation packages to exactly 0.23.0. The Kit projects and reads the family result; the engineering judgment stays with `foundation-engineering-check`. Remote publication and real-host verification are outside this note.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -68,7 +68,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.22.0 is the local source candidate. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+Version 0.23.0 is the local source candidate and is not yet formally published. Version 0.22.0 remains the published package. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -76,21 +76,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.22.0.tgz" "$pack_dir/skill-family-harness-node-0.22.0.tgz" "$pack_dir/skill-family-engineering-kit-0.22.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.23.0.tgz" "$pack_dir/skill-family-harness-node-0.23.0.tgz" "$pack_dir/skill-family-engineering-kit-0.23.0.tgz")
 ```
 
-After publication, use the registry coordinate:
+After 0.23.0 is formally published, use the registry coordinate:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.22.0
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.23.0
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.22.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help`.
 
 ### Three adoption journeys
 

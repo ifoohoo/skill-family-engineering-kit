@@ -786,7 +786,10 @@
         "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
         "runCommand check wrapper (packages/skill-family-engineering-kit/src/index.mjs)",
         "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
-        "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)"
+        "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)",
+        "readProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
+        "createProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
+        "publishProfessionalConclusion (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)"
       ],
       "sourceRefs": [
         "packages/skill-family-engineering-kit/src/check.mjs",
@@ -797,11 +800,13 @@
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
     "packages/skill-family-engineering-kit/test/core-check.test.mjs",
-    "packages/skill-family-engineering-kit/test/check-equivalence.test.mjs"
+    "packages/skill-family-engineering-kit/test/check-equivalence.test.mjs",
+    "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs"
    ],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
-    "packages/skill-family-engineering-kit/test/core-check.test.mjs"
+    "packages/skill-family-engineering-kit/test/core-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs"
    ]
   },
   {

@@ -829,10 +829,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration" class="md-nav__link">
+  <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
-        runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration
+        runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion
 
     </span>
   </a>
@@ -2200,10 +2200,10 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
-  <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration" class="md-nav__link">
+  <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
-        runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration
+        runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion
 
     </span>
   </a>
@@ -2631,7 +2631,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 </ul>
 <hr />
 <h2 id="check-foundationkitcheck">check (foundation.kit.check)<a class="headerlink" href="#check-foundationkitcheck" title="Permanent link">&para;</a></h2>
-<h3 id="runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration">runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration<a class="headerlink" href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration" title="Permanent link">&para;</a></h3>
+<h3 id="runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion">runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion<a class="headerlink" href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>
 <li><code>runChecks({ root, allowGitSpawn = true, only, profilesRoot, policy = "legacy" } = {})</code>（async）</li>
@@ -2639,16 +2639,19 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li><code>runEntryContractCheck({ root, policy = "legacy" } = {})</code>（async）</li>
 <li><code>checkEntriesAction({ root, policy, conclusionOutput } = {})</code>（async）</li>
 <li><code>isContainedDeclaration(rel)</code></li>
+<li><code>readProfessionalProof({ proofRoot, proof })</code>（async）</li>
+<li><code>createProfessionalProof({ reviewRoot, reviewInput, conclusionOutput })</code>（async）</li>
+<li><code>publishProfessionalConclusion({ conclusionOutput, report, entry })</code>（async）</li>
 <li>输入：legacy 政策沿用九类 <code>--only</code>。declared 版本检查须显式传入 <code>policy: "declared"</code> 与 <code>only: "version"</code>；declared 入口检查通过 <code>runEntryContractCheck</code> 或 <code>check entries --policy declared</code> 读取项目清单的 <code>engineering.entries</code>。</li>
 <li>输出：原有发现清单与 <code>ok=0</code>、<code>findings=1</code>、<code>mechanism=2</code> 映射不变。声明缺失或不合法是不可检查的领域发现；读取普通文件时发生安全或机制中断则保留为机制失败。报告只把已经完成的发行单元或入口列入结果，不把后续未访问项写成完成。</li>
 <li>纯函数：否（读取目标文件）；但纯检查函数只诊断、不修复、不写。declared 分支不会运行目标脚本、Skill、hook、模型、Git 探测或其他未选择分类。</li>
 <li>副作用：无文件写入；默认可能启动一条冻结参数的只读 Git 探测（至多一次冻结 <code>status</code> 查询），传入 <code>allowGitSpawn: false</code> 可关闭该子进程。</li>
-<li>declared 副作用：声明分支零 spawn、零 Git、零网络。只有 <code>runCommand("check")</code> 与 <code>checkEntriesAction</code> 包装入口收到 <code>conclusionOutput: { root, path }</code> 时，才在已存在输出根内独占创建一个结论文件；不创建父目录、不覆盖现有文件。纯检查函数和缺省 CLI 都不写。</li>
+<li>declared 副作用：声明分支零 spawn、零 Git、零网络。只有 <code>runCommand("check")</code> 与 <code>checkEntriesAction</code> 包装入口收到 <code>conclusionOutput: { root, path }</code> 时，才在已存在输出根内独占创建一个结论文件；不创建父目录、不覆盖现有文件。纯检查函数和缺省 CLI 都不写。<code>readProfessionalProof</code> 只读解释本族证明，不扫描目标、不追随 <code>details</code> 路径。<code>createProfessionalProof</code> 把 Skill 审阅 JSON 投影为 <code>FOUNDATION_STATIC_*</code> 结论，沿用同一排他写入；全部 <code>not_applicable</code> 只能是 <code>FOUNDATION_STATIC_INCOMPLETE</code>。<code>publishProfessionalConclusion</code> 继续把 declared 两分支投影为局部 <code>ENGINEERING_*</code> 结论。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>CHECK_CLASSES</code> 为九类闭集，不扩张（审计整改 C2 依裁决 SG-13/14、SG-17、SFA-PLAT-002 增设 <code>boundary</code>、<code>platform</code> 两类，并为 <code>version</code> 类加装版本单源一致性事实；扩类经治理批准，此后仍不扩张）；机制失败抛 <code>KitError</code>（<code>mechanism</code> 类）。</li>
 <li>前置条件与信任锚：legacy 的 Git 探测由 <code>GIT_READ_ONLY_ALLOWLIST</code> 限定。declared 分支要求项目根存在符合 Contracts 1.20.0 的 <code>skill-family.project-manifest.json</code>；每个版本来源与入口都是根内相对路径，严格读取普通文件。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/check.mjs</code>、<code>entry-check.mjs</code>、<code>engineering-declaration.mjs</code>、<code>professional-conclusion.mjs</code> 与 <code>core-check.mjs</code>。</li>
-<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/check.test.mjs</code>、<code>entry-check.test.mjs</code>、<code>core-check.test.mjs</code>、<code>check-equivalence.test.mjs</code> 与 <code>cli.test.mjs</code>。</li>
+<li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/check.test.mjs</code>、<code>entry-check.test.mjs</code>、<code>core-check.test.mjs</code>、<code>check-equivalence.test.mjs</code>、<code>cli.test.mjs</code> 与 <code>professional-conclusion.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：声明哪些单元和入口应受检、处置发现项、解释专业 code 与详情、向消费方传递结论路径，以及授权和管理结论输出根。自动修复仍由调用方负责。</li>
 </ul>
 <hr />
@@ -2771,7 +2774,7 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>输出：命令结果；退出码 <code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>。</li>
 <li>纯函数：否（依命令产生受收容文件写入或只读探测）。</li>
 <li>副作用：依子动作而定：<code>scaffold</code> / <code>projection</code> 在受收容目标写入；<code>adopt-plan</code> 与普通 <code>check</code> 只读；<code>check relock</code> 是显式受控写事务；<code>check qualification</code> 预检通过后可能启动绑定的 executable。Foundation 自身不发起网络请求，但绑定的 executable 可能联网；Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。<code>REFUSED_MUTATION_FLAGS</code>（如 <code>--apply</code>）在 <code>parseOptions</code> 入口即拒。</li>
-<li>declared 包装入口是普通 <code>check</code> 的显式例外：只有结论输出根与根内相对路径同时给出时，<code>runCommand("check")</code> 或 <code>checkEntriesAction</code> 才独占创建一份结论文件；纯检查函数不写。</li>
+<li>declared 包装入口是普通 <code>check</code> 的显式例外：只有结论输出根与根内相对路径同时给出时，<code>runCommand("check")</code> 或 <code>checkEntriesAction</code> 才独占创建一份结论文件；纯检查函数不写。<code>check proof --proof-root --proof --json</code> 只读解释本族证明；<code>check proof-create --review-root --review-input --conclusion-root --conclusion-output --json</code> 从 Skill 审阅结果独占创建一份结论。</li>
 <li>稳定错误码与 <code>details.kind</code>：未知命令 / 拒绝旗标退出码 <code>2</code>（<code>unknown-command</code> / <code>refused-mutation</code>）。</li>
 <li>前置条件与信任锚：Node &gt;= 22.22.2；<code>TOP_LEVEL_COMMANDS</code> 固定 4 个，第 5 个命令禁止新增；<code>REFUSED_MUTATION_FLAGS</code> 在解析入口即拒。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>

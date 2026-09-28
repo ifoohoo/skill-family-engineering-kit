@@ -1,5 +1,26 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.23.0 locale=zh-CN baseline=sha256:4192d7adcff64a7411acab5ef402d9baa657bcb1db6f41c4ed3b33c2303e25bc -->
+## [0.23.0] - 2026-09-26
+
+Engineering Kit 0.23.0 保持四个顶层命令，并增加完整静态专业审阅所需的本族证明出证和读取。本说明只记录本地锁步候选，不表示已经远端发布，也不表示真实宿主已经接受。
+
+### 新增
+
+- 增加 `check proof-create`。它把调用方提供的一份静态审阅结果投影成一份排他的 Foundation 结论，只检查审阅结构并写入本族结果；不再次扫描目标，不鉴定作者，也不覆盖已有结论。
+- 增加 `check proof`。它读取一份已有的本族证明并解释公开领域码；不扫描目标，不追随 `details` 里的路径，不鉴定作者。
+- 全部适用且选中的静态项通过时记录 `FOUNDATION_STATIC_CLEAR`；存在真实发现时记录 `FOUNDATION_STATIC_FINDINGS`；覆盖未完成、证据不足，或选中项全部不适用时记录 `FOUNDATION_STATIC_INCOMPLETE`。既有 `ENGINEERING_*` 仍只表示原来的局部声明检查。
+
+### 变更
+
+- 包坐标与 Contracts、Harness 和采用 Plugin 一起前移到 0.23.0。Contracts 规格仍是 1.20.0。本包不新增合同对象，也不新增 Harness 机制。
+
+### 升级说明
+
+三个 Foundation 包须一起精确锁定到 0.23.0。Kit 负责投影和读取本族结果；工程判断仍由 `foundation-engineering-check` 作出。远端发布和真实宿主验证不在本说明范围内。
+<!-- release-skill:changelog:end version=0.23.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.22.0 locale=zh-CN baseline=sha256:1926982b72cf2756963b204c22c9bfdf2969d690d3b336cf9bdc098fe4d256a0 -->
 ## [0.22.0] - 2026-09-18
 

@@ -1,5 +1,26 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.23.0 locale=en baseline=sha256:6220b2be13af0cfb071f46ab481b1ecec5d1f0ce176cbb8cb6cc28ea9d0a7e3d -->
+## [0.23.0] - 2026-09-26
+
+Engineering Kit 0.23.0 keeps the four top-level commands and adds family proof creation and proof reading for a complete static professional review. This note records the local lockstep candidate only; it does not claim remote publication or real-host acceptance.
+
+### Added
+
+- Adds `check proof-create`, which projects one caller-supplied static review result into a single exclusive Foundation conclusion. It checks the review structure and writes the family result; it does not scan the target again, authenticate authorship, or overwrite an existing conclusion.
+- Adds `check proof`, which reads one existing Foundation-family proof and explains its public code. It does not scan the target, follow paths inside `details`, or authenticate authorship.
+- Records `FOUNDATION_STATIC_CLEAR` only when every applicable selected static item passes, `FOUNDATION_STATIC_FINDINGS` when a real finding is present, and `FOUNDATION_STATIC_INCOMPLETE` when coverage is unfinished, evidence is insufficient, or every selected item is not applicable. Existing `ENGINEERING_*` codes stay limited to the previous declaration branches.
+
+### Changed
+
+- Moves the package coordinate to 0.23.0 together with Contracts, Harness, and the adoption Plugin. The Contracts specification remains 1.20.0, and this package adds no new contract object or Harness mechanism.
+
+### Upgrade Notes
+
+Pin all three Foundation packages to exactly 0.23.0. The Kit projects and reads the family result; the engineering judgment stays with `foundation-engineering-check`. Remote publication and real-host verification are outside this note.
+<!-- release-skill:changelog:end version=0.23.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.22.0 locale=en baseline=sha256:5eeae7aaee659b91fd9d412ff5a0651d49e90fbcb020ffdb335d25845d590ef3 -->
 ## [0.22.0] - 2026-09-18
 

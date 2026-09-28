@@ -1183,11 +1183,13 @@
   },
   {
    "id": "foundation.kit.check",
-      "intent": "只诊断不修复：保留九类 legacy 检查，并增加显式 declared 版本分支，只读取项目声明的发行单元",
+      "intent": "只诊断不修复：保留九类 legacy 检查和显式 declared 版本分支，并提供本族证明读取与 Skill 审阅结果的排他投影；ENGINEERING_* 仍是局部声明结果，proof/proof-create 是本地未发布入口",
    "useWhen": [
     "需要发现工程不一致但不自动修改",
         "需要按 --only 缩小 legacy 检查范围",
-        "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元"
+        "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元",
+        "需要读取一份本族专业证明并得到 pass、not_pass 或 unavailable",
+        "需要把 Skill 审阅 JSON 投影成排他专业结论"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1196,18 +1198,22 @@
    "prerequisites": [],
    "inputs": [
         "legacy --only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform",
-        "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits"
+        "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
+        "proof 读取输入：--proof-root 与根内 --proof",
+        "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output"
    ],
    "outputs": [
         "发现清单；退出码 findings=1、mechanism=2",
-        "runCommand check 包装入口在显式提供输出根与相对路径时返回可选 professional-conclusion 路径"
+        "runCommand check 与 checkEntriesAction 包装入口在显式提供输出根与相对路径时返回可选局部 ENGINEERING_* 结论路径",
+        "proof 读取返回 status 为 pass、not_pass 或 unavailable，对应退出 0、1、2",
+        "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1"
    ],
    "sideEffects": [
-        "runChecks 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
-        "只有 runCommand check 包装入口可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
+        "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
+        "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
    ],
    "failureSemantics": [
-    "findings 退出码 1；mechanism 拒绝退出码 2"
+    "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2"
    ],
    "invariants": [
         "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",

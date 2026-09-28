@@ -23,6 +23,8 @@ import {
   materializeHostBuild,
   planHost,
   refuseHostApply,
+  createProfessionalProof,
+  readProfessionalProof,
 } from "./index.mjs";
 import { buildCapabilityAssessment } from "./capability-assessment.mjs";
 import { QUALIFICATION_NOTICE, runQualification } from "./qualification.mjs";
@@ -61,6 +63,8 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                绝不自动修复，git 仅只读探测。declared 模式下，只有
                runCommand("check")/checkEntriesAction 包装入口在显式提供已有输出根
                和根内相对路径时独占创建一份结论；不建父目录、不覆盖既有项。
+               check proof 只读解释本族证明；check proof-create 按同一排他规则
+               从 Skill 审阅结果独占创建一份结论。
                报告子动作: check report 对一份已渲染报告做分级诊断：
                硬失败（SFC3001/3002/3003）计为发现（退出码 1）；
                风格告警只报告、绝不阻塞机器正确的报告。
@@ -154,6 +158,15 @@ function commandHelp(command) {
       "  --policy <legacy|declared>  检查政策；declared 版本检查须与 --only version 配对",
       "  --conclusion-root <dir>    专业结论输出根（须与 --conclusion-output 配对）",
       "  --conclusion-output <rel>  在输出根内独占创建专业结论文件",
+      "",
+      "证明读取子动作: skill-family-kit check proof --proof-root <dir> --proof <rel> --json",
+      "  读取本族共同证明并解释领域码；不扫描目标、不追随 details 中的路径、不鉴伪。",
+      "  退出 0 表示证明记载通过；1 表示证明记载未通过；2 表示无法读取或解释。",
+      "",
+      "出证子动作: skill-family-kit check proof-create --review-root <dir> --review-input <rel>",
+      "  --conclusion-root <dir> --conclusion-output <rel> --json",
+      "  把 foundation-engineering-check 的静态审阅结果投影为共同证明；不鉴伪、不重新审阅。",
+      "  独占创建，不覆盖既有文件，不建父目录。",
       "",
       "报告子动作: skill-family-kit check report [options]",
       "  --report <relpath>    已渲染报告 Markdown（必填，只读）",
@@ -322,6 +335,22 @@ const COMMAND_SPECS = {
       "--request": { key: "requestPath", value: true },
       "--bindings": { key: "bindingsPath", value: true },
       "--native": { key: "native", value: false },
+    },
+  },
+  "check proof": {
+    flags: {
+      "--proof-root": { key: "proofRoot", value: true },
+      "--proof": { key: "proof", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "check proof-create": {
+    flags: {
+      "--review-root": { key: "reviewRoot", value: true },
+      "--review-input": { key: "reviewInput", value: true },
+      "--conclusion-root": { key: "conclusionRoot", value: true },
+      "--conclusion-output": { key: "conclusionOutputPath", value: true },
+      "--json": { key: "json", value: false },
     },
   },
   "scaffold host-build": {
@@ -554,6 +583,61 @@ async function runRelockSubAction(rest) {
   }
 }
 
+function requireJsonFlag(options, specName) {
+  if (options.json !== true) {
+    throw invalidParamsError(`${specName} requires --json`, { reason: "missing-option-value", flag: "--json" });
+  }
+}
+
+function proofCreateExitCode(code) {
+  return code === "FOUNDATION_STATIC_CLEAR" ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+}
+
+async function runProofSubAction(rest) {
+  const specName = "check proof";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    requireJsonFlag(options, specName);
+    if (options.proofRoot === undefined || options.proof === undefined) {
+      throw invalidParamsError("--proof-root and --proof are both required", { reason: "invalid-option-combination" });
+    }
+    const output = await readProfessionalProof({ proofRoot: options.proofRoot, proof: options.proof });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    if (output.status === "pass") return KIT_EXIT_CODES.ok;
+    if (output.status === "not_pass") return KIT_EXIT_CODES.findings;
+    return KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runProofCreateSubAction(rest) {
+  const specName = "check proof-create";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    requireJsonFlag(options, specName);
+    const output = await createProfessionalProof({
+      reviewRoot: options.reviewRoot,
+      reviewInput: options.reviewInput,
+      conclusionOutput: conclusionOutputFromOptions(options),
+    });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    return proofCreateExitCode(output.conclusion.outcome.code);
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 async function runQualificationSubAction(rest) {
   const specName = "check qualification";
   try {
@@ -634,6 +718,12 @@ export async function cliMain(argv) {
   }
   if (command === "check" && argv[1] === "qualification") {
     return runQualificationSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "proof-create") {
+    return runProofCreateSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "proof") {
+    return runProofSubAction(argv.slice(2));
   }
   if (command === "scaffold" && argv[1] === "host-build") {
     return runHostSubAction(command, "host-build", argv.slice(2));

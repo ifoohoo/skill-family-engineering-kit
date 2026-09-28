@@ -1896,6 +1896,7 @@
 <p>先判断需要哪种入口：</p>
 <ul>
 <li>只有一段自然语言需求，还不确定 Foundation 是否已经覆盖时，调用唯一的 <code>foundation-adoption-review</code> Skill。向它提供明确的 Foundation 精确版本、同版本能力目录查询结果和 <code>adopt-plan</code> 结果；它只读分析，不安装、不初始化、不运行 <code>check</code> 或资格探测。</li>
+<li>需要对目标根做完整静态工程审阅，或读取已有 Foundation 证明时，调用 <code>foundation-engineering-check</code>。它按所选范围审阅工程声明、公共能力采用和调用边界，再用 <code>check proof-create</code> 投影共同结论；读取旧证明用 <code>check proof</code>。版本与入口两个机械分支通过不等于完整 Foundation 通过。</li>
 <li>已经知道能力 ID，准备初始化空目录时，使用 <code>scaffold</code>。</li>
 <li>已有项目需要盘点结构、冲突和迁移条件时，先使用只读 <code>adopt-plan</code>。得到计划后再决定是否授权 <code>projection</code> 或由项目自己修改存量文件。</li>
 <li>已有声明需要与物理文件核对时，使用 <code>check</code>。它执行静态治理检查，不运行目标 Skill、业务脚本或 hooks。</li>

@@ -1896,6 +1896,7 @@
 <p>Choose the entry point before running a command:</p>
 <ul>
 <li>If the input is a natural-language requirement and it is unclear whether Foundation already covers it, call the single <code>foundation-adoption-review</code> Skill. Supply an explicit exact Foundation version, a same-version capability-catalog query result, and an <code>adopt-plan</code> result. The Skill diagnoses read-only; it does not install, initialize, run <code>check</code>, or probe qualification.</li>
+<li>If the target root needs a complete static engineering review, or an existing Foundation proof must be read, call <code>foundation-engineering-check</code>. It reviews selected engineering declarations, public capability adoption, and call boundaries, then projects a shared conclusion with <code>check proof-create</code>. Read an old proof with <code>check proof</code>. Passing the two mechanical version and entry branches is not a full Foundation pass.</li>
 <li>If the capability ID is known and the target is an empty directory, use <code>scaffold</code>.</li>
 <li>If an existing project needs an inventory of structure, conflicts, and migration conditions, start with read-only <code>adopt-plan</code>. Decide later whether to authorize <code>projection</code> or let the project modify existing files itself.</li>
 <li>If declarations must be compared with physical files, use <code>check</code>. It performs static governance checks without running target Skills, business scripts, or hooks.</li>

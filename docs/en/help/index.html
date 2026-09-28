@@ -1865,6 +1865,11 @@
 <td>The single natural-language adoption-diagnosis Skill. It reads caller-provided exact-version facts, capability-catalog query results, and <code>adopt-plan</code> results, then reports a full match, partial match, candidate match, no match, or a missed existing capability</td>
 </tr>
 <tr>
+<td>Run a complete static engineering review or read an existing Foundation proof</td>
+<td><code>foundation-engineering-check</code></td>
+<td>The static engineering-review Skill in the same Plugin. It reviews selected engineering declarations, public capability adoption, and call boundaries, then projects a shared conclusion with <code>check proof-create</code>. Read an old proof with <code>check proof</code>. Passing the two mechanical version and entry branches is not a full-family pass</td>
+</tr>
+<tr>
 <td>Inventory an existing project and compare it with the reference skeleton</td>
 <td><code>planAdoption({ root, allowGitSpawn: false })</code> or <code>adopt-plan --no-git-spawn</code></td>
 <td>Read-only output covering the write set, conflicts, risks, and migration completion conditions. The reference skeleton is not a mandatory directory standard for every project</td>
@@ -2047,6 +2052,7 @@
 <h2 id="Project-Routing">Project Routing<a class="headerlink" href="#Project-Routing" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Published-capability fit / duplicate proposed mechanism → <code>foundation-adoption-review</code>.</li>
+<li>Complete static engineering review / read an existing Foundation proof → <code>foundation-engineering-check</code>.</li>
 <li>Publishing remote state / npm publish → release-skill.</li>
 <li>Tasks / retries / rework / acceptance → loop-agent.</li>
 <li>Artifact relationships / version-lock → artifact-graph.</li>

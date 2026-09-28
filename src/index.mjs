@@ -97,7 +97,11 @@ import {
   PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import { matchAnyGlob } from "./workspace.mjs";
-import { publishProfessionalConclusion } from "./professional-conclusion.mjs";
+import {
+  createProfessionalProof,
+  publishProfessionalConclusion,
+  readProfessionalProof,
+} from "./professional-conclusion.mjs";
 
 /**
  * skill-family-engineering-kit: the four build-time engineering commands.
@@ -152,7 +156,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none for default diagnosis and the pure runChecks/runEntryContractCheck functions — they never write or auto-fix, and git is probed read-only (one frozen status query at most); with policy declared, only the runCommand('check') and checkEntriesAction wrappers may exclusively create one conclusion when callers explicitly provide an existing output root plus a contained relative path, never creating parent directories or overwriting an existing entry; relock remains a separately explicit controlled write transaction; qualification remains separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
+      "none for default diagnosis and the pure runChecks/runEntryContractCheck functions — they never write or auto-fix, and git is probed read-only (one frozen status query at most); with policy declared, only the runCommand('check') and checkEntriesAction wrappers may exclusively create one conclusion when callers explicitly provide an existing output root plus a contained relative path, never creating parent directories or overwriting an existing entry; check proof is read-only proof interpretation and never writes; check proof-create exclusively creates one conclusion from a Skill review-input under the same exclusive-write rules; relock remains a separately explicit controlled write transaction; qualification remains separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -288,6 +292,7 @@ export {
   runSkillFamilyDirectoryVerification,
   runQualification,
 };
+export { createProfessionalProof, publishProfessionalConclusion, readProfessionalProof };
 export { ContractsError };
 
 // Licensing and identity exports (FND-045, single licensing policy authority)

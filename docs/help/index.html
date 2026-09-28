@@ -1865,6 +1865,11 @@
 <td>唯一的自然语言采用诊断 Skill。它读取调用方提供的精确版本、能力目录查询结果和 <code>adopt-plan</code> 结果，给出完整匹配、部分匹配、候选匹配、无匹配或漏看已有能力</td>
 </tr>
 <tr>
+<td>需要对目标做完整静态工程审阅或读取已有 Foundation 证明</td>
+<td><code>foundation-engineering-check</code></td>
+<td>同一 Plugin 内的静态工程审阅 Skill。它按所选范围审阅工程声明、公共能力采用和调用边界，再用 <code>check proof-create</code> 投影共同结论；读取旧证明用 <code>check proof</code>。版本与入口两个机械分支通过不等于全族通过</td>
+</tr>
+<tr>
 <td>需要盘点存量项目与参考骨架的结构差异</td>
 <td><code>planAdoption({ root, allowGitSpawn: false })</code> 或 <code>adopt-plan --no-git-spawn</code></td>
 <td>只读输出写集、冲突、风险和迁移完成条件；参考骨架不是所有项目必须复制的目录规范</td>
@@ -2047,6 +2052,7 @@
 <h2 id="项目路由">项目路由<a class="headerlink" href="#项目路由" title="Permanent link">&para;</a></h2>
 <ul>
 <li>精确版本中的能力是否适用 / 现有方案是否重复 → <code>foundation-adoption-review</code>。</li>
+<li>完整静态工程审阅 / 读取已有 Foundation 证明 → <code>foundation-engineering-check</code>。</li>
 <li>发布远端状态 / npm 发布 → release-skill。</li>
 <li>任务 / 重试 / 返工 / 验收 → loop-agent。</li>
 <li>制品关系 / 版本锁 → artifact-graph。</li>

@@ -1184,11 +1184,13 @@
   },
   {
    "id": "foundation.kit.check",
-      "intent": "Diagnose only, do not fix: retain the nine legacy check classes and add an explicit declared version branch that reads only project-listed release units.",
+      "intent": "Diagnose only, do not fix: retain the nine legacy check classes and the explicit declared version branch, and provide family proof reading plus exclusive projection of Skill review results; ENGINEERING_* remains a local declared result, and proof/proof-create are local unpublished entry points.",
    "useWhen": [
     "Need to surface engineering inconsistencies without auto-modifying",
         "Need to narrow a legacy check via --only",
-        "Need to compare declared text or JSON version sources and mirrors without scanning undeclared units"
+        "Need to compare declared text or JSON version sources and mirrors without scanning undeclared units",
+        "Need to read one family professional proof and receive pass, not_pass, or unavailable",
+        "Need to project a Skill review JSON into an exclusive professional conclusion"
    ],
    "doNotUseWhen": [
     "Need auto-fix (forbidden; check writes no fixes)",
@@ -1197,18 +1199,22 @@
    "prerequisites": [],
    "inputs": [
         "Legacy --only values: contracts|drift|closure|version|docs|git|identity|boundary|platform",
-        "Declared version input: policy declared, only version, and project-manifest engineering.releaseUnits"
+        "Declared version input: policy declared, only version, and project-manifest engineering.releaseUnits",
+        "Proof-read input: --proof-root and a contained --proof",
+        "proof-create input: --review-root, --review-input, and paired --conclusion-root plus --conclusion-output"
    ],
    "outputs": [
         "Findings list; exit code findings=1, mechanism=2",
-        "Optional professional-conclusion path from the runCommand check wrapper when an explicit output root and relative path are provided"
+        "Optional local ENGINEERING_* conclusion path from the runCommand check and checkEntriesAction wrappers when an explicit output root and relative path are provided",
+        "Proof read returns status pass, not_pass, or unavailable, with exits 0, 1, and 2",
+        "proof-create returns a FOUNDATION_STATIC_* conclusion path; CLEAR exits 0, FINDINGS and INCOMPLETE exit 1"
    ],
    "sideEffects": [
-        "runChecks is read-only; the declared branch does not spawn, probe Git, or execute target content",
-        "Only the runCommand check wrapper may exclusively create one conclusion under an explicitly supplied existing output root; it creates no parent and overwrites nothing"
+        "runChecks and readProfessionalProof are read-only; the declared branch does not spawn, probe Git, or execute target content",
+        "runCommand check, checkEntriesAction, and proof-create may exclusively create one conclusion under an explicitly supplied existing output root; they create no parent and overwrite nothing"
    ],
    "failureSemantics": [
-    "findings exit code 1; mechanism rejection exit code 2"
+    "findings exit code 1; mechanism rejection, unreadable, or uninterpretable proofs exit code 2"
    ],
    "invariants": [
         "CHECK_CLASSES is a closed set of nine legacy classes, not expanded",
