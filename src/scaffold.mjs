@@ -64,7 +64,7 @@ async function assertEmptyTarget(root) {
  * Returns a structured result; throws KitError with a stable kind on any
  * refusal. Never writes outside the target root.
  */
-export async function scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, capabilities = [] } = {}) {
+export async function scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, engineering, capabilities = [] } = {}) {
   if (root === undefined || root === null) {
     throw kitError(KIT_ERROR_KINDS.INVALID_ROOT, "scaffold requires an explicit target root");
   }
@@ -95,6 +95,7 @@ export async function scaffoldTarget({ root, projectId, projectName, profileId, 
     licensingProfileData,
     profilesRoot,
     identityProjections,
+    engineering,
   });
   const referenceImplementation = await describeSkeletonReferenceImplementation({
     profile: inputs.profileId,

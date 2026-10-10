@@ -12,7 +12,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import { ContractsError } from "skill-family-contracts";
+import { ContractsError, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import {
   classifyPathInput,
   computeResourceClosure,
@@ -22,7 +22,7 @@ import {
   writeFileAtomic,
 } from "skill-family-harness-node";
 import { KIT_ERROR_KINDS, kitError, refusalError } from "./errors.mjs";
-import { KIT_TOOL_NAME, KIT_VERSION, PROJECTION_MANIFEST_PATH } from "./skeleton.mjs";
+import { KIT_TOOL_NAME, KIT_VERSION, MANAGED_LOCK_PATH, PROJECT_MANIFEST_PATH, PROJECTION_MANIFEST_PATH } from "./skeleton.mjs";
 import {
   loadTargetFacts,
   matchAnyGlob,
@@ -1264,7 +1264,7 @@ async function listExistingDirectories(rootAbs, actions) {
   return existing;
 }
 
-async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externalManifest, candidateRoot, faultInjector, verifiedCandidate, preparedProjection }) {
+async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externalManifest, candidateRoot, faultInjector, verifiedCandidate, preparedProjection, lockedStates }) {
   const candidate = verifiedCandidate ?? await verifyCandidateRoot(candidateRoot, rootAbs, manifest);
   const refusals = [];
   const initial = [];
@@ -1300,6 +1300,7 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
   const deleted = [];
   const unchanged = [];
   const completed = [];
+  const attempted = lockedStates ? new Set() : null;
   let operationCause = null;
 
   try {
@@ -1307,6 +1308,7 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
       if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection, candidate.rootAbs);
       await invokeFault(faultInjector, "beforeMutation", { index: executionIndex, operation: action.publicOperation });
       if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection, candidate.rootAbs);
+      if (lockedStates) await verifyEngineeringStates(rootAbs, lockedStates);
       const current = await readRegularState(rootAbs, action.rel);
       if (!stateEquals(current, action.before)) {
         throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `optimistic concurrency drift before ${action.rel}`, { path: action.rel, executionIndex });
@@ -1316,15 +1318,20 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
         if (stateEquals(current, desiredState)) {
           unchanged.push({ path: action.rel, sha256: current.sha256, mode: current.mode });
         } else {
+          if (attempted) attempted.add(action.rel);
           await writeFileAtomic(rootAbs, action.rel, action.candidateRecord.bytes, { mode: action.candidateRecord.mode });
           await chmod(path.join(rootAbs, action.rel), action.candidateRecord.mode);
           written.push({ path: action.rel, sha256: action.candidateRecord.sha256, mode: action.candidateRecord.mode, source: action.source });
         }
       } else {
+        if (attempted) attempted.add(action.rel);
         await unlink(path.join(rootAbs, action.rel));
         deleted.push({ path: action.rel, priorSha256: action.before.sha256, priorMode: action.before.mode });
       }
       completed.push(action.rel);
+      if (lockedStates) lockedStates.set(action.rel, {
+        state: "file", sha256: action.candidateRecord.sha256, mode: action.candidateRecord.mode,
+      });
       await invokeFault(faultInjector, "afterMutation", { index: executionIndex, operation: action.publicOperation });
     }
   } catch (cause) {
@@ -1332,6 +1339,9 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
   }
 
   if (!operationCause) {
+    if (lockedStates) {
+      try { await verifyEngineeringStates(rootAbs, lockedStates); } catch (cause) { operationCause = cause; }
+    }
     for (const action of actions) {
       const final = await readRegularState(rootAbs, action.rel);
       const expected = action.operation.operation === "delete"
@@ -1345,11 +1355,14 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
   }
 
   if (operationCause) {
-    const rollback = await rollbackV2({ rootAbs, actions, beforeStates, existingDirectories, completed, faultInjector, cause: operationCause });
+    const rollbackActions = attempted ? actions.filter(action => attempted.has(action.rel)) : actions;
+    const rollback = await rollbackV2({ rootAbs, actions: rollbackActions, beforeStates, existingDirectories, completed, faultInjector, cause: operationCause });
     throw kitError(
       KIT_ERROR_KINDS.PROJECTION_WRITE_FAILED,
       rollback.status === "RESTORED"
-        ? `projection failed and the complete target closure was restored: ${operationCause.message ?? "unknown"}`
+        ? lockedStates
+          ? `engineering projection failed; attempted output writes were restored: ${operationCause.message ?? "unknown"}`
+          : `projection failed and the complete target closure was restored: ${operationCause.message ?? "unknown"}`
         : `fatal projection failure: rollback did not restore the complete target closure`,
       {
         cause: { code: operationCause.code ?? null, kind: operationCause.details?.kind ?? null, message: operationCause.message ?? "unknown" },
@@ -1507,9 +1520,112 @@ async function runProjectionV1({ rootAbs, facts, manifestPath, manifest }) {
   };
 }
 
+async function readEngineeringState(rootAbs, rel) {
+  validatePlanPath(rel, "engineering target path");
+  await resolveContained(rootAbs, rel);
+  const receipt = await readFileStrict(rootAbs, rel);
+  const state = await readRegularState(rootAbs, rel);
+  if (state.state !== "file" || state.sha256 !== digestBytes(receipt.content)) {
+    throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering input changed while reading ${rel}`, { path: rel });
+  }
+  return state;
+}
+
+async function verifyEngineeringStates(rootAbs, states) {
+  for (const [rel, expected] of states) {
+    if (!stateEquals(await readEngineeringState(rootAbs, rel), expected)) {
+      throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering update refuses drifted input ${rel}`, { path: rel });
+    }
+  }
+}
+
+function validateEngineeringDocument(document, objectName) {
+  const registration = findSchemaByObject(objectName);
+  const validation = validateDocument(document, { schemaId: registration.$id, dialect: registration.dialect, policy: "strict" });
+  if (!validation.valid) {
+    throw new ContractsError(validation.errorCode, `engineering update requires a valid ${objectName}`, { errors: validation.errors });
+  }
+}
+
+async function projectEngineering(rootAbs, engineering, faultInjector) {
+  if ((await lstat(rootAbs)).isSymbolicLink()) throw invalidManifest("engineering update requires an ordinary target root");
+  const lockedStates = new Map();
+  for (const rel of [".foundation/file-registry.json", PROJECT_MANIFEST_PATH, MANAGED_LOCK_PATH]) {
+    lockedStates.set(rel, await readEngineeringState(rootAbs, rel));
+  }
+  const currentManifest = JSON.parse(lockedStates.get(PROJECT_MANIFEST_PATH).bytes.toString("utf8"));
+  const currentLock = JSON.parse(lockedStates.get(MANAGED_LOCK_PATH).bytes.toString("utf8"));
+  validateEngineeringDocument(currentManifest, "project-manifest");
+  validateEngineeringDocument(currentLock, "managed-file-lock");
+  const desiredManifest = { ...currentManifest, engineering };
+  validateEngineeringDocument(desiredManifest, "project-manifest");
+  const facts = await loadTargetFacts(rootAbs);
+  const classes = facts.fileRegistry?.classes;
+  const declared = new Set([
+    ...(Array.isArray(classes?.managed) ? classes.managed : []),
+    ...(classes?.projenManaged?.files ?? []), ...(classes?.kitManaged?.files ?? []),
+  ]);
+  for (const rel of [PROJECT_MANIFEST_PATH, MANAGED_LOCK_PATH]) {
+    if (!declared.has(rel) || !currentManifest.managedFiles?.includes(rel)) {
+      throw invalidManifest(`engineering update requires a currently managed ${rel}`);
+    }
+  }
+  const lockedPaths = new Set();
+  for (const entry of currentLock.entries) {
+    if (entry.path === MANAGED_LOCK_PATH || lockedPaths.has(entry.path) || !declared.has(entry.path)) {
+      throw invalidManifest("engineering update refuses an unowned or duplicate lock entry", { path: entry.path });
+    }
+    const state = await readEngineeringState(rootAbs, entry.path);
+    if (state.sha256 !== entry.hash.value) {
+      throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering update refuses drifted managed bytes ${entry.path}`, { path: entry.path });
+    }
+    lockedPaths.add(entry.path);
+    lockedStates.set(entry.path, state);
+  }
+  for (const rel of new Set([...declared, ...(currentManifest.managedFiles ?? [])])) {
+    validatePlanPath(rel, "managed declaration");
+    if (rel !== MANAGED_LOCK_PATH && !lockedPaths.has(rel)) throw invalidManifest("engineering update refuses an unlocked managed declaration", { path: rel });
+  }
+  const manifestEntry = currentLock.entries.find(entry => entry.path === PROJECT_MANIFEST_PATH);
+  if (manifestEntry?.generator.tool !== KIT_TOOL_NAME) throw invalidManifest("engineering manifest is not owned by the Engineering Kit");
+  const references = [
+    ...(engineering.entries ?? []).map(entry => entry.physicalRef),
+    ...(engineering.releaseUnits ?? []).flatMap(unit => [unit.versionSource.path, ...(unit.versionMirrors ?? []).map(mirror => mirror.path)]),
+  ];
+  for (const rel of references) {
+    const state = await readEngineeringState(rootAbs, rel);
+    const original = lockedStates.get(rel);
+    if (original && !stateEquals(state, original)) {
+      throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering reference drifted from its original snapshot ${rel}`, { path: rel });
+    }
+    if (!original) lockedStates.set(rel, state);
+  }
+  const manifestBytes = Buffer.from(`${JSON.stringify(desiredManifest, null, 2)}\n`);
+  const desiredLock = { ...currentLock, entries: currentLock.entries.map(entry => entry.path === PROJECT_MANIFEST_PATH
+    ? { ...entry, hash: { ...entry.hash, value: digestBytes(manifestBytes) } } : entry) };
+  const byPath = new Map([
+    [PROJECT_MANIFEST_PATH, manifestBytes],
+    [MANAGED_LOCK_PATH, Buffer.from(`${JSON.stringify(desiredLock, null, 2)}\n`)],
+  ].map(([rel, bytes]) => [rel, { path: rel, bytes, sha256: digestBytes(bytes), mode: lockedStates.get(rel).mode }]));
+  const manifest = {
+    kind: V2_KIND, schemaVersion: 2,
+    candidate: { members: [...byPath.values()].map(({ path: rel, sha256, mode }) => ({ path: rel, sha256, mode })) },
+    operations: [...byPath.keys()].map(rel => ({ operation: "write", path: rel, source: rel, owner: { kind: OWNER_KIND, id: KIT_TOOL_NAME }, expect: publicState(lockedStates.get(rel)) })),
+    rootOutputs: [MANAGED_LOCK_PATH],
+  };
+  validateV2Manifest(manifest);
+  await verifyEngineeringStates(rootAbs, lockedStates);
+  return runProjectionV2({ rootAbs, facts, manifestPath: null, manifest, externalManifest: false, faultInjector, lockedStates,
+    verifiedCandidate: { rootAbs: null, byPath, closure: buildProjectionClosure([...byPath.values()].map(({ path: rel, sha256, mode }) => ({ path: rel, sha256, mode }))) } });
+}
+
 /** Runs one backward-compatible projection transaction. */
-export async function runProjection({ root, manifest: manifestInput, candidateRoot, faultInjector, preparedProjection } = {}) {
+export async function runProjection({ root, manifest: manifestInput, candidateRoot, faultInjector, preparedProjection, engineering } = {}) {
+  if (engineering !== undefined && (manifestInput !== undefined || candidateRoot !== undefined || preparedProjection !== undefined)) {
+    throw invalidManifest("engineering cannot be combined with manifest, candidateRoot or preparedProjection");
+  }
   const rootAbs = await resolveTargetRoot(root ?? ".");
+  if (engineering !== undefined) return projectEngineering(rootAbs, engineering, faultInjector);
   let facts;
   let loaded;
   let verifiedCandidate;

@@ -150,6 +150,10 @@ function commandHelp(command) {
       "  确定性: 同一 report-model 反复渲染字节一致；Harness 不推导状态、不补造事实。",
     ],
     check: [
+      "登记子动作: skill-family-kit check relock --root <dir> [--files <relative-paths>]",
+      "  --registration-class <handwritten|trackedToolLocks>  登记类别，默认 handwritten",
+      "  trackedToolLocks 必须提供非空 --files 清单，只登记路径，不锁定工具锁内容。",
+      "",
       "选项:",
       "  --root <dir>          目标工作区（默认当前目录）",
       "  --only <class>        只运行一个诊断类: contracts|drift|closure|version|docs|git|identity|boundary|platform",
@@ -254,6 +258,7 @@ const COMMAND_SPECS = {
       "--licensing-variant": { key: "licensingVariant", value: true },
       "--profiles-root": { key: "profilesRoot", value: true },
       "--capability": { key: "capabilities", value: true, repeat: true },
+      "--engineering": { key: "engineeringJson", value: true },
     },
   },
   "adopt-plan": {
@@ -267,6 +272,7 @@ const COMMAND_SPECS = {
       "--profiles-root": { key: "profilesRoot", value: true },
       "--no-git-spawn": { key: "noGitSpawn", value: false },
       "--engineering-baseline": { key: "engineeringBaselinePath", value: true },
+      "--engineering": { key: "engineeringJson", value: true },
       "--compare-skeleton": { key: "compareSkeleton", value: false },
       "--list-capabilities": { key: "listCapabilities", value: false },
       "--scope": { key: "scope", value: true },
@@ -282,6 +288,7 @@ const COMMAND_SPECS = {
     flags: {
       "--root": { key: "root", value: true },
       "--manifest": { key: "manifest", value: true },
+      "--engineering": { key: "engineeringJson", value: true },
     },
   },
   check: {
@@ -325,6 +332,7 @@ const COMMAND_SPECS = {
     flags: {
       "--root": { key: "root", value: true },
       "--files": { key: "files", value: true },
+      "--registration-class": { key: "registrationClass", value: true },
     },
   },
   "check qualification": {
@@ -441,6 +449,7 @@ async function runCapabilityList(options) {
     "profilesRoot",
     "noGitSpawn",
     "engineeringBaselinePath",
+    "engineeringJson",
     "compareSkeleton",
   ];
   if (forbidden.some((key) => options[key] !== undefined)) {
@@ -564,7 +573,7 @@ async function runRelockSubAction(rest) {
       return KIT_EXIT_CODES.ok;
     }
     // --files is one comma-separated relative-path list; absent means the
-    // auto-discovery mode of the closed-world stage (mirrors runRelock).
+    // default handwritten auto-discovery; trackedToolLocks requires a list.
     const files =
       options.files === undefined
         ? null
@@ -572,7 +581,7 @@ async function runRelockSubAction(rest) {
             .split(",")
             .map((rel) => rel.trim())
             .filter((rel) => rel.length > 0);
-    const { status, output } = await relockAction({ root: options.root, files });
+    const { status, output } = await relockAction({ root: options.root, files, registrationClass: options.registrationClass });
     process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
     // Relock has no findings state: it either commits the whole transaction
     // or throws (exit 2). Any status other than "ok" is a mechanism error.
@@ -739,7 +748,7 @@ export async function cliMain(argv) {
     const options = parseOptions(argv.slice(1), {
       command,
       flags: COMMAND_SPECS[command].flags,
-      rejectDuplicates: listCapabilitiesRequested || engineeringBaselineRequested || COMMAND_SPECS[command].rejectDuplicates === true,
+      rejectDuplicates: listCapabilitiesRequested || engineeringBaselineRequested || argv.slice(1).includes("--engineering") || COMMAND_SPECS[command].rejectDuplicates === true,
     });
     if (options.help) {
       process.stdout.write(`${commandHelp(command)}\n`);
@@ -761,6 +770,14 @@ export async function cliMain(argv) {
     const engineeringBaseline = command === "adopt-plan" && hasEngineeringBaseline
       ? await readEngineeringBaselineJson(options.root ?? ".", options.engineeringBaselinePath)
       : undefined;
+    let engineering;
+    if (options.engineeringJson !== undefined) {
+      try {
+        engineering = JSON.parse(options.engineeringJson);
+      } catch {
+        throw invalidParamsError("--engineering must be a JSON engineering object", { flag: "--engineering" });
+      }
+    }
     const conclusionOutput = command === "check" ? conclusionOutputFromOptions(options) : undefined;
     const { exitCode, output } = await runCommand(command, {
       root: options.root ?? ".",
@@ -777,6 +794,7 @@ export async function cliMain(argv) {
       conclusionOutput,
       allowGitSpawn: !options.noGitSpawn,
       engineeringBaseline,
+      engineering,
       compareSkeleton: compareSkeleton ? true : undefined,
     });
     if (output !== undefined) {

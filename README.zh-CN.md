@@ -5,28 +5,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.23.0 -->
+<!-- release-skill:release-version: 0.24.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.23.0** (2026-09-26)
+**0.24.0** (2026-10-07)
 
-Engineering Kit 0.23.0 保持四个顶层命令，并增加完整静态专业审阅所需的本族证明出证和读取。本说明只记录本地锁步候选，不表示已经远端发布，也不表示真实宿主已经接受。
-
-**新增**
-
-- 增加 `check proof-create`。它把调用方提供的一份静态审阅结果投影成一份排他的 Foundation 结论，只检查审阅结构并写入本族结果；不再次扫描目标，不鉴定作者，也不覆盖已有结论。
-- 增加 `check proof`。它读取一份已有的本族证明并解释公开领域码；不扫描目标，不追随 `details` 里的路径，不鉴定作者。
-- 全部适用且选中的静态项通过时记录 `FOUNDATION_STATIC_CLEAR`；存在真实发现时记录 `FOUNDATION_STATIC_FINDINGS`；覆盖未完成、证据不足，或选中项全部不适用时记录 `FOUNDATION_STATIC_INCOMPLETE`。既有 `ENGINEERING_*` 仍只表示原来的局部声明检查。
+Engineering Kit 0.24.0 在既有 `check relock` 事务中增加显式的持久工具锁登记能力，四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。本说明记录本地锁步候选状态，不表示远端发布或真实消费者采用已完成。
 
 **变更**
 
-- 包坐标与 Contracts、Harness 和采用 Plugin 一起前移到 0.23.0。Contracts 规格仍是 1.20.0。本包不新增合同对象，也不新增 Harness 机制。
+- `registrationClass` 为 API 参数，仅接受 `handwritten` 或 `trackedToolLocks`；CLI 对应参数为 `--registration-class`。默认值保持为 `handwritten`；在默认手写模式下，文件清单为空或缺省时，原自动发现行为维持不变。
+- 使用 `trackedToolLocks` 时必须提供非空显式 `files` 清单，CLI 通过 `--files` 指定。每个路径必须指向目标内已存在的普通文件，不支持自动发现工具锁，也不根据文件名或内容推断工具语义。
+- 若原事务中 `classes.trackedToolLocks` 缺省，则在首次写入前初始化其 `entries` 数组，并追加明确指定的路径；若已有类别非合法对象，或 `entries` 非数组类型，则在首写前拒绝操作。其他类别保持不变。
+- 仅更新 `.foundation/file-registry.json` 与 `skill-family.managed-file-lock.json` 两份状态文件。工具锁内容不进入受管摘要，后续由原工具刷新内容不会因此引发受管漂移；路径、符号链接、已登记路径、状态文档及既有受管漂移的拒绝规则继续有效。中途发布失败时仍暴露原始 `publicationState`，不承诺双文件原子回滚。
+- 包版本与其他三单元同步前移至 0.24.0。Contracts 规格仍为 1.20.0，未新增合同对象、Harness 机制或报告种类；0.23.1 中仅锁步前移的历史说明保持原样。
 
 **升级说明**
 
-三个 Foundation 包须一起精确锁定到 0.23.0。Kit 负责投影和读取本族结果；工程判断仍由 `foundation-engineering-check` 作出。远端发布和真实宿主验证不在本说明范围内。
+三个 Foundation npm 包须精确锁定至 0.24.0 版本。新登记模式仅属本轮候选，非 0.23.0 已发布能力；实际采用以对应版本公开接口为准。完整消费者、初始化及发布资格仍待验证。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 本地未发布治理检查
@@ -67,7 +65,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-0.23.0 是尚未正式发布的本地源码候选；0.22.0 是已发布包。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+0.23.1 是尚未正式发布的本地源码候选；0.23.0 是已发布包。候选验证先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -75,21 +73,62 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.23.0.tgz" "$pack_dir/skill-family-harness-node-0.23.0.tgz" "$pack_dir/skill-family-engineering-kit-0.23.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.23.1.tgz" "$pack_dir/skill-family-harness-node-0.23.1.tgz" "$pack_dir/skill-family-engineering-kit-0.23.1.tgz")
 ```
 
-0.23.0 正式发布后，再使用对应的 registry 坐标：
+0.23.1 正式发布后，再使用对应的 registry 坐标：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.23.0
-npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.23.1
+npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.23.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.23.1 -- skill-family-kit --help`。
+
+### 本地 0.24.0 候选的工程声明调用
+
+可选 `engineering` 参数已在本地 `0.24.0` 候选中实现，正式 `0.23.0` 不支持。使用已选 SDK 前，核对其实际公共接口与三个 Foundation 包的精确锁步来源；候选验证与正式发布后采用分别报告。省略参数保持既有字节和路径；`null`、`{}`、未知字段和非法引用拒绝。无需另建声明输入文件。
+
+`engineering` 由调用方依据真实业务入口和发行单元构造。`entries` 每项包含 `name`、`form`、`physicalRef`；`form` 仅为 `skill_md` 或 `file`，前者必须指向 `SKILL.md`。`releaseUnits` 每项包含 `id`、`versionSource`，可选 `versionMirrors`。`versionSource` 为文本或 JSON 引用对象，`versionMirrors` 为引用数组。文本版本引用使用 `path` 和 `format: "text"`；JSON 引用使用 `path`、`format: "json"` 与非空 `jsonPointer`。版本取自真实业务版本源，不取私有骨架示例包、SDK 或 Profile 版本，不因 `package.json` 存在推导 npm 分发。
+
+下例变量由调用方提供；`engineering` 是完整已确认的声明，不是默认示例答案：
+
+```js
+import { describeSkeletonFiles, scaffoldTarget, planAdoption, runProjection } from "skill-family-engineering-kit";
+
+const skeleton = await describeSkeletonFiles({ ...inputs, engineering });
+const generated = await scaffoldTarget({ ...options, engineering });
+const plan = await planAdoption({ ...options, engineering, allowGitSpawn: false });
+const updated = await runProjection({ root: targetRoot, engineering });
+```
+
+这些调用用于不同目标状态，不能按示例次序对同一目标全跑。空目标由 `scaffoldTarget` 通过同一骨架生成器和原受管锁派生声明与清单摘要；只检查合同和根内路径形态，可引用业务作者稍后创建的文件，不确认文件已存在，也不代写领域内容。非空目标由 `planAdoption` 预测与 `scaffold` 相同的声明字节，保持严格只读，连临时文件也不写；`allowGitSpawn: false` 关闭原只读 Git 探测。`writeSet`、`conflicts` 和 `complete` 不授权执行，也不证明业务资格。
+
+现有受管项目使用 `runProjection({ root: targetRoot, engineering })` 完整替换整个 `engineering`，不做深合并。完整已确认对象须保留仍需使用的旧 `entries` 和 `releaseUnits`。不能与 `manifest`、`candidateRoot` 或 `preparedProjection` 同传。目标须为现有普通根，具备有效普通 registry、项目清单和受管锁；清单与锁已由 registry 及 `managedFiles` 声明受管，清单锁条目由 Engineering Kit 拥有。其他受管文件须匹配原锁，没有缺覆盖、重复或未拥有的锁条目。每个业务入口与版本引用须指向根内现存普通文件。前提缺失只表示本更新不可执行，不自动接管任意非空项目。
+
+合法更新只写 `skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`，保留非 `engineering` 字段、registry 与其他文件字节、其他锁条目、生成器身份、版本、`lockVersion` 和文件 mode。清单摘要由原生成器派生，同内容幂等。结果沿用 `schemaVersion: 2` 的 `skill-family.projection-receipt`；内存候选的 `candidate.root` 与 `manifest.location` 为 `null`。原 v1/v2 和 prepared 投影保护保留，不手写清单或锁候选掩盖漂移。
+
+三个原 CLI 命令接受 `--engineering <JSON>`：
+
+```text
+skill-family-kit scaffold --root <target> --project-id <id> --profile generic --licensing-profile <licensing-id> --engineering <JSON>
+skill-family-kit adopt-plan --root <target> --project-id <id> --profile <profile-id> --licensing-profile <licensing-id> --no-git-spawn --engineering <JSON>
+skill-family-kit projection --root <target> --engineering <JSON>
+```
+
+`<JSON>` 是工程对象的 JSON 字符串，不是文件路径，须以 shell 引号作为一个参数传入。`--engineering` 与 `--engineering-baseline` 独立，后者仍须与 `--compare-skeleton` 成对；能力目录查询不能混入工程声明。四个顶层命令边界保留。
+
+事实未齐时具体报告缺项。可以只声明 `entries` 或只声明 `releaseUnits`，但未声明的另一检查分支仍为 `incomplete`。待真实业务和版本文件存在后，使用官方受管更新及既有 core、declared 版本、declared 入口检查。生成、只读计划、静态检查、正式宿主发现、真实业务、独立语义审阅与整体资格分别报告；省略参数保留旧行为，不表示声明已完成。
+
+本地 0.24.0 候选对公开 `runCoreCheck` 作一项窄行为修复：目标真实声明 `engineering.releaseUnits` 时，版本类复用已有声明式版本读取逻辑，依据 `versionSource` 与 `versionMirrors` 检查文本或 JSON 格式的版本信息；私有工程的 `package.json` 不自动成为该业务单元的版本源或镜像，仅当被显式声明时方可参与版本认定。对于真正未声明版本、或仅包含合法 `entries` 的目标，仍沿用原有 legacy 版本检查路径。非法或重复的声明不回退为通过；声明的版本源或镜像缺失、不可读时如实失败。
+
+核心调度机制保持不变，共用原九类循环与报告流程，保留 Contracts 规格版本一致性检查及其他八类校验。声明的来源、镜像及各祖先路径均需先通过原树枚举与 `lstat` 安全预检，包括原不展开的工具目录；仅探查声明所涉路径，不引入新的目录遍历器。符号链接、FIFO 及其他不安全读集仍按原规则拒绝访问，禁止穿过根内符号链接目录；`completed`、`mechanism` 与 0/1/2 退出码如实传播。
+
+本次变更仅限于公开 core 在已声明版本目标上的适用性调整：公共 `runChecks` 缺省行为仍等同于显式 `policy: "legacy"`，涵盖原版本发现及 `full`/`only` 等价逻辑；显式 `policy: "declared"` 仍仅允许 `only: "version"`，维持原报告形式、不执行目标代码、不调用 Git 的边界。未新增任何公共 policy 值、API、CLI 参数、Schema 定义或包根导出，亦不在目标生成 shim 中复制检查逻辑。候选实现与局部验证不构成正式发布、业务资格或整体初始化完成的证明。
 
 ### 三条采用旅程
 
@@ -230,6 +269,8 @@ const stdout = result.streams
 - `scaffold` 的目标必须是**空目录**（任何条目含点文件都算非空），或其父目录已存在的不存在路径（只创建最后一级）。全部写入经 harness 的原子收容写（`writeFileAtomic`），失败不留半成品，路径不能越出目标根。
 - `adopt-plan` 结构性只读：实现中不存在任何写调用，连临时文件都不产生；计划字节与 `scaffold` 同源（`describeSkeletonFiles` 单一事实源），因此「计划即动作」。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。dirty 仓运行前后字节级零变化。
 - `projection` 采用两阶段执行：先对每个条目做路径分类、收容预检、自投影检查、manifest 授权检查、手写保护与冲突守卫；任一条目违规则整体拒绝、零写入。覆盖既有文件必须声明精确的 `expect.sha256` 前置状态；内容相同的既有文件是幂等 no-op。写入失败时尽力还原已覆盖文件的前置字节。
+
+  工程模式保留原始已核引用快照，在每次实际修改前和完成后重验；重复读取不能替换基线。首写前若发生拒绝，则不执行恢复写入，未尝试输出的外来字节保留。实际尝试写入失败时沿用既有错误、验证与尽力回滚，仅恢复本模式实际尝试的输出路径。不承诺整次初始化事务、恶意并发或 ABA 安全；原 v2 完整闭包回滚合同不变。
 - 普通 `check` 只读且无写调用，也没有 `--fix/--apply/--repair` 模式（此类标志在入口处被拒绝）。默认可能启动一条冻结参数的只读 Git status 探测；CLI 的 `--no-git-spawn`（或 API 的 `allowGitSpawn: false`）可关闭该探测。`check relock` 执行显式受控写事务；`check qualification` 预检通过后可能启动绑定的 executable。Git 前置状态仅用文件系统事实加至多一次冻结参数矢量的只读 `git status --porcelain=2`（`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`，不刷新索引）。
 - 未发布的 declared 分支中，两个纯检查函数仍只读，也不探测 Git。只有调用方显式要求结论时，两个既有包装入口才通过独占创建产生本轮唯一新增持久副作用。
 

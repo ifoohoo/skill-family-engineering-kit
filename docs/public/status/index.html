@@ -463,6 +463,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#独立-Plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        独立 Plugin
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#文档" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1729,6 +1740,17 @@
 </li>
 
         <li class="md-nav__item">
+  <a href="#独立-Plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        独立 Plugin
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
   <a href="#文档" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -1779,7 +1801,7 @@
 
 
 <h1 id="Skill-Family-Foundation--公开状态">Skill Family Foundation — 公开状态<a class="headerlink" href="#Skill-Family-Foundation--公开状态" title="Permanent link">&para;</a></h1>
-<p>本页是本静态发布快照的目标坐标和验证入口。页面只从各包 package.json 的版本真源机械生成，由 <code>node scripts/render-public-status.mjs --check</code> 零写入重算并逐字节校验。</p>
+<p>本页列出本静态发布快照的目标坐标和验证入口，并说明各项能力入口。版本从各发布单元的 package.json 派生，由 <code>node scripts/render-public-status.mjs --check</code> 零写入重算并逐字节校验；候选坐标不证明远端发布或完整初始化已经通过。</p>
 <h2 id="包">包<a class="headerlink" href="#包" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1792,21 +1814,28 @@
 <tbody>
 <tr>
 <td><code>skill-family-contracts</code></td>
-<td>0.23.0</td>
+<td>0.24.0</td>
 <td><a href="https://github.com/ifoohoo/skill-family-contracts">ifoohoo/skill-family-contracts</a></td>
 </tr>
 <tr>
 <td><code>skill-family-harness-node</code></td>
-<td>0.23.0</td>
+<td>0.24.0</td>
 <td><a href="https://github.com/ifoohoo/skill-family-harness-node">ifoohoo/skill-family-harness-node</a></td>
 </tr>
 <tr>
 <td><code>skill-family-engineering-kit</code></td>
-<td>0.23.0</td>
+<td>0.24.0</td>
 <td><a href="https://github.com/ifoohoo/skill-family-engineering-kit">ifoohoo/skill-family-engineering-kit</a></td>
 </tr>
 </tbody>
 </table>
+<h2 id="独立-Plugin">独立 Plugin<a class="headerlink" href="#独立-Plugin" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>foundation-adoption-review</code>：0.24.0，公开镜像 <a href="https://github.com/ifoohoo/foundation-adoption-review">ifoohoo/foundation-adoption-review</a></li>
+<li><code>foundation-adoption-review</code>：只读采用诊断</li>
+<li><code>foundation-engineering-check</code>：只读静态工程审阅与证明读取</li>
+<li><code>foundation-initialize</code>：在明确授权下初始化目标工程，保留业务和人工判断</li>
+</ul>
 <h2 id="文档">文档<a class="headerlink" href="#文档" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="https://ifoohoo.github.io/skill-family-engineering-kit/">公开文档站</a></li>
@@ -1821,9 +1850,9 @@
 <h2 id="说明">说明<a class="headerlink" href="#说明" title="Permanent link">&para;</a></h2>
 <ul>
 <li>本页不宣称任何版本已在远端发布；发布动作是否已执行由发布后的远端验证报告证明。</li>
-<li>三个包均为独立发布到 npm 的公开发布目标。</li>
+<li>三个机制包是独立的 npm 发布目标；Plugin 使用自己的公开镜像，不进入三包依赖链，也不新增机制包。</li>
 <li>许可证：Apache-2.0</li>
-<li>私有工作区仓不对外可见；公开发布物只经各包 public 发布镜像仓与 npm tarball 分发。</li>
+<li>私有工作区仓不对外可见；公开发布物经三个机制包的公开镜像与 npm tarball，以及独立 Plugin 的公开镜像分发。</li>
 </ul>
 
 

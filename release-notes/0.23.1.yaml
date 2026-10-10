@@ -1,0 +1,17 @@
+version: 0.23.1
+date: 2026-10-05
+locales:
+  en:
+    summary: Engineering Kit 0.23.1 moves the package coordinate to 0.23.1 under the existing lockstep contract. The four top-level commands remain scaffold, adopt-plan, projection, and check. This version adds no mechanism and does not include a byte-for-byte recheck of the published payload. This note does not say that remote publication or real-host acceptance has happened.
+    changes:
+      changed:
+        - Moves the package coordinate to 0.23.1 together with Contracts, Harness, and the adoption Plugin. The Contracts specification remains 1.20.0. This round adds no command, contract object, or Harness mechanism.
+        - `check proof-create` and `check proof` keep the duties published in 0.23.0. This note does not treat them as capabilities added in 0.23.1, and it does not include a byte-for-byte recheck of the published payload.
+    upgradeNotes: Pin all three Foundation packages to exactly 0.23.1. Engineering judgment stays with `foundation-engineering-check`. Remote publication and real-host verification are outside this note.
+  zh-CN:
+    summary: Engineering Kit 0.23.1 仅按既有锁步合同将包坐标前移至 0.23.1。四个顶层命令仍为 scaffold、adopt-plan、projection、check。本版本未引入新机制，亦未对已发布载荷进行逐字节重核。本说明不表示已远端发布，也不表示真实宿主已接受。
+    changes:
+      changed:
+        - 包坐标与 Contracts、Harness 及采用 Plugin 一同前移至 0.23.1。Contracts 规格保持为 1.20.0。本轮未新增命令、合同对象或 Harness 机制。
+        - `check proof-create` 与 `check proof` 的职责维持与 0.23.0 一致，不视为 0.23.1 新增能力，且未对已发布载荷进行逐字节核对。
+    upgradeNotes: 三个 Foundation 包须一同精确锁定至 0.23.1。工程判断仍由 `foundation-engineering-check` 作出。远端发布及真实宿主验证不在本说明覆盖范围内。

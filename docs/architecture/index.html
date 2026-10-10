@@ -2155,6 +2155,9 @@ operation。后续晋升 stable 只提高兼容承诺，不再触发消费者源
 版本来源及镜像；入口分支只静态读取声明的普通文件，均不运行目标脚本、Skill、hook 或模型。
 纯读取 API 与缺省命令不写文件。只有 <code>runCommand("check")</code> 与 <code>checkEntriesAction</code> 在调用方同时
 给出已存在输出根和根内相对路径时，才独占创建一份公共结论；不自动建目录，也不覆盖现有文件。</p>
+<p>本地 0.24.0 候选对公开 <code>runCoreCheck</code> 作一项窄行为修复：目标真实声明 <code>engineering.releaseUnits</code> 时，版本类复用已有声明式版本读取逻辑，依据 <code>versionSource</code> 与 <code>versionMirrors</code> 检查文本或 JSON 格式的版本信息；私有工程的 <code>package.json</code> 不自动成为该业务单元的版本源或镜像，仅当被显式声明时方可参与版本认定。对于真正未声明版本、或仅包含合法 <code>entries</code> 的目标，仍沿用原有 legacy 版本检查路径。非法或重复的声明不回退为通过；声明的版本源或镜像缺失、不可读时如实失败。</p>
+<p>核心调度机制保持不变，共用原九类循环与报告流程，保留 Contracts 规格版本一致性检查及其他八类校验。声明的来源、镜像及各祖先路径均需先通过原树枚举与 <code>lstat</code> 安全预检，包括原不展开的工具目录；仅探查声明所涉路径，不引入新的目录遍历器。符号链接、FIFO 及其他不安全读集仍按原规则拒绝访问，禁止穿过根内符号链接目录；<code>completed</code>、<code>mechanism</code> 与 0/1/2 退出码如实传播。</p>
+<p>本次变更仅限于公开 core 在已声明版本目标上的适用性调整：公共 <code>runChecks</code> 缺省行为仍等同于显式 <code>policy: "legacy"</code>，涵盖原版本发现及 <code>full</code>/<code>only</code> 等价逻辑；显式 <code>policy: "declared"</code> 仍仅允许 <code>only: "version"</code>，维持原报告形式、不执行目标代码、不调用 Git 的边界。未新增任何公共 policy 值、API、CLI 参数、Schema 定义或包根导出，亦不在目标生成 shim 中复制检查逻辑。候选实现与局部验证不构成正式发布、业务资格或整体初始化完成的证明。</p>
 <p>这组源码不是已发布 <code>0.21.0</code> 的组成部分。已发布 <code>0.21.0</code> 仍对应 Contracts <code>1.18.0</code> 与 46 类
 对象；新协议的发布、跨方正式采用，以及跨操作类别的权限交集均不在本地实现完成结论内。</p>
 <h2 id="下一阶段能力线架构-hand-off">下一阶段能力线（架构 hand-off）<a class="headerlink" href="#下一阶段能力线架构-hand-off" title="Permanent link">&para;</a></h2>

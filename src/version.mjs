@@ -6,3 +6,4 @@ import kitPackage from "../package.json" with { type: "json" };
 // Never derive this path from import.meta.url at runtime: after single-file
 // bundling that URL belongs to the host adapter, not to this package.
 export const KIT_VERSION = kitPackage.version;
+export const KIT_NODE_ENGINE_RANGE = kitPackage.engines.node;

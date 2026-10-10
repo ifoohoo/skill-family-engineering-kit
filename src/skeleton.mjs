@@ -1,6 +1,6 @@
-import { CONTRACTS_VERSION, digestDocument } from "skill-family-contracts";
+import { CONTRACTS_VERSION, ContractsError, digestDocument, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { readFile } from "node:fs/promises";
-import { digestBytes } from "skill-family-harness-node";
+import { classifyPathInput, digestBytes } from "skill-family-harness-node";
 import { invalidParamsError, kitError, KIT_ERROR_KINDS } from "./errors.mjs";
 import {
   generateIdentityRecord,
@@ -10,7 +10,7 @@ import {
   loadLicensingProfile,
 } from "./licensing.mjs";
 import { MIGRATION_MANIFEST_PATH } from "./migration.mjs";
-import { KIT_VERSION } from "./version.mjs";
+import { KIT_VERSION, KIT_NODE_ENGINE_RANGE } from "./version.mjs";
 import { resolveScaffoldCapabilities } from "./capability-assessment.mjs";
 
 /**
@@ -153,7 +153,7 @@ function renderRootPackageJson({ projectId, projectName, profileId, licensingPro
     description: `Skill Family workspace for project ${projectName}.`,
     author: licensingProfile.identity.displayValue,
     license: licensingProfile.licensing.spdx,
-    engines: { node: `>=${SKELETON_NODE_MAJOR} <${Number(SKELETON_NODE_MAJOR) + 1}` },
+    engines: { node: KIT_NODE_ENGINE_RANGE },
     packageManager: `pnpm@${SKELETON_PNPM_VERSION}`,
     scripts: {
       // Direct execution of the projenrc: the projen CLI needs .projen/tasks.json
@@ -185,7 +185,7 @@ function renderLeafPackageJson({ projectId, licensingProfile }) {
     author: licensingProfile.identity.displayValue,
     license: licensingProfile.licensing.spdx,
     type: "module",
-    engines: { node: `>=${SKELETON_NODE_MAJOR} <${Number(SKELETON_NODE_MAJOR) + 1}` },
+    engines: { node: KIT_NODE_ENGINE_RANGE },
     exports: "./src/index.mjs",
     scripts: {
       check: "node --test",
@@ -263,8 +263,8 @@ function renderGitAttributes() {
 /* Kit-managed documents and entrypoints                               */
 /* ------------------------------------------------------------------ */
 
-function renderProjectManifest({ projectId, projectName, profileId, managedFiles }) {
-  return jsonString({
+function renderProjectManifest({ projectId, projectName, profileId, managedFiles, engineering }) {
+  const document = {
     schemaVersion: 1,
     kind: "skill-family.project-manifest",
     project: {
@@ -277,7 +277,24 @@ function renderProjectManifest({ projectId, projectName, profileId, managedFiles
       profile: profileId,
     },
     managedFiles,
-  });
+    ...(engineering === undefined ? {} : { engineering }),
+  };
+  if (engineering !== undefined) {
+    const registration = findSchemaByObject("project-manifest");
+    const validation = validateDocument(document, { schemaId: registration.$id, dialect: registration.dialect, policy: "strict" });
+    if (!validation.valid) {
+      throw new ContractsError(validation.errorCode, "engineering violates the project-manifest contract", { errors: validation.errors });
+    }
+    const references = [
+      ...(engineering.entries ?? []).map(entry => entry.physicalRef),
+      ...(engineering.releaseUnits ?? []).flatMap(unit => [unit.versionSource.path, ...(unit.versionMirrors ?? []).map(mirror => mirror.path)]),
+    ];
+    for (const reference of references) {
+      const classification = classifyPathInput(reference);
+      if (!classification.ok) throw kitError(KIT_ERROR_KINDS.UNAUTHORIZED_PATH, "engineering reference is not a contained project path", { path: reference, kind: classification.kind });
+    }
+  }
+  return jsonString(document);
 }
 
 function renderManagedLock(entries) {
@@ -1047,7 +1064,7 @@ export async function describeSkeletonFiles(inputs) {
         "Setup",
         projectName,
         [
-          `需要 Node ${SKELETON_NODE_MAJOR}（major 锁定）与 pnpm ${SKELETON_PNPM_VERSION}（packageManager 字段精确锁定）。`,
+          `需使用满足 \`${KIT_NODE_ENGINE_RANGE}\` 的 Node.js，pnpm 固定为 \`${SKELETON_PNPM_VERSION}\`。`,
           "执行 `pnpm install`，然后 `pnpm synth` 生成受管文件。",
         ],
       ),
@@ -1104,7 +1121,7 @@ export async function describeSkeletonFiles(inputs) {
     {
       path: PROJECT_MANIFEST_PATH,
       fileClass: "managed",
-      content: renderProjectManifest({ projectId, projectName, profileId, managedFiles }),
+      content: renderProjectManifest({ projectId, projectName, profileId, managedFiles, engineering: inputs.engineering }),
     },
     { path: IDENTITY_RECORD_PATH, fileClass: "managed", content: identityRecordContent },
     // The migration manifest is seeded by the skeleton but becomes

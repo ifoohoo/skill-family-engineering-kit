@@ -1,7 +1,8 @@
 import { lstat } from "node:fs/promises";
 import path from "node:path";
 import { KIT_ERROR_KINDS } from "./errors.mjs";
-import { CHECK_CLASSES, runChecks } from "./check.mjs";
+import { CHECK_CLASSES, runCoreCheckClasses } from "./check.mjs";
+import { loadEngineeringDeclaration } from "./engineering-declaration.mjs";
 import {
   IDENTITY_RECORD_PATH,
   MANAGED_LOCK_PATH,
@@ -37,7 +38,9 @@ import {
  *   3. tree enumeration — every symlink and special entry fails closed;
  *      every regular file must belong to the registered closed world
  *      (managed, handwritten, artifact, or a tracked tool lock);
- *   4. the nine check classes through runChecks — skipped whenever an
+ *   4. declared version references and their ancestors join the same safe
+ *      read-set, including references inside opaque tooling directories;
+ *   5. the nine check classes through the shared class loop — skipped whenever an
  *      unsafe path (symlink/special at a managed or class-read path) would
  *      be opened by them: FIFOs must never be read (they block), symlinks
  *      must never be followed.
@@ -193,10 +196,64 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
     );
   }
 
-  // ---- Stage 4: the nine check classes through the shared entry ---------
+  // ---- Stage 4: admit and preflight the actual declared version read-set --
+  let versionDeclaration;
+  if (unsafeReadPaths.size === 0 && facts.projectManifest && Object.hasOwn(facts.projectManifest, "engineering")) {
+    try {
+      const loaded = await loadEngineeringDeclaration(rootAbs, "releaseUnits");
+      // Only a schema-valid entries-only declaration is genuinely absent.
+      // Null, malformed and duplicate version declarations stay fail-closed.
+      if (!(loaded.state === "incomplete" && !Object.hasOwn(loaded.value.engineering, "releaseUnits"))) {
+        versionDeclaration = loaded;
+      }
+    } catch (cause) {
+      versionDeclaration = { cause };
+    }
+  }
+  if (versionDeclaration?.state === "ok") {
+    const entryKinds = new Map(entries.map((entry) => [entry.path, entry.kind]));
+    const references = versionDeclaration.declaration.flatMap((unit) => [unit.versionSource, ...(unit.versionMirrors ?? [])]);
+    try {
+      for (const reference of references) {
+        const parts = reference.path.split("/").filter((part) => part !== "" && part !== ".");
+        let rel = "";
+        for (const [index, part] of parts.entries()) {
+          rel = rel === "" ? part : `${rel}/${part}`;
+          let kind = entryKinds.get(rel);
+          if (kind === undefined) {
+            // Probe just the declared prefixes omitted by the original opaque
+            // tree enumeration. This is not a second directory walk.
+            let st;
+            try {
+              st = await lstat(path.join(rootAbs, rel));
+            } catch (cause) {
+              if (cause.code === "ENOENT") break; // The existing reader reports missing references.
+              throw cause;
+            }
+            kind = st.isSymbolicLink() ? "symlink" : st.isDirectory() ? "directory" : st.isFile() ? "file" : "special";
+            entryKinds.set(rel, kind);
+          }
+          const final = index === parts.length - 1;
+          if (kind === "symlink" || kind === "special" || (final ? kind !== "file" : kind !== "directory" && kind !== "directory-opaque")) {
+            const findingKind = kind === "symlink" ? KIT_ERROR_KINDS.SYMLINK_ENTRY
+              : kind === "special" ? KIT_ERROR_KINDS.SPECIAL_ENTRY : KIT_ERROR_KINDS.NOT_A_REGULAR_FILE;
+            push(findingKind, `declared version reference would read an unsafe file or ancestor: ${rel}`, {
+              path: rel, reference: reference.path,
+            });
+            unsafeReadPaths.add(rel);
+            break; // Never inspect a descendant through an unsafe ancestor.
+          }
+        }
+      }
+    } catch (cause) {
+      versionDeclaration = { cause };
+    }
+  }
+
+  // ---- Stage 5: all nine classes through their original shared loop ------
   let classReport = null;
   if (unsafeReadPaths.size === 0) {
-    classReport = await runChecks({ root: rootAbs, allowGitSpawn, profilesRoot });
+    classReport = await runCoreCheckClasses({ rootAbs, allowGitSpawn, profilesRoot }, versionDeclaration);
     findings.push(...classReport.findings);
   }
 

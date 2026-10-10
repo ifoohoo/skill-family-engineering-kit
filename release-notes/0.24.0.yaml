@@ -1,0 +1,23 @@
+version: 0.24.0
+date: 2026-10-07
+locales:
+  en:
+    summary: "Engineering Kit 0.24.0 adds explicit persistent-tool-lock registration within the existing check relock transaction. The four top-level commands remain scaffold, adopt-plan, projection, and check. This note records the local lockstep candidate, not completed remote publication or real-consumer adoption."
+    changes:
+      changed:
+        - "The API registrationClass accepts only handwritten or trackedToolLocks; the CLI uses --registration-class. The default remains handwritten, including its existing automatic discovery when the files list is absent or empty."
+        - "The trackedToolLocks mode requires an explicit non-empty files list, supplied with --files in the CLI. Every path must identify an existing ordinary file inside the target. It does not discover tool locks automatically or infer tool semantics from names or content."
+        - "The same transaction initializes entries when classes.trackedToolLocks is absent, then appends the explicit paths. An existing malformed class or non-array entries is refused before the first write. Other classes remain unchanged."
+        - "Only .foundation/file-registry.json and skill-family.managed-file-lock.json are updated. Tool-lock content is excluded from managed hashes, so a later provider update does not itself cause managed drift. Existing path, symlink, prior-registration, state-document, and managed-drift refusals remain. A mid-publication failure still exposes publicationState; no atomic rollback of both documents is promised."
+        - "The package moves to 0.24.0 with the other three units. Contracts stays specification 1.20.0, with no new contract object, Harness mechanism, or report kind. Historical 0.23.1 notes remain unchanged."
+    upgradeNotes: "Pin all three Foundation npm packages to exactly 0.24.0. The new registration mode belongs to this candidate and is not a published 0.23.0 capability; adoption depends on the corresponding released public interface. Complete consumer, initialization, and release qualification remain to be verified."
+  zh-CN:
+    summary: "Engineering Kit 0.24.0 在既有 `check relock` 事务中增加显式的持久工具锁登记能力，四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。本说明记录本地锁步候选状态，不表示远端发布或真实消费者采用已完成。"
+    changes:
+      changed:
+        - "`registrationClass` 为 API 参数，仅接受 `handwritten` 或 `trackedToolLocks`；CLI 对应参数为 `--registration-class`。默认值保持为 `handwritten`；在默认手写模式下，文件清单为空或缺省时，原自动发现行为维持不变。"
+        - "使用 `trackedToolLocks` 时必须提供非空显式 `files` 清单，CLI 通过 `--files` 指定。每个路径必须指向目标内已存在的普通文件，不支持自动发现工具锁，也不根据文件名或内容推断工具语义。"
+        - "若原事务中 `classes.trackedToolLocks` 缺省，则在首次写入前初始化其 `entries` 数组，并追加明确指定的路径；若已有类别非合法对象，或 `entries` 非数组类型，则在首写前拒绝操作。其他类别保持不变。"
+        - "仅更新 `.foundation/file-registry.json` 与 `skill-family.managed-file-lock.json` 两份状态文件。工具锁内容不进入受管摘要，后续由原工具刷新内容不会因此引发受管漂移；路径、符号链接、已登记路径、状态文档及既有受管漂移的拒绝规则继续有效。中途发布失败时仍暴露原始 `publicationState`，不承诺双文件原子回滚。"
+        - "包版本与其他三单元同步前移至 0.24.0。Contracts 规格仍为 1.20.0，未新增合同对象、Harness 机制或报告种类；0.23.1 中仅锁步前移的历史说明保持原样。"
+    upgradeNotes: "三个 Foundation npm 包须精确锁定至 0.24.0 版本。新登记模式仅属本轮候选，非 0.23.0 已发布能力；实际采用以对应版本公开接口为准。完整消费者、初始化及发布资格仍待验证。"

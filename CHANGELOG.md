@@ -1,5 +1,24 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.24.0 locale=en baseline=sha256:ab4ce0e2c0eb82f9d7b97bd2d48a040965596785dab29dd8898dbe5730acd303 -->
+## [0.24.0] - 2026-10-07
+
+Engineering Kit 0.24.0 adds explicit persistent-tool-lock registration within the existing check relock transaction. The four top-level commands remain scaffold, adopt-plan, projection, and check. This note records the local lockstep candidate, not completed remote publication or real-consumer adoption.
+
+### Changed
+
+- The API registrationClass accepts only handwritten or trackedToolLocks; the CLI uses --registration-class. The default remains handwritten, including its existing automatic discovery when the files list is absent or empty.
+- The trackedToolLocks mode requires an explicit non-empty files list, supplied with --files in the CLI. Every path must identify an existing ordinary file inside the target. It does not discover tool locks automatically or infer tool semantics from names or content.
+- The same transaction initializes entries when classes.trackedToolLocks is absent, then appends the explicit paths. An existing malformed class or non-array entries is refused before the first write. Other classes remain unchanged.
+- Only .foundation/file-registry.json and skill-family.managed-file-lock.json are updated. Tool-lock content is excluded from managed hashes, so a later provider update does not itself cause managed drift. Existing path, symlink, prior-registration, state-document, and managed-drift refusals remain. A mid-publication failure still exposes publicationState; no atomic rollback of both documents is promised.
+- The package moves to 0.24.0 with the other three units. Contracts stays specification 1.20.0, with no new contract object, Harness mechanism, or report kind. Historical 0.23.1 notes remain unchanged.
+
+### Upgrade Notes
+
+Pin all three Foundation npm packages to exactly 0.24.0. The new registration mode belongs to this candidate and is not a published 0.23.0 capability; adoption depends on the corresponding released public interface. Complete consumer, initialization, and release qualification remain to be verified.
+<!-- release-skill:changelog:end version=0.24.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.23.0 locale=en baseline=sha256:6220b2be13af0cfb071f46ab481b1ecec5d1f0ce176cbb8cb6cc28ea9d0a7e3d -->
 ## [0.23.0] - 2026-09-26
 

@@ -1461,10 +1461,11 @@
   },
   {
    "id": "foundation.kit.relock",
-   "intent": "Run the controlled relock transaction: register newly handwritten files into .foundation/file-registry.json and recompute skill-family.managed-file-lock.json from the current bytes in one fail-closed operation.",
+   "intent": "Run the controlled relock transaction: register new handwritten files by default, or persistent tool-lock paths with explicit trackedToolLocks selection; update the registry and managed-file lock in the existing transaction without hashing tool-lock contents.",
    "useWhen": [
     "Need to admit a newly handwritten file into the closed world without hand-editing the registry",
-    "Need to recompute the managed-file lock from current bytes after registration"
+    "Need to recompute the managed-file lock from current bytes after registration",
+    "Explicitly register provider-generated persistent lock paths in the existing trackedToolLocks category without locking their contents"
    ],
    "doNotUseWhen": [
     "Need to legitimize drifted managed bytes (relock refuses drift)",
@@ -1472,7 +1473,8 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "Project root carrying .foundation/file-registry.json and skill-family.managed-file-lock.json"
+    "Project root carrying .foundation/file-registry.json and skill-family.managed-file-lock.json",
+    "registrationClass defaults to handwritten and accepts only handwritten or trackedToolLocks; CLI: --registration-class. trackedToolLocks requires an explicit non-empty files array (CLI --files: comma-separated paths)"
    ],
    "outputs": [
     "Relock report (kind skill-family.relock-report)"
@@ -1481,12 +1483,13 @@
     "Writes exactly two contained state documents: the registry and the managed-file lock"
    ],
    "failureSemantics": [
-    "Every refusal leaves the target untouched (zero writes)",
+    "Pre-write parameter, path, registration and drift validation refusals leave the target unchanged",
     "A half-updated state is never presented as success"
    ],
    "invariants": [
     "Adds no fifth top-level command; it runs as the check relock sub-action",
-    "The new lock binds the new registry bytes before either document is committed"
+    "The new lock binds the new registry bytes before either document is committed",
+    "Initialize entries within the same transaction when trackedToolLocks is absent; reject an existing non-object category or non-array entries without replacing malformed fields"
    ],
    "ownedByCaller": [
     "Reconciliation of drifted managed bytes before relocking"

@@ -837,6 +837,23 @@
     </span>
   </a>
 
+    <nav class="md-nav" aria-label="runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#本地-0240-候选的-core-版本接线" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        本地 0.24.0 候选的 core 版本接线
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
 </li>
 
       </ul>
@@ -2208,6 +2225,23 @@
     </span>
   </a>
 
+    <nav class="md-nav" aria-label="runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#本地-0240-候选的-core-版本接线" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        本地 0.24.0 候选的 core 版本接线
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
 </li>
 
       </ul>
@@ -2559,11 +2593,12 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <h3 id="scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs">scaffoldTarget / describeSkeletonFiles / describeSkeletonReferenceImplementation / normalizeSkeletonInputs<a class="headerlink" href="#scaffoldTarget--describeSkeletonFiles--describeSkeletonReferenceImplementation--normalizeSkeletonInputs" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>
-<li><code>scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, capabilities } = {})</code>（async）</li>
+<li><code>scaffoldTarget({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, engineering, capabilities = [] } = {})</code>（async）</li>
 <li><code>describeSkeletonFiles(inputs)</code>（async）</li>
 <li><code>describeSkeletonReferenceImplementation({ profile })</code>（async）</li>
 <li><code>normalizeSkeletonInputs({ projectId, projectName, profileId, licensingProfile, licensingVariant, rootBasename })</code></li>
-<li>输入：目标根、骨架选项（<code>projectId</code> 等）。</li>
+<li>输入：目标根、骨架选项（<code>projectId</code> 等）及可选 <code>engineering</code>。该参数属于本地 <code>0.24.0</code> 候选，正式 <code>0.23.0</code> 不支持；省略（<code>undefined</code>）保持原字节、文件集合与路径不变，<code>null</code>、空对象 <code>{}</code>、未知字段或非法引用均拒绝。<code>describeSkeletonFiles(inputs)</code> 与 <code>scaffoldTarget</code> 同源消费 <code>inputs.engineering</code>。</li>
+<li>工程声明沿用 Contracts 项目清单结构：<code>entries</code> 每项为 <code>name</code>、<code>form</code>、<code>physicalRef</code>，<code>form</code> 只接受 <code>skill_md</code> 或 <code>file</code>，前者须指向 <code>SKILL.md</code>。<code>releaseUnits</code> 每项为 <code>id</code>、<code>versionSource</code>，可选 <code>versionMirrors</code>；文本引用使用 <code>path</code> 与 <code>format: "text"</code>，JSON 引用另需 <code>format: "json"</code> 与非空 <code>jsonPointer</code>。依据真实业务入口和版本源声明，不取工程示例包、SDK 或 Profile 版本，也不从 <code>package.json</code> 推导 npm 分发。</li>
 <li>输出：精确集合的托管骨架文件（原子 + 路径收容）。<code>scaffoldTarget()</code> 的结果另含 <code>referenceImplementation</code>，字段固定为当前 <code>foundationVersion</code>、所选 <code>profile</code> 与由规范文件清单计算的 <code>skeletonDigest</code>。该身份用于比较，不表示 Audit 合规，也不要求存量项目逐字节复制参考骨架。骨架含两个目标侧手写种子（<code>handwritten</code> 类，adopt 永不覆写）：<code>SOURCE-OF-TRUTH.md</code>（唯一声明点、真源清单与生成谱系、运行与证据目录约定）与 <code>profile.json</code>（<code>foundation_profile</code> / <code>foundation_pin</code> 采用字段加只收紧方向的 overrides 示例）；<code>.gitignore</code> / <code>.projenrc.js</code> / file-registry 三处同步携带根级唯一忽略基线 <code>/site/</code>、<code>/.qoder/</code>、<code>/.artifacts/</code>、<code>/.runs/</code>、<code>/.evidence/</code>（嵌套同名目录不被忽略）。</li>
 <li>纯函数：<code>normalizeSkeletonInputs</code> 是；<code>describeSkeletonReferenceImplementation</code> 只读取包内许可证 Profile 并确定性计算身份；<code>scaffoldTarget</code> 落盘。</li>
 <li>副作用：在受收容目标创建文件（原子 + 收容）；目标非空则拒绝、不覆盖。</li>
@@ -2572,20 +2607,21 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li><code>since</code> / <code>stability</code>：既有骨架入口自 <code>0.2.0</code> / <code>stable</code>；<code>describeSkeletonReferenceImplementation</code> 与 scaffold 结果中的参考身份自 <code>0.17.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/scaffold.mjs</code>、<code>skeleton.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/scaffold.test.mjs</code>、<code>skeleton-contract.test.mjs</code>。</li>
-<li>调用方仍拥有的业务语义：业务项目内容（存量仓改用 <code>adopt-plan</code>）。</li>
+<li>初始生成边界：声明与清单摘要由同一骨架生成器写入项目清单与原受管锁，不增加文件集合。空目标仅检查合同与根内路径形态，允许声明业务作者稍后创建的文件；不确认引用已存在，不代写领域内容。真实源落盘后再做 declared 检查。Schema 允许仅声明 <code>entries</code> 或 <code>releaseUnits</code>，但缺失的另一 declared 分支仍为 <code>incomplete</code>；省略整个对象不表示声明完成。</li>
+<li>调用方仍拥有的业务语义：业务项目内容、真实入口与版本来源、事实不足的报告（存量仓改用 <code>adopt-plan</code>）。</li>
 </ul>
 <hr />
 <h2 id="adopt-plan-foundationkitadopt-plan">adopt-plan (foundation.kit.adopt-plan)<a class="headerlink" href="#adopt-plan-foundationkitadopt-plan" title="Permanent link">&para;</a></h2>
 <h3 id="planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories">planAdoption / buildProfileDraft / evaluateMigrationCompletion / validateException / assessLegacyExitList / findNestedRepositories<a class="headerlink" href="#planAdoption--buildProfileDraft--evaluateMigrationCompletion--validateException--assessLegacyExitList--findNestedRepositories" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名（节选）：</li>
-<li><code>planAdoption({ root, manifest, engineeringBaseline, compareSkeleton, ... } = {})</code>（async）</li>
+<li><code>planAdoption({ root, projectId, projectName, profileId, licensingProfile, licensingVariant, licensingProfileData, profilesRoot, identityProjections, engineering, engineeringBaseline, compareSkeleton, allowGitSpawn = true, now = Date.now() } = {})</code>（async）</li>
 <li><code>buildProfileDraft({ inputs, migrationManifest, writeSet, entries })</code></li>
 <li><code>evaluateMigrationCompletion({ ... })</code></li>
 <li><code>validateException(exception, index, nowMs)</code></li>
 <li><code>assessLegacyExitList(root, legacyItems)</code>（async）</li>
 <li><code>findNestedRepositories(entries)</code></li>
-<li>输入：目标根、迁移清单路径。工程基线比较是按需功能；库调用必须同时传入已验证的 <code>engineeringBaseline</code> 与 <code>compareSkeleton: true</code>，CLI 必须成对使用 <code>--engineering-baseline &lt;relative-json-path&gt;</code> 与 <code>--compare-skeleton</code>。</li>
+<li>输入：目标根、骨架选项与可选工程声明。<code>engineering</code> 为可选对象，属于本地 <code>0.24.0</code> 候选，正式 <code>0.23.0</code> 不支持；省略保持旧行为，传入 <code>null</code>、空对象 <code>{}</code>、未知字段或非法引用均拒绝。它调用同源的 <code>describeSkeletonFiles</code>，预测与 <code>scaffold</code> 相同的声明字节，输入合同见本页 scaffold 节。工程基线比较是独立的按需功能；库调用必须同时传入已验证的 <code>engineeringBaseline</code> 与 <code>compareSkeleton: true</code>，CLI 必须成对使用 <code>--engineering-baseline &lt;relative-json-path&gt;</code> 与 <code>--compare-skeleton</code>。</li>
 <li>输出：默认仍返回采用分类（<code>direct-adoption</code> / <code>compatibility-layer</code> / <code>keep-business</code> / <code>foundation-gap</code>）、完成判定、profile 草稿（kind=<code>skill-family.profile-draft</code>：预填 D-8 最小采用声明 + 空 overrides 示例，仅输出，不落盘；adoption-lock 形态已废弃）。显式启用比较时才增加 <code>engineeringBaselineComparison</code>：它包含基线身份、Foundation 参考身份，以及参考侧独有、目标侧独有、条目类型和文件类别四类结构差异；不输出合规、等价、严重程度、finding、action、waiver 或 exemption 结论，也不返回规则正文。</li>
 <li>纯函数：分类与评估函数为纯函数；<code>planAdoption</code> 含只读探测。</li>
 <li>副作用：<strong>严格只读</strong>——不写文件（临时文件也不写）、不 Git 写、不 rename、不触网；默认可能启动一条冻结参数的只读 Git 探测，传入 <code>allowGitSpawn: false</code> 可关闭该子进程。</li>
@@ -2594,21 +2630,25 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li><code>since</code> / <code>stability</code>：既有采用规划自 <code>0.2.0</code> / <code>stable</code>；工程基线结构比较自 <code>0.17.0</code> / <code>stable</code>，默认关闭。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/adopt-plan.mjs</code>、<code>migration.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/adopt-plan.test.mjs</code>、<code>migration.test.mjs</code>、<code>engineering-baseline-adopt-plan.test.mjs</code>、<code>cli.test.mjs</code>。</li>
-<li>调用方仍拥有的业务语义：存量业务代码的迁移决策（真正迁移执行由调用方负责）。</li>
+<li>计划边界：<code>engineering</code> 与 <code>engineeringBaseline</code> 独立，前者不取代后者的配对前提；能力目录查询不能混用工程声明。<code>writeSet</code>、<code>conflicts</code> 和 <code>complete</code> 不授权自动执行、不证明业务资格；部分声明缺失的另一 declared 分支仍为 <code>incomplete</code>。</li>
+<li>调用方仍拥有的业务语义：存量业务代码的迁移决策、真实声明来源与缺项处理（真正迁移执行由调用方负责）。</li>
 </ul>
+<p>本地 0.24.0 候选中，当目标工程的 <code>skill-family.project-manifest.json</code> 中存在 <code>engineering</code> 字段时，采用检查应调用已有的 <code>runCoreCheck</code> 进行验证；若该字段不存在，则沿用原有的 <code>runChecks</code> 作为 legacy 检查路径。计划输入中包含的 <code>engineering</code> 参数仅用于描述拟议生成内容，不能作为目标当前已采纳状态的依据，亦不可替代真实清单声明。任何畸形的工程声明均不得回退至通过状态，必须由核心检查机制直接拒绝。<code>migration.check.green</code> 的值来源于实际运行的检查报告，其结果反映的是当前检查阶段的真实状态，而非迁移完成或业务资格的证明。原冲突、待执行写入、旧实现退出、绑定及 <code>unit</code>、<code>integration</code>、<code>consumer</code>、<code>independentAudit</code> 四类证明的门槛要求保持不变，检查通过不等于迁移已完成，也不代表具备业务资格。</p>
 <hr />
 <h2 id="projection-foundationkitprojection">projection (foundation.kit.projection)<a class="headerlink" href="#projection-foundationkitprojection" title="Permanent link">&para;</a></h2>
 <h3 id="runProjection--loadProjectionManifest">runProjection / loadProjectionManifest<a class="headerlink" href="#runProjection--loadProjectionManifest" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>
-<li><code>runProjection({ root, manifest: manifestRelPath } = {})</code>（async）</li>
+<li><code>runProjection({ root, manifest: manifestInput, candidateRoot, faultInjector, preparedProjection, engineering } = {})</code>（async）</li>
 <li><code>loadProjectionManifest(rootAbs, manifestRelPath)</code>（async）</li>
-<li>输入：投影清单、目标根。</li>
-<li>输出：投影文件（仅在校验全部通过时写入）。</li>
+<li>输入：原投影清单、目标根，或可选 <code>engineering</code>。新模式属于本地 <code>0.24.0</code> 候选，正式 <code>0.23.0</code> 不支持；省略保留原 v1/v2 与 prepared 路径。<code>runProjection({ root: targetRoot, engineering })</code> 完整替换整个声明，不做深合并；调用方传完整已确认对象，保留仍需使用的旧 <code>entries</code> 和 <code>releaseUnits</code>。不能与 <code>manifest</code>、<code>candidateRoot</code> 或 <code>preparedProjection</code> 同传；<code>null</code>、<code>{}</code>、未知字段与非法引用拒绝。字段合同见本页 scaffold 节。</li>
+<li>输出：原模式的投影文件（仅在校验全部通过时写入）。工程模式只更新 <code>skill-family.project-manifest.json</code> 和 <code>skill-family.managed-file-lock.json</code>，保留非 <code>engineering</code> 字段、registry 与其他文件字节、其他锁条目、生成器、版本、<code>lockVersion</code> 与 mode，清单摘要由原生成器派生，同内容幂等。沿用 <code>schemaVersion: 2</code> 的 <code>skill-family.projection-receipt</code>；内存候选的 <code>candidate.root</code> 与 <code>manifest.location</code> 为 <code>null</code>，不新增状态文件。</li>
 <li>纯函数：<code>loadProjectionManifest</code> 是；<code>runProjection</code> 两阶段（全校验后才写，失败回滚）。</li>
-<li>副作用：在受收容目标写投影文件；不覆盖 handwritten 文件；任一校验失败零写。</li>
+<li>副作用：在受收容目标写投影文件，不覆盖 handwritten 文件；首写前的预检失败零写。工程模式的修改后验证与回滚范围见下述失败边界，不把中途失败称为从未写入。</li>
 <li>稳定错误码与 <code>details.kind</code>：未授权 / 手写冲突 / 越界 / 内容冲突抛 <code>KitError</code>（<code>rejected</code> / <code>unauthorized</code> 类 <code>kind</code>）。</li>
-<li>前置条件与信任锚：投影清单已登记（<code>PROJECTION_MANIFEST_PATH</code>）。</li>
+<li>前置条件与信任锚：原模式要求投影清单已登记（<code>PROJECTION_MANIFEST_PATH</code>）。工程模式要求现有普通根与有效普通 registry、项目清单、受管锁；清单和锁均在 registry 与 <code>managedFiles</code> 内声明受管，清单锁条目由 Engineering Kit 拥有。所有其他受管文件匹配原锁，无缺覆盖、重复或未拥有的锁条目；工程引用为根内现存普通文件。缺前提只拒绝该受管更新，不自动接管任意非空项目，不手写候选清单或锁掩盖漂移。</li>
+<li>工程模式失败边界：保留原始已核引用快照，重复读取不能替换基线；每次实际修改前及完成后重验。首写前拒绝不执行恢复写，未尝试输出的外来字节保留。实际尝试写入失败沿既有错误处理、验证与尽力回滚，仅恢复本模式实际尝试的路径；不承诺整次初始化事务、恶意并发或 ABA 安全。原 v2 完整闭包回滚合同不变。</li>
+<li>声明完整性：允许只传 <code>entries</code> 或 <code>releaseUnits</code>，缺失的另一 declared 分支仍为 <code>incomplete</code>，生成收据不证明静态检查、真实业务、正式发现或整体资格完成。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-engineering-kit/src/projection.mjs</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/projection.test.mjs</code>。</li>
@@ -2654,6 +2694,10 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>正例/负例测试：<code>packages/skill-family-engineering-kit/test/check.test.mjs</code>、<code>entry-check.test.mjs</code>、<code>core-check.test.mjs</code>、<code>check-equivalence.test.mjs</code>、<code>cli.test.mjs</code> 与 <code>professional-conclusion.test.mjs</code>。</li>
 <li>调用方仍拥有的业务语义：声明哪些单元和入口应受检、处置发现项、解释专业 code 与详情、向消费方传递结论路径，以及授权和管理结论输出根。自动修复仍由调用方负责。</li>
 </ul>
+<h4 id="本地-0240-候选的-core-版本接线">本地 0.24.0 候选的 core 版本接线<a class="headerlink" href="#本地-0240-候选的-core-版本接线" title="Permanent link">&para;</a></h4>
+<p>本地 0.24.0 候选对公开 <code>runCoreCheck</code> 作一项窄行为修复：目标真实声明 <code>engineering.releaseUnits</code> 时，版本类复用已有声明式版本读取逻辑，依据 <code>versionSource</code> 与 <code>versionMirrors</code> 检查文本或 JSON 格式的版本信息；私有工程的 <code>package.json</code> 不自动成为该业务单元的版本源或镜像，仅当被显式声明时方可参与版本认定。对于真正未声明版本、或仅包含合法 <code>entries</code> 的目标，仍沿用原有 legacy 版本检查路径。非法或重复的声明不回退为通过；声明的版本源或镜像缺失、不可读时如实失败。</p>
+<p>核心调度机制保持不变，共用原九类循环与报告流程，保留 Contracts 规格版本一致性检查及其他八类校验。声明的来源、镜像及各祖先路径均需先通过原树枚举与 <code>lstat</code> 安全预检，包括原不展开的工具目录；仅探查声明所涉路径，不引入新的目录遍历器。符号链接、FIFO 及其他不安全读集仍按原规则拒绝访问，禁止穿过根内符号链接目录；<code>completed</code>、<code>mechanism</code> 与 0/1/2 退出码如实传播。</p>
+<p>本次变更仅限于公开 core 在已声明版本目标上的适用性调整：公共 <code>runChecks</code> 缺省行为仍等同于显式 <code>policy: "legacy"</code>，涵盖原版本发现及 <code>full</code>/<code>only</code> 等价逻辑；显式 <code>policy: "declared"</code> 仍仅允许 <code>only: "version"</code>，维持原报告形式、不执行目标代码、不调用 Git 的边界。未新增任何公共 policy 值、API、CLI 参数、Schema 定义或包根导出，亦不在目标生成 shim 中复制检查逻辑。候选实现与局部验证不构成正式发布、业务资格或整体初始化完成的证明。</p>
 <hr />
 <h2 id="report-foundationkitreport">report (foundation.kit.report)<a class="headerlink" href="#report-foundationkitreport" title="Permanent link">&para;</a></h2>
 <h3 id="renderReportAction--checkReportAction">renderReportAction / checkReportAction<a class="headerlink" href="#renderReportAction--checkReportAction" title="Permanent link">&para;</a></h3>
@@ -2770,7 +2814,8 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 <li>签名：</li>
 <li><code>runCommand(command, options = {})</code>（async）—— 按 <code>TOP_LEVEL_COMMANDS</code> 分派，返回 <code>{ exitCode, output }</code></li>
 <li><code>cliMain(argv)</code>（async）—— CLI 入口</li>
-<li>输入：<code>argv</code>。</li>
+<li>输入：<code>argv</code>。本地 <code>0.24.0</code> 候选版本在原 <code>scaffold</code>、<code>adopt-plan</code>、<code>projection</code> 三个命令中接收 <code>--engineering &lt;JSON&gt;</code>，正式 <code>0.23.0</code> 不支持；<code>&lt;JSON&gt;</code> 为工程对象的 JSON 字符串，不是文件路径。省略该选项时保持旧行为；传入非法 JSON、<code>null</code>、空对象 <code>{}</code>、未知字段、非法引用或重复选项均被拒绝。</li>
+<li>参数组合：<code>adopt-plan</code> 的 <code>--engineering</code> 不能用于能力目录查询，也不替代必须与 <code>--compare-skeleton</code> 成对的 <code>--engineering-baseline</code>。<code>projection --engineering</code> 不能与 <code>--manifest</code> 同传；库调用还禁止与 <code>candidateRoot</code>、<code>preparedProjection</code> 同传。四个顶层命令及既有 check、host、proof 职责不变，当前 help 文本尚未列出这个新参数。</li>
 <li>输出：命令结果；退出码 <code>ok=0</code> / <code>findings=1</code> / <code>rejected=2</code>。</li>
 <li>纯函数：否（依命令产生受收容文件写入或只读探测）。</li>
 <li>副作用：依子动作而定：<code>scaffold</code> / <code>projection</code> 在受收容目标写入；<code>adopt-plan</code> 与普通 <code>check</code> 只读；<code>check relock</code> 是显式受控写事务；<code>check qualification</code> 预检通过后可能启动绑定的 executable。Foundation 自身不发起网络请求，但绑定的 executable 可能联网；Foundation 不提供 sandbox 或 egress 阻断，调用方与运行环境负责隔离。<code>REFUSED_MUTATION_FLAGS</code>（如 <code>--apply</code>）在 <code>parseOptions</code> 入口即拒。</li>

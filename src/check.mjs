@@ -195,15 +195,15 @@ function declaredPrerequisiteFinding(state, problems) {
   });
 }
 
-async function runDeclaredVersionChecks(rootAbs) {
+async function collectDeclaredVersionFacts(rootAbs, declaration) {
   const findings = [];
   const releaseUnits = [];
-  const selected = new Set(["version"]);
   let completed = false;
   let mechanism = false;
   let documentState = "missing";
   try {
-    const loaded = await loadEngineeringDeclaration(rootAbs, "releaseUnits");
+    const loaded = declaration ?? await loadEngineeringDeclaration(rootAbs, "releaseUnits");
+    if (loaded.cause) throw loaded.cause;
     documentState = loaded.state;
     if (loaded.state !== "ok") {
       findings.push(declaredPrerequisiteFinding(loaded.state, loaded.problems));
@@ -272,6 +272,12 @@ async function runDeclaredVersionChecks(rootAbs) {
     }));
   }
 
+  return { findings, releaseUnits, completed, mechanism, documentState };
+}
+
+async function runDeclaredVersionChecks(rootAbs) {
+  const { findings, releaseUnits, completed, mechanism, documentState } = await collectDeclaredVersionFacts(rootAbs);
+  const selected = new Set(["version"]);
   return {
     kind: "skill-family.check-report",
     schemaVersion: 1,
@@ -609,6 +615,11 @@ async function checkVersion(rootAbs, findings) {
   // The single-source consistency facts do not depend on the project manifest;
   // they are computed on every run (class independence).
   const singleSource = await checkVersionSingleSource(rootAbs, findings);
+  const contractsVersion = await checkContractsVersion(rootAbs, findings);
+  return { contractsVersion, singleSource };
+}
+
+async function checkContractsVersion(rootAbs, findings) {
   // Loads its own manifest without schema validation: schema conformance is
   // the contracts class's finding, the version class only needs the fact.
   const document = await loadDocument(rootAbs, PROJECT_MANIFEST_PATH, {
@@ -624,7 +635,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null, singleSource };
+    return null;
   }
   if (document.state === "parse-failed") {
     findings.push(
@@ -636,7 +647,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null, singleSource };
+    return null;
   }
   if (document.state === "incomplete") {
     findings.push(
@@ -648,7 +659,7 @@ async function checkVersion(rootAbs, findings) {
         { path: PROJECT_MANIFEST_PATH, documentState: document.state },
       ),
     );
-    return { contractsVersion: null, singleSource };
+    return null;
   }
   const declared = document.value.contracts.version;
   if (declared !== CONTRACTS_VERSION) {
@@ -662,7 +673,18 @@ async function checkVersion(rootAbs, findings) {
       ),
     );
   }
-  return { contractsVersion: declared, singleSource };
+  return declared;
+}
+
+async function checkCoreDeclaredVersion(rootAbs, findings, declaration) {
+  const contractsVersion = await checkContractsVersion(rootAbs, findings);
+  const facts = await collectDeclaredVersionFacts(rootAbs, declaration);
+  findings.push(...facts.findings);
+  return {
+    data: { contractsVersion, policy: "declared", documentState: facts.documentState, releaseUnits: facts.releaseUnits },
+    completed: facts.completed,
+    mechanism: facts.mechanism,
+  };
 }
 
 async function checkDocs(rootAbs, findings) {
@@ -1111,6 +1133,16 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
     throw invalidParamsError(`--only must be one of: ${CHECK_CLASSES.join(", ")}`, { value: only });
   }
   const rootAbs = await resolveTargetRoot(root ?? ".");
+  return runCheckClasses({ rootAbs, allowGitSpawn, only, profilesRoot });
+}
+
+// Internal core composition only; not exported by the package root or CLI.
+// The public runChecks policy intake and legacy/declared reports stay intact.
+export async function runCoreCheckClasses({ rootAbs, allowGitSpawn, profilesRoot }, declaration) {
+  return runCheckClasses({ rootAbs, allowGitSpawn, profilesRoot }, declaration);
+}
+
+async function runCheckClasses({ rootAbs, allowGitSpawn, only, profilesRoot }, declaration) {
   const findings = [];
   const selected = new Set(only === undefined ? CHECK_CLASSES : [only]);
   const completed = new Set();
@@ -1120,7 +1152,9 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
     contracts: () => checkContracts(rootAbs, findings),
     drift: () => checkDrift(rootAbs, findings),
     closure: () => checkClosure(rootAbs, findings),
-    version: () => checkVersion(rootAbs, findings),
+    version: () => declaration === undefined
+      ? checkVersion(rootAbs, findings)
+      : checkCoreDeclaredVersion(rootAbs, findings, declaration),
     docs: () => checkDocs(rootAbs, findings),
     git: () => checkGit(rootAbs, findings, allowGitSpawn),
     identity: () => checkIdentity(rootAbs, findings, profilesRoot),
@@ -1141,10 +1175,16 @@ export async function runChecks({ root, allowGitSpawn = true, only, profilesRoot
     if (!selected.has(name)) continue;
     try {
       const result = await runners[name]();
-      completed.add(name);
+      if (name === "version" && declaration !== undefined) {
+        if (result.completed) completed.add(name);
+        mechanismFailure ||= result.mechanism;
+        classData.version = result.data;
+      } else {
+        completed.add(name);
+      }
       if (name === "closure") classData.closure = result;
       if (name === "git") classData.git = result;
-      if (name === "version") classData.version = result;
+      if (name === "version" && declaration === undefined) classData.version = result;
       if (name === "boundary") classData.boundary = result;
       if (name === "platform") classData.platform = result;
       if (name === "identity") {

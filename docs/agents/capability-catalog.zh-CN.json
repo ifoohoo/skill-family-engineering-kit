@@ -1460,10 +1460,11 @@
   },
   {
    "id": "foundation.kit.relock",
-   "intent": "运行受控 relock 事务：将新手写文件登记进 .foundation/file-registry.json，并以当前字节重算 skill-family.managed-file-lock.json，单次 fail-closed 操作",
+   "intent": "运行受控 relock 事务：默认登记新增手写文件；显式选择 trackedToolLocks 时登记持久工具锁路径，并在原事务中同步 registry 与受管文件锁。工具锁内容不纳入受管摘要。",
    "useWhen": [
     "需要把新手写文件纳入闭域而不手改 registry",
-    "需要在登记后以当前字节重算受管文件锁"
+    "需要在登记后以当前字节重算受管文件锁",
+    "需要将原工具生成的持久锁显式登记到既有 trackedToolLocks 类别，且不锁定其内容"
    ],
    "doNotUseWhen": [
     "需要合法化已漂移的受管字节（relock 拒绝漂移）",
@@ -1471,7 +1472,8 @@
    ],
    "prerequisites": [],
    "inputs": [
-    "携带 .foundation/file-registry.json 与 skill-family.managed-file-lock.json 的项目根"
+    "携带 .foundation/file-registry.json 与 skill-family.managed-file-lock.json 的项目根",
+    "registrationClass 默认为 handwritten；仅可选 handwritten 或 trackedToolLocks，CLI 对应 --registration-class。trackedToolLocks 必须传非空 files 显式清单（CLI --files 为逗号分隔路径）"
    ],
    "outputs": [
     "relock 报告（kind skill-family.relock-report）"
@@ -1480,12 +1482,13 @@
     "只写两个受收容状态文档：registry 与受管文件锁"
    ],
    "failureSemantics": [
-    "每次拒绝都零写入，目标不被触碰",
+    "写入前的参数、路径、登记与漂移检查拒绝时零写入",
     "半更新状态绝不呈现为成功"
    ],
    "invariants": [
     "不新增第五个顶层命令，落在 check relock 子动作",
-    "新锁先绑定新 registry 字节，再提交任一文档"
+    "新锁先绑定新 registry 字节，再提交任一文档",
+    "trackedToolLocks 缺省时在同一事务初始化 entries 数组；已有类别不是对象或 entries 不是数组时拒绝，不替换异常字段"
    ],
    "ownedByCaller": [
     "relock 前对已漂移受管字节的对账"

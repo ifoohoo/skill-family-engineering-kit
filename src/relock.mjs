@@ -25,7 +25,8 @@ import {
  * to register it drifted the managed-file-lock entry that binds the registry
  * itself — a structural deadlock in which every fix attempt created the next
  * violation. Relock breaks the deadlock with one transactional sub-action:
- * register the new handwritten files into `.foundation/file-registry.json`
+ * register new handwritten files (the default), or an explicit list of
+ * persistent tool locks, into `.foundation/file-registry.json`
  * AND recompute `skill-family.managed-file-lock.json` from the current bytes
  * of every managed file, in a single fail-closed operation.
  *
@@ -101,7 +102,17 @@ async function readContainedBytes(rootAbs, rel) {
  * Runs the controlled relock transaction over one target.
  * Returns the relock report; throws on every refusal (fail closed).
  */
-export async function runRelock({ root, files = null } = {}) {
+export async function runRelock({ root, files = null, registrationClass = "handwritten" } = {}) {
+  if (registrationClass !== "handwritten" && registrationClass !== "trackedToolLocks") {
+    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "relock registrationClass must be handwritten or trackedToolLocks", {
+      field: "registrationClass",
+    });
+  }
+  if (registrationClass === "trackedToolLocks" && (!Array.isArray(files) || files.length === 0)) {
+    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "trackedToolLocks registration requires an explicit non-empty files array", {
+      field: "files",
+    });
+  }
   const rootAbs = await resolveTargetRoot(root ?? ".");
   const facts = await loadTargetFacts(rootAbs);
 
@@ -209,15 +220,19 @@ export async function runRelock({ root, files = null } = {}) {
       path: FILE_REGISTRY_PATH,
     });
   }
-  if (!isPlainObject(registryDoc.classes.handwritten) || !Array.isArray(registryDoc.classes.handwritten.entries)) {
+  const categoryAbsent = !Object.hasOwn(registryDoc.classes, registrationClass);
+  const category = registryDoc.classes[registrationClass];
+  if (!(registrationClass === "trackedToolLocks" && categoryAbsent) &&
+      (!isPlainObject(category) || !Array.isArray(category.entries))) {
     refuse(
       KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED,
-      `relock requires a classes.handwritten.entries array to register into: ${FILE_REGISTRY_PATH}`,
+      `relock requires a classes.${registrationClass}.entries array to register into: ${FILE_REGISTRY_PATH}`,
       { path: FILE_REGISTRY_PATH },
     );
   }
   const newRegistryDoc = JSON.parse(JSON.stringify(registryDoc));
-  newRegistryDoc.classes.handwritten.entries = [...newRegistryDoc.classes.handwritten.entries, ...candidates];
+  if (categoryAbsent) newRegistryDoc.classes[registrationClass] = { entries: [] };
+  newRegistryDoc.classes[registrationClass].entries = [...newRegistryDoc.classes[registrationClass].entries, ...candidates];
   const registryBytes = Buffer.from(jsonString(newRegistryDoc), "utf8");
 
   // ---- lock: validate the surviving state, then recompute --------------------
@@ -391,7 +406,7 @@ export async function runRelock({ root, files = null } = {}) {
  * the CLI maps it to exit 2 — relock has no findings state: it either
  * commits the whole transaction or refuses with zero writes.
  */
-export async function relockAction({ root, files = null } = {}) {
-  const output = await runRelock({ root, files });
+export async function relockAction({ root, files = null, registrationClass = "handwritten" } = {}) {
+  const output = await runRelock({ root, files, registrationClass });
   return { status: "ok", output };
 }

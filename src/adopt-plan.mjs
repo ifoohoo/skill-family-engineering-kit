@@ -8,6 +8,7 @@ import {
 } from "skill-family-contracts";
 import { digestBytes, readFileContained } from "skill-family-harness-node";
 import { runChecks } from "./check.mjs";
+import { runCoreCheck } from "./core-check.mjs";
 import { probeGitFacts, probeGitState } from "./gitprobe.mjs";
 import {
   assessAdoptionBinding,
@@ -381,6 +382,7 @@ export async function planAdoption({
   licensingProfileData,
   profilesRoot,
   identityProjections,
+  engineering,
   engineeringBaseline,
   compareSkeleton,
   allowGitSpawn = true,
@@ -409,6 +411,7 @@ export async function planAdoption({
     licensingProfileData,
     profilesRoot,
     identityProjections,
+    engineering,
   });
 
   const entryByPath = new Map(entries.map((entry) => [entry.path, entry]));
@@ -642,12 +645,20 @@ export async function planAdoption({
     mismatched: conflicts.filter((conflict) => conflict.kind === "managed-drift").map((conflict) => conflict.path).sort(),
   };
   const pendingWrites = writeSet.filter((item) => item.action !== "unchanged").length;
+  const targetHasEngineering = Boolean(
+    facts.projectManifest && Object.hasOwn(facts.projectManifest, "engineering"),
+  );
   let checkGreen = false;
   let checkNote = null;
   try {
     // check is diagnosis-only (read-only git probes included), so running it
     // inside the read-only plan keeps the zero-byte-change promise.
-    const checkReport = await runChecks({ root: rootAbs, allowGitSpawn, profilesRoot });
+    // Only the current target manifest selects core; proposed engineering
+    // inputs describe future writes and are not an adopted declaration.
+    const checkTarget = targetHasEngineering
+      ? runCoreCheck
+      : runChecks;
+    const checkReport = await checkTarget({ root: rootAbs, allowGitSpawn, profilesRoot });
     checkGreen = checkReport.ok === true;
   } catch (cause) {
     checkNote = cause?.message ?? "check gate could not run";
@@ -804,8 +815,10 @@ export async function planAdoption({
     verificationPlan: [
       {
         step: 1,
-        command: "sf-kit check --root <target>",
-        purpose: "diagnose contracts, drift, closure, versions, doc facts, and git pre-state",
+        command: targetHasEngineering
+          ? "runCoreCheck({ root: targetRoot, allowGitSpawn, profilesRoot })"
+          : "sf-kit check --root <target>",
+        purpose: "diagnose the current target through its actual manifest; import runCoreCheck from the selected skill-family-engineering-kit SDK when engineering is present",
       },
       {
         step: 2,
@@ -814,8 +827,8 @@ export async function planAdoption({
       },
       {
         step: 3,
-        command: "sf-kit check --root <target>",
-        purpose: "re-diagnose after projection; the kit never auto-fixes any finding",
+        command: "if the current target manifest has engineering: runCoreCheck({ root: targetRoot, allowGitSpawn, profilesRoot }); otherwise: sf-kit check --root <target>",
+        purpose: "re-read skill-family.project-manifest.json after projection and select the existing check from that actual state, never from planned engineering; the kit never auto-fixes any finding",
       },
     ],
     policy:
