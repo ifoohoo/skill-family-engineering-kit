@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.24.1 locale=zh-CN baseline=sha256:0d0b6cccd46c69014e89efa21677ef015ccd3085f0fd07e8021b364b1c1f47e6 -->
+## [0.24.1] - 2026-10-12
+
+Engineering Kit 0.24.1 仅随 Foundation 文档补丁按既有四单元合同锁步前移，没有新增能力、API、Schema、协议或机制。
+
+### 变更
+
+- 仅更新包版本和相应受管版本派生；现有能力、参数与失败边界保持不变。
+
+### 升级说明
+
+三个 Foundation npm 包须精确锁定同版，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理；消费以实际发布版本的公开接口和来源为准，本说明不替代发布后验证。
+<!-- release-skill:changelog:end version=0.24.1 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.24.0 locale=zh-CN baseline=sha256:0ae5e1d34d13be6d56f72e4c77ab44e4d24e0e4d5f562ab424d104795db770eb -->
 ## [0.24.0] - 2026-10-07
 

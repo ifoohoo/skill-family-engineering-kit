@@ -4,26 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.24.0 -->
+<!-- release-skill:release-version: 0.24.1 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.24.0** (2026-10-07)
+**0.24.1** (2026-10-12)
 
-Engineering Kit 0.24.0 adds explicit persistent-tool-lock registration within the existing check relock transaction. The four top-level commands remain scaffold, adopt-plan, projection, and check. This note records the local lockstep candidate, not completed remote publication or real-consumer adoption.
+Engineering Kit 0.24.1 advances only to keep the existing four-unit lockstep contract for the Foundation documentation patch. It adds no capability, API, Schema, protocol, or mechanism.
 
 **Changed**
 
-- The API registrationClass accepts only handwritten or trackedToolLocks; the CLI uses --registration-class. The default remains handwritten, including its existing automatic discovery when the files list is absent or empty.
-- The trackedToolLocks mode requires an explicit non-empty files list, supplied with --files in the CLI. Every path must identify an existing ordinary file inside the target. It does not discover tool locks automatically or infer tool semantics from names or content.
-- The same transaction initializes entries when classes.trackedToolLocks is absent, then appends the explicit paths. An existing malformed class or non-array entries is refused before the first write. Other classes remain unchanged.
-- Only .foundation/file-registry.json and skill-family.managed-file-lock.json are updated. Tool-lock content is excluded from managed hashes, so a later provider update does not itself cause managed drift. Existing path, symlink, prior-registration, state-document, and managed-drift refusals remain. A mid-publication failure still exposes publicationState; no atomic rollback of both documents is promised.
-- The package moves to 0.24.0 with the other three units. Contracts stays specification 1.20.0, with no new contract object, Harness mechanism, or report kind. Historical 0.23.1 notes remain unchanged.
+- Update only the package coordinate and its managed version projections; existing capabilities, parameters, and failure boundaries remain unchanged.
 
 **Upgrade Notes**
 
-Pin all three Foundation npm packages to exactly 0.24.0. The new registration mode belongs to this candidate and is not a published 0.23.0 capability; adoption depends on the corresponding released public interface. Complete consumer, initialization, and release qualification remain to be verified.
+Pin the three Foundation npm packages to the exact same version and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Use the actual published version's public interfaces and sources; this note does not replace post-publish verification.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -66,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Version 0.24.0 is the local source candidate and is not yet formally published. Version 0.23.0 remains the published package. Build all three tarballs into one temporary directory and install those exact files for a candidate check:
+This package version is 0.24.1; version 0.24.0 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -74,25 +70,25 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.24.0.tgz" "$pack_dir/skill-family-harness-node-0.24.0.tgz" "$pack_dir/skill-family-engineering-kit-0.24.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.24.1.tgz" "$pack_dir/skill-family-harness-node-0.24.1.tgz" "$pack_dir/skill-family-engineering-kit-0.24.1.tgz")
 ```
 
-After 0.24.0 is formally published, use the registry coordinate:
+The registry installation below requires exact version 0.24.1 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.24.0
-npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.24.1
+npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.24.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help`.
 
-### Engineering declarations in the local 0.24.0 candidate
+### Engineering declarations (available since 0.24.0)
 
-The optional `engineering` input is implemented in the local `0.24.0` candidate. Published `0.23.0` does not support it. Use the already selected SDK only after confirming its actual public interfaces and exact lockstep source for all three Foundation packages; candidate verification and post-release adoption are separate facts. Omitting the input preserves existing bytes and paths. `null`, `{}`, unknown fields, and invalid references are rejected.
+The optional `engineering` input has been available since `0.24.0`; `0.23.0` does not support it. Use the already selected SDK only after confirming its actual public interfaces and exact lockstep source for all three Foundation packages; candidate verification and post-release adoption are separate facts. Omitting the input preserves existing bytes and paths. `null`, `{}`, unknown fields, and invalid references are rejected.
 
 Construct `engineering` from the project's actual business entries and release units. Each `entries` member has `name`, `form`, and `physicalRef`; `form` is either `skill_md` or `file`, and `skill_md` must point to `SKILL.md`. Each `releaseUnits` member has `id` and `versionSource`, with optional `versionMirrors`. A text version reference has `path` and `format: "text"`; a JSON reference has `path`, `format: "json"`, and a non-empty `jsonPointer`. Use actual business version sources, not the private skeleton example package, SDK version, or Profile version. The presence of `package.json` does not establish npm distribution. No separate declaration input file is required.
 
@@ -125,11 +121,11 @@ skill-family-kit projection --root <target> --engineering <JSON>
 
 If facts are incomplete, report the missing facts. A declaration may contain only `entries` or only `releaseUnits`, but the absent declared-check branch remains `incomplete`. Once the real business and version files exist, use the official managed update and the existing core, declared version, and declared entry checks. Generation, a read-only plan, static checks, formal host discovery, real business execution, independent semantic review, and overall qualification remain separate facts. Omission preserves old behavior; it does not mean declarations are complete.
 
-The local 0.24.0 candidate makes a narrow change to `runCoreCheck`: when a target explicitly declares `engineering.releaseUnits`, the core reuses the existing declared reader for `versionSource` and `versionMirrors` (text or JSON), applying the same validation logic. A private `package.json` within the engineering scope is not treated as an implicit source or mirror for that business unit. It is checked for that unit only when explicitly declared. Targets with no version declaration, or only valid `entries`, continue to use the legacy version check. Invalid or duplicate declarations cannot fall back to success. Missing or unreadable declared sources or mirrors fail visibly.
+Since 0.24.0, `runCoreCheck` selects the applicable version-check path from the target declarations: when a target explicitly declares `engineering.releaseUnits`, the core reuses the existing declared reader for `versionSource` and `versionMirrors` (text or JSON), applying the same validation logic. A private `package.json` within the engineering scope is not treated as an implicit source or mirror for that business unit. It is checked for that unit only when explicitly declared. Targets with no version declaration, or only valid `entries`, continue to use the legacy version check. Invalid or duplicate declarations cannot fall back to success. Missing or unreadable declared sources or mirrors fail visibly.
 
 The nine-class loop and report assembly are preserved, maintaining Contracts specification-version compatibility and the integrity of the other eight classes. Declared sources, mirrors, and their ancestral paths are included in the preflight check via the original tree enumeration and `lstat` safety validation, including paths inside opaque tooling directories. Only declared paths are probed; no new directory walker is introduced. Symlinks, FIFOs, and unsafe ancestor paths remain rejected under the original rules, including in-root symlinks. Completion status, mechanism failures, and exit codes 0/1/2 are propagated accurately.
 
-Public `runChecks` defaults to `policy: "legacy"`. Its original findings and full/only equivalence remain unchanged. Explicit `policy: "declared"` still requires `only: "version"` and preserves its report structure, zero-target execution semantics, and zero-Git boundary. No new public policy value, API, CLI option, Schema definition, or package-root export is added. No checker is copied into the generated target shim. The candidate implementation does not establish publication readiness, business qualification, or complete initialization. This update reflects only a narrow, targeted change in core behavior for targets with declared versions; standalone `runChecks` retains its documented behavior.
+Public `runChecks` defaults to `policy: "legacy"`. Its original findings and full/only equivalence remain unchanged. Explicit `policy: "declared"` still requires `only: "version"` and preserves its report structure, zero-target execution semantics, and zero-Git boundary. No new public policy value, API, CLI option, Schema definition, or package-root export is added. No checker is copied into the generated target shim. Local verification does not establish publication readiness, business qualification, or complete initialization. This update reflects only a narrow, targeted change in core behavior for targets with declared versions; standalone `runChecks` retains its documented behavior.
 
 ### Three adoption journeys
 
@@ -271,7 +267,7 @@ The caller owns workload semantics, candidate-to-payload binding, domain asserti
 
   Engineering mode retains the originally verified reference snapshots and rechecks them before each actual mutation and after completion; repeated reads cannot replace the baseline. A rejection before the first write performs no restoration writes, and foreign bytes on an output never attempted by this mode are preserved. If an actual output write is attempted and fails, the existing error, verification, and best-effort rollback path restores only outputs this mode actually attempted. This does not promise a transaction for the whole initialization, hostile concurrency, or ABA safety; the existing v2 complete-closure rollback contract remains unchanged.
 - Ordinary `check` is read-only and has no write calls or `--fix/--apply/--repair` modes (such flags are rejected at the entry point). By default it may spawn one frozen read-only Git status probe; the CLI `--no-git-spawn` (or API `allowGitSpawn: false`) disables that probe. `check relock` is the explicit controlled write transaction; `check qualification` may spawn a bound executable after preflight. Git precondition state uses only filesystem facts plus at most one read-only `git status --porcelain=2` with a frozen parameter vector (`--no-optional-locks` + `GIT_OPTIONAL_LOCKS=0`, no index refresh).
-- In the unreleased declared branch, the two pure check functions remain read-only and do not probe Git. An explicitly requested conclusion is the only added persistent effect and is performed by the two existing wrappers through exclusive creation.
+- In the declared branch, the two pure check functions remain read-only and do not probe Git. An explicitly requested conclusion is the only added persistent effect and is performed by the two existing wrappers through exclusive creation.
 
 ## Error Codes and Exit Codes
 

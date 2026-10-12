@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.24.1 locale=en baseline=sha256:60780ae0d34a8e8fcc016ebb188586876b9c31ceafb0c02a826db8e449e43729 -->
+## [0.24.1] - 2026-10-12
+
+Engineering Kit 0.24.1 advances only to keep the existing four-unit lockstep contract for the Foundation documentation patch. It adds no capability, API, Schema, protocol, or mechanism.
+
+### Changed
+
+- Update only the package coordinate and its managed version projections; existing capabilities, parameters, and failure boundaries remain unchanged.
+
+### Upgrade Notes
+
+Pin the three Foundation npm packages to the exact same version and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Use the actual published version's public interfaces and sources; this note does not replace post-publish verification.
+<!-- release-skill:changelog:end version=0.24.1 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.24.0 locale=en baseline=sha256:ab4ce0e2c0eb82f9d7b97bd2d48a040965596785dab29dd8898dbe5730acd303 -->
 ## [0.24.0] - 2026-10-07
 
