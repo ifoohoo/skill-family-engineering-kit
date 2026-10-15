@@ -1460,6 +1460,54 @@
    ]
   },
   {
+   "id": "foundation.kit.host-loading-check",
+   "intent": "Statically check whether Skill files under a project .agents/skills tree would load under calibrated Codex CLI 0.154.0 rules",
+   "useWhen": [
+    "Need to inspect project .agents/skills load format, ignored optional metadata, product filtering, implicit invocation, disablement, and uncovered cases before handing Skills to Codex",
+    "Need to reuse Foundation's central calibration instead of launching a real host per family"
+   ],
+   "doNotUseWhen": [
+    "Need to inspect user, system, admin, or ancestor plugin skill roots",
+    "Need to prove real install, session selection, or business execution",
+    "Need to run a target Skill, hook, script, model, or network call"
+   ],
+   "prerequisites": [
+    "Caller supplies an absolute project working directory",
+    "hostId resolves to codex, hostVersion is 0.154.0, and pathCategory is codex-project-skills"
+   ],
+   "inputs": [
+    "Absolute project working directory root",
+    "hostId, hostVersion, and pathCategory",
+    "Optional ordered activationRules (name XOR path plus enabled)"
+   ],
+   "outputs": [
+    "host-loading-check report (kind skill-family.host-loading-check-report)",
+    "Exit 0 means the requested scope completed with no blocking findings; 1 means proven blocking or missing entries; 2 means input, mechanism, or coverage is incomplete"
+   ],
+   "sideEffects": [
+    "None (read-only: no file or temp writes, no process spawn, no network)"
+   ],
+   "failureSemantics": [
+    "Missing discovery root or no SKILL.md returns 1",
+    "Unknown version, unknown pathCategory, illegal selectors, rewritten .agents/skills mapping, directory-symlink mechanism limits, and uncovered interface asset paths return 2",
+    "Bad optional agents/openai.yaml is recorded as ignored for the whole document and does not fail skill loading",
+    "policy.products [chatgpt] is filtered from the Codex discoverable set; [codex] is kept; allow_implicit_invocation=false may still be enabled"
+   ],
+   "invariants": [
+    "Adds no fifth top-level command; it runs as the check host-loading sub-action",
+    "Same-name different paths are all retained",
+    "enabled is unknown when the caller omits activationRules"
+   ],
+   "ownedByCaller": [
+    "Remediation of blocking findings",
+    "Consumer verification on a published package"
+   ],
+   "routeElsewhere": [
+    "Real-host qualification: check qualification",
+    "Foundation entry contract: check entries"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "intent": "Run the controlled relock transaction: register new handwritten files by default, or persistent tool-lock paths with explicit trackedToolLocks selection; update the registry and managed-file lock in the existing transaction without hashing tool-lock contents.",
    "useWhen": [

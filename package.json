@@ -8,8 +8,9 @@
     "url": "https://github.com/ifoohoo/skill-family-engineering-kit/issues"
   },
   "dependencies": {
-    "skill-family-contracts": "0.24.1",
-    "skill-family-harness-node": "0.24.1"
+    "skill-family-contracts": "0.25.0",
+    "skill-family-harness-node": "0.25.0",
+    "yaml": "2.9.0"
   },
   "description": "Build-time scaffold, adoption planning, projection, and checks.",
   "engines": {
@@ -51,7 +52,7 @@
     "url": "https://github.com/ifoohoo/skill-family-engineering-kit.git"
   },
   "type": "module",
-  "version": "0.24.1",
+  "version": "0.25.0",
   "scripts": {
     "check": "node --test",
     "test": "node --test"

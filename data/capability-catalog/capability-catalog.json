@@ -969,6 +969,34 @@
    ]
   },
   {
+   "id": "foundation.kit.host-loading-check",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.25.0",
+   "stability": "candidate",
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent",
+   "adoptionScopes": ["engineering-kit"],
+   "entrypoints": [
+    "runHostLoadingCheck (packages/skill-family-engineering-kit/src/host-loading-check.mjs)",
+    "checkHostLoadingAction (packages/skill-family-engineering-kit/src/host-loading-check.mjs)",
+    "HOST_LOADING_CHECK_REPORT_KIND (packages/skill-family-engineering-kit/src/host-loading-check.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/host-loading-check.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs",
+    "packages/skill-family-engineering-kit/src/index.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/host-loading-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/cli.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/host-loading-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/cli.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "package": "skill-family-engineering-kit",
    "layer": "engineering-kit",

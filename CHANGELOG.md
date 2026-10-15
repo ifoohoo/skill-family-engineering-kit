@@ -1,5 +1,23 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.25.0 locale=en baseline=sha256:94f4c9be64b930538ffaccf847dadf49baad796b513c142205a18f631d50e66c -->
+## [0.25.0] - 2026-10-15
+
+Engineering Kit 0.25.0 adds the public function `runHostLoadingCheck` and the CLI sub-action `skill-family-kit check host-loading` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The check covers only Codex CLI 0.154.0 project `.agents/skills`. Unknown coverage returns exit code 2. A static result does not prove install, session selection, or business execution.
+
+### Changed
+
+- Add the public function `runHostLoadingCheck` and the CLI `skill-family-kit check host-loading`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first.
+- Only `hostId=codex`, `hostVersion=0.154.0`, and `pathCategory=codex-project-skills` are calibrated, and that category's relative path must remain `.agents/skills`. The check statically reads `SKILL.md` and the optional Codex 0.154.0 skill metadata YAML under `agents/` beside `SKILL.md`. It does not start a host, model, hook, or script, and writes nothing.
+- Other hosts or versions, or an unknown path category, return exit code 2. A missing skill entry, or a scope that contains only product-filtered targets, returns 1. A static pass does not prove real install, session selection, or business execution.
+- The package moves to 0.25.0 with the other three units. Contracts specification remains 1.20.0. Published 0.24.1 capabilities are unchanged and are not redone.
+
+### Upgrade Notes
+
+Pin the three Foundation npm packages to exactly 0.25.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. A static check pass does not prove real install, session selection, or business execution. This note does not replace post-publish verification.
+<!-- release-skill:changelog:end version=0.25.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.24.1 locale=en baseline=sha256:60780ae0d34a8e8fcc016ebb188586876b9c31ceafb0c02a826db8e449e43729 -->
 ## [0.24.1] - 2026-10-12
 

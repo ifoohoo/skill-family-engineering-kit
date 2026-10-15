@@ -1459,6 +1459,54 @@
    ]
   },
   {
+   "id": "foundation.kit.host-loading-check",
+   "intent": "按 Codex CLI 0.154.0 已校准规则，只读检查项目根 .agents/skills 内 Skill 是否会被宿主当作可加载条目",
+   "useWhen": [
+    "需要在把 Skill 交给 Codex 之前核对项目 .agents/skills 的加载格式、忽略、过滤、隐式调用、禁用和未覆盖项",
+    "需要复用 Foundation 集中校准，而不是每个技能族各自启动真实宿主"
+   ],
+   "doNotUseWhen": [
+    "需要检查用户全局、系统、管理员或祖先插件技能根",
+    "需要证明真实安装、会话选择或业务执行已经成功",
+    "需要运行目标 Skill、hook、脚本、模型或联网"
+   ],
+   "prerequisites": [
+    "调用方给出绝对项目工作目录",
+    "hostId 可解析为 codex，hostVersion 为 0.154.0，pathCategory 为 codex-project-skills"
+   ],
+   "inputs": [
+    "绝对项目工作目录 root",
+    "hostId、hostVersion、pathCategory",
+    "可选有序 activationRules（name 或 path 与 enabled）"
+   ],
+   "outputs": [
+    "host-loading-check 报告（kind skill-family.host-loading-check-report）",
+    "退出码 0 表示请求范围完整且无阻断发现；1 表示已证实阻断或缺少入口；2 表示输入、机制或覆盖未完成"
+   ],
+   "sideEffects": [
+    "无（只读：不写文件或临时文件，不启动进程，不联网）"
+   ],
+   "failureSemantics": [
+    "缺发现根或没有 SKILL.md 返回 1",
+    "未知版本、未知 pathCategory、非法选择器、.agents/skills 映射被改写、目录符号链接机制边界、界面资产路径未覆盖返回 2",
+    "坏的可选 agents/openai.yaml 记为 ignored，整份元信息忽略，不作为技能加载失败",
+    "policy.products [chatgpt] 从 Codex 可发现集合过滤；[codex] 保留；allow_implicit_invocation=false 仍可 enabled"
+   ],
+   "invariants": [
+    "不新增第五个顶层命令，落在 check host-loading 子动作",
+    "同名不同路径全部保留",
+    "缺省启用规则时 enabled 未知"
+   ],
+   "ownedByCaller": [
+    "对阻断发现的整改",
+    "正式发布包上的消费者验收"
+   ],
+   "routeElsewhere": [
+    "真实宿主资格：check qualification",
+    "Foundation 入口契约：check entries"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "intent": "运行受控 relock 事务：默认登记新增手写文件；显式选择 trackedToolLocks 时登记持久工具锁路径，并在原事务中同步 registry 与受管文件锁。工具锁内容不纳入受管摘要。",
    "useWhen": [

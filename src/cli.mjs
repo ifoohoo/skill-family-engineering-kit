@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { readFileContained, resolveContained } from "skill-family-harness-node";
 import { bundledProfilesRoot } from "./licensing.mjs";
 import { checkEntriesAction } from "./entry-check.mjs";
+import { checkHostLoadingAction } from "./host-loading-check.mjs";
 import { relockAction } from "./relock.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
 import {
@@ -79,6 +80,9 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                显式资格子动作: check qualification 仅在显式提供
                capability/request/bindings/native 后适配目录声明的能力特定入口，
                可在预检后调用能力特定的原生宿主。
+               宿主加载子动作: check host-loading 按 Codex CLI 0.154.0 已校准规则
+               只读检查项目根 .agents/skills（pathCategory=codex-project-skills）；
+               不启动宿主、模型、hook 或脚本，零写入。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -186,6 +190,14 @@ function commandHelp(command) {
       "  --request <relpath>   受注册合同约束的 plugin-verification-request 或目录 request JSON",
       "  --bindings <relpath>  受对应固定资格入口约束的私有绑定 JSON",
       "  --native              显式确认允许本次真实资格；缺失即零宿主副作用。",
+      "",
+      "宿主加载子动作: skill-family-kit check host-loading [options]",
+      "  --root <dir>          绝对或可解析的项目工作目录（默认当前目录）",
+      "  --host <id>           宿主 id（须解析为 codex）",
+      "  --host-version <ver>  精确版本（当前仅 0.154.0）",
+      "  --path-category <id>  发现形态（当前仅 codex-project-skills）",
+      "  --activation-rules <relpath>  根内相对 JSON，有序 name XOR path + enabled 规则",
+      "  --hosts-root <dir>    可选宿主 Profile 根；缺省为包内 bundledHostProfilesRoot()",
     ],
   };
   return [
@@ -343,6 +355,17 @@ const COMMAND_SPECS = {
       "--request": { key: "requestPath", value: true },
       "--bindings": { key: "bindingsPath", value: true },
       "--native": { key: "native", value: false },
+    },
+  },
+  "check host-loading": {
+    rejectDuplicates: true,
+    flags: {
+      "--root": { key: "root", value: true },
+      "--host": { key: "hostId", value: true },
+      "--host-version": { key: "hostVersion", value: true },
+      "--path-category": { key: "pathCategory", value: true },
+      "--activation-rules": { key: "activationRulesPath", value: true },
+      "--hosts-root": { key: "hostsRoot", value: true },
     },
   },
   "check proof": {
@@ -647,6 +670,46 @@ async function runProofCreateSubAction(rest) {
   }
 }
 
+async function runHostLoadingSubAction(rest) {
+  const specName = "check host-loading";
+  try {
+    const options = parseOptions(rest, {
+      command: specName,
+      flags: COMMAND_SPECS[specName].flags,
+      rejectDuplicates: true,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    if (!options.hostId || !options.hostVersion || !options.pathCategory) {
+      throw invalidParamsError("--host, --host-version, and --path-category are required", {
+        reason: "invalid-option-combination",
+      });
+    }
+    const root = path.resolve(options.root ?? ".");
+    let activationRules;
+    if (options.activationRulesPath !== undefined) {
+      activationRules = await readJson(root, options.activationRulesPath, "--activation-rules");
+    }
+    const { status, output } = await checkHostLoadingAction({
+      root,
+      hostId: options.hostId,
+      hostVersion: options.hostVersion,
+      pathCategory: options.pathCategory,
+      activationRules,
+      hostsRoot: options.hostsRoot,
+    });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    if (status === "ok") return KIT_EXIT_CODES.ok;
+    if (status === "findings") return KIT_EXIT_CODES.findings;
+    return KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 async function runQualificationSubAction(rest) {
   const specName = "check qualification";
   try {
@@ -727,6 +790,9 @@ export async function cliMain(argv) {
   }
   if (command === "check" && argv[1] === "qualification") {
     return runQualificationSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "host-loading") {
+    return runHostLoadingSubAction(argv.slice(2));
   }
   if (command === "check" && argv[1] === "proof-create") {
     return runProofCreateSubAction(argv.slice(2));

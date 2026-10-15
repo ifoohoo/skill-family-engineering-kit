@@ -4,22 +4,25 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.24.1 -->
+<!-- release-skill:release-version: 0.25.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.24.1** (2026-10-12)
+**0.25.0** (2026-10-15)
 
-Engineering Kit 0.24.1 advances only to keep the existing four-unit lockstep contract for the Foundation documentation patch. It adds no capability, API, Schema, protocol, or mechanism.
+Engineering Kit 0.25.0 adds the public function `runHostLoadingCheck` and the CLI sub-action `skill-family-kit check host-loading` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The check covers only Codex CLI 0.154.0 project `.agents/skills`. Unknown coverage returns exit code 2. A static result does not prove install, session selection, or business execution.
 
 **Changed**
 
-- Update only the package coordinate and its managed version projections; existing capabilities, parameters, and failure boundaries remain unchanged.
+- Add the public function `runHostLoadingCheck` and the CLI `skill-family-kit check host-loading`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first.
+- Only `hostId=codex`, `hostVersion=0.154.0`, and `pathCategory=codex-project-skills` are calibrated, and that category's relative path must remain `.agents/skills`. The check statically reads `SKILL.md` and the optional Codex 0.154.0 skill metadata YAML under `agents/` beside `SKILL.md`. It does not start a host, model, hook, or script, and writes nothing.
+- Other hosts or versions, or an unknown path category, return exit code 2. A missing skill entry, or a scope that contains only product-filtered targets, returns 1. A static pass does not prove real install, session selection, or business execution.
+- The package moves to 0.25.0 with the other three units. Contracts specification remains 1.20.0. Published 0.24.1 capabilities are unchanged and are not redone.
 
 **Upgrade Notes**
 
-Pin the three Foundation npm packages to the exact same version and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Use the actual published version's public interfaces and sources; this note does not replace post-publish verification.
+Pin the three Foundation npm packages to exactly 0.25.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. A static check pass does not prove real install, session selection, or business execution. This note does not replace post-publish verification.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +65,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.24.1; version 0.24.0 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.25.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,21 +73,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.24.1.tgz" "$pack_dir/skill-family-harness-node-0.24.1.tgz" "$pack_dir/skill-family-engineering-kit-0.24.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.25.0.tgz" "$pack_dir/skill-family-harness-node-0.25.0.tgz" "$pack_dir/skill-family-engineering-kit-0.25.0.tgz")
 ```
 
-The registry installation below requires exact version 0.24.1 to be formally available:
+The registry installation below requires exact version 0.25.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.24.1
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.25.0
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -175,6 +178,19 @@ npm exec -- skill-family-kit check report --root <repo> --report <report.md> --m
 ```
 
 The caller must first construct a valid report model; Kit does not derive facts from open business `outputs`. All fact text is escaped literally, and the full errors of a failed result must appear in both the model and the neutral report.
+
+### Host-loading check sub-action
+
+```sh
+npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills
+npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills --activation-rules <relpath.json> --hosts-root <dir>
+```
+
+The public function is `runHostLoadingCheck`. It statically reads `SKILL.md` and the optional Codex 0.154.0 standard skill metadata YAML in `agents/` beside `SKILL.md` under the selected project root `.agents/skills`, and reports format, ignored, filtered, implicit-invocation, disabled, and uncovered observations using the calibrated Codex CLI 0.154.0 rules. Exact optional-file names and parse scope are in [`src/host-loading-check.mjs`](src/host-loading-check.mjs). It does not start a host, model, hook, or script, and writes nothing.
+
+The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. Only `pathCategory` `codex-project-skills` and version `0.154.0` are calibrated, and that category's relative path must remain `.agents/skills`. Other hosts or versions return exit code 2. A missing skill entry, or a scope that contains only product-filtered targets, returns 1. Callers may pass ordered name/path/enabled rules with `--activation-rules`; without rules, enabled is unknown. Same-name skills at different paths are all retained. Bad optional metadata is ignored as a whole document and is not reported as a skill load failure. `policy.products` that lists only products other than Codex is filtered from the Codex discoverable set; `[codex]` is kept. `allow_implicit_invocation=false` may still be enabled.
+
+A static pass does not prove real install, session selection, or business execution. Consume the published package's public interfaces and sources. This check covers only the selected project's `.agents/skills`. The published package's actual sources are this unit's public closure; that package surface is separate from the check coverage.
 
 ### Candidate Quickstart projection bundle
 

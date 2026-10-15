@@ -5,22 +5,25 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.24.1 -->
+<!-- release-skill:release-version: 0.25.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.24.1** (2026-10-12)
+**0.25.0** (2026-10-15)
 
-Engineering Kit 0.24.1 仅随 Foundation 文档补丁按既有四单元合同锁步前移，没有新增能力、API、Schema、协议或机制。
+Engineering Kit 0.25.0 在既有 `check` 下新增公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。检查只覆盖 Codex CLI 0.154.0 的项目 `.agents/skills`。未知覆盖返回退出码 2。静态结果不证明安装、会话选择或业务执行。
 
 **变更**
 
-- 仅更新包版本和相应受管版本派生；现有能力、参数与失败边界保持不变。
+- 新增公共函数 `runHostLoadingCheck` 与 CLI `skill-family-kit check host-loading`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。
+- 只校准 `hostId=codex`、`hostVersion=0.154.0`、`pathCategory=codex-project-skills`，且该类别相对路径必须仍是 `.agents/skills`。检查静态读取所选项目根下 `.agents/skills` 的 `SKILL.md`，以及 `SKILL.md` 旁 `agents/` 下 Codex 0.154.0 的可选技能元信息 YAML。不启动宿主、模型、hook 或脚本，不写文件。
+- 其他宿主或版本、未知路径类别返回退出码 2。缺技能入口，或范围内仅有被产品过滤的目标，返回 1。静态通过不证明真实安装、会话选择或业务执行。
+- 包版本与其他三单元锁步到 0.25.0。Contracts 规格仍为 1.20.0。已发布的 0.24.1 能力保持原样，本版本不重做。
 
 **升级说明**
 
-三个 Foundation npm 包须精确锁定同版，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理；消费以实际发布版本的公开接口和来源为准，本说明不替代发布后验证。
+三个 Foundation npm 包须精确锁定 0.25.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。静态检查通过不证明真实安装、会话选择或业务执行。本说明不替代发布后验证。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,7 +64,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.24.1；0.24.0 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.25.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -69,21 +72,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.24.1.tgz" "$pack_dir/skill-family-harness-node-0.24.1.tgz" "$pack_dir/skill-family-engineering-kit-0.24.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.25.0.tgz" "$pack_dir/skill-family-harness-node-0.25.0.tgz" "$pack_dir/skill-family-engineering-kit-0.25.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.24.1 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.25.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.24.1
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.25.0
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.24.1 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -174,6 +177,19 @@ npm exec -- skill-family-kit check report --root <repo> --report <report.md> --m
 ```
 
 调用方必须先构造合法 report model；Kit 不从开放的业务 `outputs` 推导事实。所有事实文本按字面转义，失败结果的完整 errors 必须出现在 model 和中性报告中。
+
+### 宿主加载检查子动作
+
+```sh
+npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills
+npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills --activation-rules <relpath.json> --hosts-root <dir>
+```
+
+对应公共函数是 `runHostLoadingCheck`。它只静态读取所选项目根下 `.agents/skills` 的 `SKILL.md`，以及 `SKILL.md` 旁 `agents/` 下 Codex 0.154.0 的标准可选技能元信息 YAML，按 Codex CLI 0.154.0 已校准规则报告格式、忽略、过滤、隐式调用、禁用和未覆盖项。准确文件名与解析范围见 [`src/host-loading-check.mjs`](src/host-loading-check.mjs)。不启动宿主、模型、hook 或脚本，不写文件。
+
+API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。当前只校准 `pathCategory` 为 `codex-project-skills`、版本 `0.154.0`，且该类别相对路径必须仍是 `.agents/skills`。其他宿主或版本返回退出码 2。缺技能入口，或范围内仅有被产品过滤的目标，返回 1。调用方可用 `--activation-rules` 提供有序 name/path/enabled 规则；缺省时 enabled 未知。同名不同路径都会保留。坏的可选元信息整份忽略，不会被报成技能加载失败。`policy.products` 仅声明 Codex 以外产品时从 Codex 可发现集合过滤，`[codex]` 保留；`allow_implicit_invocation=false` 仍可 enabled。
+
+静态通过不表示真实安装、会话选择或业务执行已经成功。消费以正式发布包的公开接口和源码为准。本次检查覆盖仅所选项目的 `.agents/skills`。发布包的实际来源是本单元公开闭包，与本次检查覆盖范围分别说明。
 
 ### Candidate Quickstart 投影包
 

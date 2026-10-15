@@ -1,5 +1,23 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.25.0 locale=zh-CN baseline=sha256:0112af28c40f4ac8dd77173f681345039eb2c55d714315b267827693c5f78e37 -->
+## [0.25.0] - 2026-10-15
+
+Engineering Kit 0.25.0 在既有 `check` 下新增公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。检查只覆盖 Codex CLI 0.154.0 的项目 `.agents/skills`。未知覆盖返回退出码 2。静态结果不证明安装、会话选择或业务执行。
+
+### 变更
+
+- 新增公共函数 `runHostLoadingCheck` 与 CLI `skill-family-kit check host-loading`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。
+- 只校准 `hostId=codex`、`hostVersion=0.154.0`、`pathCategory=codex-project-skills`，且该类别相对路径必须仍是 `.agents/skills`。检查静态读取所选项目根下 `.agents/skills` 的 `SKILL.md`，以及 `SKILL.md` 旁 `agents/` 下 Codex 0.154.0 的可选技能元信息 YAML。不启动宿主、模型、hook 或脚本，不写文件。
+- 其他宿主或版本、未知路径类别返回退出码 2。缺技能入口，或范围内仅有被产品过滤的目标，返回 1。静态通过不证明真实安装、会话选择或业务执行。
+- 包版本与其他三单元锁步到 0.25.0。Contracts 规格仍为 1.20.0。已发布的 0.24.1 能力保持原样，本版本不重做。
+
+### 升级说明
+
+三个 Foundation npm 包须精确锁定 0.25.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。静态检查通过不证明真实安装、会话选择或业务执行。本说明不替代发布后验证。
+<!-- release-skill:changelog:end version=0.25.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.24.1 locale=zh-CN baseline=sha256:0d0b6cccd46c69014e89efa21677ef015ccd3085f0fd07e8021b364b1c1f47e6 -->
 ## [0.24.1] - 2026-10-12
 
