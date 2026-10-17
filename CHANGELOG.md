@@ -1,5 +1,27 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.26.0 locale=en baseline=sha256:f92651ad31301672d84ced913199520f2f7868c15881a51766064a9a2b11922c -->
+## [0.26.0] - 2026-10-17
+
+Version 0.26.0 extends shared read-only static loading checks to seven hosts through the existing runHostLoadingCheck function and skill-family-kit check host-loading CLI action. The four top-level commands scaffold, adopt-plan, projection, and check remain unchanged; no new top-level command or public API is added. Checks do not start hosts, models, hooks, or scripts, access the network, or write files.
+
+### Changed
+
+- Add shared static loading checks for seven hosts. The exact host versions, categories, and project directories are listed in the authoritative [NATIVE_HOSTS table](src/host-loading-native.mjs); this internal table is not a package-root public export.
+- Retain Codex CLI 0.154.0 project .agents/skills support and its existing activationRules mechanism.
+- Apply each host’s own discovery, parsing, ignore, name-competition, and local-file flag rules. Report Cursor menu, completion, and model metadata separately.
+- Only modelMetadata.* for Cursor CLI 2026.09.10-fd3934a may use source-reviewed-unexecuted, labeled “源码核实、未作原生运行校准” (source reviewed; not calibrated through native execution). This is not native runtime calibration and does not mean the check starts the host.
+- Other native-observed markers mean the check uses previously calibrated native rules; they do not mean this check starts the host.
+- The API project root must be an absolute working directory; the CLI resolves relative input to an absolute path first. A missing or unbindable project root returns 2. A missing, non-directory, or empty skill container within an existing project returns 1. Proven local loading blockers return 1; specific uncovered behavior or unknown competition returns 2 and takes precedence over 1. A fully covered static scope without blockers returns 0; normal skills cannot mask blockers or uncovered behavior. Only Codex supports activationRules; the seven other hosts accept only omission or null, and any other value, including an empty array, returns 2.
+- Retain link-containment and read boundaries. Uncalibrated actual competition, uncalibrated WorkBuddy optional metadata or version-source forms and icon resolution, Cursor completion string false, and CodeBuddy block scalars without proven equivalence remain specifically uncovered. Do not guess success or return 2 permanently for all ordinary input.
+- Exit 0 proves only static-check success. It does not prove final activation, installation, update, session selection, real triggering, or business execution. Codex evidence cannot establish calibration for other hosts.
+
+### Upgrade Notes
+
+Pin skill-family-engineering-kit, skill-family-contracts, skill-family-harness-node, and the independent Plugin to exactly 0.26.0 in lockstep. Contracts specification 1.20.0 remains separate from package versions and does not advance with Kit. Consume actual published public interfaces for the exact host version and category. Release notes do not replace post-publish verification or formal consumer acceptance. Exit 0 is not an upgrade-safety guarantee or evidence of production validation.
+<!-- release-skill:changelog:end version=0.26.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.25.0 locale=en baseline=sha256:94f4c9be64b930538ffaccf847dadf49baad796b513c142205a18f631d50e66c -->
 ## [0.25.0] - 2026-10-15
 

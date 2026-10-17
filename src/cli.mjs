@@ -80,9 +80,9 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                显式资格子动作: check qualification 仅在显式提供
                capability/request/bindings/native 后适配目录声明的能力特定入口，
                可在预检后调用能力特定的原生宿主。
-               宿主加载子动作: check host-loading 按 Codex CLI 0.154.0 已校准规则
-               只读检查项目根 .agents/skills（pathCategory=codex-project-skills）；
-               不启动宿主、模型、hook 或脚本，零写入。
+               宿主加载子动作: check host-loading 按已校准宿主版本只读检查所选项目技能容器
+               （Codex 0.154.0 的 .agents/skills，以及 Claude/Cursor/Kimi/WorkBuddy/CodeBuddy/Qoder/DSH
+               各自精确版本的项目根类别）；不启动宿主、模型、hook 或脚本，零写入。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -193,10 +193,10 @@ function commandHelp(command) {
       "",
       "宿主加载子动作: skill-family-kit check host-loading [options]",
       "  --root <dir>          绝对或可解析的项目工作目录（默认当前目录）",
-      "  --host <id>           宿主 id（须解析为 codex）",
-      "  --host-version <ver>  精确版本（当前仅 0.154.0）",
-      "  --path-category <id>  发现形态（当前仅 codex-project-skills）",
-      "  --activation-rules <relpath>  根内相对 JSON，有序 name XOR path + enabled 规则",
+      "  --host <id>           宿主 id（codex 或已校准七宿主之一）",
+      "  --host-version <ver>  精确版本（Codex 0.154.0 或对应已校准原生版本）",
+      "  --path-category <id>  发现形态（codex-project-skills 或对应已校准项目根类别）",
+      "  --activation-rules <relpath>  仅 Codex：根内相对 JSON，有序 name XOR path + enabled 规则；其他宿主仅允许省略或 null",
       "  --hosts-root <dir>    可选宿主 Profile 根；缺省为包内 bundledHostProfilesRoot()",
     ],
   };

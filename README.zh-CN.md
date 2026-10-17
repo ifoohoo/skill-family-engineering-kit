@@ -5,25 +5,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.25.0 -->
+<!-- release-skill:release-version: 0.26.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.25.0** (2026-10-15)
+**0.26.0** (2026-10-17)
 
-Engineering Kit 0.25.0 在既有 `check` 下新增公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。检查只覆盖 Codex CLI 0.154.0 的项目 `.agents/skills`。未知覆盖返回退出码 2。静态结果不证明安装、会话选择或业务执行。
+0.26.0 版本通过既有公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`，扩展对七宿主的共享只读静态加载检查能力。四顶层命令 `scaffold`、`adopt-plan`、`projection`、`check` 保持不变，未新增顶层命令或公共 API。检查不启动宿主、模型、hook 或脚本，不联网、不写文件。
 
 **变更**
 
-- 新增公共函数 `runHostLoadingCheck` 与 CLI `skill-family-kit check host-loading`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。
-- 只校准 `hostId=codex`、`hostVersion=0.154.0`、`pathCategory=codex-project-skills`，且该类别相对路径必须仍是 `.agents/skills`。检查静态读取所选项目根下 `.agents/skills` 的 `SKILL.md`，以及 `SKILL.md` 旁 `agents/` 下 Codex 0.154.0 的可选技能元信息 YAML。不启动宿主、模型、hook 或脚本，不写文件。
-- 其他宿主或版本、未知路径类别返回退出码 2。缺技能入口，或范围内仅有被产品过滤的目标，返回 1。静态通过不证明真实安装、会话选择或业务执行。
-- 包版本与其他三单元锁步到 0.25.0。Contracts 规格仍为 1.20.0。已发布的 0.24.1 能力保持原样，本版本不重做。
+- 新增七宿主共享静态加载检查；精确宿主版本、类别与项目目录见权威 [NATIVE_HOSTS 表](src/host-loading-native.mjs)。该内部表不是包根公共导出。
+- **兼容性保留**：Codex CLI 0.154.0 的 `.agents/skills` 项目结构继续支持，其 `activationRules` 机制保持可用。
+- **检查逻辑**：各宿主独立执行发现、解析、忽略、名称竞争与局部文件标志判断。Cursor 的菜单、补全与模型元数据三类行为分别报告。
+- **证据例外**：仅当 `modelMetadata.*` 字段来自 Cursor CLI 2026.09.10-fd3934a 版本时，允许标注 `source-reviewed-unexecuted`，文字为“源码核实、未作原生运行校准”。该标记不表示原生运行已校准，也不代表本次检查启动宿主。
+- **标记语义**：其余 `native-observed` 标记仅表示采用已有原生校准规则，不表示本次检查启动宿主。
+- **边界与退出码**： 项目 root 必须为绝对工作目录，CLI 先将相对输入解析为绝对路径。 项目根不存在或不可绑定 → 退出码 2。 项目存在但技能容器缺失、非目录或为空 → 退出码 1。 已证明本地加载阻断 → 退出码 1。 具体未覆盖或未知竞争 → 退出码 2，且优先于 1。 普通完整静态范围无阻断 → 退出码 0；已有正常技能不能掩盖阻断或未覆盖。 Codex 支持原有 `activationRules`；其余七宿主仅接受省略或 `null`，其他值（包括空数组）返回 2。
+- **数据边界**：保留链接收容与读取边界。未校准的实际竞争、WorkBuddy 尚未校准的可选元信息或版本来源形态及图标解析、Cursor 补全字符串 `false`、CodeBuddy 未证明等价的块标量等，均按具体未覆盖处理，不猜测成功，也不将所有普通输入永久返回 2。
+- **静态通过不等于业务成功**：退出码 0 仅表示静态检查通过，不证明最终启用、安装、更新、会话选择、真实触发或业务执行成功。不得复用 Codex 证据宣称其他宿主已校准。
 
 **升级说明**
 
-三个 Foundation npm 包须精确锁定 0.25.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。静态检查通过不证明真实安装、会话选择或业务执行。本说明不替代发布后验证。
+三个 Foundation npm 包（`skill-family-engineering-kit`、`skill-family-contracts`、`skill-family-harness-node`）及独立 Plugin 均需精确锁定至 0.26.0 版本，实现四单元锁步。 Contracts 规格保持 1.20.0，与包版本为独立坐标，不随 Kit 升级。 消费方应按精确宿主版本与类别，使用实际已发布的公共接口。 发布说明不替代发布后验证或正式消费者验收。 退出码 0 不构成升级安全保证，不等同于可安全升级或已通过生产验证。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -64,7 +68,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.25.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.26.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -72,21 +76,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.25.0.tgz" "$pack_dir/skill-family-harness-node-0.25.0.tgz" "$pack_dir/skill-family-engineering-kit-0.25.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.26.0.tgz" "$pack_dir/skill-family-harness-node-0.26.0.tgz" "$pack_dir/skill-family-engineering-kit-0.26.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.25.0 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.26.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.25.0
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.26.0
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -180,16 +184,89 @@ npm exec -- skill-family-kit check report --root <repo> --report <report.md> --m
 
 ### 宿主加载检查子动作
 
+#### 版本边界与能力范围
+
+- **0.25.0** 版本已支持对 Codex 0.154.0 的宿主加载检查。
+- **0.26.0** 源码候选版本在相同入口中新增对七宿主的检查能力，但该功能**仍处于候选状态**，正式可用性需以该版本的实际发布验证为准。**请勿使用 0.25.0 发布包运行新增宿主检查**。
+
+#### CLI 命令与参数说明
+
+公共函数为 `runHostLoadingCheck({ root, hostId, hostVersion, pathCategory, activationRules, hostsRoot })`。以下是对应 CLI 调用；第三条需要包含七宿主增量的版本：
+
 ```sh
 npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills
 npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills --activation-rules <relpath.json> --hosts-root <dir>
+npm exec -- skill-family-kit check host-loading --root <project> --host kimi-code --host-version 2.2.0 --path-category kimi-code-project-skills
 ```
 
-对应公共函数是 `runHostLoadingCheck`。它只静态读取所选项目根下 `.agents/skills` 的 `SKILL.md`，以及 `SKILL.md` 旁 `agents/` 下 Codex 0.154.0 的标准可选技能元信息 YAML，按 Codex CLI 0.154.0 已校准规则报告格式、忽略、过滤、隐式调用、禁用和未覆盖项。准确文件名与解析范围见 [`src/host-loading-check.mjs`](src/host-loading-check.mjs)。不启动宿主、模型、hook 或脚本，不写文件。
+- `root`：必须为绝对项目目录路径；CLI 会先解析当前目录或相对路径。
+- `host`：宿主标识符，如 `codex` 或 `kimi-code`。
+- `host-version`：对应宿主版本号，如 `0.154.0` 或 `2.2.0`。
+- `path-category`：宿主技能容器的相对目录类别，例如 `codex-project-skills` 或 `kimi-code-project-skills`。
+- `--activation-rules`：CLI 接收项目根内相对 JSON 文件路径，其内容为有序规则数组，每项选择 `name` 或 `path` 之一，并带 `enabled` 布尔值。只有 Codex 支持这些规则。新增七宿主的 API 参数 `activationRules` 仅允许省略或 `null`，包括 `[]` 在内的任何非 `null` 值都返回 `2`；CLI 应省略该选项。
+- `hosts-root`：可选，指定自定义宿主配置根目录；省略时使用包内默认 Profile。**指定后不得修改已校准的精确版本、类别与相对目录组合**。
 
-API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。当前只校准 `pathCategory` 为 `codex-project-skills`、版本 `0.154.0`，且该类别相对路径必须仍是 `.agents/skills`。其他宿主或版本返回退出码 2。缺技能入口，或范围内仅有被产品过滤的目标，返回 1。调用方可用 `--activation-rules` 提供有序 name/path/enabled 规则；缺省时 enabled 未知。同名不同路径都会保留。坏的可选元信息整份忽略，不会被报成技能加载失败。`policy.products` 仅声明 Codex 以外产品时从 Codex 可发现集合过滤，`[codex]` 保留；`allow_implicit_invocation=false` 仍可 enabled。
+#### 宿主选择器与实现依据
 
-静态通过不表示真实安装、会话选择或业务执行已经成功。消费以正式发布包的公开接口和源码为准。本次检查覆盖仅所选项目的 `.agents/skills`。发布包的实际来源是本单元公开闭包，与本次检查覆盖范围分别说明。
+新增七宿主的精确选择器定义于公开源码中：
+
+[src/host-loading-native.mjs](src/host-loading-native.mjs) 中的 `NATIVE_HOSTS` 内部表。
+
+该表为内部实现结构，不是包根公共导出；它列出新增七宿主支持的精确版本、类别与相对目录组合。Kimi 示例使用 `.kimi-code/skills`。
+
+Codex 的选择器仍沿用 [src/host-loading-check.mjs](src/host-loading-check.mjs) 中的常量合同，容器为 `.agents/skills`。
+
+#### 检查行为与限制
+
+- **不启动宿主、模型、hook 或脚本**。
+- **不联网、不写入文件、不修改任何状态**。
+- **仅静态分析项目容器内指定路径下的技能结构**。
+- **检查范围不涵盖用户全局技能、祖先项目或插件全环境**。
+- **新增七宿主的目录或文件符号链接保留为未覆盖，返回退出码 2，不越界读取**。
+- **仅检查一个显式指定的项目容器**，不推断启用、安装、更新、会话选择或真实业务触发的成功性。
+
+#### Codex 保留行为
+
+- 同名不同路径的技能全部保留，不合并或覆盖。
+- `SKILL.md` 旁 `agents/` 目录下的标准可选技能元信息 YAML，若存在错误则整份忽略，不导致加载失败。
+- `policy.products` 非空且只列出 Codex 以外产品时才过滤；包含 `codex` 时保留，空列表不触发产品过滤。
+- `allow_implicit_invocation=false` 记录隐式调用关闭，不代表 `enabled=false`；缺少显式启用规则时，`enabled` 仍未知。
+- `activationRules` 仅 Codex 支持传入有序数组，每项为 `name` 或 `path` 二选一，加 `enabled` 布尔值。
+
+#### 新增七宿主行为
+
+- 所有技能的基础字段 `enabled`、`disabled`、`implicitInvocation`、`interface`、`shortDescription` 均为 `null`。
+- 原生行为差异通过 `skills[].observations` 数组表达，每项包含：
+  - `field`：被观察的字段名
+  - `value`：观察到的值
+  - `basis`：观察依据，`native-observed` 表示该规则曾用原生事实校准，不表示本次检查启动过宿主
+  - `sourceId`：来源标识，对应 `coverage.ruleSources` 中的记录
+- `coverage.ruleSources` 记录每条规则的：
+  - `id`
+  - `version`
+  - `source`
+  - `sha256`
+- **仅 Cursor CLI 版本 `2026.09.10-fd3934a` 的 `modelMetadata.*` 字段标记为 `source-reviewed-unexecuted`**，表示“源码核实、未作原生运行校准”。
+- Cursor 的菜单与补全面已有原生校准，**不能将此例外推广为整个宿主无原生证据**。
+- Codex 继续使用 `officialTag` 和 `officialCommit`，**不虚构给其他宿主**。
+
+#### 退出码与结果解读
+
+| 退出码 | 含义 |
+|--------|------|
+| `0` | 请求范围完整，且无已证实阻断 |
+| `1` | 存在已证实阻断，或项目存在但缺技能容器、没有可发现入口；Codex 只有被产品过滤的目标也返回 `1` |
+| `2` | 未知版本/形态、非等价覆盖、非法选择器，或项目根不存在/非目录 |
+
+- **有未覆盖项时优先返回 2，但不丢弃已知的 `findings`**。
+- **报告需综合 `findings`、`uncovered`、`limitations` 三部分，不可仅依赖退出码判断**。
+- **同名规则按宿主独立处理，未覆盖时不猜胜者**。
+
+#### 重要说明
+
+- 本检查为静态分析，**不证明宿主已启用、已安装、已更新、会话中被选择或业务流程成功**。
+- 发布包来源与检查范围是两个独立判断，消费正式包时需依据实际接口与来源。
+
 
 ### Candidate Quickstart 投影包
 

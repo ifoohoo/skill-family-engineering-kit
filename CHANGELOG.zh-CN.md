@@ -1,5 +1,27 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.26.0 locale=zh-CN baseline=sha256:3437859b22ecdad6bc0766dccf3d8b3ed7f1eb9240a9b898f1a2628a092f7143 -->
+## [0.26.0] - 2026-10-17
+
+0.26.0 版本通过既有公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`，扩展对七宿主的共享只读静态加载检查能力。四顶层命令 `scaffold`、`adopt-plan`、`projection`、`check` 保持不变，未新增顶层命令或公共 API。检查不启动宿主、模型、hook 或脚本，不联网、不写文件。
+
+### 变更
+
+- 新增七宿主共享静态加载检查；精确宿主版本、类别与项目目录见权威 [NATIVE_HOSTS 表](src/host-loading-native.mjs)。该内部表不是包根公共导出。
+- **兼容性保留**：Codex CLI 0.154.0 的 `.agents/skills` 项目结构继续支持，其 `activationRules` 机制保持可用。
+- **检查逻辑**：各宿主独立执行发现、解析、忽略、名称竞争与局部文件标志判断。Cursor 的菜单、补全与模型元数据三类行为分别报告。
+- **证据例外**：仅当 `modelMetadata.*` 字段来自 Cursor CLI 2026.09.10-fd3934a 版本时，允许标注 `source-reviewed-unexecuted`，文字为“源码核实、未作原生运行校准”。该标记不表示原生运行已校准，也不代表本次检查启动宿主。
+- **标记语义**：其余 `native-observed` 标记仅表示采用已有原生校准规则，不表示本次检查启动宿主。
+- **边界与退出码**： 项目 root 必须为绝对工作目录，CLI 先将相对输入解析为绝对路径。 项目根不存在或不可绑定 → 退出码 2。 项目存在但技能容器缺失、非目录或为空 → 退出码 1。 已证明本地加载阻断 → 退出码 1。 具体未覆盖或未知竞争 → 退出码 2，且优先于 1。 普通完整静态范围无阻断 → 退出码 0；已有正常技能不能掩盖阻断或未覆盖。 Codex 支持原有 `activationRules`；其余七宿主仅接受省略或 `null`，其他值（包括空数组）返回 2。
+- **数据边界**：保留链接收容与读取边界。未校准的实际竞争、WorkBuddy 尚未校准的可选元信息或版本来源形态及图标解析、Cursor 补全字符串 `false`、CodeBuddy 未证明等价的块标量等，均按具体未覆盖处理，不猜测成功，也不将所有普通输入永久返回 2。
+- **静态通过不等于业务成功**：退出码 0 仅表示静态检查通过，不证明最终启用、安装、更新、会话选择、真实触发或业务执行成功。不得复用 Codex 证据宣称其他宿主已校准。
+
+### 升级说明
+
+三个 Foundation npm 包（`skill-family-engineering-kit`、`skill-family-contracts`、`skill-family-harness-node`）及独立 Plugin 均需精确锁定至 0.26.0 版本，实现四单元锁步。 Contracts 规格保持 1.20.0，与包版本为独立坐标，不随 Kit 升级。 消费方应按精确宿主版本与类别，使用实际已发布的公共接口。 发布说明不替代发布后验证或正式消费者验收。 退出码 0 不构成升级安全保证，不等同于可安全升级或已通过生产验证。
+<!-- release-skill:changelog:end version=0.26.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.25.0 locale=zh-CN baseline=sha256:0112af28c40f4ac8dd77173f681345039eb2c55d714315b267827693c5f78e37 -->
 ## [0.25.0] - 2026-10-15
 

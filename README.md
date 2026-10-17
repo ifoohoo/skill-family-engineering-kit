@@ -4,25 +4,29 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.25.0 -->
+<!-- release-skill:release-version: 0.26.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.25.0** (2026-10-15)
+**0.26.0** (2026-10-17)
 
-Engineering Kit 0.25.0 adds the public function `runHostLoadingCheck` and the CLI sub-action `skill-family-kit check host-loading` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The check covers only Codex CLI 0.154.0 project `.agents/skills`. Unknown coverage returns exit code 2. A static result does not prove install, session selection, or business execution.
+Version 0.26.0 extends shared read-only static loading checks to seven hosts through the existing runHostLoadingCheck function and skill-family-kit check host-loading CLI action. The four top-level commands scaffold, adopt-plan, projection, and check remain unchanged; no new top-level command or public API is added. Checks do not start hosts, models, hooks, or scripts, access the network, or write files.
 
 **Changed**
 
-- Add the public function `runHostLoadingCheck` and the CLI `skill-family-kit check host-loading`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first.
-- Only `hostId=codex`, `hostVersion=0.154.0`, and `pathCategory=codex-project-skills` are calibrated, and that category's relative path must remain `.agents/skills`. The check statically reads `SKILL.md` and the optional Codex 0.154.0 skill metadata YAML under `agents/` beside `SKILL.md`. It does not start a host, model, hook, or script, and writes nothing.
-- Other hosts or versions, or an unknown path category, return exit code 2. A missing skill entry, or a scope that contains only product-filtered targets, returns 1. A static pass does not prove real install, session selection, or business execution.
-- The package moves to 0.25.0 with the other three units. Contracts specification remains 1.20.0. Published 0.24.1 capabilities are unchanged and are not redone.
+- Add shared static loading checks for seven hosts. The exact host versions, categories, and project directories are listed in the authoritative [NATIVE_HOSTS table](src/host-loading-native.mjs); this internal table is not a package-root public export.
+- Retain Codex CLI 0.154.0 project .agents/skills support and its existing activationRules mechanism.
+- Apply each host’s own discovery, parsing, ignore, name-competition, and local-file flag rules. Report Cursor menu, completion, and model metadata separately.
+- Only modelMetadata.* for Cursor CLI 2026.09.10-fd3934a may use source-reviewed-unexecuted, labeled “源码核实、未作原生运行校准” (source reviewed; not calibrated through native execution). This is not native runtime calibration and does not mean the check starts the host.
+- Other native-observed markers mean the check uses previously calibrated native rules; they do not mean this check starts the host.
+- The API project root must be an absolute working directory; the CLI resolves relative input to an absolute path first. A missing or unbindable project root returns 2. A missing, non-directory, or empty skill container within an existing project returns 1. Proven local loading blockers return 1; specific uncovered behavior or unknown competition returns 2 and takes precedence over 1. A fully covered static scope without blockers returns 0; normal skills cannot mask blockers or uncovered behavior. Only Codex supports activationRules; the seven other hosts accept only omission or null, and any other value, including an empty array, returns 2.
+- Retain link-containment and read boundaries. Uncalibrated actual competition, uncalibrated WorkBuddy optional metadata or version-source forms and icon resolution, Cursor completion string false, and CodeBuddy block scalars without proven equivalence remain specifically uncovered. Do not guess success or return 2 permanently for all ordinary input.
+- Exit 0 proves only static-check success. It does not prove final activation, installation, update, session selection, real triggering, or business execution. Codex evidence cannot establish calibration for other hosts.
 
 **Upgrade Notes**
 
-Pin the three Foundation npm packages to exactly 0.25.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. A static check pass does not prove real install, session selection, or business execution. This note does not replace post-publish verification.
+Pin skill-family-engineering-kit, skill-family-contracts, skill-family-harness-node, and the independent Plugin to exactly 0.26.0 in lockstep. Contracts specification 1.20.0 remains separate from package versions and does not advance with Kit. Consume actual published public interfaces for the exact host version and category. Release notes do not replace post-publish verification or formal consumer acceptance. Exit 0 is not an upgrade-safety guarantee or evidence of production validation.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -65,7 +69,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.25.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.26.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -73,21 +77,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.25.0.tgz" "$pack_dir/skill-family-harness-node-0.25.0.tgz" "$pack_dir/skill-family-engineering-kit-0.25.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.26.0.tgz" "$pack_dir/skill-family-harness-node-0.26.0.tgz" "$pack_dir/skill-family-engineering-kit-0.26.0.tgz")
 ```
 
-The registry installation below requires exact version 0.25.0 to be formally available:
+The registry installation below requires exact version 0.26.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.25.0
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.26.0
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.25.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -181,16 +185,50 @@ The caller must first construct a valid report model; Kit does not derive facts 
 
 ### Host-loading check sub-action
 
+#### Version and scope
+
+Version 0.25.0 provides the Codex CLI 0.154.0 check. The 0.26.0 source candidate extends the same entry to seven additional hosts; formal availability depends on that version's release verification. The 0.25.0 published package does not support the added hosts.
+
+#### Calling the check
+
+The public function is `runHostLoadingCheck({ root, hostId, hostVersion, pathCategory, activationRules, hostsRoot })`. These are the corresponding CLI calls; the third requires a version containing the seven-host extension:
+
 ```sh
 npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills
 npm exec -- skill-family-kit check host-loading --root <project> --host codex --host-version 0.154.0 --path-category codex-project-skills --activation-rules <relpath.json> --hosts-root <dir>
+npm exec -- skill-family-kit check host-loading --root <project> --host kimi-code --host-version 2.2.0 --path-category kimi-code-project-skills
 ```
 
-The public function is `runHostLoadingCheck`. It statically reads `SKILL.md` and the optional Codex 0.154.0 standard skill metadata YAML in `agents/` beside `SKILL.md` under the selected project root `.agents/skills`, and reports format, ignored, filtered, implicit-invocation, disabled, and uncovered observations using the calibrated Codex CLI 0.154.0 rules. Exact optional-file names and parse scope are in [`src/host-loading-check.mjs`](src/host-loading-check.mjs). It does not start a host, model, hook, or script, and writes nothing.
+The API `root` must be an absolute project directory. The CLI first resolves the current directory or a relative path. `--host`, `--host-version`, and `--path-category` select an exact supported combination. Omitting `hostsRoot` uses the bundled Profile data; a custom root cannot change the calibrated version, category, or relative directory combination.
 
-The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. Only `pathCategory` `codex-project-skills` and version `0.154.0` are calibrated, and that category's relative path must remain `.agents/skills`. Other hosts or versions return exit code 2. A missing skill entry, or a scope that contains only product-filtered targets, returns 1. Callers may pass ordered name/path/enabled rules with `--activation-rules`; without rules, enabled is unknown. Same-name skills at different paths are all retained. Bad optional metadata is ignored as a whole document and is not reported as a skill load failure. `policy.products` that lists only products other than Codex is filtered from the Codex discoverable set; `[codex]` is kept. `allow_implicit_invocation=false` may still be enabled.
+For Codex, `--activation-rules` takes a project-relative JSON file containing ordered rules. Each rule selects either `name` or `path`, and includes a boolean `enabled`. For the seven added hosts, the API accepts only an omitted or `null` `activationRules`; every non-null value, including `[]`, returns `2`. Omit this CLI option for those hosts.
 
-A static pass does not prove real install, session selection, or business execution. Consume the published package's public interfaces and sources. This check covers only the selected project's `.agents/skills`. The published package's actual sources are this unit's public closure; that package surface is separate from the check coverage.
+The internal `NATIVE_HOSTS` table in [src/host-loading-native.mjs](src/host-loading-native.mjs) lists the added hosts' exact versions, categories, and relative directories. It is not a package-root public export. The Kimi example uses `.kimi-code/skills`. Codex keeps its existing constants in [src/host-loading-check.mjs](src/host-loading-check.mjs) and the `.agents/skills` container.
+
+#### Reading the report
+
+The check starts no host, model, hook, or script, makes no network requests, and writes nothing. It covers one explicit project skill container, not the user's global skills, ancestor projects, or the entire plugin environment. Directory and file symlinks in the seven-host extension remain uncovered and return `2`; the check does not read through them.
+
+Codex keeps its existing behavior:
+
+- Same-name skills at different paths are all retained.
+- Invalid optional standard skill metadata YAML under `agents/` beside `SKILL.md` is ignored as a whole document, not reported as a skill load failure.
+- A nonempty `policy.products` containing only products other than Codex is filtered. A list containing `codex` is kept; an empty list does not trigger this filter.
+- `allow_implicit_invocation=false` records implicit invocation being disabled, independently of `enabled`. Without explicit activation rules, `enabled` remains unknown.
+
+For the seven added hosts, each skill's base `enabled`, `disabled`, `implicitInvocation`, `interface`, and `shortDescription` fields remain `null`. Host-specific observations appear in `skills[].observations`, with `field`, `value`, `basis`, and `sourceId`. A `native-observed` basis means that native evidence was used to calibrate the rule; it does not mean this check ran the native host. `sourceId` refers to `coverage.ruleSources`, whose entries contain `id`, `version`, `source`, and `sha256`.
+
+Only Cursor CLI `2026.09.10-fd3934a`'s `modelMetadata.*` observations use `source-reviewed-unexecuted`, meaning source-reviewed but not calibrated by a native run. Its menu and completion surfaces have native calibration evidence. Codex continues to use `officialTag` and `officialCommit`; these fields are not invented for other hosts.
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | The requested scope is covered and has no established blocker. |
+| `1` | An established blocker, or an existing project with a missing skill container or no discoverable entry. A Codex scope containing only product-filtered targets also returns `1`. |
+| `2` | An unknown version or shape, non-equivalent coverage, invalid selector, or a missing/non-directory project root. |
+
+Uncovered items take precedence and produce `2`, while known `findings` remain in the report. Read `findings`, `uncovered`, and `limitations` together. Name-collision handling follows each host's rules; an uncovered competition does not imply a winner.
+
+A static `0` does not prove enablement, installation, update, session selection, actual invocation, or business success. The published package's source and public closure are separate from the scope of this check. Use the actual published version's interfaces and sources.
 
 ### Candidate Quickstart projection bundle
 

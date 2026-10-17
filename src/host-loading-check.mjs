@@ -6,6 +6,13 @@ import {
   readFileBound,
 } from "skill-family-harness-node";
 import { bundledHostProfilesRoot, describeHost } from "./host-profiles.mjs";
+import {
+  matchNativeHost,
+  NATIVE_HOSTS,
+  nativeLimitations,
+  nativeRuleSources,
+  runNativeHostLoadingCheck,
+} from "./host-loading-native.mjs";
 import { KIT_TOOL_NAME, KIT_VERSION } from "./skeleton.mjs";
 
 /**
@@ -55,6 +62,8 @@ const LIMITATIONS = Object.freeze([
   "Interface icon asset resolution is uncovered; this slice does not open skill assets.",
   "Caller-supplied activationRules are the only enablement input; project-layer config.toml is not read.",
 ]);
+
+const NATIVE_POLICY = "host loading check is diagnosis only: it reads the selected project skill container through the existing root binding and never writes, spawns, or contacts a network";
 
 function uncovered(kind, message, extra = {}) {
   return { class: "host-loading", kind, message, ...extra };
@@ -815,30 +824,38 @@ function reportDocument({
   uncoveredItems,
   nameAmbiguities,
   incomplete,
+  coverageExtras,
+  limitations,
+  policy,
 }) {
   const blocking = findings.length > 0;
   const exitCode = incomplete || uncoveredItems.length > 0 ? 2 : blocking ? 1 : 0;
+  const coverage = {
+    hostId,
+    hostVersion,
+    pathCategory,
+    root: rootAbs,
+    skillsRoot,
+  };
+  if (coverageExtras && Object.keys(coverageExtras).length > 0) {
+    Object.assign(coverage, coverageExtras);
+  } else if (!coverageExtras) {
+    coverage.officialTag = "rust-v0.154.0";
+    coverage.officialCommit = "6b9826e3aa83b1a5947db50f4332cb9c65f1b340";
+  }
   return {
     kind: HOST_LOADING_CHECK_REPORT_KIND,
     schemaVersion: 1,
     generatedBy: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
-    coverage: {
-      hostId,
-      hostVersion,
-      pathCategory,
-      root: rootAbs,
-      skillsRoot,
-      officialTag: "rust-v0.154.0",
-      officialCommit: "6b9826e3aa83b1a5947db50f4332cb9c65f1b340",
-    },
-    limitations: [...LIMITATIONS],
+    coverage,
+    limitations: [...(limitations ?? LIMITATIONS)],
     skills,
     nameAmbiguities,
     findings,
     uncovered: uncoveredItems,
     ok: exitCode === 0,
     exitCode,
-    policy: "host loading check is diagnosis only: it reads SKILL.md and optional agents/openai.yaml under the selected project root and never writes, spawns, or contacts a network",
+    policy: policy ?? "host loading check is diagnosis only: it reads SKILL.md and optional agents/openai.yaml under the selected project root and never writes, spawns, or contacts a network",
   };
 }
 
@@ -849,7 +866,11 @@ function incompleteReport({
   hostVersion = null,
   pathCategory = null,
   item,
+  coverageExtras,
+  limitations,
+  policy,
 }) {
+  const omitCodexSources = hostId !== HOST_LOADING_SUPPORTED_HOST_ID;
   return reportDocument({
     rootAbs,
     skillsRoot,
@@ -861,6 +882,9 @@ function incompleteReport({
     uncoveredItems: [item],
     nameAmbiguities: [],
     incomplete: true,
+    coverageExtras: coverageExtras ?? (omitCodexSources ? {} : undefined),
+    limitations,
+    policy,
   });
 }
 
@@ -914,17 +938,6 @@ export async function runHostLoadingCheck({
     });
   }
   const rootAbs = path.normalize(root);
-  const normalizedRules = normalizeActivationRules(activationRules, rootAbs);
-  if (normalizedRules.incomplete) {
-    return incompleteReport({
-      rootAbs,
-      hostId,
-      hostVersion,
-      pathCategory,
-      item: normalizedRules.incomplete,
-    });
-  }
-
   const selectedHostsRoot = hostsRoot ?? bundledHostProfilesRoot();
   let descriptor;
   try {
@@ -945,36 +958,102 @@ export async function runHostLoadingCheck({
     });
   }
   const canonicalHostId = descriptor.hostId;
-  if (canonicalHostId !== HOST_LOADING_SUPPORTED_HOST_ID || hostVersion !== HOST_LOADING_SUPPORTED_HOST_VERSION) {
-    return incompleteReport({
-      rootAbs,
-      hostId: canonicalHostId,
-      hostVersion,
-      pathCategory,
-      item: uncovered("uncalibrated-host", `host ${canonicalHostId}@${hostVersion} is outside the calibrated Codex 0.154.0 slice`),
-    });
-  }
-  if (pathCategory !== HOST_LOADING_SUPPORTED_PATH_CATEGORY) {
-    return incompleteReport({
-      rootAbs,
-      hostId: canonicalHostId,
-      hostVersion,
-      pathCategory,
-      item: uncovered("uncalibrated-path-category", `pathCategory ${pathCategory} is not a calibrated Codex project skill root`),
-    });
-  }
   const category = (descriptor.pathCategories ?? []).find((item) => item.id === pathCategory);
-  if (!category) {
-    return incompleteReport({
-      rootAbs,
-      hostId: canonicalHostId,
-      hostVersion,
-      pathCategory,
-      item: uncovered("uncalibrated-path-category", `pathCategory ${pathCategory} is not a calibrated Codex project skill root`),
-    });
-  }
-  const relPath = path.posix.normalize(String(category.relPath ?? ""));
-  if (relPath !== HOST_LOADING_SUPPORTED_REL_PATH) {
+  const relPath = path.posix.normalize(String(category?.relPath ?? ""));
+  const nativeSpec = category
+    ? matchNativeHost({ hostId: canonicalHostId, hostVersion, pathCategory, relPath })
+    : null;
+  const isCodex = canonicalHostId === HOST_LOADING_SUPPORTED_HOST_ID
+    && hostVersion === HOST_LOADING_SUPPORTED_HOST_VERSION
+    && pathCategory === HOST_LOADING_SUPPORTED_PATH_CATEGORY;
+
+  if (isCodex) {
+    const normalizedEarly = normalizeActivationRules(activationRules, rootAbs);
+    if (normalizedEarly.incomplete) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: normalizedEarly.incomplete,
+      });
+    }
+    if (!category) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered("uncalibrated-path-category", `pathCategory ${pathCategory} is not a calibrated Codex project skill root`),
+      });
+    }
+    if (relPath !== HOST_LOADING_SUPPORTED_REL_PATH) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered(
+          "uncalibrated-path-mapping",
+          `calibrated pathCategory ${pathCategory} must map to ${HOST_LOADING_SUPPORTED_REL_PATH}`,
+          { relPath },
+        ),
+      });
+    }
+  } else if (nativeSpec) {
+    if (activationRules !== undefined && activationRules !== null) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered(
+          "unsupported-activation-rules",
+          `activationRules are not calibrated for ${canonicalHostId}; only omitted or null are accepted`,
+        ),
+        coverageExtras: { ruleSources: nativeRuleSources(canonicalHostId) },
+        limitations: nativeLimitations(canonicalHostId),
+        policy: NATIVE_POLICY,
+      });
+    }
+  } else {
+    const expectedNative = NATIVE_HOSTS[canonicalHostId];
+    if (canonicalHostId === HOST_LOADING_SUPPORTED_HOST_ID) {
+      if (hostVersion !== HOST_LOADING_SUPPORTED_HOST_VERSION) {
+        return incompleteReport({
+          rootAbs,
+          hostId: canonicalHostId,
+          hostVersion,
+          pathCategory,
+          item: uncovered("uncalibrated-host", `host ${canonicalHostId}@${hostVersion} is outside the calibrated Codex 0.154.0 slice`),
+        });
+      }
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered("uncalibrated-path-category", `pathCategory ${pathCategory} is not a calibrated Codex project skill root`),
+      });
+    }
+    if (!expectedNative || expectedNative.hostVersion !== hostVersion) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered("uncalibrated-host", `host ${canonicalHostId}@${hostVersion} is outside the calibrated native slice`),
+      });
+    }
+    if (!category || pathCategory !== expectedNative.pathCategory) {
+      return incompleteReport({
+        rootAbs,
+        hostId: canonicalHostId,
+        hostVersion,
+        pathCategory,
+        item: uncovered("uncalibrated-path-category", `pathCategory ${pathCategory} is not a calibrated project skill root for ${canonicalHostId}`),
+      });
+    }
     return incompleteReport({
       rootAbs,
       hostId: canonicalHostId,
@@ -982,9 +1061,20 @@ export async function runHostLoadingCheck({
       pathCategory,
       item: uncovered(
         "uncalibrated-path-mapping",
-        `calibrated pathCategory ${pathCategory} must map to ${HOST_LOADING_SUPPORTED_REL_PATH}`,
+        `calibrated pathCategory ${pathCategory} must map to ${expectedNative.relPath}`,
         { relPath },
       ),
+    });
+  }
+
+  const normalizedRules = isCodex ? normalizeActivationRules(activationRules, rootAbs) : { rules: null };
+  if (normalizedRules.incomplete) {
+    return incompleteReport({
+      rootAbs,
+      hostId: canonicalHostId,
+      hostVersion,
+      pathCategory,
+      item: normalizedRules.incomplete,
     });
   }
 
@@ -1011,7 +1101,15 @@ export async function runHostLoadingCheck({
     });
   }
 
-  const skillsRoot = path.join(rootAbs, ".agents", "skills");
+  const selectedRelPath = nativeSpec?.relPath ?? HOST_LOADING_SUPPORTED_REL_PATH;
+  const skillsRoot = path.join(rootAbs, ...selectedRelPath.split("/"));
+  const nativeReportOptions = nativeSpec
+    ? {
+      coverageExtras: { ruleSources: nativeRuleSources(canonicalHostId) },
+      limitations: nativeLimitations(canonicalHostId),
+      policy: NATIVE_POLICY,
+    }
+    : {};
   let skillsRootStat;
   try {
     skillsRootStat = await lstat(skillsRoot);
@@ -1019,9 +1117,10 @@ export async function runHostLoadingCheck({
     if (cause?.code !== "ENOENT" && cause?.code !== "ENOTDIR") {
       return incompleteReport({
         rootAbs, skillsRoot, hostId: canonicalHostId, hostVersion, pathCategory,
-        item: uncovered("discovery-root-unreadable", "project .agents/skills cannot be inspected", {
+        item: uncovered("discovery-root-unreadable", `project ${selectedRelPath} cannot be inspected`, {
           causeKind: boundReadKind(cause),
         }),
+        ...nativeReportOptions,
       });
     }
     return reportDocument({
@@ -1031,10 +1130,11 @@ export async function runHostLoadingCheck({
       hostVersion,
       pathCategory,
       skills: [],
-      findings: [finding("missing-discovery-root", "project .agents/skills does not exist")],
+      findings: [finding("missing-discovery-root", `project ${selectedRelPath} does not exist`)],
       uncoveredItems: [],
       nameAmbiguities: [],
       incomplete: false,
+      ...nativeReportOptions,
     });
   }
   if (skillsRootStat.isSymbolicLink()) {
@@ -1045,6 +1145,7 @@ export async function runHostLoadingCheck({
       hostVersion,
       pathCategory,
       item: uncovered("directory-symlink-unfollowed", "the calibrated skills root is a directory symlink and is not followed"),
+      ...nativeReportOptions,
     });
   }
   if (!skillsRootStat.isDirectory()) {
@@ -1055,10 +1156,35 @@ export async function runHostLoadingCheck({
       hostVersion,
       pathCategory,
       skills: [],
-      findings: [finding("missing-discovery-root", "project .agents/skills is not a directory")],
+      findings: [finding("missing-discovery-root", `project ${selectedRelPath} is not a directory`)],
       uncoveredItems: [],
       nameAmbiguities: [],
       incomplete: false,
+      ...nativeReportOptions,
+    });
+  }
+
+  if (nativeSpec) {
+    const nativeResult = await runNativeHostLoadingCheck({
+      rootAbs,
+      skillsRootAbs: skillsRoot,
+      hostId: canonicalHostId,
+      rootBinding,
+    });
+    return reportDocument({
+      rootAbs,
+      skillsRoot,
+      hostId: canonicalHostId,
+      hostVersion,
+      pathCategory,
+      skills: nativeResult.skills,
+      findings: nativeResult.findings,
+      uncoveredItems: nativeResult.uncoveredItems,
+      nameAmbiguities: nativeResult.nameAmbiguities,
+      incomplete: nativeResult.uncoveredItems.length > 0,
+      coverageExtras: { ruleSources: nativeResult.ruleSources },
+      limitations: nativeResult.limitations,
+      policy: NATIVE_POLICY,
     });
   }
 
