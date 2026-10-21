@@ -4,25 +4,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.27.0 -->
+<!-- release-skill:release-version: 0.27.1 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.27.0** (2026-10-21)
+**0.27.1** (2026-10-21)
 
-Engineering Kit 0.27.0 adds the public function `runRegisterExisting` and the CLI sub-action `skill-family-kit check register-existing` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The sub-action is the only legal first write of `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` into a nonempty root that already has a valid `profile.json`. Relock never seeds. Scaffold still refuses nonempty directories. Adopt-plan remains read-only. Projection still requires an existing legal registry.
+Engineering Kit 0.27.1 keeps the four top-level commands and teaches the existing engineering update to accept a register-existing manifest that omitted the managed lock. Published 0.27.0 bytes, tags, and npm packages are unchanged.
 
 **Changed**
 
-- Add the public function `runRegisterExisting` and the CLI `skill-family-kit check register-existing`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. `--handwritten` is required and non-empty.
-- Missing all three closed-world documents yields exclusive create. All three present and byte-identical yields idempotent success with zero write. Any other combination, class overlap, or drifted bytes refuses with zero overwrite.
-- Relock still never seeds a missing registry. Scaffold still refuses nonempty directories. Adopt-plan remains strictly read-only. Projection and later relock still require an existing legal registry.
-- The package moves to 0.27.0 with the other three units. Contracts specification remains 1.20.0. Published 0.26.0 capabilities are unchanged and are not redone.
+- New register-existing manifests list `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` in `managedFiles`.
+- When the registry already lists the lock as kit-managed and `managedFiles` omits only that path, `runProjection({ root, engineering })` adds the path and rewrites the manifest and lock together. A lock the registry does not declare is still refused with no write.
+- The package moves to 0.27.1 with the other three units. Contracts specification remains 1.20.0. Published 0.27.0 capabilities are not redone.
 
 **Upgrade Notes**
 
-Pin the three Foundation npm packages to exactly 0.27.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. First nonempty registration does not prove business qualification or completed initialization. This note does not replace post-publish verification.
+Pin the three Foundation npm packages and the independent Plugin to exactly 0.27.1. Contracts specification 1.20.0 remains a separate coordinate. This note does not replace post-publish verification and does not rewrite 0.27.0.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -65,7 +64,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.27.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.27.1; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -73,21 +72,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.0.tgz" "$pack_dir/skill-family-harness-node-0.27.0.tgz" "$pack_dir/skill-family-engineering-kit-0.27.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.1.tgz" "$pack_dir/skill-family-harness-node-0.27.1.tgz" "$pack_dir/skill-family-engineering-kit-0.27.1.tgz")
 ```
 
-The registry installation below requires exact version 0.27.0 to be formally available:
+The registry installation below requires exact version 0.27.1 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.27.0
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.27.1
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -108,7 +107,7 @@ const updated = await runProjection({ root: targetRoot, engineering });
 
 These operations are independent; they do not form a sequence to run on one target. Use `scaffoldTarget` for an empty target. It generates the declaration and its manifest hash using the same skeleton generator and existing managed lock. It validates the contract and contained path shape but does not verify that referenced files exist or write domain content. References may point to files the business author will create later. Use `planAdoption` to analyze an existing non-empty project without modifying it. It predicts the same declaration bytes as `scaffold`, remains strictly read-only, and creates no temporary files. `allowGitSpawn: false` disables the existing read-only Git probe. `writeSet`, `conflicts`, and `complete` do not authorize execution or establish business qualification.
 
-Use `runProjection({ root: targetRoot, engineering })` only for an already managed project. It replaces the entire `engineering` object without deep-merging. Include all still-needed existing `entries` and `releaseUnits` in the complete confirmed object. It cannot be combined with `manifest`, `candidateRoot`, or `preparedProjection`. The target must be an ordinary existing root with valid ordinary registry, project manifest, and managed lock; manifest and lock must already be declared managed by both registry and `managedFiles`, and the manifest lock entry must be owned by Engineering Kit. All other managed files must match their original lock, with no missing coverage, duplicate entries, or unowned lock entries. Every business entry and version reference must point to an existing ordinary file inside the root. Missing prerequisites make this update unavailable; they do not trigger automatic takeover of an arbitrary non-empty project.
+Use `runProjection({ root: targetRoot, engineering })` only for an already managed project. It replaces the entire `engineering` object without deep-merging. Include all still-needed existing `entries` and `releaseUnits` in the complete confirmed object. It cannot be combined with `manifest`, `candidateRoot`, or `preparedProjection`. The target must be an ordinary existing root with valid ordinary registry, project manifest, and managed lock; manifest and lock must already be declared managed by both registry and `managedFiles`, and the manifest lock entry must be owned by Engineering Kit. All other managed files must match their original lock, with no missing coverage, duplicate entries, or unowned lock entries. Every business entry and version reference must point to an existing ordinary file inside the root. When the registry already lists the lock as kit-managed and `managedFiles` omits only that path, this update adds the path and rewrites the manifest and lock together. Missing prerequisites, including a lock the registry does not declare, make this update unavailable; they do not trigger automatic takeover of an arbitrary non-empty project.
 
 A valid update writes only `skill-family.project-manifest.json` and `skill-family.managed-file-lock.json`. It preserves non-`engineering` fields, registry and other file bytes, other lock entries, generator identity, versions, `lockVersion`, and file modes. The existing generator derives the manifest hash, and identical content is idempotent. The result remains a `skill-family.projection-receipt` with `schemaVersion: 2`; its in-memory `candidate.root` and `manifest.location` are `null`. Existing v1/v2 and prepared-projection protection remain in place; do not hand-write a manifest or lock candidate to hide drift.
 

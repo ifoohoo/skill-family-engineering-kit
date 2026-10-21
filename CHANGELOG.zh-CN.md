@@ -1,5 +1,22 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.27.1 locale=zh-CN baseline=sha256:cb323da4b49e16079b43e2989d638610330e1ee38439f8c025ce3b3238279b98 -->
+## [0.27.1] - 2026-10-21
+
+Engineering Kit 0.27.1 保持四个顶层命令，并让既有工程更新接受 register-existing 漏列受管锁的清单。已发布的 0.27.0 字节、标签和 npm 包不改写。
+
+### 变更
+
+- 新的 register-existing 清单在 `managedFiles` 中列入 `.foundation/file-registry.json`、`skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`。
+- 登记表已把锁列为 kitManaged，且 `managedFiles` 只缺这一路径时，`runProjection({ root, engineering })` 会补入该路径并同时重写清单和受管锁。登记表未声明该锁时仍然拒绝且不写文件。
+- 包版本与其他三单元锁步到 0.27.1。Contracts 规格仍为 1.20.0。已发布的 0.27.0 能力不重做。
+
+### 升级说明
+
+三个 Foundation npm 包和独立插件须精确锁定 0.27.1。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。本说明不替代发布后验证，也不改写 0.27.0。
+<!-- release-skill:changelog:end version=0.27.1 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.27.0 locale=zh-CN baseline=sha256:1a04833defa7c8007013debe70f397bb051a7cfc4d22a1eac0a11cfe0fe4fe63 -->
 ## [0.27.0] - 2026-10-21
 

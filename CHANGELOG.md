@@ -1,5 +1,22 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.27.1 locale=en baseline=sha256:b7e60e0e3bbda78ee3f278ef9f86ff545782f79f8947c90d7eb496e715d7ccde -->
+## [0.27.1] - 2026-10-21
+
+Engineering Kit 0.27.1 keeps the four top-level commands and teaches the existing engineering update to accept a register-existing manifest that omitted the managed lock. Published 0.27.0 bytes, tags, and npm packages are unchanged.
+
+### Changed
+
+- New register-existing manifests list `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` in `managedFiles`.
+- When the registry already lists the lock as kit-managed and `managedFiles` omits only that path, `runProjection({ root, engineering })` adds the path and rewrites the manifest and lock together. A lock the registry does not declare is still refused with no write.
+- The package moves to 0.27.1 with the other three units. Contracts specification remains 1.20.0. Published 0.27.0 capabilities are not redone.
+
+### Upgrade Notes
+
+Pin the three Foundation npm packages and the independent Plugin to exactly 0.27.1. Contracts specification 1.20.0 remains a separate coordinate. This note does not replace post-publish verification and does not rewrite 0.27.0.
+<!-- release-skill:changelog:end version=0.27.1 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.27.0 locale=en baseline=sha256:788200e7009ed97f33b3b4d407854f84ca89240b9a9ee02043413898ba95a66c -->
 ## [0.27.0] - 2026-10-21
 

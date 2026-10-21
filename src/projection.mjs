@@ -1557,16 +1557,24 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
   const currentLock = JSON.parse(lockedStates.get(MANAGED_LOCK_PATH).bytes.toString("utf8"));
   validateEngineeringDocument(currentManifest, "project-manifest");
   validateEngineeringDocument(currentLock, "managed-file-lock");
-  const desiredManifest = { ...currentManifest, engineering };
-  validateEngineeringDocument(desiredManifest, "project-manifest");
+  const baseManifest = { ...currentManifest, engineering };
+  validateEngineeringDocument(baseManifest, "project-manifest");
   const facts = await loadTargetFacts(rootAbs);
   const classes = facts.fileRegistry?.classes;
   const declared = new Set([
     ...(Array.isArray(classes?.managed) ? classes.managed : []),
     ...(classes?.projenManaged?.files ?? []), ...(classes?.kitManaged?.files ?? []),
   ]);
+  const managedFiles = Array.isArray(currentManifest.managedFiles) ? [...currentManifest.managedFiles] : [];
+  const repairLockMembership = declared.has(MANAGED_LOCK_PATH)
+    && managedFiles.includes(PROJECT_MANIFEST_PATH)
+    && !managedFiles.includes(MANAGED_LOCK_PATH);
+  const desiredManifest = repairLockMembership
+    ? { ...baseManifest, managedFiles: [...managedFiles, MANAGED_LOCK_PATH] }
+    : baseManifest;
+  if (repairLockMembership) validateEngineeringDocument(desiredManifest, "project-manifest");
   for (const rel of [PROJECT_MANIFEST_PATH, MANAGED_LOCK_PATH]) {
-    if (!declared.has(rel) || !currentManifest.managedFiles?.includes(rel)) {
+    if (!declared.has(rel) || !desiredManifest.managedFiles?.includes(rel)) {
       throw invalidManifest(`engineering update requires a currently managed ${rel}`);
     }
   }

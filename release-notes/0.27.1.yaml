@@ -1,0 +1,19 @@
+version: 0.27.1
+date: 2026-10-21
+locales:
+  en:
+    summary: "Engineering Kit 0.27.1 keeps the four top-level commands and teaches the existing engineering update to accept a register-existing manifest that omitted the managed lock. Published 0.27.0 bytes, tags, and npm packages are unchanged."
+    changes:
+      changed:
+        - "New register-existing manifests list `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` in `managedFiles`."
+        - "When the registry already lists the lock as kit-managed and `managedFiles` omits only that path, `runProjection({ root, engineering })` adds the path and rewrites the manifest and lock together. A lock the registry does not declare is still refused with no write."
+        - "The package moves to 0.27.1 with the other three units. Contracts specification remains 1.20.0. Published 0.27.0 capabilities are not redone."
+    upgradeNotes: "Pin the three Foundation npm packages and the independent Plugin to exactly 0.27.1. Contracts specification 1.20.0 remains a separate coordinate. This note does not replace post-publish verification and does not rewrite 0.27.0."
+  zh-CN:
+    summary: "Engineering Kit 0.27.1 保持四个顶层命令，并让既有工程更新接受 register-existing 漏列受管锁的清单。已发布的 0.27.0 字节、标签和 npm 包不改写。"
+    changes:
+      changed:
+        - "新的 register-existing 清单在 `managedFiles` 中列入 `.foundation/file-registry.json`、`skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`。"
+        - "登记表已把锁列为 kitManaged，且 `managedFiles` 只缺这一路径时，`runProjection({ root, engineering })` 会补入该路径并同时重写清单和受管锁。登记表未声明该锁时仍然拒绝且不写文件。"
+        - "包版本与其他三单元锁步到 0.27.1。Contracts 规格仍为 1.20.0。已发布的 0.27.0 能力不重做。"
+    upgradeNotes: "三个 Foundation npm 包和独立插件须精确锁定 0.27.1。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。本说明不替代发布后验证，也不改写 0.27.0。"

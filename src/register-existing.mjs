@@ -263,7 +263,7 @@ function renderManifest({ projectId, projectName, profileId, engineering }) {
       version: CONTRACTS_VERSION,
       profile: profileId,
     },
-    managedFiles: [FILE_REGISTRY_PATH, PROJECT_MANIFEST_PATH],
+    managedFiles: [FILE_REGISTRY_PATH, PROJECT_MANIFEST_PATH, MANAGED_LOCK_PATH],
     ...(engineering === undefined ? {} : { engineering }),
   };
   const registration = findSchemaByObject("project-manifest");

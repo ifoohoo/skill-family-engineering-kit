@@ -5,25 +5,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.27.0 -->
+<!-- release-skill:release-version: 0.27.1 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.27.0** (2026-10-21)
+**0.27.1** (2026-10-21)
 
-Engineering Kit 0.27.0 在既有 `check` 下新增公共函数 `runRegisterExisting` 与 CLI 子动作 `skill-family-kit check register-existing`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。该子动作是已有有效 `profile.json` 的非空根首次写入 `.foundation/file-registry.json`、`skill-family.project-manifest.json`、`skill-family.managed-file-lock.json` 的唯一合法入口。`relock` 不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍只读。`projection` 仍要求已有合法登记。
+Engineering Kit 0.27.1 保持四个顶层命令，并让既有工程更新接受 register-existing 漏列受管锁的清单。已发布的 0.27.0 字节、标签和 npm 包不改写。
 
 **变更**
 
-- 新增公共函数 `runRegisterExisting` 与 CLI `skill-family-kit check register-existing`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。`--handwritten` 必填且非空。
-- 三份闭域文件均不存在时排他创建；三份均在且字节一致时幂等成功且零写入；任一其他组合、分类重叠或字节漂移均拒绝且零覆盖。
-- `relock` 仍不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍严格只读。`projection` 与后续 `relock` 仍要求已有合法登记。
-- 包版本与其他三单元锁步到 0.27.0。Contracts 规格仍为 1.20.0。已发布的 0.26.0 能力保持原样，本版本不重做。
+- 新的 register-existing 清单在 `managedFiles` 中列入 `.foundation/file-registry.json`、`skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`。
+- 登记表已把锁列为 kitManaged，且 `managedFiles` 只缺这一路径时，`runProjection({ root, engineering })` 会补入该路径并同时重写清单和受管锁。登记表未声明该锁时仍然拒绝且不写文件。
+- 包版本与其他三单元锁步到 0.27.1。Contracts 规格仍为 1.20.0。已发布的 0.27.0 能力不重做。
 
 **升级说明**
 
-三个 Foundation npm 包须精确锁定 0.27.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。首次非空登记不证明业务资格或初始化完成。本说明不替代发布后验证。
+三个 Foundation npm 包和独立插件须精确锁定 0.27.1。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。本说明不替代发布后验证，也不改写 0.27.0。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -64,7 +63,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.27.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.27.1；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -72,21 +71,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.0.tgz" "$pack_dir/skill-family-harness-node-0.27.0.tgz" "$pack_dir/skill-family-engineering-kit-0.27.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.1.tgz" "$pack_dir/skill-family-harness-node-0.27.1.tgz" "$pack_dir/skill-family-engineering-kit-0.27.1.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.27.0 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.27.1 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.27.0
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.27.1
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -107,7 +106,7 @@ const updated = await runProjection({ root: targetRoot, engineering });
 
 这些调用用于不同目标状态，不能按示例次序对同一目标全跑。空目标由 `scaffoldTarget` 通过同一骨架生成器和原受管锁派生声明与清单摘要；只检查合同和根内路径形态，可引用业务作者稍后创建的文件，不确认文件已存在，也不代写领域内容。非空目标由 `planAdoption` 预测与 `scaffold` 相同的声明字节，保持严格只读，连临时文件也不写；`allowGitSpawn: false` 关闭原只读 Git 探测。`writeSet`、`conflicts` 和 `complete` 不授权执行，也不证明业务资格。
 
-现有受管项目使用 `runProjection({ root: targetRoot, engineering })` 完整替换整个 `engineering`，不做深合并。完整已确认对象须保留仍需使用的旧 `entries` 和 `releaseUnits`。不能与 `manifest`、`candidateRoot` 或 `preparedProjection` 同传。目标须为现有普通根，具备有效普通 registry、项目清单和受管锁；清单与锁已由 registry 及 `managedFiles` 声明受管，清单锁条目由 Engineering Kit 拥有。其他受管文件须匹配原锁，没有缺覆盖、重复或未拥有的锁条目。每个业务入口与版本引用须指向根内现存普通文件。前提缺失只表示本更新不可执行，不自动接管任意非空项目。
+现有受管项目使用 `runProjection({ root: targetRoot, engineering })` 完整替换整个 `engineering`，不做深合并。完整已确认对象须保留仍需使用的旧 `entries` 和 `releaseUnits`。不能与 `manifest`、`candidateRoot` 或 `preparedProjection` 同传。目标须为现有普通根，具备有效普通 registry、项目清单和受管锁；清单与锁已由 registry 及 `managedFiles` 声明受管，清单锁条目由 Engineering Kit 拥有。其他受管文件须匹配原锁，没有缺覆盖、重复或未拥有的锁条目。每个业务入口与版本引用须指向根内现存普通文件。登记表已把锁列为 kitManaged，且 `managedFiles` 只缺这一路径时，同一次更新会补入该路径并同时重写清单和受管锁。前提缺失，包括登记表没有声明该锁，只表示本更新不可执行，不自动接管任意非空项目。
 
 合法更新只写 `skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`，保留非 `engineering` 字段、registry 与其他文件字节、其他锁条目、生成器身份、版本、`lockVersion` 和文件 mode。清单摘要由原生成器派生，同内容幂等。结果沿用 `schemaVersion: 2` 的 `skill-family.projection-receipt`；内存候选的 `candidate.root` 与 `manifest.location` 为 `null`。原 v1/v2 和 prepared 投影保护保留，不手写清单或锁候选掩盖漂移。
 
