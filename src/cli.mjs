@@ -8,6 +8,7 @@ import { bundledProfilesRoot } from "./licensing.mjs";
 import { checkEntriesAction } from "./entry-check.mjs";
 import { checkHostLoadingAction } from "./host-loading-check.mjs";
 import { relockAction } from "./relock.mjs";
+import { registerExistingAction } from "./register-existing.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
 import {
   COMMAND_SIDE_EFFECTS,
@@ -77,6 +78,10 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                把新手写文件登记进 .foundation/file-registry.json，并以当前字节
                重算 skill-family.managed-file-lock.json（单次 fail-closed 事务；
                只写这两个收容状态文档，任何拒绝都零写入）。
+               首次非空登记子动作: check register-existing 为已有非空工程生成
+               三份闭世界登记（file-registry / project-manifest / managed-file-lock）。
+               消费已确认的 profile 身份与调用方分类/engineering；重复执行幂等，
+               冲突拒绝且零覆盖。不走 scaffold，也不把 adopt-plan 写成 apply。
                显式资格子动作: check qualification 仅在显式提供
                capability/request/bindings/native 后适配目录声明的能力特定入口，
                可在预检后调用能力特定的原生宿主。
@@ -157,6 +162,12 @@ function commandHelp(command) {
       "登记子动作: skill-family-kit check relock --root <dir> [--files <relative-paths>]",
       "  --registration-class <handwritten|trackedToolLocks>  登记类别，默认 handwritten",
       "  trackedToolLocks 必须提供非空 --files 清单，只登记路径，不锁定工具锁内容。",
+      "",
+      "首次非空登记: skill-family-kit check register-existing --root <dir> --handwritten <globs>",
+      "  --engineering <json>  可选，现有 project-manifest.engineering 对象",
+      "  --tracked-tool-locks <paths>  可选，已存在的持久工具锁路径",
+      "  --artifacts <patterns>  可选，额外忽略模式；不得把已跟踪生成物列为忽略运行目录",
+      "  目标必须已有合法 profile.json；三份登记全部缺失则独占创建，全部匹配则幂等，其它情况拒绝零覆盖。",
       "",
       "选项:",
       "  --root <dir>          目标工作区（默认当前目录）",
@@ -345,6 +356,16 @@ const COMMAND_SPECS = {
       "--root": { key: "root", value: true },
       "--files": { key: "files", value: true },
       "--registration-class": { key: "registrationClass", value: true },
+    },
+  },
+  "check register-existing": {
+    rejectDuplicates: true,
+    flags: {
+      "--root": { key: "root", value: true },
+      "--handwritten": { key: "handwritten", value: true },
+      "--engineering": { key: "engineeringJson", value: true },
+      "--tracked-tool-locks": { key: "trackedToolLocks", value: true },
+      "--artifacts": { key: "artifacts", value: true },
     },
   },
   "check qualification": {
@@ -615,6 +636,37 @@ async function runRelockSubAction(rest) {
   }
 }
 
+async function runRegisterExistingSubAction(rest) {
+  const specName = "check register-existing";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags, rejectDuplicates: true });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    let engineering;
+    if (options.engineeringJson !== undefined) {
+      try {
+        engineering = JSON.parse(options.engineeringJson);
+      } catch {
+        throw invalidParamsError("--engineering must be a JSON engineering object", { flag: "--engineering" });
+      }
+    }
+    const { status, output } = await registerExistingAction({
+      root: options.root,
+      handwritten: options.handwritten,
+      engineering,
+      trackedToolLocks: options.trackedToolLocks,
+      artifacts: options.artifacts,
+    });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    return status === "ok" ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 function requireJsonFlag(options, specName) {
   if (options.json !== true) {
     throw invalidParamsError(`${specName} requires --json`, { reason: "missing-option-value", flag: "--json" });
@@ -787,6 +839,9 @@ export async function cliMain(argv) {
   // existing check command, parallel to `check entries`; no fifth command.
   if (command === "check" && argv[1] === "relock") {
     return runRelockSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "register-existing") {
+    return runRegisterExistingSubAction(argv.slice(2));
   }
   if (command === "check" && argv[1] === "qualification") {
     return runQualificationSubAction(argv.slice(2));

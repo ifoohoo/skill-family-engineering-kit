@@ -1,5 +1,23 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.27.0 locale=zh-CN baseline=sha256:1a04833defa7c8007013debe70f397bb051a7cfc4d22a1eac0a11cfe0fe4fe63 -->
+## [0.27.0] - 2026-10-21
+
+Engineering Kit 0.27.0 在既有 `check` 下新增公共函数 `runRegisterExisting` 与 CLI 子动作 `skill-family-kit check register-existing`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。该子动作是已有有效 `profile.json` 的非空根首次写入 `.foundation/file-registry.json`、`skill-family.project-manifest.json`、`skill-family.managed-file-lock.json` 的唯一合法入口。`relock` 不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍只读。`projection` 仍要求已有合法登记。
+
+### 变更
+
+- 新增公共函数 `runRegisterExisting` 与 CLI `skill-family-kit check register-existing`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。`--handwritten` 必填且非空。
+- 三份闭域文件均不存在时排他创建；三份均在且字节一致时幂等成功且零写入；任一其他组合、分类重叠或字节漂移均拒绝且零覆盖。
+- `relock` 仍不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍严格只读。`projection` 与后续 `relock` 仍要求已有合法登记。
+- 包版本与其他三单元锁步到 0.27.0。Contracts 规格仍为 1.20.0。已发布的 0.26.0 能力保持原样，本版本不重做。
+
+### 升级说明
+
+三个 Foundation npm 包须精确锁定 0.27.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。首次非空登记不证明业务资格或初始化完成。本说明不替代发布后验证。
+<!-- release-skill:changelog:end version=0.27.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.26.0 locale=zh-CN baseline=sha256:3437859b22ecdad6bc0766dccf3d8b3ed7f1eb9240a9b898f1a2628a092f7143 -->
 ## [0.26.0] - 2026-10-17
 

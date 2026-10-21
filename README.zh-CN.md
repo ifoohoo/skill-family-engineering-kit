@@ -5,29 +5,25 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.26.0 -->
+<!-- release-skill:release-version: 0.27.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.26.0** (2026-10-17)
+**0.27.0** (2026-10-21)
 
-0.26.0 版本通过既有公共函数 `runHostLoadingCheck` 与 CLI 子动作 `skill-family-kit check host-loading`，扩展对七宿主的共享只读静态加载检查能力。四顶层命令 `scaffold`、`adopt-plan`、`projection`、`check` 保持不变，未新增顶层命令或公共 API。检查不启动宿主、模型、hook 或脚本，不联网、不写文件。
+Engineering Kit 0.27.0 在既有 `check` 下新增公共函数 `runRegisterExisting` 与 CLI 子动作 `skill-family-kit check register-existing`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。该子动作是已有有效 `profile.json` 的非空根首次写入 `.foundation/file-registry.json`、`skill-family.project-manifest.json`、`skill-family.managed-file-lock.json` 的唯一合法入口。`relock` 不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍只读。`projection` 仍要求已有合法登记。
 
 **变更**
 
-- 新增七宿主共享静态加载检查；精确宿主版本、类别与项目目录见权威 [NATIVE_HOSTS 表](src/host-loading-native.mjs)。该内部表不是包根公共导出。
-- **兼容性保留**：Codex CLI 0.154.0 的 `.agents/skills` 项目结构继续支持，其 `activationRules` 机制保持可用。
-- **检查逻辑**：各宿主独立执行发现、解析、忽略、名称竞争与局部文件标志判断。Cursor 的菜单、补全与模型元数据三类行为分别报告。
-- **证据例外**：仅当 `modelMetadata.*` 字段来自 Cursor CLI 2026.09.10-fd3934a 版本时，允许标注 `source-reviewed-unexecuted`，文字为“源码核实、未作原生运行校准”。该标记不表示原生运行已校准，也不代表本次检查启动宿主。
-- **标记语义**：其余 `native-observed` 标记仅表示采用已有原生校准规则，不表示本次检查启动宿主。
-- **边界与退出码**： 项目 root 必须为绝对工作目录，CLI 先将相对输入解析为绝对路径。 项目根不存在或不可绑定 → 退出码 2。 项目存在但技能容器缺失、非目录或为空 → 退出码 1。 已证明本地加载阻断 → 退出码 1。 具体未覆盖或未知竞争 → 退出码 2，且优先于 1。 普通完整静态范围无阻断 → 退出码 0；已有正常技能不能掩盖阻断或未覆盖。 Codex 支持原有 `activationRules`；其余七宿主仅接受省略或 `null`，其他值（包括空数组）返回 2。
-- **数据边界**：保留链接收容与读取边界。未校准的实际竞争、WorkBuddy 尚未校准的可选元信息或版本来源形态及图标解析、Cursor 补全字符串 `false`、CodeBuddy 未证明等价的块标量等，均按具体未覆盖处理，不猜测成功，也不将所有普通输入永久返回 2。
-- **静态通过不等于业务成功**：退出码 0 仅表示静态检查通过，不证明最终启用、安装、更新、会话选择、真实触发或业务执行成功。不得复用 Codex 证据宣称其他宿主已校准。
+- 新增公共函数 `runRegisterExisting` 与 CLI `skill-family-kit check register-existing`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。`--handwritten` 必填且非空。
+- 三份闭域文件均不存在时排他创建；三份均在且字节一致时幂等成功且零写入；任一其他组合、分类重叠或字节漂移均拒绝且零覆盖。
+- `relock` 仍不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍严格只读。`projection` 与后续 `relock` 仍要求已有合法登记。
+- 包版本与其他三单元锁步到 0.27.0。Contracts 规格仍为 1.20.0。已发布的 0.26.0 能力保持原样，本版本不重做。
 
 **升级说明**
 
-三个 Foundation npm 包（`skill-family-engineering-kit`、`skill-family-contracts`、`skill-family-harness-node`）及独立 Plugin 均需精确锁定至 0.26.0 版本，实现四单元锁步。 Contracts 规格保持 1.20.0，与包版本为独立坐标，不随 Kit 升级。 消费方应按精确宿主版本与类别，使用实际已发布的公共接口。 发布说明不替代发布后验证或正式消费者验收。 退出码 0 不构成升级安全保证，不等同于可安全升级或已通过生产验证。
+三个 Foundation npm 包须精确锁定 0.27.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。首次非空登记不证明业务资格或初始化完成。本说明不替代发布后验证。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -68,7 +64,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.26.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.27.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -76,21 +72,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.26.0.tgz" "$pack_dir/skill-family-harness-node-0.26.0.tgz" "$pack_dir/skill-family-engineering-kit-0.26.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.0.tgz" "$pack_dir/skill-family-harness-node-0.27.0.tgz" "$pack_dir/skill-family-engineering-kit-0.27.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.26.0 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.27.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.26.0
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.27.0
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 

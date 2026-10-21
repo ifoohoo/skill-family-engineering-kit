@@ -92,6 +92,8 @@ export const KIT_ERROR_KINDS = Object.freeze({
   // controlled relock channel (SG-36; audit friction F5): `check relock`
   RELOCK_REGISTRATION_REFUSED: "relock-registration-refused",
   RELOCK_LOCK_DRIFT: "relock-lock-drift",
+  // first nonempty closed-world seed (check register-existing)
+  REGISTER_EXISTING_REFUSED: "register-existing-refused",
   // read-only host integration slice
   HOST_CONTRACT_INVALID: "host-contract-invalid",
   HOST_PROBE_FAILED: "host-probe-failed",

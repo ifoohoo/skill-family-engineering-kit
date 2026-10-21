@@ -360,7 +360,7 @@ export function buildProfileDraft({ inputs, migrationManifest, writeSet, entries
     ready: incompleteFields.length === 0,
     binding: { targetSetDigest, foundationPlanDigest },
     policyNote:
-      "adoption-lock is deprecated (remediation handoff D-8): the kit no longer produces adoption-lock-form artifacts. The adoption proof is this project's adoption declaration, completed with real artifact paths and digests inside the profile write set and machine-verified by verifyProjectProfile (SPE1006 digest discipline, SPE1007 tightening-only overrides).",
+      "adoption-lock is deprecated (remediation handoff D-8): the kit no longer produces adoption-lock-form artifacts. The adoption proof is this project's adoption declaration, completed with real artifact paths and digests inside the profile write set and machine-verified by verifyProjectProfile (SPE1006 digest discipline, SPE1007 tightening-only overrides). profileDraft is a proposed draft only; an incomplete or empty draft does not invalidate a current valid profile.json.",
   };
 }
 

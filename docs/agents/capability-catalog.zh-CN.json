@@ -1507,6 +1507,57 @@
    ]
   },
   {
+   "id": "foundation.kit.register-existing",
+   "intent": "为已有有效 profile.json、尚未具备合法登记的非空工程，播种三份官方闭域文件",
+   "useWhen": [
+    "需要把 .foundation/file-registry.json、skill-family.project-manifest.json、skill-family.managed-file-lock.json 合法地首次写入非空根",
+    "需要官方首次非空登记：三份皆无则排他创建，字节一致则幂等零写入，其余情况拒绝且零覆盖"
+   ],
+   "doNotUseWhen": [
+    "目标为空（走 scaffold）",
+    "三份官方文件已存在、只需纳入后来的手写文件（走 check relock）",
+    "只需只读盘点既有工程（走 adopt-plan）",
+    "需要覆盖已漂移的闭域字节"
+   ],
+   "prerequisites": [
+    "调用方给出绝对项目工作目录",
+    "目标根已有合同有效的 profile.json，且含 profile.adoption.foundation_profile.id",
+    "手写分类清单非空"
+   ],
+   "inputs": [
+    "绝对项目工作目录 root",
+    "非空手写 glob 或相对路径",
+    "可选 engineering JSON、trackedToolLocks 路径，以及 gitignore 风格的 artifacts 模式"
+   ],
+   "outputs": [
+    "register-existing 报告（kind skill-family.register-existing-report）",
+    "首次创建时排他写入三份闭域文件；字节一致时幂等成功且零写入；否则拒绝且零覆盖"
+   ],
+   "sideEffects": [
+    "最多写入三份闭域文件；从不覆盖不匹配的既有字节；不 scaffold、不 apply adopt-plan、不经 relock 播种"
+   ],
+   "failureSemantics": [
+    "缺少或无效的 profile.json 拒绝",
+    "空手写清单拒绝",
+    "handwritten、artifacts、trackedToolLocks 分类重叠拒绝",
+    "三份文件任一不完整或字节漂移时拒绝且零覆盖"
+   ],
+   "invariants": [
+    "不新增第五个顶层命令，落在 check register-existing 子动作",
+    "relock 不为缺锁工程播种；本子动作是非空根首次写入三份文件的唯一合法入口",
+    "scaffold 仍拒绝非空目录；adopt-plan 仍只读"
+   ],
+   "ownedByCaller": [
+    "选择 handwritten、artifacts、trackedToolLocks 分类",
+    "拒绝且零覆盖之后的整改"
+   ],
+   "routeElsewhere": [
+    "空目标：scaffold",
+    "已有合法登记且需纳入新手写文件：check relock",
+    "非空只读盘点：adopt-plan"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "intent": "运行受控 relock 事务：默认登记新增手写文件；显式选择 trackedToolLocks 时登记持久工具锁路径，并在原事务中同步 registry 与受管文件锁。工具锁内容不纳入受管摘要。",
    "useWhen": [

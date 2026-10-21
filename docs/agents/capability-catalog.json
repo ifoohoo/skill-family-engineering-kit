@@ -997,6 +997,32 @@
    ]
   },
   {
+   "id": "foundation.kit.register-existing",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.27.0",
+   "stability": "candidate",
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent",
+   "adoptionScopes": ["engineering-kit"],
+   "entrypoints": [
+    "runRegisterExisting (packages/skill-family-engineering-kit/src/register-existing.mjs)",
+    "registerExistingAction (packages/skill-family-engineering-kit/src/register-existing.mjs)",
+    "REGISTER_EXISTING_REPORT_KIND (packages/skill-family-engineering-kit/src/register-existing.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/register-existing.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs",
+    "packages/skill-family-engineering-kit/src/index.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/register-existing.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/register-existing.test.mjs"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "package": "skill-family-engineering-kit",
    "layer": "engineering-kit",

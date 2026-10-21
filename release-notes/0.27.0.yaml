@@ -1,0 +1,21 @@
+version: 0.27.0
+date: 2026-10-21
+locales:
+  en:
+    summary: "Engineering Kit 0.27.0 adds the public function `runRegisterExisting` and the CLI sub-action `skill-family-kit check register-existing` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The sub-action is the only legal first write of `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` into a nonempty root that already has a valid `profile.json`. Relock never seeds. Scaffold still refuses nonempty directories. Adopt-plan remains read-only. Projection still requires an existing legal registry."
+    changes:
+      changed:
+        - "Add the public function `runRegisterExisting` and the CLI `skill-family-kit check register-existing`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. `--handwritten` is required and non-empty."
+        - "Missing all three closed-world documents yields exclusive create. All three present and byte-identical yields idempotent success with zero write. Any other combination, class overlap, or drifted bytes refuses with zero overwrite."
+        - "Relock still never seeds a missing registry. Scaffold still refuses nonempty directories. Adopt-plan remains strictly read-only. Projection and later relock still require an existing legal registry."
+        - "The package moves to 0.27.0 with the other three units. Contracts specification remains 1.20.0. Published 0.26.0 capabilities are unchanged and are not redone."
+    upgradeNotes: "Pin the three Foundation npm packages to exactly 0.27.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. First nonempty registration does not prove business qualification or completed initialization. This note does not replace post-publish verification."
+  zh-CN:
+    summary: "Engineering Kit 0.27.0 在既有 `check` 下新增公共函数 `runRegisterExisting` 与 CLI 子动作 `skill-family-kit check register-existing`。四个顶层命令仍为 `scaffold`、`adopt-plan`、`projection`、`check`。该子动作是已有有效 `profile.json` 的非空根首次写入 `.foundation/file-registry.json`、`skill-family.project-manifest.json`、`skill-family.managed-file-lock.json` 的唯一合法入口。`relock` 不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍只读。`projection` 仍要求已有合法登记。"
+    changes:
+      changed:
+        - "新增公共函数 `runRegisterExisting` 与 CLI `skill-family-kit check register-existing`。API 的 `root` 必须是绝对项目工作目录；CLI 会把当前目录或相对路径先解析成绝对路径。`--handwritten` 必填且非空。"
+        - "三份闭域文件均不存在时排他创建；三份均在且字节一致时幂等成功且零写入；任一其他组合、分类重叠或字节漂移均拒绝且零覆盖。"
+        - "`relock` 仍不为缺锁工程播种。`scaffold` 仍拒绝非空目录。`adopt-plan` 仍严格只读。`projection` 与后续 `relock` 仍要求已有合法登记。"
+        - "包版本与其他三单元锁步到 0.27.0。Contracts 规格仍为 1.20.0。已发布的 0.26.0 能力保持原样，本版本不重做。"
+    upgradeNotes: "三个 Foundation npm 包须精确锁定 0.27.0，独立插件与三包保持相同发布版本。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。消费以实际发布版本的公开接口和源码为准。首次非空登记不证明业务资格或初始化完成。本说明不替代发布后验证。"

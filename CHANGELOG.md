@@ -1,5 +1,23 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.27.0 locale=en baseline=sha256:788200e7009ed97f33b3b4d407854f84ca89240b9a9ee02043413898ba95a66c -->
+## [0.27.0] - 2026-10-21
+
+Engineering Kit 0.27.0 adds the public function `runRegisterExisting` and the CLI sub-action `skill-family-kit check register-existing` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The sub-action is the only legal first write of `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` into a nonempty root that already has a valid `profile.json`. Relock never seeds. Scaffold still refuses nonempty directories. Adopt-plan remains read-only. Projection still requires an existing legal registry.
+
+### Changed
+
+- Add the public function `runRegisterExisting` and the CLI `skill-family-kit check register-existing`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. `--handwritten` is required and non-empty.
+- Missing all three closed-world documents yields exclusive create. All three present and byte-identical yields idempotent success with zero write. Any other combination, class overlap, or drifted bytes refuses with zero overwrite.
+- Relock still never seeds a missing registry. Scaffold still refuses nonempty directories. Adopt-plan remains strictly read-only. Projection and later relock still require an existing legal registry.
+- The package moves to 0.27.0 with the other three units. Contracts specification remains 1.20.0. Published 0.26.0 capabilities are unchanged and are not redone.
+
+### Upgrade Notes
+
+Pin the three Foundation npm packages to exactly 0.27.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. First nonempty registration does not prove business qualification or completed initialization. This note does not replace post-publish verification.
+<!-- release-skill:changelog:end version=0.27.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.26.0 locale=en baseline=sha256:f92651ad31301672d84ced913199520f2f7868c15881a51766064a9a2b11922c -->
 ## [0.26.0] - 2026-10-17
 

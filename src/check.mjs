@@ -52,10 +52,12 @@ import { loadEngineeringDeclaration } from "./engineering-declaration.mjs";
  *               fail-closed semantics are unchanged: it remains a finding);
  *   closure   — harness resource closure over declared inputs/outputs;
  *   version   — declared contracts version vs the frozen contracts version,
- *               plus version single-source consistency (SG-13/14, VRG-001/002:
- *               package.json is the single version authority; no double-headed
- *               VERSION authority; every workspace package.json carries the
- *               same single-source version);
+ *               plus root-only version single-source facts when no
+ *               engineering.releaseUnits declaration is in force (SG-13/14,
+ *               VRG-001: package.json is the root version authority; no
+ *               double-headed VERSION authority). Nested package.json files
+ *               and historical snapshots are not current release units; actual
+ *               units are checked only through declared versionSource/versionMirrors;
  *   docs      — documentation facts (README presence, identity consistency);
  *   git       — read-only Git pre-state (never a git write);
  *   identity  — licensing and identity drift checks (FND-045);
@@ -552,22 +554,27 @@ async function checkClosure(rootAbs, findings) {
 }
 
 /**
- * Version single-source consistency (SG-13/14; audit VRG-001/VRG-002).
+ * Legacy version facts used when engineering.releaseUnits is absent.
  *
- * The version truth source of a release unit is the `version` field of its
- * package.json. Two mechanical facts follow:
- * - VRG-001: a VERSION file alongside package.json is a double-headed
- *   version authority; the authority must converge on package.json;
- * - VRG-002: the version value is declared once; every other occurrence is
- *   mechanically synchronized — here: every nested workspace package.json
- *   must carry exactly the root package.json version.
+ * Scope is the root package.json and an adjacent VERSION file only
+ * (VRG-001: no double-headed VERSION authority next to the root package).
+ * Nested package.json files, historical snapshots, and independent release
+ * units are not current version authorities; declare releaseUnits with
+ * versionSource/versionMirrors to check those objects. Invalid declarations
+ * never fall back to this path. Provider lockstep among Foundation's own
+ * four release units stays in the workspace check-structure gate.
  *
  * When no root package.json version exists there is no single source to
  * compare against and the sub-check reports nothing (never guesses).
- * Returns { rootVersion, versionFilePresent, drifted }.
+ * Returns { rootVersion, versionFilePresent, drifted, note }.
  */
 async function checkVersionSingleSource(rootAbs, findings) {
-  const facts = { rootVersion: null, versionFilePresent: false, drifted: [] };
+  const facts = {
+    rootVersion: null,
+    versionFilePresent: false,
+    drifted: [],
+    note: "legacy version class reads the root package.json and an adjacent VERSION file only; nested package.json files and historical snapshots are not current release units. Declare engineering.releaseUnits to check actual units.",
+  };
   const packageDocument = await loadDocument(rootAbs, "package.json");
   if (packageDocument.state !== "ok" || typeof packageDocument.value?.version !== "string") {
     return facts;
@@ -586,27 +593,6 @@ async function checkVersionSingleSource(rootAbs, findings) {
         { path: "VERSION" },
       ),
     );
-  }
-
-  const entries = await listTargetEntries(rootAbs);
-  for (const entry of entries) {
-    if (entry.kind !== "file" || entry.path === "package.json" || !entry.path.endsWith("package.json")) {
-      continue;
-    }
-    const nested = await loadDocument(rootAbs, entry.path);
-    if (nested.state !== "ok" || typeof nested.value?.version !== "string") continue;
-    if (nested.value.version !== facts.rootVersion) {
-      facts.drifted.push({ path: entry.path, version: nested.value.version });
-      findings.push(
-        finding(
-          "version",
-          KIT_ERROR_KINDS.VERSION_SINGLE_SOURCE_DRIFT,
-          "SFC2004",
-          `${entry.path} declares version ${nested.value.version}; the single version source is the root package.json version ${facts.rootVersion} (VRG-002)`,
-          { path: entry.path, declared: nested.value.version, expected: facts.rootVersion },
-        ),
-      );
-    }
   }
   return facts;
 }

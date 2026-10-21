@@ -25,6 +25,11 @@ import {
   runRelock,
 } from "./relock.mjs";
 import {
+  REGISTER_EXISTING_REPORT_KIND,
+  registerExistingAction,
+  runRegisterExisting,
+} from "./register-existing.mjs";
+import {
   invalidParamsError,
   KitError,
   KIT_ERROR_KINDS,
@@ -164,7 +169,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   check: Object.freeze({
     summary: "契约/漂移/闭包/版本/文档事实/Git 前置状态诊断。",
     sideEffect:
-      "none for default diagnosis and the pure runChecks/runEntryContractCheck functions — they never write or auto-fix, and git is probed read-only (one frozen status query at most); with policy declared, only the runCommand('check') and checkEntriesAction wrappers may exclusively create one conclusion when callers explicitly provide an existing output root plus a contained relative path, never creating parent directories or overwriting an existing entry; check proof is read-only proof interpretation and never writes; check proof-create exclusively creates one conclusion from a Skill review-input under the same exclusive-write rules; check host-loading is a strictly read-only sub-action that never writes, spawns, or contacts a network; relock remains a separately explicit controlled write transaction; qualification remains separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
+      "none for default diagnosis and the pure runChecks/runEntryContractCheck functions — they never write or auto-fix, and git is probed read-only (one frozen status query at most); with policy declared, only the runCommand('check') and checkEntriesAction wrappers may exclusively create one conclusion when callers explicitly provide an existing output root plus a contained relative path, never creating parent directories or overwriting an existing entry; check proof is read-only proof interpretation and never writes; check proof-create exclusively creates one conclusion from a Skill review-input under the same exclusive-write rules; check host-loading is a strictly read-only sub-action that never writes, spawns, or contacts a network; relock remains a separately explicit controlled write transaction; check register-existing remains a separately explicit first-nonempty registration write of the three closed-world documents and never overwrites mismatched bytes; qualification remains separately explicit and may invoke the capability-specific native host only after its preflight. Foundation itself does not issue network requests, but a bound executable may access the network; sandbox and egress controls remain with callers and the execution environment",
     exitCodes: "0 无发现；1 有发现；2 拒绝/用法/机制错误",
   }),
 });
@@ -262,6 +267,9 @@ export {
   relockAction,
   RELOCK_LOCK_PATH_PATTERN,
   RELOCK_REPORT_KIND,
+  runRegisterExisting,
+  registerExistingAction,
+  REGISTER_EXISTING_REPORT_KIND,
   runChecks,
   CHECK_CLASSES,
   DOCUMENT_STATES,

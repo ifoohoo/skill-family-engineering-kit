@@ -1508,6 +1508,57 @@
    ]
   },
   {
+   "id": "foundation.kit.register-existing",
+   "intent": "Seed the three official closed-world documents for a nonempty project that already has a valid profile.json and does not yet have a legal registry",
+   "useWhen": [
+    "Need the only legal first write of .foundation/file-registry.json, skill-family.project-manifest.json, and skill-family.managed-file-lock.json into a nonempty root",
+    "Need an official first-nonempty registration that is exclusive-create, idempotent on identical bytes, and refuse-with-zero-overwrite otherwise"
+   ],
+   "doNotUseWhen": [
+    "The target is empty (use scaffold)",
+    "The three official documents already exist and a later handwritten file must be admitted (use check relock)",
+    "Need a read-only inventory of an existing project (use adopt-plan)",
+    "Need to overwrite drifted closed-world bytes"
+   ],
+   "prerequisites": [
+    "Caller supplies an absolute project working directory",
+    "profile.json exists at the target root and is contract-valid, including profile.adoption.foundation_profile.id",
+    "handwritten classification list is non-empty"
+   ],
+   "inputs": [
+    "Absolute project working directory root",
+    "Non-empty handwritten globs or relative paths",
+    "Optional engineering JSON, trackedToolLocks paths, and gitignore-style artifacts patterns"
+   ],
+   "outputs": [
+    "register-existing report (kind skill-family.register-existing-report)",
+    "On first create: exclusive publication of the three closed-world documents; on identical bytes: idempotent success with zero write; otherwise refuse with zero overwrite"
+   ],
+   "sideEffects": [
+    "Writes at most the three closed-world documents; never overwrites mismatched existing bytes; does not scaffold, apply adopt-plan, or seed via relock"
+   ],
+   "failureSemantics": [
+    "Missing or invalid profile.json refuses",
+    "Empty handwritten list refuses",
+    "Class overlap among handwritten, artifacts, and trackedToolLocks refuses",
+    "Any incomplete or drifted combination of the three documents refuses with zero overwrite"
+   ],
+   "invariants": [
+    "Adds no fifth top-level command; it runs as the check register-existing sub-action",
+    "Relock never seeds; this sub-action is the only legal first write of the three documents into a nonempty root",
+    "Scaffold still refuses nonempty directories; adopt-plan remains read-only"
+   ],
+   "ownedByCaller": [
+    "Choosing handwritten, artifacts, and trackedToolLocks classifications",
+    "Remediation after a refuse-with-zero-overwrite result"
+   ],
+   "routeElsewhere": [
+    "Empty target: scaffold",
+    "Existing legal registry plus new handwritten files: check relock",
+    "Read-only nonempty inventory: adopt-plan"
+   ]
+  },
+  {
    "id": "foundation.kit.relock",
    "intent": "Run the controlled relock transaction: register new handwritten files by default, or persistent tool-lock paths with explicit trackedToolLocks selection; update the registry and managed-file lock in the existing transaction without hashing tool-lock contents.",
    "useWhen": [

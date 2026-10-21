@@ -4,29 +4,25 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.26.0 -->
+<!-- release-skill:release-version: 0.27.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.26.0** (2026-10-17)
+**0.27.0** (2026-10-21)
 
-Version 0.26.0 extends shared read-only static loading checks to seven hosts through the existing runHostLoadingCheck function and skill-family-kit check host-loading CLI action. The four top-level commands scaffold, adopt-plan, projection, and check remain unchanged; no new top-level command or public API is added. Checks do not start hosts, models, hooks, or scripts, access the network, or write files.
+Engineering Kit 0.27.0 adds the public function `runRegisterExisting` and the CLI sub-action `skill-family-kit check register-existing` under the existing `check` command. The four top-level commands remain `scaffold`, `adopt-plan`, `projection`, and `check`. The sub-action is the only legal first write of `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` into a nonempty root that already has a valid `profile.json`. Relock never seeds. Scaffold still refuses nonempty directories. Adopt-plan remains read-only. Projection still requires an existing legal registry.
 
 **Changed**
 
-- Add shared static loading checks for seven hosts. The exact host versions, categories, and project directories are listed in the authoritative [NATIVE_HOSTS table](src/host-loading-native.mjs); this internal table is not a package-root public export.
-- Retain Codex CLI 0.154.0 project .agents/skills support and its existing activationRules mechanism.
-- Apply each host’s own discovery, parsing, ignore, name-competition, and local-file flag rules. Report Cursor menu, completion, and model metadata separately.
-- Only modelMetadata.* for Cursor CLI 2026.09.10-fd3934a may use source-reviewed-unexecuted, labeled “源码核实、未作原生运行校准” (source reviewed; not calibrated through native execution). This is not native runtime calibration and does not mean the check starts the host.
-- Other native-observed markers mean the check uses previously calibrated native rules; they do not mean this check starts the host.
-- The API project root must be an absolute working directory; the CLI resolves relative input to an absolute path first. A missing or unbindable project root returns 2. A missing, non-directory, or empty skill container within an existing project returns 1. Proven local loading blockers return 1; specific uncovered behavior or unknown competition returns 2 and takes precedence over 1. A fully covered static scope without blockers returns 0; normal skills cannot mask blockers or uncovered behavior. Only Codex supports activationRules; the seven other hosts accept only omission or null, and any other value, including an empty array, returns 2.
-- Retain link-containment and read boundaries. Uncalibrated actual competition, uncalibrated WorkBuddy optional metadata or version-source forms and icon resolution, Cursor completion string false, and CodeBuddy block scalars without proven equivalence remain specifically uncovered. Do not guess success or return 2 permanently for all ordinary input.
-- Exit 0 proves only static-check success. It does not prove final activation, installation, update, session selection, real triggering, or business execution. Codex evidence cannot establish calibration for other hosts.
+- Add the public function `runRegisterExisting` and the CLI `skill-family-kit check register-existing`. The API `root` must be an absolute project working directory; the CLI resolves the current directory or a relative path to an absolute path first. `--handwritten` is required and non-empty.
+- Missing all three closed-world documents yields exclusive create. All three present and byte-identical yields idempotent success with zero write. Any other combination, class overlap, or drifted bytes refuses with zero overwrite.
+- Relock still never seeds a missing registry. Scaffold still refuses nonempty directories. Adopt-plan remains strictly read-only. Projection and later relock still require an existing legal registry.
+- The package moves to 0.27.0 with the other three units. Contracts specification remains 1.20.0. Published 0.26.0 capabilities are unchanged and are not redone.
 
 **Upgrade Notes**
 
-Pin skill-family-engineering-kit, skill-family-contracts, skill-family-harness-node, and the independent Plugin to exactly 0.26.0 in lockstep. Contracts specification 1.20.0 remains separate from package versions and does not advance with Kit. Consume actual published public interfaces for the exact host version and category. Release notes do not replace post-publish verification or formal consumer acceptance. Exit 0 is not an upgrade-safety guarantee or evidence of production validation.
+Pin the three Foundation npm packages to exactly 0.27.0 and keep the independent Plugin at that release version. Contracts specification 1.20.0 remains a separate coordinate from npm package versions. Consume the actual published version's public interfaces and sources. First nonempty registration does not prove business qualification or completed initialization. This note does not replace post-publish verification.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -69,7 +65,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.26.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.27.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -77,21 +73,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.26.0.tgz" "$pack_dir/skill-family-harness-node-0.26.0.tgz" "$pack_dir/skill-family-engineering-kit-0.26.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.0.tgz" "$pack_dir/skill-family-harness-node-0.27.0.tgz" "$pack_dir/skill-family-engineering-kit-0.27.0.tgz")
 ```
 
-The registry installation below requires exact version 0.26.0 to be formally available:
+The registry installation below requires exact version 0.27.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.26.0
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.27.0
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.26.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.27.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
