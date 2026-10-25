@@ -20,9 +20,9 @@
  "capabilities": [
   {
    "id": "foundation.contracts.object-validation",
-      "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验当前本地 Foundation 合同源码已登记的 53 类顶层对象文档",
+   "intent": "用 Ajv 8.20.0（精确 pin）在 draft-07 与 2020-12 双方言下编译并校验当前本地 Foundation 合同源码已登记的 53 类顶层对象文档",
    "useWhen": [
-        "需要校验 project-manifest、professional-conclusion、profile-descriptor、report-model 等已登记契约对象",
+    "需要校验 project-manifest、professional-conclusion、profile-descriptor、report-model 等已登记契约对象",
     "需要探测文档方言并选择 strict 或 tolerant 校验策略"
    ],
    "doNotUseWhen": [
@@ -407,7 +407,8 @@
     "需要写入未受收容路径（越界由 path-containment 拒绝）"
    ],
    "prerequisites": [
-    "目标路径经 path-containment 验证在根目录内"
+    "目标路径经 path-containment 验证在根目录内",
+    "Windows 本地 NTFS 分支拒绝 POSIX mode，严格发布使用 windows-inherited/windows-preserve，刷新请求不构成断电事务保证"
    ],
    "inputs": [
     "已收容目标路径、文件内容（string 或 Buffer）"
@@ -938,7 +939,8 @@
     "可选 rawSink 适用于调用方接受在 fresh canonical 临时根中以 0600 保存 stdout/stderr 原始文件的场景；它不是脱敏接口"
    ],
    "outputs": [
-    "每次调用恰好一个冻结的 watchdog-termination-envelope（单写者）"
+    "每次调用恰好一个冻结的 watchdog-termination-envelope（单写者）",
+    "Windows v2 使用 windowsJob 五字段，cleanupCompleted 要求零活动进程、双流刷盘关闭及全部 Job/进程/线程句柄关闭，且受限于 killGraceSeconds"
    ],
    "sideEffects": [
     "生成并终止被监督进程及其进程组",
@@ -1183,13 +1185,13 @@
   },
   {
    "id": "foundation.kit.check",
-      "intent": "只诊断不修复：保留九类 legacy 检查和显式 declared 版本分支，并提供本族证明读取与 Skill 审阅结果的排他投影；ENGINEERING_* 仍是局部声明结果，proof/proof-create 是本地未发布入口",
+   "intent": "只诊断不修复：保留九类 legacy 检查和显式 declared 版本分支，并提供本族证明读取与 Skill 审阅结果的排他投影；ENGINEERING_* 仍是局部声明结果，proof/proof-create 是本地未发布入口",
    "useWhen": [
     "需要发现工程不一致但不自动修改",
-        "需要按 --only 缩小 legacy 检查范围",
-        "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元",
-        "需要读取一份本族专业证明并得到 pass、not_pass 或 unavailable",
-        "需要把 Skill 审阅 JSON 投影成排他专业结论"
+    "需要按 --only 缩小 legacy 检查范围",
+    "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元",
+    "需要读取一份本族专业证明并得到 pass、not_pass 或 unavailable",
+    "需要把 Skill 审阅 JSON 投影成排他专业结论"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1197,27 +1199,27 @@
    ],
    "prerequisites": [],
    "inputs": [
-        "legacy --only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform",
-        "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
-        "proof 读取输入：--proof-root 与根内 --proof",
-        "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output"
+    "legacy --only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform",
+    "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
+    "proof 读取输入：--proof-root 与根内 --proof",
+    "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output"
    ],
    "outputs": [
-        "发现清单；退出码 findings=1、mechanism=2",
-        "runCommand check 与 checkEntriesAction 包装入口在显式提供输出根与相对路径时返回可选局部 ENGINEERING_* 结论路径",
-        "proof 读取返回 status 为 pass、not_pass 或 unavailable，对应退出 0、1、2",
-        "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1"
+    "发现清单；退出码 findings=1、mechanism=2",
+    "runCommand check 与 checkEntriesAction 包装入口在显式提供输出根与相对路径时返回可选局部 ENGINEERING_* 结论路径",
+    "proof 读取返回 status 为 pass、not_pass 或 unavailable，对应退出 0、1、2",
+    "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1"
    ],
    "sideEffects": [
-        "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
-        "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
+    "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
+    "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
    ],
    "failureSemantics": [
     "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2"
    ],
    "invariants": [
-        "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
-        "declared 检查只读取具名单元，并区分 partial 与 not-performed"
+    "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
+    "declared 检查只读取具名单元，并区分 partial 与 not-performed"
    ],
    "ownedByCaller": [
     "发现项的业务处置"
@@ -1421,34 +1423,34 @@
   },
   {
    "id": "foundation.kit.entry-check",
-      "intent": "保留 legacy 入口契约检查，并增加显式 declared 分支，只静态读取项目清单登记的物理入口",
+   "intent": "保留 legacy 入口契约检查，并增加显式 declared 分支，只静态读取项目清单登记的物理入口",
    "useWhen": [
     "需要校验入口契约声明与物理 SKILL.md 的一致性",
-        "需要检查入口逻辑名、副作用类别与令牌预算",
-        "需要核对声明的物理文件，且不执行 Skill、脚本、hook 或模型"
+    "需要检查入口逻辑名、副作用类别与令牌预算",
+    "需要核对声明的物理文件，且不执行 Skill、脚本、hook 或模型"
    ],
    "doNotUseWhen": [
     "需要修复声明或入口（check 只诊断不修复）"
    ],
    "prerequisites": [],
    "inputs": [
-        "legacy 项目根（携带 skill-family.entry-contract.json 与 package.json）",
-        "declared 项目根（项目清单含 engineering.entries）"
+    "legacy 项目根（携带 skill-family.entry-contract.json 与 package.json）",
+    "declared 项目根（项目清单含 engineering.entries）"
    ],
    "outputs": [
-        "入口检查报告（kind skill-family.entry-check-report）与 findings",
-        "checkEntriesAction 在显式授权结论输出时返回可选 professional-conclusion 路径"
+    "入口检查报告（kind skill-family.entry-check-report）与 findings",
+    "checkEntriesAction 在显式授权结论输出时返回可选 professional-conclusion 路径"
    ],
    "sideEffects": [
-        "runEntryContractCheck 只读声明与入口文件，不执行目标内容",
-        "只有 checkEntriesAction 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
+    "runEntryContractCheck 只读声明与入口文件，不执行目标内容",
+    "只有 checkEntriesAction 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
    ],
    "failureSemantics": [
     "声明缺失时作为数据而非发现",
     "各项检查失败产出不同 kind 的 finding"
    ],
    "invariants": [
-        "纯检查函数不修改任何文件",
+    "纯检查函数不修改任何文件",
     "不新增第五个顶层命令，落在 check entries 子动作"
    ],
    "ownedByCaller": [
@@ -2223,14 +2225,15 @@
    ],
    "prerequisites": [
     "已规范化真实根目录和 createFilesystemRootBinding 返回的根绑定",
-    "默认/reject 需要包内固定 Darwin/Linux 四平台原生实现可用；record 使用 Node/JS 分支",
+    "POSIX 默认/reject 使用固定四平台原生实现、record 使用 Node/JS 分支；Windows 11 x64 本地 NTFS 分支的两种模式均使用句柄相对原生遍历",
     "默认/reject 保留 0.14 的 UTF-16 关系顺序；record 使用 Unicode 码点顺序"
    ],
    "inputs": [
     "{ root, rootBinding, symlinkPolicy?: { mode: \"reject\" | \"record\" } }"
    ],
    "outputs": [
-    "filesystem-tree-observation 私有对象：按模式排序的成员、文件原始字节的 contentBase64、sha256、bytes、statMode，symlink 自身的 targetBase64、bytes、statMode 及 membersDigest"
+    "filesystem-tree-observation 私有对象：按模式排序的成员、文件原始字节的 contentBase64、sha256、bytes、statMode，symlink 自身的 targetBase64、bytes、statMode 及 membersDigest",
+    "Windows v2：statMode=null，必填 windows-security-v1 权限观察；record 仅记录真正 symlink 的原始 UTF-16 target 和 reparseTag，不跟随 target"
    ],
    "sideEffects": [
     "只读文件系统访问，不写文件、不启动进程、不访问网络"
@@ -2304,6 +2307,45 @@
    ]
   },
   {
+   "id": "foundation.harness.fixed-set-generation",
+   "intent": "发布完整不可变世代，并为一批读取固定同一世代",
+   "useWhen": [
+    "新集合需要通过一个 current.json 指针切换，每批读取保持同一根绑定"
+   ],
+   "doNotUseWhen": [
+    "需要并发 CAS、自动回滚、租约或自动旧世代清理"
+   ],
+   "prerequisites": [
+    "适用于 Foundation 0.28.0 的 candidate API；精确版本发布状态另由正式凭据核实，不改变旧发布物能力",
+    "sourceRoot 是 storeRoot/generation 真实直接子目录且已完整生成并刷盘，所有目录同卷；发布串行化，世代之后不可变"
+   ],
+   "inputs": [
+    "publishFixedSetGeneration({storeRoot,sourceRoot,generation,expectedCurrent})",
+    "resolveFixedSetGeneration({storeRoot})"
+   ],
+   "outputs": [
+    "发布返回 status/commitState/verification/durability 和新旧指针；解析返回 pointer/generationRoot/rootBinding"
+   ],
+   "sideEffects": [
+    "发布只写指针并保留全部世代；解析只读"
+   ],
+   "failureSemantics": [
+    "提交前失败、已提交后验失败和提交不确定分别报告；不盲目重试，不自动恢复旧指针"
+   ],
+   "invariants": [
+    "每批只解析一次并把同一 generationRoot/rootBinding 传给全部 readFileBound",
+    "expectedCurrent 是点时前置条件，不提供并发 CAS 保证",
+    "原 fixed-set-publication stable 与 POSIX 双目录交换合同不变；Windows 旧交换明确拒绝"
+   ],
+   "ownedByCaller": [
+    "生成及刷盘完整集合、发布串行化、世代不可变承诺、业务接受",
+    "确认读者静默、独占维护且非 current 后的旧世代清理"
+   ],
+   "routeElsewhere": [
+    "DocRender 渲染、Git/Pages 隔离导出和发布授权由消费者与原发布流程负责"
+   ]
+  },
+  {
    "id": "foundation.harness.executable-identity-observation",
    "intent": "逐次只读观察显式绑定根中的可执行入口、符号链接链、脚本解释器与启动字节，供消费者在启动前紧邻重观察",
    "useWhen": [
@@ -2316,13 +2358,15 @@
    ],
    "prerequisites": [
     "所有候选路径来自调用方提供的非重叠 boundRoots 与显式 lookup；解释器必须另行提供显式策略",
-    "每次正式启动前由调用方重新调用，不把上一次观察当作持续身份证明"
+    "每次正式启动前由调用方重新调用，不把上一次观察当作持续身份证明",
+    "Windows 分支使用 PE 或明确 Node 解释器；脚本和解释器分别来自唯一批准根，禁止通用 cmd/bat 解释"
    ],
    "inputs": [
     "observeExecutableIdentity({ boundRoots, lookup, interpreterPolicy? })"
    ],
    "outputs": [
-    "逐次只读的可执行入口、symlinkChain、sha256/bytes/statMode、entryKind、保留自身 symlink chain 的解释器与 launch 计划观察"
+    "逐次只读的可执行入口、symlinkChain、sha256/bytes/statMode、entryKind、保留自身 symlink chain 的解释器与 launch 计划观察",
+    "Windows v2：入口及嵌套解释器的 statMode=null、permissionObservation 必填，保留原 POSIX v1 合同"
    ],
    "sideEffects": [
     "只读 lstat/readlink 与既有 readFileBound；不启动进程、不使用 ambient PATH、不写文件"
@@ -2504,9 +2548,9 @@
    ],
    "prerequisites": [
     "调用方已用 createFilesystemRootBinding 批准规范绝对真实根，并在 apply 与 recover 请求中显式给出固定 recoveryRelPath 与 allowAdjacentStaging",
-    "environment 声明 filesystem 为 apfs 或 ext4、cooperativeWriters 为 true；业务根与恢复材料同设备且父目录已存在",
+    "POSIX v1 声明 apfs/ext4；Windows v2 声明本地 NTFS；cooperativeWriters=true，业务目标与恢复材料同卷，父目录已存在",
     "apply 必须提供只读 validate 函数；recover 必须先在外部建立排他维护区间，并传入本次维护的完整观察；prune 在无残留时直接取得正常 writer，只有需要故障接管时才要求同一维护观察",
-    "目标属于执行用户、owner-read 位已设置，且原/新模式的全部置位都不被进程当前 umask 屏蔽"
+    "POSIX 目标属于执行用户且 mode 满足 owner-read/umask 条件；Windows 整组前检实际验证原 owner/group/DACL 与四项属性可还原，私密材料要求当前用户 owner 和 protected DACL"
    ],
    "inputs": [
     "file-set-apply-request：operationId、root、rootBinding、recoveryRelPath、allowAdjacentStaging、environment、validationTimeoutMs 与最多 1024 条有序操作（path/action/expected/next，bytes 只存在于 JS 调用参数）",

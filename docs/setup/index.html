@@ -393,6 +393,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#安装与原生环境" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        安装与原生环境
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1827,6 +1838,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#安装与原生环境" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        安装与原生环境
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1967,6 +1989,9 @@ node scripts/render-public-site.mjs --check
 node scripts/docs/link-check.mjs
 </code></pre>
 <p><code>fact-check.mjs</code> 是 Node 脚本，经仓内模块（<code>scripts/engine-floor-check.mjs</code>）消费根目录精确锁定的 <code>semver@7.8.5</code>，运行前必须先完成 <code>pnpm install --frozen-lockfile</code>；<code>link-check.mjs</code> 为纯 Node 实现（无第三方依赖）。两者退出码 0 表示通过。脚本职责见 <code>scripts/docs/README.md</code>。</p>
+<h2 id="安装与原生环境">安装与原生环境<a class="headerlink" href="#安装与原生环境" title="Permanent link">&para;</a></h2>
+<p>本候选环境基于 Windows 11 x64 平台，使用本地 NTFS 文件系统，以普通用户身份运行，使用原生 Node.js；WSL 结果不能充作 Windows 资格。原生 Node.js 版本需满足 <code>&gt;=22.22.2 &lt;23</code>，包管理器为 pnpm 10.30.0，且三个叶子包必须保持完全一致的精确版本。预构建装载不触发编译或二进制下载；npm 依赖安装仍由调用方管理。官方宿主进程可能联网，调用者负责认证与外部动作授权。</p>
+<p>安装过程通过精确的 npm/pnpm 启动机制执行，依赖包内预构建的 <code>win32-x64</code> N-API 二进制文件，不依赖消费者本地编译环境。启动时使用 npm 的 <code>bin/npm-cli.js</code> 或 pnpm 的 <code>bin/pnpm.cjs</code> 作为可执行入口，不解析 <code>.cmd</code> 或 <code>.bat</code> 文件，也不通过后缀名推断执行逻辑。官方宿主 <code>.exe</code> 入口仍需绑定真实可执行身份，其点时身份仅用于上下文识别，不构成签名信任或内核映像的证明。</p>
 
 
 

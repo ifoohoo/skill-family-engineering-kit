@@ -1,5 +1,6 @@
 import { lstat } from "node:fs/promises";
 import path from "node:path";
+import { createFilesystemRootBinding, inspectFileSetRecovery } from "skill-family-harness-node";
 import { KIT_ERROR_KINDS } from "./errors.mjs";
 import { CHECK_CLASSES, runCoreCheckClasses } from "./check.mjs";
 import { loadEngineeringDeclaration } from "./engineering-declaration.mjs";
@@ -104,16 +105,30 @@ export function isContainedDeclaration(rel) {
  */
 export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } = {}) {
   const rootAbs = await resolveTargetRoot(root ?? ".");
-  const facts = await loadTargetFacts(rootAbs);
+  const rootBinding = process.platform === "win32" ? await createFilesystemRootBinding(rootAbs) : null;
+  const facts = await loadTargetFacts(rootAbs, rootBinding === null ? undefined : { rootBinding });
+  const reservedMaterial = rel => rootBinding !== null && typeof rel === "string" && (rel === ".foundation-file-apply" || rel.startsWith(".foundation-file-apply/"));
+  let recoveryMechanismFailed = false;
   const findings = [];
   const push = (kind, message, extra) =>
     findings.push({ class: CORE_CLASS, kind, code: "SFC2004", message, ...(extra ?? {}) });
+
+  const unsafeReadPaths = new Set();
+  for (const entry of Array.isArray(facts.projectManifest?.engineering?.entries) ? facts.projectManifest.engineering.entries : []) {
+    if (entry && reservedMaterial(entry.physicalRef)) {
+      push(KIT_ERROR_KINDS.UNCONTAINED_DECLARATION, `declared business entry occupies the reserved recovery namespace: ${entry.physicalRef}`, { path: entry.physicalRef });
+      unsafeReadPaths.add(entry.physicalRef);
+    }
+  }
 
   // ---- Stage 1: declaration containment (purely lexical) -----------------
   const declarations = [...facts.managedSet].sort();
   const containedDeclarations = [];
   for (const rel of declarations) {
-    if (isContainedDeclaration(rel)) {
+    if (reservedMaterial(rel)) {
+      push(KIT_ERROR_KINDS.UNCONTAINED_DECLARATION, `business managed ownership occupies the reserved recovery namespace: ${rel}`, { path: rel });
+      unsafeReadPaths.add(rel);
+    } else if (isContainedDeclaration(rel)) {
       containedDeclarations.push(rel);
     } else {
       push(
@@ -125,7 +140,6 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
   }
 
   // ---- Stage 2: managed preflight (lstat only, never open/read) ----------
-  const unsafeReadPaths = new Set();
   for (const rel of containedDeclarations) {
     let st;
     try {
@@ -153,6 +167,16 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
 
   // ---- Stage 3: safe tree enumeration + closed-world classification ------
   const entries = await listTargetEntries(rootAbs);
+  let recoveryAdmitted = false;
+  if (rootBinding !== null) {
+    const inspection = await inspectFileSetRecovery({ root: rootAbs.split(path.sep).join("/"), rootBinding,
+      recoveryRelPath: ".foundation-file-apply", environment: { filesystem: "ntfs" } });
+    recoveryAdmitted = inspection.status === "admitted";
+    if (inspection.status === "refused") {
+      recoveryMechanismFailed = true;
+      push(inspection.error.details.kind, inspection.error.message, { path: ".foundation-file-apply", error: inspection.error });
+    }
+  }
   for (const entry of entries) {
     if (entry.kind === "directory" || entry.kind === "directory-opaque") continue;
     if (entry.kind === "symlink") {
@@ -185,6 +209,13 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
     }
     // Regular files must belong to exactly one registered class. Managed
     // bytes are verified by the drift class, never re-derived here.
+    if (reservedMaterial(entry.path)) {
+      if (!recoveryAdmitted && !recoveryMechanismFailed) {
+        recoveryMechanismFailed = true;
+        push("recovery-corrupt", "recovery material disappeared between tree enumeration and inspection", { path: ".foundation-file-apply" });
+      }
+      continue;
+    }
     if (facts.managedSet.has(entry.path)) continue;
     if (matchAnyGlob(facts.handwrittenPatterns, entry.path)) continue;
     if (matchAnyGitignorePattern(facts.artifactPatterns, entry.path)) continue;
@@ -215,6 +246,11 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
     const references = versionDeclaration.declaration.flatMap((unit) => [unit.versionSource, ...(unit.versionMirrors ?? [])]);
     try {
       for (const reference of references) {
+        if (reservedMaterial(reference.path)) {
+          push(KIT_ERROR_KINDS.UNCONTAINED_DECLARATION, `declared business read occupies the reserved recovery namespace: ${reference.path}`, { path: reference.path });
+          unsafeReadPaths.add(reference.path);
+          continue;
+        }
         const parts = reference.path.split("/").filter((part) => part !== "" && part !== ".");
         let rel = "";
         for (const [index, part] of parts.entries()) {
@@ -262,7 +298,7 @@ export async function runCoreCheck({ root, allowGitSpawn = true, profilesRoot } 
     const securityKinds = new Set(CORE_CHECK_SECURITY_KINDS);
     exitCode = findings.some((f) => securityKinds.has(f.kind)) ? 2 : 1;
   }
-  if (classReport && classReport.mechanism) exitCode = 2;
+  if (recoveryMechanismFailed || (classReport && classReport.mechanism)) exitCode = 2;
 
   return {
     kind: "skill-family.core-check-report",

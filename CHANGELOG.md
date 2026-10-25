@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.28.0 locale=en baseline=sha256:f59cb340fed6a8bf6f2f6336661fa232f961a07c38fca4272ac89851016a2943 -->
+## [0.28.0] - 2026-10-24
+
+Engineering Kit 0.28.0 retains the four top-level commands and introduces Windows projection, package entry handling, and bounded WorkBuddy session permission input.
+
+### Added
+
+- Windows uses projection-plan v2, projection-manifest v3, and projection-receipt v3. runProjection requires explicit operationId (lowercase UUID v4), validationTimeoutMs (integer milliseconds), and cooperativeWriters=true. The target root binding is captured internally, not supplied by the caller.
+
+### Changed
+
+- Projection creates authorized parent directories safely, applies files once through applyFileSet v2, and keeps recovery materials classified by the public read-only inspector. Standard npm.cmd and pnpm.cmd entries are bound to the selected real installation.
+- The WorkBuddy driver accepts its exact supported Node launcher form and an optional declared workbuddy-settings.local.json fixture for the current session. This remains the selected manual WorkBuddy path, not automatic support for every host.
+
+### Upgrade Notes
+
+Pin all four units to 0.28.0 and follow the Windows API arguments instead of replaying old Windows projection documents. POSIX projection inputs and defaults remain unchanged. Use independent-file package import on Windows. DocRender generation migration is designed but not implemented in its consumer; this release does not claim that migration is complete.
+<!-- release-skill:changelog:end version=0.28.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.27.1 locale=en baseline=sha256:b7e60e0e3bbda78ee3f278ef9f86ff545782f79f8947c90d7eb496e715d7ccde -->
 ## [0.27.1] - 2026-10-21
 

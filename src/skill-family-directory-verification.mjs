@@ -1,7 +1,9 @@
 import { mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 import { digestDocument, validateDocument } from "skill-family-contracts";
 import { createFilesystemRootBinding, digestBytes, observeExecutableIdentity, observeFilesystemTree, readFileBound, superviseProcess } from "skill-family-harness-node";
+import { createPrivateMaterialDirectory, windowsLaunchFromPath } from "./host-loading-check.mjs";
 import { invalidParamsError } from "./errors.mjs";
 import { KIMI_DRIVER } from "./host-verification-drivers.mjs";
 import { bundledHostProfilesRoot, observeHostDescriptor } from "./host-profiles.mjs";
@@ -51,7 +53,12 @@ function contained(candidate, parent) {
 }
 
 async function canonicalDirectory(value, name) {
-  if (typeof value !== "string" || !path.isAbsolute(value) || path.normalize(value) !== value || value.includes("\0")) {
+  if (process.platform === "win32" && typeof value === "string" && /^[A-Za-z]:[\\/]/u.test(value)) {
+    const normalized = path.normalize(value);
+    if (value.includes("\0") || normalized.replaceAll("\\", "/") !== value.replaceAll("\\", "/")) throw invalidParamsError(`${name} must be a normalized absolute path`);
+    value = normalized;
+    await createFilesystemRootBinding(value);
+  } else if (process.platform === "win32" || typeof value !== "string" || !path.isAbsolute(value) || path.normalize(value) !== value || value.includes("\0")) {
     throw invalidParamsError(`${name} must be a normalized absolute path`);
   }
   try {
@@ -97,7 +104,8 @@ async function validateBindings(request, bindings) {
     if ((await readdir(roots[name])).length !== 0) throw invalidParamsError(`${name} must be fresh`);
   }
   const executableRelPath = relativePath(bindings.executableRelPath, "executableRelPath");
-  if (path.basename(executableRelPath) !== KIMI_DRIVER.executableBasename) throw invalidParamsError("Kimi executable basename does not match the built-in driver");
+  if (path.basename(executableRelPath) !== KIMI_DRIVER.executableBasename &&
+      !(process.platform === "win32" && path.basename(executableRelPath).toLowerCase() === `${KIMI_DRIVER.executableBasename}.exe`.toLowerCase())) throw invalidParamsError("Kimi executable basename does not match the built-in driver");
   if (!Buffer.isBuffer(bindings.effectivePrompt) || bindings.effectivePrompt.includes(0) ||
       digestBytes(bindings.effectivePrompt) !== request.workload.effectivePromptSha256) {
     throw invalidParamsError("Kimi effective prompt does not match its public digest");
@@ -127,13 +135,21 @@ async function validateBindings(request, bindings) {
   if (workspace.membersDigest !== request.workload.protectedWorkspaceClosureDigest) {
     throw invalidParamsError("Kimi protected workspace digest drifted");
   }
+  let executablePath = path.join(roots.executableRoot, executableRelPath);
+  if (process.platform === "win32") {
+    const selected = await windowsLaunchFromPath(executablePath);
+    executablePath = selected.argvPrefix[0] ?? selected.command;
+  }
   const identityInput = {
     boundRoots: [
       { root: roots.executableRoot, rootBinding: await createFilesystemRootBinding(roots.executableRoot) },
       { root: roots.interpreterRoot, rootBinding: await createFilesystemRootBinding(roots.interpreterRoot) },
     ],
-    lookup: { mode: "absolute-path", path: path.join(roots.executableRoot, executableRelPath) },
-    interpreterPolicy: { absoluteRoots: [roots.interpreterRoot], pathEntries: [roots.interpreterRoot] },
+    lookup: { mode: "absolute-path", path: executablePath },
+    ...(process.platform === "win32"
+      ? (/\.(?:mjs|cjs|js)$/iu.test(executablePath)
+        ? { interpreterPolicy: { explicitNode: { path: process.execPath } } } : {})
+      : { interpreterPolicy: { absoluteRoots: [roots.interpreterRoot], pathEntries: [roots.interpreterRoot] } }),
   };
   return { roots, prompt, familyBinding, workspaceBinding, family, workspace, identityInput };
 }
@@ -201,7 +217,7 @@ async function runKimiProcessVerification(request, bindings) {
       throw error;
     }
     const sink = path.join(preflight.roots.privateEvidenceRoot, `kimi-${step}`);
-    await mkdir(sink, { mode: 0o700 });
+    await createPrivateMaterialDirectory(sink, process.platform === "win32" ? {} : { mode: 0o700 });
     let durable;
     const envelope = await superviseProcess({
       command: identity.launch.file,

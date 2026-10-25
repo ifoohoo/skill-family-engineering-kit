@@ -5,24 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.27.1 -->
+<!-- release-skill:release-version: 0.28.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.27.1** (2026-10-21)
+**0.28.0** (2026-10-24)
 
-Engineering Kit 0.27.1 保持四个顶层命令，并让既有工程更新接受 register-existing 漏列受管锁的清单。已发布的 0.27.0 字节、标签和 npm 包不改写。
+Engineering Kit 0.28.0 保持四个顶层命令，增加 Windows 投影、包入口处理及范围受限的 WorkBuddy 会话许可输入。
+
+**新增**
+
+- Windows 采用 projection-plan v2、projection-manifest v3 与 projection-receipt v3。runProjection 须显式传入 operationId（小写 UUID v4）、validationTimeoutMs（整数毫秒）与 cooperativeWriters=true；目标根绑定由内部捕获，不由调用方传入。
 
 **变更**
 
-- 新的 register-existing 清单在 `managedFiles` 中列入 `.foundation/file-registry.json`、`skill-family.project-manifest.json` 和 `skill-family.managed-file-lock.json`。
-- 登记表已把锁列为 kitManaged，且 `managedFiles` 只缺这一路径时，`runProjection({ root, engineering })` 会补入该路径并同时重写清单和受管锁。登记表未声明该锁时仍然拒绝且不写文件。
-- 包版本与其他三单元锁步到 0.27.1。Contracts 规格仍为 1.20.0。已发布的 0.27.0 能力不重做。
+- 投影安全创建授权文件的父目录，通过一次 applyFileSet v2 应用文件；公共只读检查器识别保留恢复材料。标准 npm.cmd 与 pnpm.cmd 入口绑定用户选择的真实安装。
+- WorkBuddy 驱动接受已支持的精确 Node 启动器形态，并可读取已声明的 workbuddy-settings.local.json 夹具用于本次会话。范围仍限所选手动 WorkBuddy 路径，不代表所有宿主自动支持。
 
 **升级说明**
 
-三个 Foundation npm 包和独立插件须精确锁定 0.27.1。Contracts 规格仍为 1.20.0，与 npm 包版本分别处理。本说明不替代发布后验证，也不改写 0.27.0。
+四单元须精确锁定 0.28.0，Windows 调用须按公共 API 提供参数，不能重放旧 Windows 投影文档。POSIX 投影输入与默认行为保留。Windows 包安装采用独立文件导入。DocRender 世代迁移只完成设计，消费者尚未实施，本版不宣称迁移完成。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -63,7 +66,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.27.1；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.28.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -71,21 +74,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.1.tgz" "$pack_dir/skill-family-harness-node-0.27.1.tgz" "$pack_dir/skill-family-engineering-kit-0.27.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.28.0.tgz" "$pack_dir/skill-family-harness-node-0.28.0.tgz" "$pack_dir/skill-family-engineering-kit-0.28.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.27.1 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.28.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.27.1
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.28.0
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -470,3 +473,9 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 独立入口 `runSkillFamilyDirectoryVerification({ request, bindings })` 固定 Kimi 生产 argv 与窄环境，并拒绝调用方 observation。原始 parser 通过生产进程路径验证，但受控 fixture 事件不会被提升为 `observed`；缺少官方 typed mapping 时，公共结果保持 `indeterminate` 和 manual candidate。
 
 声明式治理分支与结论输出随 0.22.0 制品发布；此前已发布的 0.21.0 制品不包含它们。远端可用性须由对应的 release-skill 发布后证据证明。本地测试或工作树 tarball 不等于契约接入完成、迁移完成或真实宿主资格。
+
+## Windows 支持与使用边界
+
+Foundation 0.28.0 面向 Windows 11 x64、本地 NTFS 与普通用户，采用 Contracts 1.21.0、56 个登记对象。三个固定世代对象保持 candidate，其他成熟度维持原登记。官方 npm 包 `skill-family-contracts@0.27.1` 仍承载 `contractsVersion=1.20.0` 与 53 个对象。精确版本的远端可用性须由正式发布凭据核实，本节范围说明不证明真实宿主资格。
+
+`skill-family-engineering-kit` 四命令保持不变，安装闭包内预构建 `win32-x64` 二进制，无需本地编译器。启动需使用 npm 的 `bin/npm-cli.js` 或 pnpm 的 `bin/pnpm.cjs`，版本必须精确匹配。真实宿主资格需额外提供 driver、版本、认证与业务证据，本地自测结果不构成通过。详见 [API 文档](https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/)。

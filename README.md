@@ -4,24 +4,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.27.1 -->
+<!-- release-skill:release-version: 0.28.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.27.1** (2026-10-21)
+**0.28.0** (2026-10-24)
 
-Engineering Kit 0.27.1 keeps the four top-level commands and teaches the existing engineering update to accept a register-existing manifest that omitted the managed lock. Published 0.27.0 bytes, tags, and npm packages are unchanged.
+Engineering Kit 0.28.0 retains the four top-level commands and introduces Windows projection, package entry handling, and bounded WorkBuddy session permission input.
+
+**Added**
+
+- Windows uses projection-plan v2, projection-manifest v3, and projection-receipt v3. runProjection requires explicit operationId (lowercase UUID v4), validationTimeoutMs (integer milliseconds), and cooperativeWriters=true. The target root binding is captured internally, not supplied by the caller.
 
 **Changed**
 
-- New register-existing manifests list `.foundation/file-registry.json`, `skill-family.project-manifest.json`, and `skill-family.managed-file-lock.json` in `managedFiles`.
-- When the registry already lists the lock as kit-managed and `managedFiles` omits only that path, `runProjection({ root, engineering })` adds the path and rewrites the manifest and lock together. A lock the registry does not declare is still refused with no write.
-- The package moves to 0.27.1 with the other three units. Contracts specification remains 1.20.0. Published 0.27.0 capabilities are not redone.
+- Projection creates authorized parent directories safely, applies files once through applyFileSet v2, and keeps recovery materials classified by the public read-only inspector. Standard npm.cmd and pnpm.cmd entries are bound to the selected real installation.
+- The WorkBuddy driver accepts its exact supported Node launcher form and an optional declared workbuddy-settings.local.json fixture for the current session. This remains the selected manual WorkBuddy path, not automatic support for every host.
 
 **Upgrade Notes**
 
-Pin the three Foundation npm packages and the independent Plugin to exactly 0.27.1. Contracts specification 1.20.0 remains a separate coordinate. This note does not replace post-publish verification and does not rewrite 0.27.0.
+Pin all four units to 0.28.0 and follow the Windows API arguments instead of replaying old Windows projection documents. POSIX projection inputs and defaults remain unchanged. Use independent-file package import on Windows. DocRender generation migration is designed but not implemented in its consumer; this release does not claim that migration is complete.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -64,7 +67,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.27.1; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.28.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -72,21 +75,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.27.1.tgz" "$pack_dir/skill-family-harness-node-0.27.1.tgz" "$pack_dir/skill-family-engineering-kit-0.27.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.28.0.tgz" "$pack_dir/skill-family-harness-node-0.28.0.tgz" "$pack_dir/skill-family-engineering-kit-0.28.0.tgz")
 ```
 
-The registry installation below requires exact version 0.27.1 to be formally available:
+The registry installation below requires exact version 0.28.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.27.1
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.28.0
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.27.1 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -430,3 +433,9 @@ The candidate `runPluginVerification({ request, bindings, hostsRoot })` preserve
 The separate `runSkillFamilyDirectoryVerification({ request, bindings })` entry fixes the Kimi production argv and narrow environment and rejects caller observation. Its raw parser is exercised through the production process path, but no controlled fixture event is promoted to `observed`; without an official typed mapping, the public result remains `indeterminate` and a manual candidate.
 
 The declared governance branch and conclusion output ship with the 0.22.0 artifact; the earlier published 0.21.0 artifact does not contain them. Remote availability must be established by the corresponding release-skill post-release evidence. Local tests or working-tree tarballs do not prove contract integration, migration completion, or real-host qualification.
+
+## Windows support and boundaries
+
+Foundation 0.28.0 targets Windows 11 x64, local NTFS and ordinary users, with Contracts 1.21.0 and 56 registered objects. The three fixed-set-generation objects remain candidate, and other maturity registrations are unchanged. The official `skill-family-contracts@0.27.1` retains `contractsVersion=1.20.0` and 53 objects. Exact remote availability requires formal release evidence; this scope statement does not establish real-host qualification.
+
+The four commands in `skill-family-engineering-kit` remain unchanged. Prebuilt `win32-x64` binaries are loaded without local compilation. Launch via the npm `bin/npm-cli.js` or pnpm `bin/pnpm.cjs` script, with exact version matching required. Real host qualification requires additional driver, version, authentication, and business evidence—local test results do not imply approval. See [API reference](https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/).

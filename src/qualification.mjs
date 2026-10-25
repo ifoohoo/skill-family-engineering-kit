@@ -6,6 +6,7 @@ import {
   FOUNDATION_PACKAGE_VERSION as HARNESS_PACKAGE_VERSION,
   HARNESS_ERROR_KINDS,
   createTemporaryWorkspace,
+  createFilesystemRootBinding,
   mechanismError,
   readFileContained,
 } from "skill-family-harness-node";
@@ -21,6 +22,7 @@ import {
 } from "./plugin-verification.mjs";
 import { runSkillFamilyDirectoryVerification, SKILL_FAMILY_DIRECTORY_REQUEST_SCHEMA, SKILL_FAMILY_DIRECTORY_RESULT_SCHEMA } from "./skill-family-directory-verification.mjs";
 import { KIT_VERSION } from "./version.mjs";
+import { createPrivateMaterialDirectory } from "./host-loading-check.mjs";
 
 const CAPABILITY_ID = "foundation.kit.plugin-verification";
 const DIRECTORY_CAPABILITY_ID = "foundation.kit.skill-family-directory-verification";
@@ -79,6 +81,7 @@ function relativePath(value, name) {
 async function canonicalDirectory(value, name) {
   const absolute = normalizedAbsolute(value, name);
   try {
+    if (process.platform === "win32") await createFilesystemRootBinding(absolute);
     const entry = await lstat(absolute);
     if (entry.isSymbolicLink()) throw new Error("symlink");
     const actual = await realpath(absolute);
@@ -254,15 +257,15 @@ async function createQualificationRoots() {
     const parentStat = await stat(parent);
     const parentReal = await realpath(parent);
     parentRoot = parentReal;
-    if (parentEntry.isSymbolicLink() || !parentStat.isDirectory() || (parentStat.mode & 0o777) !== 0o700 || (await readdir(parent)).length !== 0) throw new Error("temporary workspace parent is not a fresh 0700 directory");
+    if (parentEntry.isSymbolicLink() || !parentStat.isDirectory() || (process.platform !== "win32" && (parentStat.mode & 0o777) !== 0o700) || (await readdir(parent)).length !== 0) throw new Error("temporary workspace parent is not a fresh 0700 directory");
     const paths = {};
     for (const [name, field] of [["install", "installContainerRoot"], ["temporary", "temporaryRoot"], ["evidence", "privateEvidenceRoot"]]) {
       const child = await workspace.resolve(name);
-      await mkdir(child, { mode: 0o700 });
+      await createPrivateMaterialDirectory(child, { mode: 0o700 });
       const childEntry = await lstat(child);
       const childStat = await stat(child);
       const childReal = await realpath(child);
-      if (childEntry.isSymbolicLink() || !childStat.isDirectory() || (childStat.mode & 0o777) !== 0o700 || (await readdir(child)).length !== 0 || path.dirname(childReal) !== parentReal) throw new Error(`temporary workspace child is not a fresh 0700 directory: ${name}`);
+      if (childEntry.isSymbolicLink() || !childStat.isDirectory() || (process.platform !== "win32" && (childStat.mode & 0o777) !== 0o700) || (await readdir(child)).length !== 0 || path.dirname(childReal) !== parentReal) throw new Error(`temporary workspace child is not a fresh 0700 directory: ${name}`);
       paths[field] = childReal;
     }
     const values = Object.values(paths);

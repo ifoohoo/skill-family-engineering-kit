@@ -24,17 +24,19 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
-      "entrypoints": [
-        "validateDocument (packages/skill-family-contracts/src/validator.mjs)",
-        "compileSchema (packages/skill-family-contracts/src/validator.mjs)",
-        "detectDialect (packages/skill-family-contracts/src/validator.mjs)",
-        "professional-conclusion Schema (packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json)"
-      ],
-      "sourceRefs": [
-        "packages/skill-family-contracts/src/validator.mjs",
-        "packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json",
-        "packages/skill-family-contracts/src/schemas/project-manifest.schema.json"
+   "adoptionScopes": [
+    "contracts"
+   ],
+   "entrypoints": [
+    "validateDocument (packages/skill-family-contracts/src/validator.mjs)",
+    "compileSchema (packages/skill-family-contracts/src/validator.mjs)",
+    "detectDialect (packages/skill-family-contracts/src/validator.mjs)",
+    "professional-conclusion Schema (packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-contracts/src/validator.mjs",
+    "packages/skill-family-contracts/src/schemas/professional-conclusion.schema.json",
+    "packages/skill-family-contracts/src/schemas/project-manifest.schema.json"
    ],
    "positiveTestRefs": [
     "packages/skill-family-contracts/test/validator.test.mjs",
@@ -60,7 +62,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "loadRegistry (packages/skill-family-contracts/src/registry.mjs)",
     "findSchemaByObject (packages/skill-family-contracts/src/registry.mjs)",
@@ -85,7 +89,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "loadKernelProtocol (packages/skill-family-contracts/src/kernel.mjs)",
     "findOperation (packages/skill-family-contracts/src/kernel.mjs)",
@@ -108,7 +114,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "runChecks (packages/skill-family-contracts/src/checker.mjs)",
     "collectUnresolvedRefs (packages/skill-family-contracts/src/checker.mjs)"
@@ -130,7 +138,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "verifyFixture (packages/skill-family-contracts/src/fixtures.mjs)",
     "verifyAllFixtures (packages/skill-family-contracts/src/fixtures.mjs)",
@@ -153,7 +163,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "ContractsError (packages/skill-family-contracts/src/errors.mjs)",
     "ERROR_CODES (packages/skill-family-contracts/src/errors.mjs)",
@@ -180,7 +192,9 @@
    "layer": "contracts",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "describeAuditSurface (packages/skill-family-contracts/src/audit-surface.mjs)",
     "digestAuditSurface (packages/skill-family-contracts/src/audit-surface.mjs)",
@@ -203,7 +217,9 @@
    "layer": "contracts",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "TOKEN_ESTIMATE_CONSUMPTION (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
     "TOKEN_ESTIMATE_CONSUMPTION_REASONS (packages/skill-family-contracts/src/token-estimate-consumption.mjs)",
@@ -228,7 +244,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "validateContractDocument (packages/skill-family-harness-node/src/validation.mjs)",
     "getValidator (packages/skill-family-harness-node/src/validation.mjs)",
@@ -251,7 +269,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "classifyPathInput (packages/skill-family-harness-node/src/paths.mjs)",
     "resolveContained (packages/skill-family-harness-node/src/paths.mjs)",
@@ -275,12 +295,15 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "writeFileAtomic (packages/skill-family-harness-node/src/atomic.mjs)"
    ],
    "sourceRefs": [
-    "packages/skill-family-harness-node/src/atomic.mjs"
+    "packages/skill-family-harness-node/src/atomic.mjs",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/atomic.test.mjs"
@@ -302,7 +325,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "TemporaryWorkspace (packages/skill-family-harness-node/src/workspace.mjs)",
     "createTemporaryWorkspace (packages/skill-family-harness-node/src/workspace.mjs)",
@@ -324,7 +349,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "computeResourceClosure (packages/skill-family-harness-node/src/closure.mjs)",
     "digestBytes (packages/skill-family-harness-node/src/closure.mjs)",
@@ -346,7 +373,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "parseRequest (packages/skill-family-harness-node/src/request.mjs)",
     "processRequest (packages/skill-family-harness-node/src/request.mjs)"
@@ -367,7 +396,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "validateReportModel (packages/skill-family-harness-node/src/report.mjs)",
     "renderReportMarkdown (packages/skill-family-harness-node/src/report.mjs)",
@@ -393,7 +424,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "normalizeAdapterSource (packages/skill-family-harness-node/src/host.mjs)",
     "buildAdapterClosure (packages/skill-family-harness-node/src/host.mjs)",
@@ -421,7 +454,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "openStateStore (packages/skill-family-harness-node/src/state-store.mjs)",
     "appendEvent (packages/skill-family-harness-node/src/state-store.mjs)",
@@ -450,7 +485,9 @@
    "layer": "harness",
    "since": "0.3.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "computeDirectoryDigest (packages/skill-family-harness-node/src/baseline.mjs)",
     "materializeBaseline (packages/skill-family-harness-node/src/baseline.mjs)"
@@ -471,7 +508,9 @@
    "layer": "harness",
    "since": "0.3.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "createReadChokepoint (packages/skill-family-harness-node/src/chokepoint.mjs)"
    ],
@@ -491,7 +530,9 @@
    "layer": "harness",
    "since": "0.3.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "scanSurface (packages/skill-family-harness-node/src/surface-scan.mjs)"
    ],
@@ -511,7 +552,9 @@
    "layer": "harness",
    "since": "0.5.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "assertDeclaredReadSurface (packages/skill-family-harness-node/src/declared-read-surface.mjs)"
    ],
@@ -531,7 +574,9 @@
    "layer": "harness",
    "since": "0.5.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "scanSurfaceStructured (packages/skill-family-harness-node/src/structured-scan.mjs)",
     "STRUCTURED_SCAN_RULES (packages/skill-family-harness-node/src/structured-scan.mjs)"
@@ -552,7 +597,9 @@
    "layer": "harness",
    "since": "0.3.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "estimateTokenUpperBound (packages/skill-family-harness-node/src/token-estimate.mjs)",
     "estimateTokens (packages/skill-family-harness-node/src/token-estimate.mjs)",
@@ -582,7 +629,9 @@
    "layer": "harness",
    "since": "0.3.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "openUsageGuard (packages/skill-family-harness-node/src/budget-guard.mjs)",
     "appendUsageEvent (packages/skill-family-harness-node/src/budget-guard.mjs)",
@@ -605,7 +654,9 @@
    "layer": "harness",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "superviseProcess (packages/skill-family-harness-node/src/supervise-process.mjs)",
     "validateTimeoutPolicy (packages/skill-family-harness-node/src/supervise-process.mjs)",
@@ -617,7 +668,8 @@
    "sourceRefs": [
     "packages/skill-family-harness-node/src/supervise-process.mjs",
     "packages/skill-family-contracts/src/schemas/watchdog-termination-envelope.schema.json",
-    "packages/skill-family-contracts/src/schemas/timeout-policy.schema.json"
+    "packages/skill-family-contracts/src/schemas/timeout-policy.schema.json",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/supervise-process-lifecycle.test.mjs",
@@ -636,7 +688,9 @@
    "layer": "harness",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "readFileStrict (packages/skill-family-harness-node/src/strict-read.mjs)"
    ],
@@ -656,7 +710,9 @@
    "layer": "harness",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "redactUrlCredentials (packages/skill-family-harness-node/src/url-redaction.mjs)",
     "REDACTED_URL_PLACEHOLDER (packages/skill-family-harness-node/src/url-redaction.mjs)"
@@ -677,7 +733,9 @@
    "layer": "harness",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "HarnessError (packages/skill-family-harness-node/src/errors.mjs)",
     "HARNESS_ERROR_KINDS (packages/skill-family-harness-node/src/errors.mjs)",
@@ -701,7 +759,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "scaffoldTarget (packages/skill-family-engineering-kit/src/scaffold.mjs)",
     "describeSkeletonFiles (packages/skill-family-engineering-kit/src/skeleton.mjs)",
@@ -726,7 +786,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "planAdoption (packages/skill-family-engineering-kit/src/adopt-plan.mjs)",
     "buildProfileDraft (packages/skill-family-engineering-kit/src/adopt-plan.mjs)",
@@ -754,7 +816,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "buildProjectionClosure (packages/skill-family-engineering-kit/src/projection.mjs)",
     "runProjection (packages/skill-family-engineering-kit/src/projection.mjs)",
@@ -781,21 +845,23 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
-      "entrypoints": [
-        "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
-        "runCommand check wrapper (packages/skill-family-engineering-kit/src/index.mjs)",
-        "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
-        "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)",
-        "readProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
-        "createProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
-        "publishProfessionalConclusion (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)"
-      ],
-      "sourceRefs": [
-        "packages/skill-family-engineering-kit/src/check.mjs",
-        "packages/skill-family-engineering-kit/src/core-check.mjs",
-        "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
-        "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "runChecks (packages/skill-family-engineering-kit/src/check.mjs)",
+    "runCommand check wrapper (packages/skill-family-engineering-kit/src/index.mjs)",
+    "runCoreCheck (packages/skill-family-engineering-kit/src/core-check.mjs)",
+    "isContainedDeclaration (packages/skill-family-engineering-kit/src/core-check.mjs)",
+    "readProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
+    "createProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
+    "publishProfessionalConclusion (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/check.mjs",
+    "packages/skill-family-engineering-kit/src/core-check.mjs",
+    "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
+    "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
@@ -815,7 +881,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "renderReportAction (packages/skill-family-engineering-kit/src/report.mjs)",
     "checkReportAction (packages/skill-family-engineering-kit/src/report.mjs)"
@@ -836,7 +904,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "probeGitState (packages/skill-family-engineering-kit/src/gitprobe.mjs)",
     "probeGitFacts (packages/skill-family-engineering-kit/src/gitprobe.mjs)"
@@ -857,7 +927,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "unstable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "bundledHostProfilesRoot (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
@@ -899,7 +971,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "loadLicensingProfile (packages/skill-family-engineering-kit/src/licensing.mjs)",
     "listLicensingProfiles (packages/skill-family-engineering-kit/src/licensing.mjs)",
@@ -927,7 +1001,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "checkIdentityDrift (packages/skill-family-engineering-kit/src/identity-check.mjs)",
     "validateIdentityAgainstProfile (packages/skill-family-engineering-kit/src/identity-check.mjs)",
@@ -949,17 +1025,19 @@
    "layer": "engineering-kit",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
-      "entrypoints": [
-        "runEntryContractCheck (packages/skill-family-engineering-kit/src/entry-check.mjs)",
-        "checkEntriesAction (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "runEntryContractCheck (packages/skill-family-engineering-kit/src/entry-check.mjs)",
+    "checkEntriesAction (packages/skill-family-engineering-kit/src/entry-check.mjs)",
     "ENTRY_CONTRACT_DECLARATION_PATH (packages/skill-family-engineering-kit/src/entry-check.mjs)",
     "ENTRY_CONTRACT_DECLARATION_KIND (packages/skill-family-engineering-kit/src/entry-check.mjs)"
    ],
-      "sourceRefs": [
-        "packages/skill-family-engineering-kit/src/entry-check.mjs",
-        "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
-        "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/entry-check.mjs",
+    "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
+    "packages/skill-family-engineering-kit/src/professional-conclusion.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/entry-check.test.mjs"
@@ -976,7 +1054,9 @@
    "stability": "candidate",
    "migration": "none",
    "promotionPolicy": "consumer-transparent",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "runHostLoadingCheck (packages/skill-family-engineering-kit/src/host-loading-check.mjs)",
     "checkHostLoadingAction (packages/skill-family-engineering-kit/src/host-loading-check.mjs)",
@@ -1004,7 +1084,9 @@
    "stability": "candidate",
    "migration": "none",
    "promotionPolicy": "consumer-transparent",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "runRegisterExisting (packages/skill-family-engineering-kit/src/register-existing.mjs)",
     "registerExistingAction (packages/skill-family-engineering-kit/src/register-existing.mjs)",
@@ -1028,7 +1110,9 @@
    "layer": "engineering-kit",
    "since": "0.6.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "runRelock (packages/skill-family-engineering-kit/src/relock.mjs)",
     "relockAction (packages/skill-family-engineering-kit/src/relock.mjs)",
@@ -1051,7 +1135,9 @@
    "layer": "engineering-kit",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "cliMain (packages/skill-family-engineering-kit/src/cli.mjs)",
     "runCommand (packages/skill-family-engineering-kit/src/index.mjs)"
@@ -1074,7 +1160,9 @@
    "layer": "profile",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["profile"],
+   "adoptionScopes": [
+    "profile"
+   ],
    "entrypoints": [
     "verifyProfile (profiles/spi/index.mjs)",
     "skill-family-engineering-kit/profile-spi (packages/skill-family-engineering-kit/profile-spi/index.mjs)"
@@ -1105,7 +1193,9 @@
    "layer": "profile",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["profile"],
+   "adoptionScopes": [
+    "profile"
+   ],
    "entrypoints": [
     "verifyProfile (profiles/spi/index.mjs)"
    ],
@@ -1126,7 +1216,9 @@
    "layer": "profile",
    "since": "0.2.0",
    "stability": "stable",
-   "adoptionScopes": ["profile"],
+   "adoptionScopes": [
+    "profile"
+   ],
    "entrypoints": [
     "loadLicensingProfile (packages/skill-family-engineering-kit/src/licensing.mjs)"
    ],
@@ -1147,7 +1239,9 @@
    "layer": "profile",
    "since": "0.2.0",
    "stability": "unstable",
-   "adoptionScopes": ["profile"],
+   "adoptionScopes": [
+    "profile"
+   ],
    "entrypoints": [
     "bundledHostProfilesRoot (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
     "describeHost (packages/skill-family-engineering-kit/src/host-profiles.mjs)",
@@ -1176,7 +1270,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [
     "refuseHostApply (packages/skill-family-engineering-kit/src/host.mjs)"
    ],
@@ -1197,7 +1296,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "docs/architecture.md"
@@ -1213,7 +1317,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/host.mjs",
@@ -1230,7 +1339,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-contracts/src/index.mjs",
@@ -1249,7 +1363,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/index.mjs",
@@ -1266,7 +1385,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/index.mjs",
@@ -1283,7 +1407,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-contracts/src/audit-surface.mjs",
@@ -1300,7 +1429,12 @@
    "layer": "unsupported",
    "since": "0.2.0",
    "stability": "unsupported",
-   "adoptionScopes": ["contracts","harness","engineering-kit","profile"],
+   "adoptionScopes": [
+    "contracts",
+    "harness",
+    "engineering-kit",
+    "profile"
+   ],
    "entrypoints": [],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/index.mjs",
@@ -1318,7 +1452,9 @@
    "layer": "engineering-kit",
    "since": "0.12.0",
    "stability": "candidate",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "runHostVerification (packages/skill-family-engineering-kit/src/host-verification.mjs)"
    ],
@@ -1342,7 +1478,9 @@
    "layer": "contracts",
    "since": "0.2.1",
    "stability": "candidate",
-   "adoptionScopes": ["contracts"],
+   "adoptionScopes": [
+    "contracts"
+   ],
    "entrypoints": [
     "skill-family-contracts/quickstart-profile: QUICKSTART_PROTOCOL, QUICKSTART_PROFILE_VERSION, HISTORICAL_CANDIDATE_SCHEMA_ID_MIGRATIONS, loadQuickstartProtocol, quickstartProfileSchemas, listQuickstartProfileSchemas, loadSchemaValidationBatchRequestSchema, loadSchemaValidationBatchResultSchema, validateQuickstartProfileDocument (packages/skill-family-contracts/candidate/quickstart-profile/index.mjs)"
    ],
@@ -1377,7 +1515,9 @@
    "layer": "harness",
    "since": "0.2.1",
    "stability": "candidate",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "skill-family-harness-node/quickstart-profile: createObservationResource, verifyResourceBytes, verifyObservationResource, createQuickstartTask, wrapQuickstartResult, assertQuickstartExchange, verifyQuickstartExchange, invokeFoundationMechanism[read-file-strict, validate-many-by-schema-id], canonicalJson, computeResourceClosure, digestBytes, digestDocument (packages/skill-family-harness-node/candidate/quickstart-profile.mjs)",
     "skill-family-harness-node/rename-directory-no-replace (packages/skill-family-harness-node/candidate/rename-directory-no-replace/rename-directory-no-replace.mjs)"
@@ -1408,7 +1548,9 @@
    "layer": "engineering-kit",
    "since": "0.2.1",
    "stability": "candidate",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "skill-family-engineering-kit/quickstart-profile: buildQuickstartProfileProjection, buildQuickstartProfileProjectionFromInventory, QUICKSTART_PROFILE_TARGET_PREFIX (packages/skill-family-engineering-kit/candidate/index.mjs)",
     "skill-family-engineering-kit/adoption: invokeFoundationAdoption, runAdoptionCli (packages/skill-family-engineering-kit/candidate/index.mjs)",
@@ -1445,13 +1587,16 @@
    "layer": "harness",
    "since": "0.13.0",
    "stability": "candidate",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "skill-family-harness-node: observeFilesystemTree (packages/skill-family-harness-node/src/filesystem-observation.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/filesystem-observation.mjs",
-    "packages/skill-family-harness-node/src/native/bound_read.c"
+    "packages/skill-family-harness-node/src/native/bound_read.c",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
@@ -1470,7 +1615,10 @@
    "layer": "harness",
    "since": "0.9.0",
    "stability": "stable",
-   "adoptionScopes": ["harness", "engineering-kit"],
+   "adoptionScopes": [
+    "harness",
+    "engineering-kit"
+   ],
    "entrypoints": [
     "skill-family-harness-node: createFixedSetPublicationManifest, publishFixedSet, replaceFixedSetAtomic (packages/skill-family-harness-node/src/fixed-set-publication.mjs)",
     "skill-family-harness-node/fixed-set-publication: createFixedSetPublicationManifest, publishFixedSet, replaceFixedSetAtomic (packages/skill-family-harness-node/src/fixed-set-publication.mjs)"
@@ -1479,7 +1627,8 @@
     "packages/skill-family-harness-node/src/fixed-set-publication.mjs",
     "packages/skill-family-harness-node/src/fixed-set-publication-loader.mjs",
     "packages/skill-family-harness-node/src/native/bound_read.c",
-    "packages/skill-family-engineering-kit/candidate/profile-bundle.mjs"
+    "packages/skill-family-engineering-kit/candidate/profile-bundle.mjs",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs",
@@ -1491,18 +1640,51 @@
    ]
   },
   {
+   "id": "foundation.harness.fixed-set-generation",
+   "package": "skill-family-harness-node",
+   "layer": "harness",
+   "since": "0.28.0",
+   "stability": "candidate",
+   "adoptionScopes": [
+    "harness",
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "skill-family-harness-node: publishFixedSetGeneration, resolveFixedSetGeneration (packages/skill-family-harness-node/src/fixed-set-publication.mjs)",
+    "skill-family-harness-node/fixed-set-publication: publishFixedSetGeneration, resolveFixedSetGeneration (packages/skill-family-harness-node/src/fixed-set-publication.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-harness-node/src/fixed-set-publication.mjs",
+    "packages/skill-family-harness-node/src/native/windows_process.c",
+    "packages/skill-family-contracts/src/schemas/fixed-set-generation-pointer.schema.json",
+    "packages/skill-family-contracts/src/schemas/fixed-set-generation-result.schema.json",
+    "packages/skill-family-contracts/src/schemas/fixed-set-generation-resolution.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-harness-node/test/stable-filesystem-operations.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
    "id": "foundation.harness.executable-identity-observation",
    "package": "skill-family-harness-node",
    "layer": "harness",
    "since": "0.15.0",
    "stability": "candidate",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "skill-family-harness-node: observeExecutableIdentity (packages/skill-family-harness-node/src/executable-identity.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-harness-node/src/executable-identity.mjs",
-    "packages/skill-family-contracts/src/schemas/executable-identity-observation.schema.json"
+    "packages/skill-family-contracts/src/schemas/executable-identity-observation.schema.json",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/foundation-015-harness.test.mjs"
@@ -1519,7 +1701,9 @@
    "layer": "harness",
    "since": "0.19.0",
    "stability": "candidate",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "runMechanismCliBatch (packages/skill-family-harness-node/candidate/mechanisms-cli.mjs)",
     "mechanisms-cli.mjs --batch (packages/skill-family-harness-node/candidate/mechanisms-cli.mjs)"
@@ -1552,23 +1736,25 @@
    "layer": "engineering-kit",
    "since": "0.13.0",
    "stability": "candidate",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "skill-family-engineering-kit: runPluginVerification (packages/skill-family-engineering-kit/src/plugin-verification.mjs)"
    ],
-  "sourceRefs": [
+   "sourceRefs": [
     "packages/skill-family-engineering-kit/src/plugin-verification.mjs",
     "packages/skill-family-engineering-kit/src/host-verification-drivers.mjs",
     "packages/skill-family-engineering-kit/src/qualification.mjs",
     "packages/skill-family-contracts/src/schemas/plugin-verification-request.schema.json",
     "packages/skill-family-contracts/src/schemas/plugin-verification-result.schema.json"
-  ],
-  "positiveTestRefs": [
+   ],
+   "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
     "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
     "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
-  ],
-  "negativeTestRefs": [
+   ],
+   "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/plugin-verification.test.mjs",
     "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
     "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
@@ -1600,21 +1786,23 @@
    "layer": "engineering-kit",
    "since": "0.15.0",
    "stability": "candidate",
-   "adoptionScopes": ["engineering-kit"],
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
    "entrypoints": [
     "skill-family-engineering-kit: runSkillFamilyDirectoryVerification (packages/skill-family-engineering-kit/src/skill-family-directory-verification.mjs)"
    ],
-  "sourceRefs": [
+   "sourceRefs": [
     "packages/skill-family-engineering-kit/src/skill-family-directory-verification.mjs",
     "packages/skill-family-engineering-kit/src/qualification.mjs",
     "packages/skill-family-contracts/src/schemas/skill-family-directory-verification-request.schema.json",
     "packages/skill-family-contracts/src/schemas/skill-family-directory-verification-result.schema.json"
-  ],
-  "positiveTestRefs": [
+   ],
+   "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
     "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
-  ],
-  "negativeTestRefs": [
+   ],
+   "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/foundation-015-kit.test.mjs",
     "packages/skill-family-engineering-kit/test/isolated-install.test.mjs"
    ],
@@ -1626,7 +1814,14 @@
      "resultSchemaId": "https://contracts.skill-family.example/v1/skill-family-directory-verification-result.json",
      "bindingKind": "skill-family-directory-verification-bindings-v1",
      "default": "off",
-     "triggerCodes": ["first-host-related-adoption", "incompatible-foundation-change", "consumer-boundary-change", "runtime-or-channel-change", "incident-or-mock-drift", "user-requested"]
+     "triggerCodes": [
+      "first-host-related-adoption",
+      "incompatible-foundation-change",
+      "consumer-boundary-change",
+      "runtime-or-channel-change",
+      "incident-or-mock-drift",
+      "user-requested"
+     ]
     }
    },
    "migration": "none",
@@ -1638,7 +1833,9 @@
    "layer": "harness",
    "since": "0.22.0",
    "stability": "candidate",
-   "adoptionScopes": ["harness"],
+   "adoptionScopes": [
+    "harness"
+   ],
    "entrypoints": [
     "applyFileSet (packages/skill-family-harness-node/src/file-set-recovery.mjs)",
     "recoverFileSet (packages/skill-family-harness-node/src/file-set-recovery.mjs)",
@@ -1652,7 +1849,8 @@
     "packages/skill-family-contracts/src/schemas/file-set-prune-request.schema.json",
     "packages/skill-family-contracts/src/schemas/file-set-result.schema.json",
     "packages/skill-family-contracts/src/schemas/file-set-event-payload.schema.json",
-    "packages/skill-family-contracts/src/schemas/state-store-recovery-observation.schema.json"
+    "packages/skill-family-contracts/src/schemas/state-store-recovery-observation.schema.json",
+    "packages/skill-family-harness-node/src/native/windows_process.c"
    ],
    "positiveTestRefs": [
     "packages/skill-family-harness-node/test/file-set-recovery.test.mjs",

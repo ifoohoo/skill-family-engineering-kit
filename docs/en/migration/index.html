@@ -1265,6 +1265,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-migration-design" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows migration design
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2005,6 +2016,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-migration-design" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows migration design
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2273,6 +2295,8 @@ npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabiliti
 </ul>
 <h2 id="Hazard-Class-Fixtures">Hazard-Class Fixtures<a class="headerlink" href="#Hazard-Class-Fixtures" title="Permanent link">&para;</a></h2>
 <p><code>fixtures/adoption/cases/</code> covers seven hazard classes: dirty repository, nested repository, tracked-but-ignored, symlink placeholder, generated-artifact drift, legacy-implementation exit gate, and temporary-exception fields. Each case proves the plan is read-only via byte-level before/after snapshots; see the in-repo <code>fixtures/adoption/README.md</code> for case descriptions.</p>
+<h2 id="Windows-migration-design">Windows migration design<a class="headerlink" href="#Windows-migration-design" title="Permanent link">&para;</a></h2>
+<p>DocRender migration requires fixed-set batching: copy from fixed root to a dedicated, pre-created empty isolated export directory. Verify complete file set and content digest before freezing output via existing release process. This design is a future migration path, not a completed migration. POSIX dual-directory exchange remains unchanged; Windows users must use fixed-set APIs. No new background leases, Registry entries, or publishers are introduced.</p>
 
 
 

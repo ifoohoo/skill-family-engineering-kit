@@ -668,6 +668,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-失败与残余" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows 失败与残余
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1783,6 +1794,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-失败与残余" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows 失败与残余
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2262,6 +2284,9 @@
 <li>状态锁冲突（<code>store-locked</code>）：在 Foundation 之外确认旧写者已终止，再用精确匹配的 owner/fencing 调用恢复。</li>
 <li>check 发现（退出码 1）：处置发现项，Kit 不自动修复。</li>
 </ul>
+<h2 id="Windows-失败与残余">Windows 失败与残余<a class="headerlink" href="#Windows-失败与残余" title="Permanent link">&para;</a></h2>
+<p>固定世代读取（<code>resolveFixedSetGeneration</code>）为只读操作，发布（<code>publishFixedSetGeneration</code>）写入指针并保留所有世代。提交前可确认失败，提交后或不确定状态需分开报告。失败与副作用可能产生同父暂存，但不按文件后缀清未知文件。文件集合整组还原能力前检失败时，不产生业务写入，但机制材料仍需按结果判断。</p>
+<p><code>apply</code> 后验证失败时，按记录恢复，不自动偷锁。Job Object 强杀完成需满足零活动进程、流收尾与全部句柄关闭。刷新仅请求，不保证断电事务。调用者应按结果中的提交、恢复与残余事实决定后续动作，不把不确定状态当成可以安全重试。</p>
 
 
 

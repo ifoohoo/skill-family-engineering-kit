@@ -1073,6 +1073,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-合同分支" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows 合同分支
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2485,6 +2496,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-合同分支" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows 合同分支
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2523,7 +2545,7 @@
 <li><a href="#完整插件验证合同-foundationcontractsplugin-verification">完整插件验证合同</a> → request/result Schema</li>
 <li><a href="#技能族目录验证合同-foundationcontractsskill-family-directory-verification">技能族目录验证合同</a> → request/result Schema</li>
 </ul>
-<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（当前本地合同源码为 53 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.20.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。已发布 Foundation 0.21.0 仍对应 Contracts 1.18.0 与 46 类对象；本页新增内容描述尚无发布坐标的本地实现。</p>
+<p>包级常量（冻结，仅作事实投影，不另立权威）：<code>CONTRACT_OBJECTS</code>（当前本地合同源码为 56 类顶层对象，闭集）、<code>CONTRACT_BOUNDARY</code>、<code>CONTRACTS_VERSION = "1.21.0"</code>、<code>SUPPORTED_DIALECTS</code>、<code>VALIDATION_POLICIES</code>、<code>CHECK_TYPES</code>（9 类机械检查）、<code>MANDATORY_RULES</code>、<code>RULE_BUDGET</code>、<code>ERROR_CODES</code>。已发布 Foundation 0.21.0 仍对应 Contracts 1.18.0 与 46 类对象；本页 Windows 增量部分描述尚无发布坐标的本地实现。</p>
 <hr />
 <h2 id="对象校验-foundationcontractsobject-validation">对象校验 (foundation.contracts.object-validation)<a class="headerlink" href="#对象校验-foundationcontractsobject-validation" title="Permanent link">&para;</a></h2>
 <h3 id="validateDocument">validateDocument<a class="headerlink" href="#validateDocument" title="Permanent link">&para;</a></h3>
@@ -2571,7 +2593,7 @@
 </ul>
 <hr />
 <h2 id="公共专业结论-professional-conclusion">公共专业结论 (professional-conclusion)<a class="headerlink" href="#公共专业结论-professional-conclusion" title="Permanent link">&para;</a></h2>
-<p>Contracts 1.20.0 在当前本地源码登记 <code>professional-conclusion</code>，Schema <code>$id</code> 为
+<p>Contracts 1.20.0 已登记 <code>professional-conclusion</code>，当前本地源码继续沿用。其 Schema <code>$id</code> 为
 <code>https://contracts.skill-family.example/v1/professional-conclusion.json</code>。它固定六个外层字段：
 <code>schemaVersion</code>、<code>kind</code>、<code>provider</code>、<code>subject</code>、<code>scope</code>、<code>outcome</code> 与可选 <code>details</code>。其中
 <code>scope.checked</code> 和 <code>scope.limitations</code> 说明真正完成的检查与限制；<code>outcome.completion</code> 只能是
@@ -2616,11 +2638,11 @@ Contracts 不维护领域代码表，也不根据结构有效推断专业结果�
 <li>这三个 Schema 的真实登记与 fixture 由 <code>packages/skill-family-contracts/src/registry.json</code>、<code>src/schemas/</code> 和 <code>test/</code> 共同核验；批量校验 Schema 保持 candidate，不进入稳定 Registry。</li>
 </ul>
 <h2 id="文件集合应用与恢复合同-file-set-applyrecovery">文件集合应用与恢复合同 (file-set apply/recovery)<a class="headerlink" href="#文件集合应用与恢复合同-file-set-applyrecovery" title="Permanent link">&para;</a></h2>
-<p>Contracts 1.20.0 登记六个已登记顶层对象：<code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、
+<p>Contracts 1.20.0 已登记六个顶层对象：<code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、
 <code>file-set-prune-request</code>、<code>file-set-result</code>、<code>file-set-event-payload</code> 与
-<code>state-store-recovery-observation</code>。六个 Schema 均为顶层封装，必填 <code>schemaVersion=1</code> 与
+<code>state-store-recovery-observation</code>。以下 POSIX v1 描述保留；Windows 分支见页末。六个 Schema 均为顶层封装，使用各自版本字段与
 <code>kind=skill-family.&lt;对象名&gt;</code>，闭字段、未知字段拒绝；登记状态为 <code>candidate</code>，本地规格坐标
-<code>contractsVersion=1.20.0</code> 尚无 registry 发布坐标。状态恢复观察对象由状态恢复合同单独定义，
+<code>contractsVersion=1.21.0</code> 尚无 registry 发布坐标。状态恢复观察对象由状态恢复合同单独定义，
 不塞进文件业务 Schema 反向依赖。</p>
 <ul>
 <li>apply request：<code>operationId</code>（调用方生成的 UUID v4 小写字符串，journal 内不复用）、<code>root</code>（规范绝对真实路径）、
@@ -2672,7 +2694,7 @@ Contracts 不维护领域代码表，也不根据结构有效推断专业结果�
 <li>纯函数：是。</li>
 <li>副作用：无。</li>
 <li>稳定错误码与 <code>details.kind</code>：登记类冲突经 <code>registerSchema</code> / <code>registerProtocol</code> 抛 <code>SFC1003</code>（<code>DUPLICATE_SCHEMA_ID</code>）/ <code>SFC1004</code>（<code>DUPLICATE_PROTOCOL_NAME</code>）。</li>
-<li>前置条件与信任锚：当前本地 <code>registry.json</code> 的 <code>schemaVersion=1</code>、<code>contractsVersion=1.20.0</code>；登记表含 53 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。正式发布前不能把本地坐标当作 registry 可用版本。</li>
+<li>前置条件与信任锚：当前本地 <code>registry.json</code> 的 <code>schemaVersion=1</code>、<code>contractsVersion=1.21.0</code>；登记表含 56 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。正式发布前不能把本地坐标当作 registry 可用版本。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：<code>packages/skill-family-contracts/src/registry.mjs</code>、<code>registry.json</code>。</li>
 <li>正例/负例测试：<code>packages/skill-family-contracts/test/registry.test.mjs</code>。</li>
@@ -2688,7 +2710,7 @@ Contracts 不维护领域代码表，也不根据结构有效推断专业结果�
 <li>纯函数：是（仅返回复制后的内存对象）。</li>
 <li>副作用：无文件、进程、Git、网络或持久化副作用。</li>
 <li>稳定错误码与 <code>details.kind</code>：<code>SFC1003</code>（重复 <code>$id</code>）、<code>SFC1004</code>（重复协议名）。</li>
-<li>前置条件与信任锚：当前本地登记表含 53 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
+<li>前置条件与信任锚：当前本地登记表含 56 类 Schema 与 1 个 Kernel Protocol，新增需 ADR。</li>
 <li><code>since</code> / <code>stability</code>：<code>0.2.0</code> / <code>stable</code>。</li>
 <li>源文件：同上。</li>
 <li>正例/负例测试：同上。</li>
@@ -3011,6 +3033,12 @@ Bundle 让旧新 ID 指向同一编译 validator，不复制 Schema，也不登�
 <li>能力稳定 ID 见 <code>docs/agents/capability-catalog.json</code>（<code>foundation.contracts.*</code>）。</li>
 <li>机械校验：<code>scripts/docs/capability-catalog-check.mjs</code> 解析 <code>src/index.mjs</code>，拒绝引用不存在的入口；<code>sourceRefs</code> 与测试引用均指向本页所列真实文件。</li>
 </ul>
+<h2 id="Windows-合同分支">Windows 合同分支<a class="headerlink" href="#Windows-合同分支" title="Permanent link">&para;</a></h2>
+<p>Foundation 0.28.0 的 Windows 合同分支适用于 Windows 11 x64、本地 NTFS 文件系统及普通用户环境，采用 Contracts 规格 1.21.0，共 56 个登记对象，其中 <code>fixed-set-generation-pointer</code>、<code>fixed-set-generation-result</code> 与 <code>fixed-set-generation-resolution</code> 为 <code>schemaVersion=1</code> 的候选对象，其余对象成熟度按原登记保持不变。该版本的合同规范与注册状态不构成对真实宿主资格的证明，真实宿主业务资格仍需由 driver、版本、认证与业务证据共同确认。</p>
+<p><code>filesystem-root-binding</code> 保持四字段结构，不新增 <code>schemaVersion</code>，Windows 分支的 <code>basis</code> 为 <code>canonical-finalpath-volume-fileid-type-security-v1</code>，表示基于路径规范化、卷序列号、文件 ID、文件类型与安全描述符摘要的唯一身份。路径处理遵循 Windows 原生语义，包括大写盘符、正斜杠分隔、不转小写、不处理符号链接目标，权限信息由原生句柄提供，不通过 <code>mode</code> 或 <code>statMode</code> 传递。</p>
+<p><code>filesystem-tree-observation</code> 与 <code>executable-identity-observation</code> 在 Windows 平台使用 <code>schemaVersion=2</code>，启用 Windows 身份与权限分支，已有 <code>statMode</code> 位置显式为 <code>null</code>，权限信息通过 <code>permissionObservation</code> 字段记录。嵌套解释器观察必须符合相同平台分支，混入 POSIX 观察结构的实例无法通过 Schema 校验。</p>
+<p><code>file-set-apply-request</code>、<code>file-set-recovery-request</code>、<code>file-set-prune-request</code>、<code>file-set-event-payload</code> 与 <code>state-store-recovery-observation</code> 在 Windows 分支均使用 <code>schemaVersion=2</code>；其中三个请求声明 <code>environment.filesystem=ntfs</code>，事件载荷和恢复观察按各自 Schema 承载 Windows 事实，不新增 <code>environment</code> 字段。POSIX 平台的 <code>v1</code> 合同保留，不进行兼容性降级或伪造，<code>file-set-result</code> 结果合同不因平台变更而伪造版本。</p>
+<p><code>watchdog-termination-envelope</code> 在 Windows 平台使用 <code>schemaVersion=2</code>，证据基于 Job Object，不包含 <code>processGroupId</code> 字段，与 POSIX 分支保持逻辑隔离。<code>fixed-set-generation-pointer</code>、<code>fixed-set-generation-result</code> 与 <code>fixed-set-generation-resolution</code> 为新增 <code>schemaVersion=1</code> 的候选对象，共享同一 registry 登记，规范 <code>$id</code> 为 <code>https://contracts.skill-family.example/v1/&lt;对象名&gt;.json</code>，结构校验不证明原生执行、还原能力、普通用户资格或宿主业务通过。所有合同版本与字段定义均以注册登记为准，远端可用性须由正式发布凭据核实；源码版本、单项测试或安装成功不能替代完整平台验证、真实宿主业务核验或发布凭据。官方 npm 包 <code>skill-family-contracts@0.27.1</code> 对应 Contracts 1.20.0、53 个对象，其历史合同不因本次新版本改变。</p>
 
 
 

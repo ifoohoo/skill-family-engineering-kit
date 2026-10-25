@@ -150,6 +150,14 @@ function commandHelp(command) {
       "选项:",
       "  --root <dir>          目标工作区（默认当前目录）",
       "  --manifest <relpath>  投影 manifest 相对路径（默认 skill-family.projection.json）",
+      "  --operation-id <uuid>：小写UUIDv4，唯一标识本次投影，Windows必填",
+      "  --validation-timeout-ms <ms>：十进制整数，1至2147483647毫秒，Windows必填",
+      "  --cooperative-writers：无值开关，出现即为true，Windows必填",
+      "  Windows运行必须完整提供三参数，缺一即拒绝，包括no-op；POSIX显式提供任一即拒绝",
+      "  CLI中三参数不得重复，report子动作不接受任何三项参数",
+      "  Windows 整个调用受合作式独占覆盖，目录准备、文件应用、验证与清理均需独占访问",
+      "  Kit允许邻接暂存及恢复根/日志/before-after材料保留，失败可能不清理",
+      "  恢复不等于零写入，机制材料保留需明确报告，不可默认为空",
       "",
       "报告子动作: skill-family-kit projection report [options]",
       "  --model <relpath>     经 Contracts 验证的 report-model JSON（必填）",
@@ -247,7 +255,7 @@ function parseOptions(argv, spec) {
     if (!flagSpec) {
       throw invalidParamsError(`unknown option for '${spec.command}': ${arg}`, { flag: arg, reason: "unknown-option" });
     }
-    if (spec.rejectDuplicates && seen.has(arg) && !flagSpec.repeat) {
+    if ((spec.rejectDuplicates || flagSpec.rejectDuplicate) && seen.has(arg) && !flagSpec.repeat) {
       throw invalidParamsError(`duplicate option for '${spec.command}': ${arg}`, { reason: "duplicate-option", flag: arg });
     }
     seen.add(arg);
@@ -312,6 +320,9 @@ const COMMAND_SPECS = {
       "--root": { key: "root", value: true },
       "--manifest": { key: "manifest", value: true },
       "--engineering": { key: "engineeringJson", value: true },
+      "--operation-id": { key: "operationId", value: true, rejectDuplicate: true },
+      "--validation-timeout-ms": { key: "validationTimeoutMs", value: true, rejectDuplicate: true },
+      "--cooperative-writers": { key: "cooperativeWriters", value: false, rejectDuplicate: true },
     },
   },
   check: {
@@ -899,6 +910,13 @@ export async function cliMain(argv) {
         throw invalidParamsError("--engineering must be a JSON engineering object", { flag: "--engineering" });
       }
     }
+    if (options.validationTimeoutMs !== undefined) {
+      if (!/^[0-9]+$/u.test(options.validationTimeoutMs) || !Number.isSafeInteger(Number(options.validationTimeoutMs)) ||
+          Number(options.validationTimeoutMs) < 1 || Number(options.validationTimeoutMs) > 2147483647) {
+        throw invalidParamsError("--validation-timeout-ms must be an integer from 1 to 2147483647", { flag: "--validation-timeout-ms" });
+      }
+      options.validationTimeoutMs = Number(options.validationTimeoutMs);
+    }
     const conclusionOutput = command === "check" ? conclusionOutputFromOptions(options) : undefined;
     const { exitCode, output } = await runCommand(command, {
       root: options.root ?? ".",
@@ -916,6 +934,9 @@ export async function cliMain(argv) {
       allowGitSpawn: !options.noGitSpawn,
       engineeringBaseline,
       engineering,
+      ...(Object.hasOwn(options, "operationId") ? { operationId: options.operationId } : {}),
+      ...(Object.hasOwn(options, "validationTimeoutMs") ? { validationTimeoutMs: options.validationTimeoutMs } : {}),
+      ...(Object.hasOwn(options, "cooperativeWriters") ? { cooperativeWriters: options.cooperativeWriters } : {}),
       compareSkeleton: compareSkeleton ? true : undefined,
     });
     if (output !== undefined) {

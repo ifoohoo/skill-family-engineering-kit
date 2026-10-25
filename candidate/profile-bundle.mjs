@@ -11,7 +11,7 @@ import {
   QUICKSTART_PROFILE_ID,
   QUICKSTART_PROFILE_VERSION,
 } from "skill-family-contracts/quickstart-profile";
-import { digestBytes } from "skill-family-harness-node";
+import { createFilesystemRootBinding, digestBytes, readFileBound } from "skill-family-harness-node";
 import { verifyConsumerSchemaInventory } from "skill-family-harness-node/quickstart-profile";
 
 /**
@@ -74,6 +74,9 @@ const ADDITIONAL_FOUNDATION_SCHEMA_FILES = Object.freeze([
   ["filesystem-root-binding.schema.json", "src/schemas/filesystem-root-binding.schema.json", "schemas/foundation/filesystem-root-binding.schema.json"],
   ["fixed-set-publication-manifest.schema.json", "src/schemas/fixed-set-publication-manifest.schema.json", "schemas/foundation/fixed-set-publication-manifest.schema.json"],
   ["fixed-set-publication-receipt.schema.json", "src/schemas/fixed-set-publication-receipt.schema.json", "schemas/foundation/fixed-set-publication-receipt.schema.json"],
+  ["fixed-set-generation-pointer.schema.json", "src/schemas/fixed-set-generation-pointer.schema.json", "schemas/foundation/fixed-set-generation-pointer.schema.json"],
+  ["fixed-set-generation-resolution.schema.json", "src/schemas/fixed-set-generation-resolution.schema.json", "schemas/foundation/fixed-set-generation-resolution.schema.json"],
+  ["fixed-set-generation-result.schema.json", "src/schemas/fixed-set-generation-result.schema.json", "schemas/foundation/fixed-set-generation-result.schema.json"],
   ["schema-validation-batch-request.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-request.schema.json", "schemas/foundation/schema-validation-batch-request.schema.json"],
   ["schema-validation-batch-result.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-result.schema.json", "schemas/foundation/schema-validation-batch-result.schema.json"],
   ["mechanism-batch-request.schema.json", "candidate/foundation-mechanisms/mechanism-batch-request.schema.json", "schemas/foundation/mechanism-batch-request.schema.json"],
@@ -105,11 +108,13 @@ const HARNESS_STRICT_READ_IMPORT_MAP = new Map([
 ]);
 
 const HARNESS_CLI_IMPORT_MAP = new Map([
+  ["../src/fixed-set-publication.mjs", "./runtime/harness/fixed-set-publication.mjs"],
   ["./quickstart-profile.mjs", "./runner.mjs"],
   ["skill-family-contracts/quickstart-profile", "./runtime/contracts-candidate/index.mjs"],
 ]);
 
 const HARNESS_ATOMIC_IMPORT_MAP = new Map([
+  ["skill-family-contracts", "../contracts/index.mjs"],
   ["./errors.mjs", "./errors.mjs"],
   ["./paths.mjs", "./paths.mjs"],
 ]);
@@ -151,6 +156,7 @@ const STABLE_BOUND_READ_NATIVE_FILES = Object.freeze([
   "prebuilds/darwin-x64/bound_read.darwin-x64.node",
   "prebuilds/linux-arm64-gnu/bound_read.linux-arm64-gnu.node",
   "prebuilds/linux-x64-gnu/bound_read.linux-x64-gnu.node",
+  "prebuilds/win32-x64/bound_read.win32-x64.node",
 ]);
 const STABLE_BOUND_READ_METADATA_FILES = Object.freeze([
   "NOTICE",
@@ -328,13 +334,20 @@ async function readFixedSetCandidate(input, harnessVersion) {
     throw buildError("fixedSetCandidate.root must be a canonical real directory");
   }
   const files = new Map();
+  const rootBinding = process.platform === "win32" ? await createFilesystemRootBinding(input.root) : null;
   for (const relative of FIXED_SET_CANDIDATE_FILES) {
-    const record = await readCanonicalRegularFile(
-      path.join(input.root, ...relative.split("/")),
-      `fixedSetCandidate member ${relative}`,
-    );
+    let record;
+    if (rootBinding) {
+      let receipt;
+      try { receipt = await readFileBound(input.root, relative, { rootBinding }); }
+      catch (cause) { throw buildError(`fixedSetCandidate member ${relative} could not be bound-read: ${cause.message}`); }
+      record = { bytes: Buffer.from(receipt.content), mode: null, permissionObservation: receipt.permissionObservation, sha256: receipt.sha256 };
+    } else {
+      record = await readCanonicalRegularFile(path.join(input.root, ...relative.split("/")), `fixedSetCandidate member ${relative}`);
+    }
     files.set(relative, record);
   }
+  if (rootBinding && (await createFilesystemRootBinding(input.root)).digest !== rootBinding.digest) throw buildError("fixedSetCandidate root changed during bound source reads");
   const parse = (relative) => {
     try { return JSON.parse(files.get(relative).bytes.toString("utf8")); }
     catch { throw buildError(`fixedSetCandidate ${relative} is not valid JSON`); }
@@ -389,7 +402,7 @@ async function readFixedSetCandidate(input, harnessVersion) {
     if (
       entry.platformKey !== platformKey || entry.os !== os || entry.arch !== arch || entry.libc !== libc ||
       JSON.stringify(entry.exports) !== JSON.stringify(nativeExports) ||
-      !binary || entry.mode !== binary.mode || entry.sha256 !== binary.sha256 || entry.napi !== 10 ||
+      !binary || (process.platform === "win32" ? entry.mode !== 0o644 : entry.mode !== binary.mode) || entry.sha256 !== binary.sha256 || entry.napi !== 10 ||
       receiptInput?.binarySha256 !== binary.sha256 || sbomInput?.binary !== entry.binary ||
       sbomInput?.sha256 !== binary.sha256
     ) {
@@ -413,6 +426,7 @@ async function readFixedSetCandidate(input, harnessVersion) {
         path: relative,
         type: "regular",
         mode: files.get(relative).mode,
+        ...(process.platform === "win32" ? { permissionObservation: files.get(relative).permissionObservation } : {}),
         sha256: files.get(relative).sha256,
       })),
     },
@@ -862,6 +876,8 @@ function migrationWorkspaceSource(workspaceSourceText) {
   return [
     'import { readFile } from "node:fs/promises";',
     'import path from "node:path";',
+    'import { HARNESS_ERROR_KINDS } from "../harness/errors.mjs";',
+    'import { readFileBound } from "../harness/bound-read.mjs";',
     "",
     `export async ${extractFunctionBlock(workspaceSourceText, "readOptionalFile")}`,
     "",
@@ -1675,7 +1691,8 @@ export async function buildQuickstartProfileProjection({
     .sort((a, b) => (a.path < b.path ? -1 : 1));
 
   const provenance = {
-    schemaVersion: 1,
+    schemaVersion: process.platform === "win32" ? 2 : 1,
+    ...(process.platform === "win32" ? { platform: "win32" } : {}),
     kind: "skill-family.foundation-projection",
     profile: {
       id: QUICKSTART_PROFILE_ID,
@@ -1724,7 +1741,8 @@ export async function buildQuickstartProfileProjection({
     }));
   return {
     manifest: {
-      schemaVersion: 1,
+      schemaVersion: process.platform === "win32" ? 3 : 1,
+      ...(process.platform === "win32" ? { platform: "win32" } : {}),
       kind: "skill-family.projection-manifest",
       entries,
     },

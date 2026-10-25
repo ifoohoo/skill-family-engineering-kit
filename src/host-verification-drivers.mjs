@@ -389,6 +389,7 @@ export function driverEnvironment({ driver, sessionRoot, existingUserStateRoot, 
     env.HOME = existingUserStateRoot;
     if (driver.driverId === WORKBUDDY_DRIVER.driverId) {
       env.CODEBUDDY_CONFIG_DIR = path.dirname(installedParent);
+      if (process.platform === "win32") env.CODEBUDDY_FORCE_LITE_WB_BUNDLE = "1";
     }
   }
   for (const key of ["LANG", "LC_ALL", "PATH", "TMPDIR", "http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "no_proxy"]) {

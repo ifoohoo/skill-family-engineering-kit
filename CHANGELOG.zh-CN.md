@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.28.0 locale=zh-CN baseline=sha256:1a2b8842ac6d657e0ab2239b132a5f5bb3e5d4a17ecca129f9a1c45f6488b804 -->
+## [0.28.0] - 2026-10-24
+
+Engineering Kit 0.28.0 保持四个顶层命令，增加 Windows 投影、包入口处理及范围受限的 WorkBuddy 会话许可输入。
+
+### 新增
+
+- Windows 采用 projection-plan v2、projection-manifest v3 与 projection-receipt v3。runProjection 须显式传入 operationId（小写 UUID v4）、validationTimeoutMs（整数毫秒）与 cooperativeWriters=true；目标根绑定由内部捕获，不由调用方传入。
+
+### 变更
+
+- 投影安全创建授权文件的父目录，通过一次 applyFileSet v2 应用文件；公共只读检查器识别保留恢复材料。标准 npm.cmd 与 pnpm.cmd 入口绑定用户选择的真实安装。
+- WorkBuddy 驱动接受已支持的精确 Node 启动器形态，并可读取已声明的 workbuddy-settings.local.json 夹具用于本次会话。范围仍限所选手动 WorkBuddy 路径，不代表所有宿主自动支持。
+
+### 升级说明
+
+四单元须精确锁定 0.28.0，Windows 调用须按公共 API 提供参数，不能重放旧 Windows 投影文档。POSIX 投影输入与默认行为保留。Windows 包安装采用独立文件导入。DocRender 世代迁移只完成设计，消费者尚未实施，本版不宣称迁移完成。
+<!-- release-skill:changelog:end version=0.28.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.27.1 locale=zh-CN baseline=sha256:cb323da4b49e16079b43e2989d638610330e1ee38439f8c025ce3b3238279b98 -->
 ## [0.27.1] - 2026-10-21
 

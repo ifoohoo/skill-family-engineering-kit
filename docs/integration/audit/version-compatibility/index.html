@@ -1791,7 +1791,7 @@
 <tbody>
 <tr>
 <td><code>contractsVersion</code></td>
-<td>Contracts 源码候选版本（当前 <code>1.20.0</code>）</td>
+<td>Contracts 源码候选版本（当前 <code>1.21.0</code>）</td>
 <td>机器契约内容的版本</td>
 </tr>
 <tr>
@@ -1806,9 +1806,7 @@
 </tr>
 </tbody>
 </table>
-<p>三者都由 <code>describeAuditSurface()</code> 一次性给出。审计侧把它们与当前 Contracts 版本对应的基线 pin 比对：
-当前源码候选为 <code>baseline/contracts-1.20.0.pin.json</code>；此前未发布候选的 <code>contracts-1.19.0.pin.json</code>、
-<code>contracts-1.18.0.pin.json</code> 和最近已发布规格的 <code>contracts-1.17.0.pin.json</code> 均保持只读。</p>
+<p><code>describeAuditSurface()</code> 仅返回当前被导入的 Contracts 包所对应的审计表面，其中包含 <code>contractsVersion</code>、<code>auditSurfaceVersion</code> 及摘要输入。在执行校验时，审计侧依据实际消费包的 <code>surface.contractsVersion</code> 动态选择对应的基准文件，即 <code>baseline/contracts-&lt;version&gt;.pin.json</code>，并据此核对版本与摘要。当实际消费 Contracts 1.21.0 时，使用 <code>baseline/contracts-1.21.0.pin.json</code> 作为核验基准；若实际消费 1.20.0、1.19.0、1.18.0 或 1.17.0 等历史版本，则分别使用对应版本的 <code>contracts-1.20.0.pin.json</code>、<code>contracts-1.19.0.pin.json</code>、<code>contracts-1.18.0.pin.json</code>、<code>contracts-1.17.0.pin.json</code> 等只读基准文件进行兼容性校验。所有历史版本的 pin 文件均保持只读状态，新增 1.21.0 的 pin 不会导致旧版本基准失效或被覆盖。</p>
 <h2 id="兼容规则">兼容规则<a class="headerlink" href="#兼容规则" title="Permanent link">&para;</a></h2>
 <p>一个被消费的 Contracts 包与某个基线 pin <strong>兼容</strong>，当且仅当同时满足：</p>
 <ol>
@@ -1876,7 +1874,7 @@
 <li><strong>Contracts 1.14.0（2026-08-28）</strong>：增加消费者契约测试向量与能力采用字段，明确区分候选发现、迁移完成、契约接入完成和真实宿主资格；消费者向量仍是候选测试合同，不改变既有宿主验证身份。<code>contracts-1.14.0.pin.json</code> 保留为历史只读兼容存档。</li>
 <li><strong>Contracts 1.15.0（2026-08-29）</strong>：增加 <code>executable-identity-observation</code>、<code>skill-family-directory-verification-request</code> 和 <code>skill-family-directory-verification-result</code> 三个候选顶层契约，并将 Kimi <code>driverVersion=1.0.0</code> 与闭合 <code>cliVersion=0.39.1</code> 分开。顶层对象由 42 类增至 45 类；Kernel 仍为 1.8.0，审计消费面仍为 <code>auditSurfaceVersion=1</code>。<code>contracts-1.15.0.pin.json</code> 的 <code>supersedes</code> 指向不可变的 <code>contracts-1.14.0.pin.json</code>；更早 pin 均继续作为只读兼容存档。</li>
 <li><strong>Contracts 1.16.0（2026-09-07）</strong>：新增 <code>engineering-baseline</code> 顶层契约，顶层对象由 45 类增至 46 类；它只登记中立身份、规则谱系引用与 Foundation 参考骨架身份，不把 Audit 规则正文或发布状态复制进 Contracts。<code>contracts-1.16.0.pin.json</code> 保持历史只读。</li>
-<li><strong>Contracts 1.17.0（2026-09-07）</strong>：为有界机制批量候选重记版本承载文档，稳定顶层对象仍为 46 类，批量合同保持 candidate-only，不进入稳定登记表。<code>contracts-1.17.0.pin.json</code> 是最近已发布规格的只读基线。</li>
+<li><strong>Contracts 1.17.0（2026-09-07）</strong>：为有界机制批量候选重记版本承载文档，稳定顶层对象仍为 46 类，批量合同保持 candidate-only，不进入稳定登记表。<code>contracts-1.17.0.pin.json</code> 是该历史时点最近已发布规格的只读基线。</li>
 <li><strong>Contracts 1.18.0（2026-09-10，未发布候选）</strong>：扩展稳定 <code>host-descriptor</code> 的封闭验证组合，允许 <code>cursor</code> 与 <code>cursor-agent-print-v1</code> 的唯一配对；顶层对象、错误码、规则、Kernel 协议和 <code>auditSurfaceVersion</code> 不变。<code>contracts-1.18.0.pin.json</code> 从公开 Contracts 表面机械生成并指向不可变的 1.17.0 pin；Cursor CLI 的 <code>/</code> 菜单发现与显式调用已通过，Foundation npm 包版本仍由发布计划单独递增。</li>
 <li><strong>Contracts 1.19.0（2026-09-15，本地未发布候选）</strong>：新增 <code>professional-conclusion</code>
   顶层契约，其登记状态为 candidate，登记对象由 46 类增至 47 类。<code>project-manifest</code> 同期增加可选 <code>engineering</code> 声明，
@@ -1888,6 +1886,11 @@
   六个顶层契约，登记状态均为 candidate，登记对象由 47 类增至 53 类。错误码、规则、Kernel 协议和
   <code>auditSurfaceVersion</code> 不变。<code>contracts-1.20.0.pin.json</code> 从当前公开 Contracts 表面机械生成并指向只读的
   1.19.0 pin；该 pin 只记录本地候选消费面，不代表独立审计结论或发布完成。</li>
+<li><strong>Contracts 1.21.0（2026-10-24，0.28.0 发布准备记录）</strong>：<br />
+  本轮 Foundation 0.28.0 发布准备采用 Contracts 1.21.0，登记对象由 53 个增至 56 个，新增三个 <code>schemaVersion=1</code> 的世代对象：<code>fixed-set-generation-pointer</code>、<code>fixed-set-generation-result</code>、<code>fixed-set-generation-resolution</code>，其登记状态均为 <code>candidate</code>。相关合同的 Windows v2 分支已扩展，POSIX v1 原有保证保持不变。三份版本承载文档 <code>registry.json</code>、<code>rules.json</code> 和 <code>error-codes.json</code> 的 <code>contractsVersion</code> 字段统一更新为 1.21.0，其规则正文、预算、错误码及含义均未变更。Kernel 文档 1.8.0 全部字节保持不变，<code>auditSurfaceVersion</code> 仍为 1。</li>
+</ul>
+<p>本地 <code>scripts/baseline-pin-gen.mjs --update</code> 已机械追加 <code>baseline/contracts-1.21.0.pin.json</code>，其 <code>supersedes=contracts-1.20.0.pin.json</code>；所有历史 <code>contracts-&lt;version&gt;.pin.json</code> 文件均保持只读，未被修改或覆盖。官方 npm 包 <code>skill-family-contracts@0.27.1</code> 实际承载 Contracts 1.20.0 与 53 个对象，其四个文档和 53 个 Schema 的摘要与旧 <code>contracts-1.20.0.pin.json</code> 匹配；本轮目标包坐标为 0.28.0；截至这份 2026-10-24 发布准备记录，远端发布与正式核验尚待完成。该 <code>contracts-1.21.0.pin.json</code> 为产品兼容夹具，不构成独立审计或发布批准。</p>
+<ul>
 <li>审计运行时先做包锁验证（见 isolation-and-lockfile.md），再做变异重放；pin 不匹配时，变异重放结果不得被采信。</li>
 </ul>
 <h2 id="profile-行为变更纪律2026-08-19D6">profile 行为变更纪律（2026-08-19，D6）<a class="headerlink" href="#profile-行为变更纪律2026-08-19D6" title="Permanent link">&para;</a></h2>

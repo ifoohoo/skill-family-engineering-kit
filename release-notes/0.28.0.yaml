@@ -1,0 +1,21 @@
+version: 0.28.0
+date: 2026-10-24
+locales:
+  en:
+    summary: Engineering Kit 0.28.0 retains the four top-level commands and introduces Windows projection, package entry handling, and bounded WorkBuddy session permission input.
+    changes:
+      added:
+        - Windows uses projection-plan v2, projection-manifest v3, and projection-receipt v3. runProjection requires explicit operationId (lowercase UUID v4), validationTimeoutMs (integer milliseconds), and cooperativeWriters=true. The target root binding is captured internally, not supplied by the caller.
+      changed:
+        - Projection creates authorized parent directories safely, applies files once through applyFileSet v2, and keeps recovery materials classified by the public read-only inspector. Standard npm.cmd and pnpm.cmd entries are bound to the selected real installation.
+        - The WorkBuddy driver accepts its exact supported Node launcher form and an optional declared workbuddy-settings.local.json fixture for the current session. This remains the selected manual WorkBuddy path, not automatic support for every host.
+    upgradeNotes: Pin all four units to 0.28.0 and follow the Windows API arguments instead of replaying old Windows projection documents. POSIX projection inputs and defaults remain unchanged. Use independent-file package import on Windows. DocRender generation migration is designed but not implemented in its consumer; this release does not claim that migration is complete.
+  zh-CN:
+    summary: Engineering Kit 0.28.0 保持四个顶层命令，增加 Windows 投影、包入口处理及范围受限的 WorkBuddy 会话许可输入。
+    changes:
+      added:
+        - Windows 采用 projection-plan v2、projection-manifest v3 与 projection-receipt v3。runProjection 须显式传入 operationId（小写 UUID v4）、validationTimeoutMs（整数毫秒）与 cooperativeWriters=true；目标根绑定由内部捕获，不由调用方传入。
+      changed:
+        - 投影安全创建授权文件的父目录，通过一次 applyFileSet v2 应用文件；公共只读检查器识别保留恢复材料。标准 npm.cmd 与 pnpm.cmd 入口绑定用户选择的真实安装。
+        - WorkBuddy 驱动接受已支持的精确 Node 启动器形态，并可读取已声明的 workbuddy-settings.local.json 夹具用于本次会话。范围仍限所选手动 WorkBuddy 路径，不代表所有宿主自动支持。
+    upgradeNotes: 四单元须精确锁定 0.28.0，Windows 调用须按公共 API 提供参数，不能重放旧 Windows 投影文档。POSIX 投影输入与默认行为保留。Windows 包安装采用独立文件导入。DocRender 世代迁移只完成设计，消费者尚未实施，本版不宣称迁移完成。

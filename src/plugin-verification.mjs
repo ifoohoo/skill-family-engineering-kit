@@ -1,7 +1,9 @@
 import { mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 import { digestDocument, validateDocument } from "skill-family-contracts";
 import { createFilesystemRootBinding, digestBytes, observeExecutableIdentity, observeFilesystemTree, publishFileExclusive, readFileBound, superviseProcess } from "skill-family-harness-node";
+import { createPrivateMaterialDirectory, windowsLaunchFromPath } from "./host-loading-check.mjs";
 import { KitError, KIT_ERROR_KINDS, invalidParamsError, kitError } from "./errors.mjs";
 import { driverEnvironment, evaluateControlledNativeLifecycleFixture, evaluateDriverStreamProtocol, getBuiltInHostVerificationDriver } from "./host-verification-drivers.mjs";
 import { bundledHostProfilesRoot, observeHostDescriptor } from "./host-profiles.mjs";
@@ -9,6 +11,19 @@ import { bundledHostProfilesRoot, observeHostDescriptor } from "./host-profiles.
 const REQUEST_SCHEMA = "https://contracts.skill-family.example/v1/plugin-verification-request.json";
 const RESULT_SCHEMA = "https://contracts.skill-family.example/v1/plugin-verification-result.json";
 const ACTION = ["manual-temporary-root-inspection-required"];
+
+function publicationOptions(intent) {
+  if (process.platform === "win32") {
+    return intent === "private"
+      ? { internalMaterial: "windows-protected" }
+      : { permissions: { kind: "windows-inherited" } };
+  }
+  return { mode: intent === "executable" ? 0o700 : 0o600 };
+}
+
+function directoryOptions() {
+  return process.platform === "win32" ? { recursive: false } : { recursive: false, mode: 0o700 };
+}
 const SHA256 = /^[0-9a-f]{64}$/u;
 const COMMIT = /^[0-9a-f]{40}$/u;
 export const NATIVE_LIFECYCLE_STAGES = Object.freeze([
@@ -22,11 +37,15 @@ function contract(value, schema, message) {
   return check.data;
 }
 function absolute(value, name) {
-  if (typeof value !== "string" || !path.isAbsolute(value) || path.normalize(value) !== value || value.includes("\0")) throw invalidParamsError(name + " must be a normalized absolute path");
-  return value;
+  if (process.platform === "win32" && typeof value === "string" && /^[A-Za-z]:[\\/]/u.test(value)) {
+    const normalized = path.normalize(value);
+    if (!value.includes("\0") && normalized.replaceAll("\\", "/") === value.replaceAll("\\", "/")) return normalized;
+  } else if (process.platform !== "win32" && typeof value === "string" && path.isAbsolute(value) && path.normalize(value) === value && !value.includes("\0")) return value;
+  throw invalidParamsError(name + " must be a normalized absolute path");
 }
 async function directory(value, name) {
   const root = absolute(value, name);
+  if (process.platform === "win32") await createFilesystemRootBinding(root);
   if (await realpath(root) !== root || !(await stat(root)).isDirectory()) throw fail(name + " must already be a canonical directory");
   return root;
 }
@@ -169,8 +188,13 @@ async function preflightNativeLifecycle(request, bindings, hostsRoot) {
   try { prompt = new TextDecoder("utf-8", { fatal: true }).decode(bindings.effectivePrompt); }
   catch { throw fail("native lifecycle effective prompt is not valid UTF-8"); }
   const executableRelPath = relative(bindings.executableRelPath, "executableRelPath");
-  if (path.basename(executableRelPath) !== driver.nativeLifecycle.executableBasename) throw fail("native lifecycle executable basename does not match its driver");
-  const executable = path.join(roots.executableRoot, executableRelPath);
+  if (path.basename(executableRelPath) !== driver.nativeLifecycle.executableBasename &&
+      !(process.platform === "win32" && path.basename(executableRelPath).toLowerCase() === `${driver.nativeLifecycle.executableBasename}.exe`.toLowerCase())) throw fail("native lifecycle executable basename does not match its driver");
+  let executable = path.join(roots.executableRoot, executableRelPath);
+  if (process.platform === "win32") {
+    const selected = await windowsLaunchFromPath(executable);
+    executable = selected.argvPrefix[0] ?? selected.command;
+  }
   const executableBinding = await createFilesystemRootBinding(roots.executableRoot);
   const interpreterBinding = await createFilesystemRootBinding(roots.interpreterRoot);
   const identityInput = {
@@ -179,7 +203,10 @@ async function preflightNativeLifecycle(request, bindings, hostsRoot) {
       { root: roots.interpreterRoot, rootBinding: interpreterBinding },
     ],
     lookup: { mode: "absolute-path", path: executable },
-    interpreterPolicy: { absoluteRoots: [roots.interpreterRoot], pathEntries: [roots.interpreterRoot] },
+    ...(process.platform === "win32"
+      ? (/\.(?:mjs|cjs|js)$/iu.test(executable)
+        ? { interpreterPolicy: { explicitNode: { path: process.execPath } } } : {})
+      : { interpreterPolicy: { absoluteRoots: [roots.interpreterRoot], pathEntries: [roots.interpreterRoot] } }),
   };
   const plan = driver.nativeLifecycle.buildPlan({ request, roots, prompt });
   if (!Array.isArray(plan) || plan.length !== NATIVE_LIFECYCLE_STAGES.length ||
@@ -324,9 +351,16 @@ async function streamSummary(root, durable) {
   return { streams, stdout: stdout.content };
 }
 async function runCommand(command, cwd, timeoutPolicy, limits, sink, env) {
-  await mkdir(sink, { recursive: false, mode: 0o700 }); let durable = null; let envelope;
+  await createPrivateMaterialDirectory(sink, directoryOptions()); let durable = null; let envelope;
+  let executable = command.command;
+  let args = command.args;
+  if (process.platform === "win32") {
+    const selected = await windowsLaunchFromPath(executable);
+    executable = selected.command;
+    args = [...selected.argvPrefix, ...args];
+  }
   try {
-    envelope = await superviseProcess({ command: command.command, args: command.args, cwd, ...(env ? { env } : {}), timeoutPolicy, ...(limits ? { outputByteLimits: limits } : {}), rawSink: { root: sink, stdoutFile: "stdout.bin", stderrFile: "stderr.bin", onClosed: summary => { durable = summary; } } });
+    envelope = await superviseProcess({ command: executable, args, cwd, ...(env ? { env } : {}), timeoutPolicy, ...(limits ? { outputByteLimits: limits } : {}), rawSink: { root: sink, stdoutFile: "stdout.bin", stderrFile: "stderr.bin", onClosed: summary => { durable = summary; } } });
     const { streams, stdout } = await streamSummary(sink, durable);
     return { envelope, streams, stdout, observation: commandObservation(command.step, envelope, streams, limits) };
   } catch (cause) {
@@ -438,8 +472,8 @@ async function runChannel(request, bindings, preflight, facts) {
   catch (cause) { return finish(cause?.details?.boundReadDisposition === "boundary-indeterminate" ? "indeterminate" : "failed", cause?.details?.boundReadDisposition === "boundary-indeterminate" ? "boundary-state-indeterminate" : "tree-violation"); }
   facts.install.installedClosureDigest = observation.membersDigest;
   facts.install.payloadMatches = digestDocument(projectMembers(observation)) === request.source.membersDigest;
-  const record = contract({ requestDigest: digestDocument(request), installedRoot, observation }, { $ref: RESULT_SCHEMA + "#/$defs/installObservation" }, "private install observation fails its contract");
-  try { await publishFileExclusive(evidence, "install-observation.json", Buffer.from(JSON.stringify(record) + "\n"), { rootBinding: await createFilesystemRootBinding(evidence), mode: 0o600 }); }
+  const record = contract({ requestDigest: digestDocument(request), installedRoot: installedRoot.replaceAll("\\", "/"), observation }, { $ref: RESULT_SCHEMA + "#/$defs/installObservation" }, "private install observation fails its contract");
+  try { await publishFileExclusive(evidence, "install-observation.json", Buffer.from(JSON.stringify(record) + "\n"), { rootBinding: await createFilesystemRootBinding(evidence), ...publicationOptions("private") }); }
   catch (cause) { return finish(cause?.code === "SFC2004" ? "indeterminate" : "failed", cause?.code === "SFC2004" ? "boundary-state-indeterminate" : "private-evidence-publication-failed"); }
   facts.install.observationDigest = digestDocument(record);
   return finish("observed", null);
@@ -449,10 +483,10 @@ async function runLocalVerification(request, bindings, sourceRoot, sourceBinding
   const declared = bindings.sourceMembers;
   const input = { sourceClosureDigest: sourceObservation.membersDigest, membersDigest: digestDocument(declared), runtimeIdentities: bindings.__versionProbe ? { cliVersion: request.host.cliVersion } : null, probe: bindings.__versionProbe || null };
   if (input.membersDigest !== request.source.membersDigest) return { status: "rejected", reason: "members-drift", input };
-  const target = path.join(container, "payload"); await mkdir(target, { recursive: false, mode: 0o700 }); const targetBinding = await createFilesystemRootBinding(target);
-  for (const entry of sourceObservation.members) { const member = entry.path; if (entry.type === "directory") { await mkdir(path.join(target, member), { recursive: false, mode: 0o700 }); continue; } const file = await readFileBound(sourceRoot, member, { rootBinding: sourceBinding }); await publishFileExclusive(target, member, file.content, { rootBinding: targetBinding, createParents: true, mode: (file.statMode & 0o111) !== 0 ? 0o700 : 0o600 }); }
+  const target = path.join(container, "payload"); await createPrivateMaterialDirectory(target, directoryOptions()); const targetBinding = await createFilesystemRootBinding(target);
+  for (const entry of sourceObservation.members) { const member = entry.path; if (entry.type === "directory") { await createPrivateMaterialDirectory(path.join(target, member), directoryOptions()); continue; } const file = await readFileBound(sourceRoot, member, { rootBinding: sourceBinding }); await publishFileExclusive(target, member, file.content, { rootBinding: targetBinding, createParents: true, ...publicationOptions((file.statMode & 0o111) !== 0 ? "executable" : "file") }); }
   const observation = await observeFilesystemTree({ root: target, rootBinding: targetBinding }); const payloadMatches = digestDocument(declared) === digestDocument(projectMembers(observation));
-  const record = contract({ requestDigest: digestDocument(request), installedRoot: target, observation }, { $ref: RESULT_SCHEMA + "#/$defs/installObservation" }, "private install observation fails its contract"); const eb = await createFilesystemRootBinding(evidence); try { await publishFileExclusive(evidence, "install-observation.json", Buffer.from(JSON.stringify(record) + "\n"), { rootBinding: eb, mode: 0o600 }); } catch (cause) { if (cause?.code === "SFC2004") return { status: "indeterminate", reason: "boundary-state-indeterminate", actions: ACTION, input }; throw cause; }
+  const record = contract({ requestDigest: digestDocument(request), installedRoot: target.replaceAll("\\", "/"), observation }, { $ref: RESULT_SCHEMA + "#/$defs/installObservation" }, "private install observation fails its contract"); const eb = await createFilesystemRootBinding(evidence); try { await publishFileExclusive(evidence, "install-observation.json", Buffer.from(JSON.stringify(record) + "\n"), { rootBinding: eb, ...publicationOptions("private") }); } catch (cause) { if (cause?.code === "SFC2004") return { status: "indeterminate", reason: "boundary-state-indeterminate", actions: ACTION, input }; throw cause; }
   const install = { installedClosureDigest: observation.membersDigest, payloadMatches, observationDigest: digestDocument(record), sourceMode: request.source.type, commands: [], retained: true };
   if (request.goal === "install-only") return { status: "observed", reason: null, input, install, discovery: { status: "not-performed", basis: "none", pluginId: null } };
   if (!payloadMatches) return { status: "failed", reason: "payload-mismatch", input, install, discovery: { status: "not-performed", basis: "none", pluginId: null } };
@@ -509,7 +543,8 @@ async function preflightPlugin(request, bindings, hostsRoot, facts) {
   let executablePath;
   if (channel || invoke) {
     const rel = relative(bindings.executableRelPath, "executableRelPath");
-    if (path.basename(rel) !== driver.executableBasename) return { rejected: "executable-observation-mismatch" };
+    if (path.basename(rel) !== driver.executableBasename &&
+        !(process.platform === "win32" && path.basename(rel).toLowerCase() === `${driver.executableBasename}.exe`.toLowerCase())) return { rejected: "executable-observation-mismatch" };
     const executable = await readFileBound(roots.executableRoot, rel, { rootBinding: await createFilesystemRootBinding(roots.executableRoot) });
     if (executable.sha256 !== request.host.executableSha256) return { rejected: "executable-observation-mismatch" };
     executablePath = executable.path;

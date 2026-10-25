@@ -1289,6 +1289,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#Windows-failure-and-cleanup-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows failure and cleanup boundaries
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -1777,6 +1788,17 @@
     <span class="md-ellipsis">
 
         What the Caller Should Do After Failure
+
+    </span>
+  </a>
+
+</li>
+
+        <li class="md-nav__item">
+  <a href="#Windows-failure-and-cleanup-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        Windows failure and cleanup boundaries
 
     </span>
   </a>
@@ -2282,6 +2304,8 @@
 <li>State-lock conflict (<code>store-locked</code>): outside Foundation, confirm the old writer has terminated, then call recovery with the exactly-matching owner/fencing.</li>
 <li>check findings (exit code 1): address the findings; Kit does not auto-fix.</li>
 </ul>
+<h2 id="Windows-failure-and-cleanup-boundaries">Windows failure and cleanup boundaries<a class="headerlink" href="#Windows-failure-and-cleanup-boundaries" title="Permanent link">&para;</a></h2>
+<p><code>publishFixedSetGeneration</code> writes a pointer and retains all generations. <code>resolveFixedSetGeneration</code> is read-only. Unknown temporary files are preserved without suffix-based cleanup. A whole-group file-set preflight refusal leaves zero business writes. Job Object cleanup requires zero active processes, both streams flushed and closed, and all handles closed within killGraceSeconds. Do not retry uncertain states.</p>
 
 
 

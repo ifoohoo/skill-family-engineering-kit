@@ -1,5 +1,6 @@
 import { lstat, readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { HARNESS_ERROR_KINDS, readFileBound } from "skill-family-harness-node";
 import { KIT_ERROR_KINDS, kitError } from "./errors.mjs";
 
 /**
@@ -114,7 +115,15 @@ export async function listTargetEntries(root) {
 }
 
 /** Reads one contained file as utf8; missing files return null. */
-export async function readOptionalFile(root, relPath) {
+export async function readOptionalFile(root, relPath, options) {
+  if (options && Object.hasOwn(options, "rootBinding")) {
+    try {
+      return (await readFileBound(root, relPath, { rootBinding: options.rootBinding, encoding: "utf8" })).content;
+    } catch (cause) {
+      if (cause?.details?.kind === HARNESS_ERROR_KINDS.MISSING_RESOURCE) return null;
+      throw cause;
+    }
+  }
   try {
     return await readFile(path.join(root, relPath), "utf8");
   } catch (cause) {
@@ -124,8 +133,8 @@ export async function readOptionalFile(root, relPath) {
 }
 
 /** Parses one contained JSON file; returns { ok, value } or { ok:false, reason }. */
-export async function readOptionalJson(root, relPath) {
-  const text = await readOptionalFile(root, relPath);
+export async function readOptionalJson(root, relPath, options) {
+  const text = await readOptionalFile(root, relPath, options);
   if (text === null) return { ok: false, reason: "missing" };
   try {
     return { ok: true, value: JSON.parse(text) };
@@ -241,7 +250,7 @@ export function normalizeRelPath(relPath) {
  * All reads are optional and read-only; malformed documents simply do not
  * contribute facts (the check command reports them separately).
  */
-export async function loadTargetFacts(root) {
+export async function loadTargetFacts(root, options) {
   const facts = {
     fileRegistry: null,
     projectManifest: null,
@@ -253,7 +262,7 @@ export async function loadTargetFacts(root) {
     hasOwnRegistry: false,
   };
 
-  const registry = await readOptionalJson(root, path.join(".foundation", "file-registry.json"));
+  const registry = await readOptionalJson(root, options && Object.hasOwn(options, "rootBinding") ? ".foundation/file-registry.json" : path.join(".foundation", "file-registry.json"), options);
   if (registry.ok && registry.value && typeof registry.value === "object") {
     facts.fileRegistry = registry.value;
     facts.hasOwnRegistry = true;
@@ -290,7 +299,7 @@ export async function loadTargetFacts(root) {
     }
   }
 
-  const manifest = await readOptionalJson(root, "skill-family.project-manifest.json");
+  const manifest = await readOptionalJson(root, "skill-family.project-manifest.json", options);
   if (manifest.ok && manifest.value && typeof manifest.value === "object") {
     facts.projectManifest = manifest.value;
     const managedFiles = manifest.value.managedFiles;
@@ -301,7 +310,7 @@ export async function loadTargetFacts(root) {
     }
   }
 
-  const lock = await readOptionalJson(root, "skill-family.managed-file-lock.json");
+  const lock = await readOptionalJson(root, "skill-family.managed-file-lock.json", options);
   if (lock.ok && lock.value && typeof lock.value === "object") {
     facts.managedLock = lock.value;
     const entries = lock.value.entries;

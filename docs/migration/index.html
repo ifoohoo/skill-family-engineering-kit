@@ -644,6 +644,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#DocRender-后续迁移设计" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        DocRender 后续迁移设计
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2005,6 +2016,17 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#DocRender-后续迁移设计" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        DocRender 后续迁移设计
+
+    </span>
+  </a>
+
+</li>
+
     </ul>
 
 </nav>
@@ -2273,6 +2295,9 @@ npm exec -- skill-family-kit adopt-plan --root ./existing-repo --list-capabiliti
 </ul>
 <h2 id="危害类-fixture">危害类 fixture<a class="headerlink" href="#危害类-fixture" title="Permanent link">&para;</a></h2>
 <p><code>fixtures/adoption/cases/</code> 覆盖七个危害类：dirty 仓、嵌套仓、tracked-but-ignored、符号链接占位、生成物漂移、旧实现退出门禁、临时例外字段。每个案例以字节级前后快照证明计划只读；案例说明见仓内 <code>fixtures/adoption/README.md</code>。</p>
+<h2 id="DocRender-后续迁移设计">DocRender 后续迁移设计<a class="headerlink" href="#DocRender-后续迁移设计" title="Permanent link">&para;</a></h2>
+<p>DocRender 的 Git/Pages 不能直接部署 <code>current.json</code>。未来迁移必须先固定世代，从固定根复制至独占、预创建空的隔离导出目录，核验完整文件集合与内容摘要，再由既有发布流程冻结输出。此设计不等于当前消费者已完成迁移，亦不构成已发布状态。</p>
+<p>迁移过程中，POSIX 现有双目录交换合同保持不变，Windows 读者切至固定世代 API。构建完整新世代后发布指针，每次批读 <code>resolve</code> 一次并保持同一根绑定。失败或不确定提交按回执处理，不盲目再发布。消费者负责静默期及旧世代清理，不新增后台租约、Registry 或发布器。当前设计仅为迁移路径说明，非已完成实施。</p>
 
 
 

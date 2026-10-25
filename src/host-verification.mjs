@@ -1,9 +1,12 @@
 import { lstat, mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
+import { createPrivateMaterialDirectory, windowsLaunchFromPath } from "./host-loading-check.mjs";
 import { canonicalJson, digestDocument, validateDocument } from "skill-family-contracts";
 import {
   createFilesystemRootBinding,
   digestBytes,
+  observeExecutableIdentity,
   publishFileExclusive,
   readFileBound,
   superviseProcess,
@@ -30,6 +33,33 @@ function fail(message, details = {}) {
   return kitError(KIT_ERROR_KINDS.HOST_CONTRACT_INVALID, message, details);
 }
 
+function publicationOptions(intent) {
+  if (process.platform === "win32") {
+    return intent === "private"
+      ? { internalMaterial: "windows-protected" }
+      : { permissions: { kind: "windows-inherited" } };
+  }
+  return { mode: intent === "executable" ? 0o700 : 0o600 };
+}
+
+function directoryOptions() {
+  return process.platform === "win32" ? { recursive: false } : { recursive: false, mode: 0o700 };
+}
+
+async function launchCommand(executablePath, args, approvedExecutable) {
+  if (process.platform !== "win32") return { command: executablePath, args };
+  if (approvedExecutable !== undefined) {
+    const current = await observeExecutableIdentity(approvedExecutable.input);
+    if (current.observationDigest !== approvedExecutable.observation.observationDigest) {
+      throw fail("approved WorkBuddy executable identity changed before launch");
+    }
+    const { file, argvPrefix } = approvedExecutable.observation.launch;
+    return { command: file, args: [...argvPrefix, ...args] };
+  }
+  const selected = await windowsLaunchFromPath(executablePath);
+  return { command: selected.command, args: [...selected.argvPrefix, ...args] };
+}
+
 function validateExternalContract(value, schemaId, message) {
   const result = validateDocument(value, { schemaId, dialect: "2020-12", policy: "strict" });
   if (!result.valid) throw new KitError("SFC1001", message, { kind: KIT_ERROR_KINDS.HOST_CONTRACT_INVALID, errors: result.errors });
@@ -48,14 +78,20 @@ function isWithin(candidate, parent) {
 }
 
 function requiredBinding(value, name) {
-  if (typeof value !== "string" || !path.isAbsolute(value) || value.includes("\0") || path.normalize(value) !== value) {
-    throw invalidParamsError(`${name} must be a normalized absolute path`);
+  if (process.platform === "win32" && typeof value === "string" && /^[A-Za-z]:[\\/]/u.test(value)) {
+    const normalized = path.normalize(value);
+    if (!value.includes("\0") && normalized.replaceAll("\\", "/") === value.replaceAll("\\", "/")) return normalized;
+  } else if (typeof value === "string" && path.isAbsolute(value) && !value.includes("\0") && path.normalize(value) === value) {
+    if (process.platform !== "win32") return value;
   }
-  return value;
+  throw invalidParamsError(`${name} must be a normalized absolute path`);
 }
 
 async function canonicalDirectory(value, name) {
   const absolute = requiredBinding(value, name);
+  // The packaged native root binding rejects non-local Windows namespaces,
+  // invalid segments and reparse ancestry before ordinary metadata access.
+  if (process.platform === "win32") await createFilesystemRootBinding(absolute);
   const resolved = await realpath(absolute).catch((cause) => { throw fail(`${name} cannot be canonicalized`, { cause: cause.code }); });
   if (resolved !== absolute) throw fail(`${name} must already be its canonical realpath`);
   const info = await stat(absolute).catch((cause) => { throw fail(`${name} cannot be inspected`, { cause: cause.code }); });
@@ -124,6 +160,40 @@ async function readBound(root, relative, expectedSha256) {
   return readFileBound(root, relative, { rootBinding: binding, expectedSha256 });
 }
 
+function validateWorkBuddySessionPermissions(bytes) {
+  let value;
+  try { value = JSON.parse(strictUtf8(bytes, "WorkBuddy session permissions")); } catch { throw fail("WorkBuddy session permissions must be valid JSON"); }
+  const closed = (object, key) => object && typeof object === "object" && !Array.isArray(object) && Object.keys(object).length === 1 && Object.hasOwn(object, key);
+  const rules = value?.permissions?.allow;
+  if (!closed(value, "permissions") || !closed(value.permissions, "allow") || !Array.isArray(rules) || rules.length === 0 || new Set(rules).size !== rules.length) {
+    throw fail("WorkBuddy session permissions must contain only a nonempty unique permissions.allow array");
+  }
+  for (const rule of rules) {
+    if (typeof rule !== "string" || /[\u0000-\u001f*?]/u.test(rule)) throw fail("WorkBuddy permissions require complete literal rules");
+    const file = /^(Read|Write)\(([^\r\n]+)\)$/u.exec(rule);
+    if (file) {
+      const name = file[2];
+      if (!/^[A-Z]:\//u.test(name) || /[\[\]{}]/u.test(name) || /[!+@]\(/u.test(name) || name.includes("\\") || /[<>|:"]/.test(name.slice(2)) || name.endsWith("/") ||
+          path.win32.normalize(name).replaceAll("\\", "/") !== name || name.includes("//") || name.split("/").slice(1).some(part => part === "." || part === ".." || part === "" || /[ .]$/u.test(part))) {
+        throw fail("WorkBuddy file permissions require one complete canonical Windows file path");
+      }
+      continue;
+    }
+    const command = /^PowerShell\((.+)\)$/u.exec(rule);
+    if (!command || command[1].trim() !== command[1] || command[1].length === 0) {
+      throw fail("WorkBuddy permissions require an exact complete PowerShell command without a shell prefix");
+    }
+  }
+}
+
+async function verifyWorkBuddySessionPermissionFiles(policy) {
+  if (!policy) return;
+  for (const entry of [policy.source, policy.projected].filter(Boolean)) {
+    const current = await readFileBound(entry.root, entry.path, { rootBinding: entry.binding, expectedSha256: entry.read.sha256 });
+    if (!current.permissionObservation || canonicalJson(current.permissionObservation) !== canonicalJson(entry.read.permissionObservation)) throw fail("WorkBuddy session permission file changed its approved permissions");
+  }
+}
+
 async function materializeMembers(sourceRoot, targetRoot, members) {
   const sourceBinding = await createFilesystemRootBinding(sourceRoot);
   const requestedTarget = requiredBinding(targetRoot, "installedSkillRoot");
@@ -135,7 +205,7 @@ async function materializeMembers(sourceRoot, targetRoot, members) {
   if (isWithin(requestedTarget, sourceRoot) || isWithin(sourceRoot, requestedTarget)) {
     throw fail("installedSkillRoot overlaps adapterRoot");
   }
-  await mkdir(requestedTarget, { recursive: false, mode: 0o700 });
+  await createPrivateMaterialDirectory(requestedTarget, directoryOptions());
   const canonicalTarget = await canonicalDirectory(requestedTarget, "installedSkillRoot");
   if (isWithin(canonicalTarget, sourceRoot) || isWithin(sourceRoot, canonicalTarget)) {
     throw fail("installedSkillRoot overlaps adapterRoot");
@@ -143,7 +213,7 @@ async function materializeMembers(sourceRoot, targetRoot, members) {
   const targetBinding = await createFilesystemRootBinding(canonicalTarget);
   for (const relative of members) {
     const read = await readFileBound(sourceRoot, relative, { rootBinding: sourceBinding });
-    await publishFileExclusive(canonicalTarget, relative, read.content, { rootBinding: targetBinding, createParents: true, mode: 0o600 });
+    await publishFileExclusive(canonicalTarget, relative, read.content, { rootBinding: targetBinding, createParents: true, ...publicationOptions("file") });
   }
   return rootClosure(canonicalTarget, members, "installedSkillMembers");
 }
@@ -383,7 +453,7 @@ async function publishEnvelope(root, rootBinding, member, envelope) {
   await publishFileExclusive(root, member, Buffer.from(`${JSON.stringify(envelope, null, 2)}\n`, "utf8"), {
     rootBinding,
     createParents: false,
-    mode: 0o600,
+    ...publicationOptions("private"),
   });
 }
 
@@ -445,12 +515,13 @@ export async function prepareHostVerification(options) {
       if (relative.includes("\0") || relative.split("/").some((part) => /^[A-Za-z]:/u.test(part))) throw invalidParamsError("member contains an invalid path segment");
     }
     if (input.skill.entrySkill.includes("/") || !input.skill.members.includes("SKILL.md")) throw invalidParamsError("skill requires one entry segment and a SKILL.md member");
-    if (path.posix.basename(input.executable.relPath) !== CURSOR_DRIVER.executableBasename) throw invalidParamsError("executable must name cursor-agent inside its explicit root");
+    if (path.posix.basename(input.executable.relPath) !== CURSOR_DRIVER.executableBasename &&
+        !(process.platform === "win32" && path.posix.basename(input.executable.relPath).toLowerCase() === `${CURSOR_DRIVER.executableBasename}.exe`)) throw invalidParamsError("executable must name cursor-agent inside its explicit root");
     prompt = strictUtf8(promptBytes, "effectivePrompt");
     if (prompt.includes("\0")) throw invalidParamsError("effectivePrompt must not contain NUL");
     for (const root of [input.skill.root, input.workspace.root, input.workspace.repositoryRoot, input.executable.root, input.sessionRoot, input.existingUserStateRoot]) {
       requiredBinding(root, "root");
-      if (root.includes("\\")) throw invalidParamsError("root must not contain backslashes");
+      if (process.platform !== "win32" && root.includes("\\")) throw invalidParamsError("root must not contain backslashes");
     }
   } catch (cause) {
     if (cause?.code === "SFC2003") throw cause;
@@ -505,7 +576,7 @@ export async function prepareHostVerification(options) {
     for (const name of ["candidateRoot", "workloadRoot", "fixtureRoot", "platformManifestRoot", "outputRoot", "temporaryRoot", "privateEvidenceRoot"]) {
       if ((await createFilesystemRootBinding(sessionRoot)).digest !== sessionBinding.digest) throw fail("sessionRoot changed during preparation");
       const root = path.join(sessionRoot, name);
-      await mkdir(root, { recursive: false, mode: 0o700 });
+      await createPrivateMaterialDirectory(root, directoryOptions());
       bindings[name] = await canonicalDirectory(root, name);
     }
     const evidenceBinding = await createFilesystemRootBinding(bindings.privateEvidenceRoot);
@@ -515,7 +586,7 @@ export async function prepareHostVerification(options) {
       [bindings.platformManifestRoot, bindings.platformManifestRelPath, platformBytes, request.host.platformManifestSha256],
       ...fixtures.map((file) => [bindings.fixtureRoot, file.path, file.content, digestBytes(file.content)]),
     ]) {
-      await publishFileExclusive(root, relative, bytes, { createParents: true, mode: 0o600 });
+      await publishFileExclusive(root, relative, bytes, { createParents: true, ...publicationOptions("private") });
       await readBound(root, relative, expected);
     }
     if ((await rootClosure(bindings.fixtureRoot, bindings.fixtureMembers, "fixtureMembers")).digest !== request.common.fixtureClosureDigest) throw fail("fixture bytes changed during preparation");
@@ -523,7 +594,7 @@ export async function prepareHostVerification(options) {
     assertRootIsolation({ inputRoots, writeRoots: [["sessionRoot", sessionRoot]], existingUserStateRoot });
     await assertDiscoveryLayout({ driver, installedRoot: installedSkillRoot, existingUserStateRoot, allowMissing: true });
     for (const directory of [path.join(workspaceRoot, ".cursor"), path.dirname(installedSkillRoot)]) {
-      await mkdir(directory, { recursive: false, mode: 0o700 }).catch((cause) => { if (cause.code !== "EEXIST") throw cause; });
+      await createPrivateMaterialDirectory(directory, directoryOptions()).catch((cause) => { if (cause.code !== "EEXIST") throw cause; });
       await canonicalDirectory(directory, "Cursor discovery directory");
     }
     await assertDiscoveryLayout({ driver, installedRoot: installedSkillRoot, existingUserStateRoot });
@@ -642,7 +713,8 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     const workloadPath = requiredRelative(bindings.workloadDocumentRelPath, "workloadDocumentRelPath");
     const platformPath = requiredRelative(bindings.platformManifestRelPath, "platformManifestRelPath");
     const executablePath = requiredRelative(bindings.executableRelPath, "executableRelPath");
-    if (path.basename(executablePath) !== driver.executableBasename) return rejected("executable-observation-mismatch");
+    if (path.basename(executablePath) !== driver.executableBasename &&
+        !(process.platform === "win32" && path.basename(executablePath).toLowerCase() === `${driver.executableBasename}.exe`.toLowerCase())) return rejected("executable-observation-mismatch");
     const candidate = await readBound(candidateRoot, candidatePath);
     const workload = await readBound(workloadRoot, workloadPath);
     const platform = await readBound(platformRoot, platformPath);
@@ -651,12 +723,36 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     const workspace = await rootClosure(workspaceRoot, requiredMembers(bindings, "protectedWorkspaceMembers"), "protectedWorkspaceMembers");
     const adapter = await rootClosure(adapterRoot, requiredMembers(bindings, "adapterMembers"), "adapterMembers");
     if (normalized.host.executableSha256 !== executable.sha256) return rejected("executable-observation-mismatch");
+    let approvedExecutable;
+    if (process.platform === "win32" && driver.driverId === WORKBUDDY_DRIVER.driverId &&
+        executable.content[0] === 0x23 && executable.content[1] === 0x21) {
+      const nodePath = await realpath(process.execPath);
+      const boundRoots = [{ root: executableRoot, rootBinding: await createFilesystemRootBinding(executableRoot) }];
+      if (!isWithin(nodePath, executableRoot)) {
+        const nodeRoot = path.dirname(nodePath);
+        boundRoots.push({ root: nodeRoot, rootBinding: await createFilesystemRootBinding(nodeRoot) });
+      }
+      const input = { boundRoots, lookup: { mode: "absolute-path", path: executable.path }, interpreterPolicy: { explicitNode: { path: nodePath } } };
+      const observation = await observeExecutableIdentity(input);
+      if (observation.canonicalEntry.sha256 !== executable.sha256 ||
+          observation.canonicalEntry.permissionObservation.securityDigest !== executable.permissionObservation.securityDigest) return rejected("executable-observation-mismatch");
+      approvedExecutable = { input, observation };
+    }
     if (normalized.common.candidateManifestSha256 !== candidate.sha256 || normalized.common.workloadDocumentSha256 !== workload.sha256 || normalized.common.fixtureClosureDigest !== fixture.digest || normalized.common.protectedWorkspaceClosureDigest !== workspace.digest || normalized.host.descriptorSha256 !== descriptorSha256 || normalized.host.platformManifestSha256 !== platform.sha256 || normalized.host.adapterClosureDigest !== adapter.digest) return rejected();
     const promptBytes = Buffer.isBuffer(bindings.effectivePrompt) ? bindings.effectivePrompt : typeof bindings.effectivePrompt === "string" ? Buffer.from(bindings.effectivePrompt, "utf8") : null;
     if (promptBytes === null || digestBytes(promptBytes) !== normalized.host.effectivePromptSha256) return rejected();
     // A non-UTF-8 prompt is a known preflight violation (fail() is
     // SFC2004-coded; the outer catch maps it to rejected before spawn).
     strictUtf8(promptBytes, "effectivePrompt");
+
+    let sessionPermissions = null;
+    if (process.platform === "win32" && driver.driverId === WORKBUDDY_DRIVER.driverId && bindings.fixtureMembers.includes("workbuddy-settings.local.json")) {
+      const read = await readFileBound(fixtureRoot, "workbuddy-settings.local.json", { rootBinding: fixture.binding });
+      const frozen = fixture.entries.find(entry => entry.path === "workbuddy-settings.local.json");
+      if (!frozen || read.sha256 !== frozen.sha256 || read.bytes !== frozen.bytes) return rejected();
+      validateWorkBuddySessionPermissions(read.content);
+      sessionPermissions = { source: { root: fixtureRoot, path: "workbuddy-settings.local.json", binding: fixture.binding, read } };
+    }
 
     // Installed target: overlap refusals, discovery layout pre-checks and
     // existence rejection all run before any mkdir, so a refusal has zero
@@ -759,8 +855,23 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
       // The session root is tracked only after mkdir succeeded, so a failed
       // mkdir never pretends there is something to clean.
       const sessionCandidate = path.join(temporaryRoot, `session-${process.pid}-${Date.now()}`);
-      await mkdir(sessionCandidate, { recursive: false, mode: 0o700 });
+      await createPrivateMaterialDirectory(sessionCandidate, directoryOptions());
       state.sessionRoot = sessionCandidate;
+      if (sessionPermissions) {
+        await verifyWorkBuddySessionPermissionFiles(sessionPermissions);
+        const sessionBinding = await createFilesystemRootBinding(sessionCandidate);
+        const settingsRoot = path.join(sessionCandidate, ".codebuddy");
+        await createPrivateMaterialDirectory(settingsRoot, directoryOptions());
+        // The session remains bound across creation of its direct private child.
+        if ((await createFilesystemRootBinding(sessionCandidate)).digest !== sessionBinding.digest) throw fail("WorkBuddy session root changed during permission projection");
+        const settingsBinding = await createFilesystemRootBinding(settingsRoot);
+        await publishFileExclusive(settingsRoot, "settings.local.json", sessionPermissions.source.read.content,
+          { rootBinding: settingsBinding, ...publicationOptions("private") });
+        const read = await readFileBound(settingsRoot, "settings.local.json", { rootBinding: settingsBinding,
+          expectedSha256: sessionPermissions.source.read.sha256 });
+        sessionPermissions.projected = { root: settingsRoot, path: "settings.local.json", binding: settingsBinding, read };
+        await verifyWorkBuddySessionPermissionFiles(sessionPermissions);
+      }
     } catch (cause) {
       // These operations are still preflight, but the installed target or
       // session may already exist: the session is retained for the caller
@@ -769,7 +880,7 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     }
     const probeSinkRoot = path.join(evidenceRoot, "probe");
     try {
-      await mkdir(probeSinkRoot, { recursive: false, mode: 0o700 });
+      await createPrivateMaterialDirectory(probeSinkRoot, directoryOptions());
     } catch (cause) {
       return rejectAfterSession();
     }
@@ -795,9 +906,11 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     let probeDurableStreams = null;
     let probe;
     try {
+      await verifyWorkBuddySessionPermissionFiles(sessionPermissions);
+      const probeLaunch = await launchCommand(executable.path, driver.probeArgs, approvedExecutable);
       probe = await superviseProcess({
-        command: executable.path,
-        args: driver.probeArgs,
+        command: probeLaunch.command,
+        args: probeLaunch.args,
         cwd: processCwd,
         env,
         timeoutPolicy: supervisionTimeoutPolicy,
@@ -854,16 +967,18 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     // text stays inside the private stream evidence.
     const invocationSinkRoot = path.join(evidenceRoot, "invocation");
     try {
-      await mkdir(invocationSinkRoot, { recursive: false, mode: 0o700 });
+      await createPrivateMaterialDirectory(invocationSinkRoot, directoryOptions());
     } catch (cause) {
       return finishDeterminedProcess({ status: "failed", reason: "private-evidence-publication-failed", extra: { execution: notInvokedExecution() } });
     }
     let invocationDurableStreams = null;
     let invocation;
     try {
+      await verifyWorkBuddySessionPermissionFiles(sessionPermissions);
+      const invocationLaunch = await launchCommand(executable.path, driverInvocationArgs({ driver, prompt: strictUtf8(promptBytes, "effectivePrompt"), installedParent: path.dirname(installedRoot) }), approvedExecutable);
       invocation = await superviseProcess({
-        command: executable.path,
-        args: driverInvocationArgs({ driver, prompt: strictUtf8(promptBytes, "effectivePrompt"), installedParent: path.dirname(installedRoot) }),
+        command: invocationLaunch.command,
+        args: invocationLaunch.args,
         cwd: processCwd,
         env,
         timeoutPolicy: supervisionTimeoutPolicy,
@@ -887,6 +1002,13 @@ export async function runHostVerification({ request, bindings, hostsRoot } = {})
     } catch (cause) {
       if (cause?.code !== "SFC2004") throw cause;
       return finishDeterminedProcess({ status: "failed", reason: "private-evidence-publication-failed", extra: { execution: publicExecution(invocation) } });
+    }
+    try { await verifyWorkBuddySessionPermissionFiles(sessionPermissions); } catch (cause) {
+      if (cause?.code !== "SFC2004") throw cause;
+      return finishDeterminedProcess({ status: cause?.details?.boundReadDisposition === "boundary-indeterminate" ? "indeterminate" : "failed",
+        reason: cause?.details?.boundReadDisposition === "boundary-indeterminate" ? "boundary-state-indeterminate" : "snapshot-mismatch",
+        requiredActions: cause?.details?.boundReadDisposition === "boundary-indeterminate" ? ["manual-temporary-root-inspection-required"] : [],
+        extra: { execution: publicExecution(invocation) } });
     }
     const pre = { installedSkill: installed.digest, fixture: fixture.digest, protectedWorkspace: workspace.digest };
     let postInstalled;

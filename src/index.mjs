@@ -163,7 +163,7 @@ export const COMMAND_SIDE_EFFECTS = Object.freeze({
   projection: Object.freeze({
     summary: "投影受管生成物。",
     sideEffect:
-      "writes or deletes only explicitly owned, manifest-authorized managed artifacts; the report sub-action (projection report) writes only the explicitly named --out/--binding paths contained in --root (Markdown goes to stdout when no --out is given); unauthorized, handwritten, escaping, or conflicting paths are refused before mutation",
+      "writes or deletes only explicitly owned, manifest-authorized business artifacts; Windows may also create adjacent staging and retained .foundation-file-apply journal/before/after materials under its explicit projection contract; restored output does not imply zero writes; the report sub-action (projection report) writes only the explicitly named --out/--binding paths contained in --root (Markdown goes to stdout when no --out is given); unauthorized, handwritten, escaping, or conflicting paths are refused before mutation",
     exitCodes: "0 成功；2 拒绝/用法/机制错误",
   }),
   check: Object.freeze({

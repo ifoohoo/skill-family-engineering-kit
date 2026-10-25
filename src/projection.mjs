@@ -12,9 +12,17 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import { ContractsError, findSchemaByObject, validateDocument } from "skill-family-contracts";
+import { ContractsError, compileSchema, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import {
+  applyFileSet,
   classifyPathInput,
+  createFilesystemRootBinding,
+  createPrivateMaterialDirectory,
+  inspectFileSetRecovery,
+  observeFilesystemTree,
+  prepareFileSetParents,
+  readFileBound,
+  removePreparedFileSetParents,
   computeResourceClosure,
   digestBytes,
   readFileStrict,
@@ -124,14 +132,35 @@ function projectionPlanInputError(message, details) {
   throw invalidManifest(`projection plan input invalid: ${message}`, details);
 }
 
-function validatePlanPath(rawPath, label) {
+const WINDOWS_FILE_SET_SCHEMA = findSchemaByObject("file-set-apply-request").$id;
+const windowsPermissionValidator = compileSchema({ schema: { $ref: `${WINDOWS_FILE_SET_SCHEMA}#/$defs/windowsPermissionObservation` } }, { dialect: "2020-12", policy: "strict" });
+const windowsRootValidator = compileSchema({ schema: { $ref: `${WINDOWS_FILE_SET_SCHEMA}#/$defs/windowsRoot` } }, { dialect: "2020-12", policy: "strict" });
+
+function projectionPlatform(platform) {
+  if (platform !== undefined && platform !== "win32") projectionPlanInputError("platform must be win32 when supplied");
+  return platform;
+}
+
+function exactFields(value, required, optional = []) {
+  return value !== null && typeof value === "object" && !Array.isArray(value) && required.every(key => Object.hasOwn(value, key)) &&
+    Object.keys(value).every(key => required.includes(key) || optional.includes(key));
+}
+
+function windowsPermission(value, label) {
+  if (!windowsPermissionValidator(value)) projectionPlanInputError(`${label} must be the closed Windows permission observation`);
+  return { kind: value.kind, attributes: value.attributes, securityDigest: value.securityDigest };
+}
+
+function validatePlanPath(rawPath, label, platform) {
   if (typeof rawPath !== "string" || rawPath.length === 0) {
     projectionPlanInputError(`${label} must be a non-empty path`);
   }
-  const classification = classifyPathInput(rawPath);
+  const classification = classifyPathInput(rawPath, platform ?? "posix");
   const normalized = normalizeRelPath(rawPath);
   const segments = normalized.split("/");
-  if (!classification.ok || segments.includes("..") || segments.includes(".") || normalized === "") {
+  if (!classification.ok || (platform === "win32" && (rawPath.includes("\\") || rawPath.normalize("NFC") !== rawPath ||
+      /[<>"|?*]/u.test(rawPath) || segments.some(segment => segment.toLowerCase() === ".foundation-file-apply"))) ||
+      segments.includes("..") || segments.includes(".") || normalized === "") {
     projectionPlanInputError(`${label} must be a contained portable path`, { path: rawPath, kind: classification.kind });
   }
   return normalized;
@@ -144,11 +173,17 @@ function validatePlanMode(mode, label) {
   return mode;
 }
 
-function normalizeRootBinding(rootBinding) {
-  if (typeof rootBinding !== "string" || !path.isAbsolute(rootBinding) || rootBinding.includes("\0")) {
+function normalizeRootBinding(rootBinding, platform) {
+  if (platform === "win32") {
+    if (!windowsRootValidator(rootBinding) || !/^[A-Z]:\//u.test(rootBinding) || rootBinding.includes("\\") ||
+        path.win32.normalize(rootBinding).replaceAll("\\", "/") !== rootBinding) projectionPlanInputError("rootBinding must be one canonical Windows drive path");
+    for (const segment of rootBinding.slice(3).split("/")) if (!classifyPathInput(segment, "win32").ok || /[<>"|?*]/u.test(segment)) projectionPlanInputError("rootBinding contains an unsupported Windows segment");
+    return rootBinding;
+  }
+  if (typeof rootBinding !== "string" || !path.posix.isAbsolute(rootBinding) || rootBinding.includes("\0")) {
     projectionPlanInputError("rootBinding must be a canonical absolute realpath");
   }
-  const normalized = path.normalize(rootBinding);
+  const normalized = path.posix.normalize(rootBinding);
   if (normalized !== rootBinding) {
     projectionPlanInputError("rootBinding must already be normalized", { rootBinding, normalized });
   }
@@ -164,11 +199,11 @@ function normalizeRootBinding(rootBinding) {
  * normalization algorithm exists. typeDefault lets the builder accept members
  * without an explicit type and normalize them to "file".
  */
-function normalizePlanResource(resource, resourceLabel, { typeDefault } = {}) {
+function normalizePlanResource(resource, resourceLabel, { typeDefault, platform, byteIntent = false } = {}) {
   if (!resource || typeof resource !== "object" || Array.isArray(resource)) {
     projectionPlanInputError(`${resourceLabel} must be an object`);
   }
-  const rel = validatePlanPath(resource.path, `${resourceLabel}.path`);
+  const rel = validatePlanPath(resource.path, `${resourceLabel}.path`, platform);
   const type = resource.type === undefined ? typeDefault : resource.type;
   if (type === "symlink") {
     projectionPlanInputError(`${resourceLabel} may not represent a symlink`, { path: rel });
@@ -178,6 +213,13 @@ function normalizePlanResource(resource, resourceLabel, { typeDefault } = {}) {
   }
   if (!SHA256_HEX_PATTERN.test(resource.sha256 ?? "")) {
     projectionPlanInputError(`${resourceLabel}.sha256 must be a lowercase sha256 hex digest`, { path: rel });
+  }
+  if (platform === "win32") {
+    if (!exactFields(resource, ["path", "type", "sha256", "mode", ...(byteIntent ? [] : ["permissionObservation"])]) || resource.mode !== null) {
+      projectionPlanInputError(`${resourceLabel} must be a closed Windows ${byteIntent ? "byte intent" : "file observation"} with mode null`);
+    }
+    return { path: rel, type: "file", sha256: resource.sha256, mode: null,
+      ...(byteIntent ? {} : { permissionObservation: windowsPermission(resource.permissionObservation, `${resourceLabel}.permissionObservation`) }) };
   }
   return { path: rel, type: "file", sha256: resource.sha256, mode: validatePlanMode(resource.mode, `${resourceLabel}.mode`) };
 }
@@ -197,7 +239,7 @@ function canonicalPlanClosure(normalizedResources, label) {
   return { digestAlgorithm: "sha256", digest, resourceCount: resources.length, resources };
 }
 
-function normalizePlanClosure(rawClosure, label) {
+function normalizePlanClosure(rawClosure, label, { platform, byteIntent = false } = {}) {
   if (!rawClosure || typeof rawClosure !== "object" || Array.isArray(rawClosure)) {
     projectionPlanInputError(`${label} must be an object`);
   }
@@ -207,7 +249,7 @@ function normalizePlanClosure(rawClosure, label) {
   if (!Array.isArray(rawClosure.resources)) {
     projectionPlanInputError(`${label}.resources must be an array`);
   }
-  const resources = rawClosure.resources.map((resource, index) => normalizePlanResource(resource, `${label}.resources[${index}]`));
+  const resources = rawClosure.resources.map((resource, index) => normalizePlanResource(resource, `${label}.resources[${index}]`, { platform, byteIntent }));
   const closure = canonicalPlanClosure(resources, label);
   if (closure.digest !== rawClosure.digest) {
     projectionPlanInputError(`${label} digest does not match its normalized resources`, { expected: rawClosure.digest, actual: closure.digest });
@@ -231,15 +273,17 @@ function normalizePlanClosure(rawClosure, label) {
  * (computeResourceClosure, {path, role, exists, sha256} members with an
  * envelope digest) — the two are not interchangeable.
  */
-export function buildProjectionClosure(resources) {
+export function buildProjectionClosure(resources, options) {
+  if (options !== undefined && !exactFields(options, ["platform"])) projectionPlanInputError("closure options must contain only platform");
+  const platform = projectionPlatform(options?.platform);
   if (!Array.isArray(resources)) {
     projectionPlanInputError("projectionClosure resources must be an array");
   }
-  const normalized = resources.map((resource, index) => normalizePlanResource(resource, `projectionClosure.resources[${index}]`, { typeDefault: "file" }));
+  const normalized = resources.map((resource, index) => normalizePlanResource(resource, `projectionClosure.resources[${index}]`, { typeDefault: "file", platform }));
   return canonicalPlanClosure(normalized, "projectionClosure");
 }
 
-function normalizeAuthoritySources(rawSources, candidatePaths) {
+function normalizeAuthoritySources(rawSources, candidatePaths, { platform, callerBytes = false } = {}) {
   if (!Array.isArray(rawSources) || rawSources.length === 0) {
     projectionPlanInputError("authoritySources must be a non-empty array");
   }
@@ -251,18 +295,20 @@ function normalizeAuthoritySources(rawSources, candidatePaths) {
     if (typeof source.id !== "string" || source.id.trim() === "" || ids.has(source.id)) {
       projectionPlanInputError(`${label}.id must be unique and non-empty`);
     }
-    const rel = validatePlanPath(source.path, `${label}.path`);
+    const rel = validatePlanPath(source.path, `${label}.path`, platform);
     if (paths.has(rel)) projectionPlanInputError(`authoritySources contain a duplicate path`, { path: rel });
     if (!SHA256_HEX_PATTERN.test(source.sha256 ?? "")) projectionPlanInputError(`${label}.sha256 must be a lowercase sha256 hex digest`);
     const type = source.type ?? "file";
     if (type !== "file") projectionPlanInputError(`${label}.type must be file`);
-    const mode = validatePlanMode(source.mode ?? 0o644, `${label}.mode`);
+    const permission = platform === "win32" ? normalizePlanResource(Object.fromEntries(Object.entries(source).filter(([key]) => key !== "id")), label, { platform, byteIntent: callerBytes }) : null;
+    const mode = platform === "win32" ? null : validatePlanMode(source.mode ?? 0o644, `${label}.mode`);
     if (candidatePaths.has(rel)) {
       projectionPlanInputError("an authority source may not come from the same external candidate closure", { path: rel });
     }
     ids.add(source.id);
     paths.add(rel);
-    return { id: source.id, path: rel, type, sha256: source.sha256, mode };
+    return { id: source.id, path: rel, type, sha256: source.sha256, mode,
+      ...(platform === "win32" && !callerBytes ? { permissionObservation: permission.permissionObservation } : {}) };
   }).sort((a, b) => a.id.localeCompare(b.id));
   assertNoPortableCollisions([...paths], "authoritySources");
   return { sources, ids, paths, digestAlgorithm: "sha256", digest: canonicalDigest(sources) };
@@ -280,11 +326,17 @@ export const PROJECTION_AUTHORITY_BINDING_KINDS = Object.freeze(["external-root"
 
 const BASE64_PATTERN = /^[A-Za-z0-9+/]*={0,2}$/;
 
-function normalizeAuthorityRoot(rawRoot, rootBinding) {
-  if (typeof rawRoot !== "string" || !path.isAbsolute(rawRoot) || rawRoot.includes("\0")) {
+function normalizeAuthorityRoot(rawRoot, rootBinding, platform) {
+  if (platform === "win32") {
+    const normalized = normalizeRootBinding(rawRoot, platform);
+    const first = path.win32.relative(normalized, rootBinding), second = path.win32.relative(rootBinding, normalized);
+    if (first === "" || second === "" || (!first.startsWith("..") && !path.win32.isAbsolute(first)) || (!second.startsWith("..") && !path.win32.isAbsolute(second))) projectionPlanInputError("authorityBinding.authorityRoot must be external to rootBinding");
+    return normalized;
+  }
+  if (typeof rawRoot !== "string" || !path.posix.isAbsolute(rawRoot) || rawRoot.includes("\0")) {
     projectionPlanInputError("authorityBinding.authorityRoot must be a canonical absolute path");
   }
-  const normalized = path.normalize(rawRoot);
+  const normalized = path.posix.normalize(rawRoot);
   if (normalized !== rawRoot) {
     projectionPlanInputError("authorityBinding.authorityRoot must already be normalized", {
       authorityRoot: rawRoot,
@@ -294,8 +346,8 @@ function normalizeAuthorityRoot(rawRoot, rootBinding) {
   if (normalized === rootBinding) {
     projectionPlanInputError("authorityBinding.authorityRoot must be external to the target rootBinding");
   }
-  const rootFromAuthority = path.relative(normalized, rootBinding);
-  const authorityFromRoot = path.relative(rootBinding, normalized);
+  const rootFromAuthority = path.posix.relative(normalized, rootBinding);
+  const authorityFromRoot = path.posix.relative(rootBinding, normalized);
   if (
     rootFromAuthority === "" || authorityFromRoot === ""
     || !rootFromAuthority.startsWith("..") || !authorityFromRoot.startsWith("..")
@@ -351,7 +403,7 @@ function normalizeCallerBytes(rawBytes, authority) {
  * target-local authority). The normalized binding is embedded in the plan so
  * the prepared run can re-verify authority outside the target root.
  */
-function normalizeAuthorityBinding(rawBinding, { rootBinding, authority, previous }) {
+function normalizeAuthorityBinding(rawBinding, { rootBinding, authority, previous, platform }) {
   if (rawBinding === undefined) return null;
   if (!rawBinding || typeof rawBinding !== "object" || Array.isArray(rawBinding)) {
     projectionPlanInputError("authorityBinding must be an object");
@@ -370,7 +422,7 @@ function normalizeAuthorityBinding(rawBinding, { rootBinding, authority, previou
   if (kind === "external-root") {
     const extra = Object.keys(rawBinding).filter((key) => !["kind", "authorityRoot", "freshRoot"].includes(key));
     if (extra.length > 0) projectionPlanInputError("authorityBinding declares unknown fields", { fields: extra.sort() });
-    const authorityRoot = normalizeAuthorityRoot(rawBinding.authorityRoot, rootBinding);
+    const authorityRoot = normalizeAuthorityRoot(rawBinding.authorityRoot, rootBinding, platform);
     return Object.freeze({ kind, authorityRoot, freshRoot });
   }
   const extra = Object.keys(rawBinding).filter((key) => !["kind", "bytes", "freshRoot"].includes(key));
@@ -384,7 +436,7 @@ function assertExternalRoots(firstReal, secondReal, message) {
   const secondFromFirst = path.relative(firstReal, secondReal);
   if (
     firstFromSecond === "" || secondFromFirst === ""
-    || !firstFromSecond.startsWith("..") || !secondFromFirst.startsWith("..")
+    || (!firstFromSecond.startsWith("..") && !path.isAbsolute(firstFromSecond)) || (!secondFromFirst.startsWith("..") && !path.isAbsolute(secondFromFirst))
   ) {
     throw invalidManifest(message, { first: firstReal, second: secondReal });
   }
@@ -416,17 +468,21 @@ export function compileProjectionPlan({
   previousOwnedClosure,
   externalCandidateClosure,
   authorityBinding,
+  platform,
 } = {}) {
-  const canonicalRootBinding = normalizeRootBinding(rootBinding);
-  const previous = normalizePlanClosure(previousOwnedClosure, "previousOwnedClosure");
-  const candidate = normalizePlanClosure(externalCandidateClosure, "externalCandidateClosure");
+  projectionPlatform(platform);
+  if (authorityBinding !== undefined && !PROJECTION_AUTHORITY_BINDING_KINDS.includes(authorityBinding?.kind)) projectionPlanInputError("authorityBinding.kind must be an existing binding kind");
+  const canonicalRootBinding = normalizeRootBinding(rootBinding, platform);
+  const previous = normalizePlanClosure(previousOwnedClosure, "previousOwnedClosure", { platform });
+  const candidate = normalizePlanClosure(externalCandidateClosure, "externalCandidateClosure", { platform });
   const previousByPath = new Map(previous.resources.map((resource) => [resource.path, resource]));
   const candidateByPath = new Map(candidate.resources.map((resource) => [resource.path, resource]));
-  const authority = normalizeAuthoritySources(authoritySources, new Set(candidateByPath.keys()));
+  const authority = normalizeAuthoritySources(authoritySources, new Set(candidateByPath.keys()), { platform, callerBytes: authorityBinding?.kind === "caller-bytes" });
   const binding = normalizeAuthorityBinding(authorityBinding, {
     rootBinding: canonicalRootBinding,
     authority,
     previous,
+    platform,
   });
 
   if (!handwrittenPolicy || typeof handwrittenPolicy !== "object" || Array.isArray(handwrittenPolicy)) {
@@ -450,7 +506,7 @@ export function compileProjectionPlan({
   const entries = rawEntries.map((entry, index) => {
     const label = `ownership[${index}]`;
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) projectionPlanInputError(`${label} must be an object`);
-    const rel = validatePlanPath(entry.path, `${label}.path`);
+    const rel = validatePlanPath(entry.path, `${label}.path`, platform);
     if (targetPaths.has(rel)) projectionPlanInputError("ownership contains a duplicate target path", { path: rel });
     if (authority.paths.has(rel) && candidateByPath.has(rel)) {
       projectionPlanInputError("a same-batch authority target cannot authorize itself", { path: rel });
@@ -458,7 +514,7 @@ export function compileProjectionPlan({
     if (!authority.ids.has(entry.authoritySource)) projectionPlanInputError(`${label}.authoritySource is unknown`, { path: rel });
     try { validateOwner(entry.owner, label); } catch (cause) { projectionPlanInputError(cause.message, { path: rel }); }
     if (matchAnyGlob(handwrittenPatterns, rel)) projectionPlanInputError("ownership conflicts with handwritten policy", { path: rel });
-    const source = entry.source === undefined ? rel : validatePlanPath(entry.source, `${label}.source`);
+    const source = entry.source === undefined ? rel : validatePlanPath(entry.source, `${label}.source`, platform);
     const candidateResource = candidateByPath.get(source);
     const previousResource = previousByPath.get(rel);
     if (!candidateResource && !previousResource) projectionPlanInputError("ownership names an unknown path", { path: rel, source });
@@ -479,7 +535,8 @@ export function compileProjectionPlan({
       if (expected.state !== actual.state
         || (actual.state === "sha256" && expected.value !== actual.value)
         || (expected.type !== undefined && expected.type !== actual.type)
-        || (expected.mode !== undefined && expected.mode !== actual.mode)) {
+        || (expected.mode !== undefined && expected.mode !== actual.mode)
+        || (platform === "win32" && actual.state === "sha256" && !isDeepStrictEqual(expected.permissionObservation, previousResource.permissionObservation))) {
         projectionPlanInputError("ownership expect, type or mode differs from the previous owned closure", { path: rel, expected, actual });
       }
     }
@@ -489,7 +546,8 @@ export function compileProjectionPlan({
         || !expected || typeof expected !== "object" || Array.isArray(expected)
         || (expected.sha256 !== undefined && expected.sha256 !== candidateResource.sha256)
         || (expected.type !== undefined && expected.type !== candidateResource.type)
-        || (expected.mode !== undefined && expected.mode !== candidateResource.mode)) {
+        || (expected.mode !== undefined && expected.mode !== candidateResource.mode)
+        || (platform === "win32" && expected.permissionObservation !== undefined && !isDeepStrictEqual(expected.permissionObservation, candidateResource.permissionObservation))) {
         projectionPlanInputError("ownership candidate digest, type or mode differs from the external candidate closure", {
           path: rel,
           expected,
@@ -518,7 +576,8 @@ export function compileProjectionPlan({
 
   const operations = entries.map((entry) => {
     const expect = entry.previousResource
-      ? { state: "sha256", value: entry.previousResource.sha256, mode: entry.previousResource.mode }
+      ? { state: "sha256", value: entry.previousResource.sha256, mode: entry.previousResource.mode,
+          ...(platform === "win32" ? { permissionObservation: entry.previousResource.permissionObservation } : {}) }
       : { state: "absent" };
     if (entry.candidateResource) {
       return {
@@ -528,7 +587,7 @@ export function compileProjectionPlan({
         owner: entry.owner,
         expect,
         type: entry.candidateResource.type,
-        mode: entry.candidateResource.mode,
+        ...(platform === "win32" ? {} : { mode: entry.candidateResource.mode }),
       };
     }
     return {
@@ -537,7 +596,7 @@ export function compileProjectionPlan({
       owner: entry.owner,
       expect,
       type: entry.previousResource.type,
-      mode: entry.previousResource.mode,
+      ...(platform === "win32" ? {} : { mode: entry.previousResource.mode }),
     };
   });
   const managedPaths = entries.map((entry) => entry.path);
@@ -565,10 +624,11 @@ export function compileProjectionPlan({
     trackedToolLocks: [],
     hasOwnRegistry: true,
   };
-  const manifest = validateV2Manifest({
-    schemaVersion: 2,
+  const manifest = (platform === "win32" ? validateV3Manifest : validateV2Manifest)({
+    schemaVersion: platform === "win32" ? 3 : 2,
+    ...(platform === "win32" ? { platform: "win32" } : {}),
     kind: V2_KIND,
-    candidate: { members: candidate.resources.map(({ path: resourcePath, sha256, mode }) => ({ path: resourcePath, sha256, mode })) },
+    candidate: { members: platform === "win32" ? candidate.resources.map(resource => ({ ...resource })) : candidate.resources.map(({ path: resourcePath, sha256, mode }) => ({ path: resourcePath, sha256, mode })) },
     operations,
     rootOutputs: entries.filter((entry) => entry.rootOutput && entry.candidateResource).map((entry) => entry.path),
   });
@@ -581,7 +641,8 @@ export function compileProjectionPlan({
   }));
   const plan = {
     kind: "skill-family.projection-plan",
-    schemaVersion: 1,
+    schemaVersion: platform === "win32" ? 2 : 1,
+    ...(platform === "win32" ? { platform: "win32" } : {}),
     rootBinding: canonicalRootBinding,
     authority: {
       sources: authority.sources,
@@ -617,7 +678,7 @@ function preparedPlanInput(prepared) {
   if (!prepared || typeof prepared !== "object" || Array.isArray(prepared)) {
     throw invalidManifest("preparedProjection must be a complete compileProjectionPlan result");
   }
-  if (prepared.kind !== "skill-family.projection-plan" || prepared.schemaVersion !== 1) {
+  if (prepared.kind !== "skill-family.projection-plan" || !((prepared.schemaVersion === 1 && prepared.platform === undefined) || (prepared.schemaVersion === 2 && prepared.platform === "win32"))) {
     throw invalidManifest("preparedProjection kind and schemaVersion must identify a canonical projection plan");
   }
   if (!prepared.authority || !prepared.targetFacts || !prepared.manifest || !Array.isArray(prepared.operations)
@@ -628,6 +689,7 @@ function preparedPlanInput(prepared) {
   if (!Array.isArray(lockEntries)) throw invalidManifest("preparedProjection targetFacts.managedLock is incomplete");
   return {
     rootBinding: prepared.rootBinding,
+    ...(prepared.platform === "win32" ? { platform: "win32" } : {}),
     authoritySources: prepared.authority.sources,
     handwrittenPolicy: prepared.handwrittenPolicy,
     ownership: prepared.ownership.map((binding) => {
@@ -639,7 +701,9 @@ function preparedPlanInput(prepared) {
         owner: binding.owner,
         rootOutput: binding.rootOutput,
         expect: operation?.expect,
-        ...(operation?.operation === "write" ? { candidate: { type: operation.type, mode: operation.mode } } : {}),
+        ...(operation?.operation === "write" ? { candidate: prepared.platform === "win32"
+          ? prepared.externalCandidateClosure.resources.find(resource => resource.path === binding.source)
+          : { type: operation.type, mode: operation.mode } } : {}),
       };
     }),
     previousOwnedClosure: prepared.previousOwnedClosure,
@@ -669,7 +733,7 @@ function protectedPreparedPaths(prepared) {
   ].map(portableKey));
 }
 
-async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
+async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null, bindings) {
   const binding = prepared.authority.binding;
   if (binding === undefined) {
     for (const source of prepared.authority.sources) {
@@ -679,8 +743,8 @@ async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
       } catch (cause) {
         throw invalidManifest("preparedProjection authority source escapes the target root", { path: rel, cause: cause?.message ?? "unknown" });
       }
-      const state = await readRegularState(rootAbs, rel);
-      if (state.state !== source.type || state.sha256 !== source.sha256 || state.mode !== source.mode) {
+      const state = await readRegularState(rootAbs, rel, { rootBinding: bindings?.target });
+      if (state.state !== source.type || state.sha256 !== source.sha256 || state.mode !== source.mode || (prepared.platform === "win32" && !isDeepStrictEqual(state.permissionObservation, source.permissionObservation))) {
         throw invalidManifest("preparedProjection authority source differs from the live target", {
           path: rel,
           expectedSha256: source.sha256,
@@ -709,6 +773,7 @@ async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
   // re-read strictly (no-follow, regular-file identity, digest) from there.
   let authorityReal;
   try {
+    if (prepared.platform === "win32" && !bindings.authority) bindings.authority = await createFilesystemRootBinding(binding.authorityRoot);
     authorityReal = await realpath(binding.authorityRoot);
   } catch {
     throw invalidManifest("preparedProjection authority root does not resolve to an existing path", {
@@ -728,14 +793,16 @@ async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
     const rel = normalizeRelPath(source.path);
     let receipt;
     try {
-      receipt = await readFileStrict(authorityReal, rel);
+      receipt = prepared.platform === "win32"
+        ? await readFileBound(authorityReal.replaceAll("\\", "/"), rel, { rootBinding: bindings.authority })
+        : await readFileStrict(authorityReal, rel);
     } catch (cause) {
       throw invalidManifest("preparedProjection authority source differs from the frozen external authority root", {
         path: rel,
         cause: cause?.details?.kind ?? cause?.message ?? "unknown",
       });
     }
-    if (receipt.sha256 !== source.sha256 || receipt.mode !== source.mode) {
+    if (receipt.sha256 !== source.sha256 || (prepared.platform === "win32" ? !isDeepStrictEqual(receipt.permissionObservation, source.permissionObservation) : receipt.mode !== source.mode)) {
       throw invalidManifest("preparedProjection authority source differs from the frozen external authority root", {
         path: rel,
         expectedSha256: source.sha256,
@@ -747,41 +814,42 @@ async function verifyPreparedAuthority(rootAbs, prepared, candidateAbs = null) {
   }
 }
 
-async function verifyPreparedPreviousClosure(rootAbs, prepared) {
+async function verifyPreparedPreviousClosure(rootAbs, prepared, bindings) {
   const resources = [];
   for (const expected of prepared.previousOwnedClosure.resources) {
     const rel = normalizeRelPath(expected.path);
-    const state = await readRegularState(rootAbs, rel);
+    const state = await readRegularState(rootAbs, rel, { rootBinding: bindings?.target });
     if (state.state !== "file") {
       throw invalidManifest("preparedProjection previous-owned path is not a live regular file", { path: rel, actual: publicState(state) });
     }
-    resources.push({ path: rel, type: "file", sha256: state.sha256, mode: state.mode });
+    resources.push({ path: rel, type: "file", sha256: state.sha256, mode: state.mode, ...(prepared.platform === "win32" ? { permissionObservation: state.permissionObservation } : {}) });
   }
   const live = normalizePlanClosure({
     digestAlgorithm: "sha256",
     digest: canonicalDigest(resources.sort((a, b) => a.path.localeCompare(b.path))),
     resources,
-  }, "livePreviousOwnedClosure");
+  }, "livePreviousOwnedClosure", { platform: prepared.platform });
   if (!isDeepStrictEqual(live, prepared.previousOwnedClosure)) {
     throw invalidManifest("preparedProjection previous-owned closure differs from the live target");
   }
 }
 
-function canonicalCandidateClosure(candidate) {
+function canonicalCandidateClosure(candidate, platform) {
   const resources = [...candidate.byPath.values()].map((record, index) => normalizePlanResource(
-    record,
+    platform === "win32" ? { path: record.path, type: "file", sha256: record.sha256, mode: null, permissionObservation: record.permissionObservation } : record,
     `externalCandidateClosure.resources[${index}]`,
-    { typeDefault: "file" },
+    { typeDefault: "file", platform },
   ));
   return canonicalPlanClosure(resources, "externalCandidateClosure");
 }
 
-async function validatePreparedProjection({ prepared, rootAbs, loaded, candidateRoot }) {
-  if (loaded.manifest.schemaVersion !== 2) {
+async function validatePreparedProjection({ prepared, rootAbs, loaded, candidateRoot, bindings }) {
+  if (loaded.manifest.schemaVersion !== (process.platform === "win32" ? 3 : 2)) {
     throw invalidManifest("preparedProjection is supported only for schemaVersion 2");
   }
   const canonical = assertCanonicalPreparedProjection(prepared);
-  const targetReal = await realpath(rootAbs);
+  const targetPath = await realpath(rootAbs);
+  const targetReal = process.platform === "win32" ? targetPath.replaceAll("\\", "/") : targetPath;
   if (canonical.rootBinding !== targetReal) {
     throw invalidManifest("preparedProjection rootBinding differs from the canonical target realpath", {
       expected: canonical.rootBinding,
@@ -802,17 +870,17 @@ async function validatePreparedProjection({ prepared, rootAbs, loaded, candidate
   }
   const binding = canonical.authority.binding;
   if (binding && binding.freshRoot) {
-    const existing = await readdir(rootAbs);
+    const existing = (await readdir(rootAbs)).filter(name => canonical.platform !== "win32" || name !== ".foundation-file-apply");
     if (existing.length > 0) {
       throw invalidManifest("preparedProjection freshRoot requires a completely empty target root", {
         found: existing.sort(),
       });
     }
   }
-  const candidate = await verifyCandidateRoot(candidateRoot, rootAbs, loaded.manifest);
-  await verifyPreparedAuthority(rootAbs, canonical, candidate.rootAbs);
-  await verifyPreparedPreviousClosure(rootAbs, canonical);
-  if (!isDeepStrictEqual(canonicalCandidateClosure(candidate), canonical.externalCandidateClosure)) {
+  const candidate = await verifyCandidateRoot(candidateRoot, rootAbs, loaded.manifest, bindings);
+  await verifyPreparedAuthority(rootAbs, canonical, candidate.rootAbs, bindings);
+  await verifyPreparedPreviousClosure(rootAbs, canonical, bindings);
+  if (!isDeepStrictEqual(canonicalCandidateClosure(candidate, canonical.platform), canonical.externalCandidateClosure)) {
     throw invalidManifest("preparedProjection external candidate closure differs from candidateRoot");
   }
   return {
@@ -946,10 +1014,56 @@ function validateV2Manifest(manifest) {
   return manifest;
 }
 
+function validateWindowsExpect(expect, label, { deletion = false } = {}) {
+  if (expect?.state === "absent" && !deletion) {
+    if (!exactFields(expect, ["state"])) throw invalidManifest(`${label} absent expectation must carry only state`);
+    return;
+  }
+  if (!exactFields(expect, ["state", "value", "mode", "permissionObservation"]) || expect.state !== "sha256" ||
+      !SHA256_HEX_PATTERN.test(expect.value) || expect.mode !== null) throw invalidManifest(`${label} must bind exact bytes and Windows permissions`);
+  windowsPermission(expect.permissionObservation, `${label}.permissionObservation`);
+}
+
+function validateV3Manifest(manifest) {
+  if (manifest.platform !== "win32" || manifest.schemaVersion !== 3 || manifest.kind !== V2_KIND) throw invalidManifest("Windows projection requires platform win32 and manifest schemaVersion 3");
+  if (Object.hasOwn(manifest, "entries")) {
+    if (!exactFields(manifest, ["schemaVersion", "platform", "kind", "entries"]) || !Array.isArray(manifest.entries) || manifest.entries.length === 0 || manifest.entries.length > 1024) throw invalidManifest("Windows inline manifest requires only the closed entries input");
+    const seen = new Set();
+    for (const [index, entry] of manifest.entries.entries()) {
+      if (!exactFields(entry, ["path", "content"], ["expect"])) throw invalidManifest(`entries[${index}] has unknown or missing fields`);
+      const rel = validatePlanPath(entry.path, `entries[${index}].path`, "win32");
+      if (seen.has(rel)) throw invalidManifest("duplicate Windows inline path");
+      seen.add(rel);
+      const text = exactFields(entry.content, ["text"]) && typeof entry.content.text === "string";
+      const base64 = exactFields(entry.content, ["base64"]) && typeof entry.content.base64 === "string" && BASE64_PATTERN.test(entry.content.base64) && Buffer.from(entry.content.base64, "base64").toString("base64") === entry.content.base64;
+      if (!text && !base64) throw invalidManifest(`entries[${index}].content must be exact text or canonical base64`);
+      if (entry.expect !== undefined) validateWindowsExpect(entry.expect, `entries[${index}].expect`);
+    }
+    assertNoPortableCollisions([...seen], "entries");
+    return manifest;
+  }
+  if (!exactFields(manifest, ["schemaVersion", "platform", "kind", "candidate", "operations"], ["rootOutputs"]) ||
+      !exactFields(manifest.candidate, ["members"]) || !Array.isArray(manifest.candidate.members) ||
+      !Array.isArray(manifest.operations) || manifest.operations.length === 0 || manifest.operations.length > 1024) throw invalidManifest("Windows external manifest must be the closed candidate/operations input");
+  const members = manifest.candidate.members.map((member, index) => normalizePlanResource(member, `candidate.members[${index}]`, { platform: "win32" }));
+  for (const [index, operation] of manifest.operations.entries()) {
+    if (!exactFields(operation, ["operation", "path", "owner", "expect", "type"], ["source"]) || operation.type !== "file") throw invalidManifest(`operations[${index}] must be a closed ordinary-file operation`);
+    validatePlanPath(operation.path, `operations[${index}].path`, "win32");
+    if (operation.source !== undefined) validatePlanPath(operation.source, `operations[${index}].source`, "win32");
+    validateWindowsExpect(operation.expect, `operations[${index}].expect`, { deletion: operation.operation === "delete" });
+  }
+  validateV2Manifest({ schemaVersion: 2, kind: V2_KIND,
+    candidate: { members: members.map(member => ({ path: member.path, sha256: member.sha256 })) },
+    operations: manifest.operations.map(operation => ({ ...operation, expect: operation.expect.state === "absent"
+      ? { state: "absent" } : { state: "sha256", value: operation.expect.value } })), rootOutputs: manifest.rootOutputs });
+  return manifest;
+}
+
 function validateManifestObject(manifest) {
   if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
     throw invalidManifest("projection manifest must be a JSON object");
   }
+  if (manifest.schemaVersion === 3) return validateV3Manifest(manifest);
   if (![1, 2].includes(manifest.schemaVersion)) {
     throw invalidManifest("projection manifest schemaVersion must be 1 or 2");
   }
@@ -972,7 +1086,19 @@ function validateLocalV1Manifest(manifest) {
   return validateV1Manifest(manifest);
 }
 
-async function loadExternalManifest(rootAbs, absPath) {
+async function loadExternalManifest(rootAbs, absPath, bindings) {
+  if (process.platform === "win32") {
+    const parent = path.dirname(absPath);
+    const rootBinding = await createFilesystemRootBinding(parent);
+    const canonicalParent = (await realpath(parent)).replaceAll("\\", "/");
+    const rel = path.basename(absPath);
+    assertExternalRoots(`${canonicalParent}/${rel}`, rootAbs, "external projection manifest must resolve outside the target");
+    const receipt = await readFileBound(canonicalParent, rel, { rootBinding, encoding: "utf8" });
+    let document;
+    try { document = JSON.parse(receipt.content); } catch { throw invalidManifest("external projection manifest is not valid JSON"); }
+    if (bindings) bindings.manifest = { root: canonicalParent, rootBinding, rel, sha256: receipt.sha256, permissionObservation: receipt.permissionObservation };
+    return { manifestPath: `${canonicalParent}/${rel}`, manifest: validateManifestObject(document), external: true };
+  }
   const st = await lstat(absPath).catch(() => null);
   if (!st || !st.isFile() || st.isSymbolicLink()) {
     throw invalidManifest("external projection manifest must be a regular non-symlink file", { manifest: absPath });
@@ -998,12 +1124,12 @@ async function loadExternalManifest(rootAbs, absPath) {
 }
 
 /** Loads and shape-validates a target-local v1 or external v2 manifest. */
-export async function loadProjectionManifest(rootAbs, manifestInput) {
+export async function loadProjectionManifest(rootAbs, manifestInput, bindings) {
   if (manifestInput && typeof manifestInput === "object" && !Array.isArray(manifestInput)) {
-    return { manifestPath: "<in-memory>", manifest: validateManifestObject(manifestInput), external: true };
+    return { manifestPath: "<in-memory>", manifest: validateManifestObject(process.platform === "win32" ? structuredClone(manifestInput) : manifestInput), external: true };
   }
   if (typeof manifestInput === "string" && path.isAbsolute(manifestInput)) {
-    return loadExternalManifest(rootAbs, manifestInput);
+    return loadExternalManifest(rootAbs, manifestInput, bindings);
   }
   const rawManifestPath = manifestInput ?? PROJECTION_MANIFEST_PATH;
   const classification = classifyPathInput(rawManifestPath);
@@ -1013,7 +1139,18 @@ export async function loadProjectionManifest(rootAbs, manifestInput) {
     });
   }
   const manifestPath = normalizeRelPath(rawManifestPath);
-  const loaded = await readOptionalJson(rootAbs, manifestPath);
+  let loaded;
+  if (process.platform === "win32") {
+    const rootBinding = bindings?.target ?? await createFilesystemRootBinding(rootAbs);
+    let receipt;
+    try { receipt = await readFileBound(rootAbs, manifestPath, { rootBinding, encoding: "utf8" }); }
+    catch (cause) {
+      if (cause?.details?.kind === "missing-resource") throw invalidManifest(`projection manifest not found: ${manifestPath}`, { manifest: manifestPath });
+      throw cause;
+    }
+    try { loaded = { ok: true, value: JSON.parse(receipt.content) }; } catch { loaded = { ok: false, reason: "parse-failed" }; }
+    if (bindings) bindings.manifest = { root: rootAbs, rootBinding, rel: manifestPath, sha256: receipt.sha256, permissionObservation: receipt.permissionObservation };
+  } else loaded = await readOptionalJson(rootAbs, manifestPath);
   if (!loaded.ok) {
     throw invalidManifest(
       loaded.reason === "missing"
@@ -1022,7 +1159,7 @@ export async function loadProjectionManifest(rootAbs, manifestInput) {
       { manifest: manifestPath },
     );
   }
-  return { manifestPath, manifest: validateLocalV1Manifest(loaded.value) };
+  return { manifestPath, manifest: process.platform === "win32" ? validateV3Manifest(loaded.value) : validateLocalV1Manifest(loaded.value) };
 }
 
 function desiredBytes(entry) {
@@ -1031,7 +1168,23 @@ function desiredBytes(entry) {
     : Buffer.from(entry.content.base64, "base64");
 }
 
-async function readRegularState(rootAbs, rel) {
+async function readRegularState(rootAbs, rel, { rootBinding } = {}) {
+  if (process.platform === "win32") {
+    if (!rootBinding) throw new TypeError("Windows projection reads require the original rootBinding");
+    try {
+      const receipt = await readFileBound(rootAbs, rel, { rootBinding });
+      return { state: "file", sha256: receipt.sha256, mode: null, permissionObservation: receipt.permissionObservation,
+        bytes: Buffer.from(receipt.content) };
+    } catch (cause) {
+      if (cause?.details?.boundReadDisposition === "member-policy-violation") {
+        if (cause.details.kind === "missing-resource") return { state: "absent" };
+        if (cause.details.failureReason === "reparse") return { state: "symlink", mode: null };
+        if (cause.details.actual === "directory") return { state: "directory", mode: null };
+        if (cause.details.failureReason === "not-regular") return { state: "special", mode: null };
+      }
+      throw cause;
+    }
+  }
   const target = path.join(rootAbs, rel);
   let st;
   try {
@@ -1051,7 +1204,8 @@ async function readRegularState(rootAbs, rel) {
 
 function publicState(state) {
   return state.state === "file"
-    ? { state: "sha256", value: state.sha256, mode: state.mode }
+    ? { state: "sha256", value: state.sha256, mode: state.mode,
+        ...(state.permissionObservation ? { permissionObservation: state.permissionObservation } : {}) }
     : { state: state.state, value: null, mode: state.mode ?? null };
 }
 
@@ -1059,12 +1213,14 @@ function stateMatchesExpect(state, expect) {
   if (expect.state === "absent") return state.state === "absent";
   return state.state === "file"
     && state.sha256 === expect.value
-    && (expect.mode === undefined || state.mode === expect.mode);
+    && (expect.mode === undefined || state.mode === expect.mode)
+    && (expect.permissionObservation === undefined || isDeepStrictEqual(expect.permissionObservation, state.permissionObservation));
 }
 
 function stateEquals(left, right) {
   return left.state === right.state
-    && (left.state !== "file" || (left.sha256 === right.sha256 && left.mode === right.mode));
+    && (left.state !== "file" || (left.sha256 === right.sha256 && left.mode === right.mode &&
+      isDeepStrictEqual(left.permissionObservation, right.permissionObservation)));
 }
 
 function closureForStates(states) {
@@ -1075,7 +1231,21 @@ function closureForStates(states) {
   return { digestAlgorithm: "sha256", digest: canonicalDigest(resources), resourceCount: resources.length, resources };
 }
 
-async function enumerateCandidate(rootAbs) {
+async function enumerateCandidate(rootAbs, { rootBinding } = {}) {
+  if (process.platform === "win32") {
+    const tree = await observeFilesystemTree({ root: rootAbs, rootBinding });
+    const records = [];
+    for (const member of tree.members) {
+      if (member.type === "directory") continue;
+      const receipt = await readFileBound(rootAbs, member.path, { rootBinding, expectedSha256: member.sha256 });
+      if (!isDeepStrictEqual(receipt.permissionObservation, member.permissionObservation)) throw invalidManifest("candidate permissions changed during bound enumeration", { path: member.path });
+      records.push({ path: member.path, type: "file", mode: null, sha256: receipt.sha256,
+        permissionObservation: receipt.permissionObservation, bytes: Buffer.from(receipt.content) });
+    }
+    if (!isDeepStrictEqual(tree, await observeFilesystemTree({ root: rootAbs, rootBinding }))) throw invalidManifest("candidate tree changed during bound enumeration");
+    assertNoPortableCollisions(records.map(record => record.path), "candidate tree");
+    return records;
+  }
   const records = [];
   async function walk(absDir, relBase) {
     const entries = await readdir(absDir, { withFileTypes: true });
@@ -1102,22 +1272,24 @@ async function enumerateCandidate(rootAbs) {
   return records;
 }
 
-async function verifyCandidateRoot(candidateRoot, targetRoot, manifest) {
+async function verifyCandidateRoot(candidateRoot, targetRoot, manifest, bindings) {
   if (typeof candidateRoot !== "string" || candidateRoot.length === 0) {
     throw invalidManifest("schemaVersion 2 projection requires candidateRoot");
   }
-  const candidateAbs = await realpath(path.resolve(candidateRoot)).catch(() => null);
+  if (process.platform === "win32" && bindings && !bindings.candidate) bindings.candidate = await createFilesystemRootBinding(path.resolve(candidateRoot));
+  const candidateReal = await realpath(path.resolve(candidateRoot)).catch(() => null);
+  const candidateAbs = candidateReal && process.platform === "win32" ? candidateReal.replaceAll("\\", "/") : candidateReal;
   if (!candidateAbs) throw invalidManifest("candidateRoot does not exist", { candidateRoot });
   const st = await stat(candidateAbs);
   if (!st.isDirectory()) throw invalidManifest("candidateRoot must be a directory", { candidateRoot });
   const targetReal = await realpath(targetRoot);
   const candidateFromTarget = path.relative(targetReal, candidateAbs);
   const targetFromCandidate = path.relative(candidateAbs, targetReal);
-  if (candidateFromTarget === "" || !candidateFromTarget.startsWith("..") || !targetFromCandidate.startsWith("..")) {
+  if (candidateFromTarget === "" || (!candidateFromTarget.startsWith("..") && !path.isAbsolute(candidateFromTarget)) || (!targetFromCandidate.startsWith("..") && !path.isAbsolute(targetFromCandidate))) {
     throw invalidManifest("candidateRoot must be external to the target", { candidateRoot: candidateAbs });
   }
 
-  const actual = await enumerateCandidate(candidateAbs);
+  const actual = await enumerateCandidate(candidateAbs, { rootBinding: bindings?.candidate });
   const declared = new Map(manifest.candidate.members.map((member) => [normalizeRelPath(member.path), member]));
   if (actual.length !== declared.size) {
     throw invalidManifest("candidate tree member count differs from candidate.members", {
@@ -1130,7 +1302,8 @@ async function verifyCandidateRoot(candidateRoot, targetRoot, manifest) {
     if (member.sha256 !== record.sha256) {
       throw invalidManifest("candidate member digest mismatch", { path: record.path, expected: member.sha256, actual: record.sha256 });
     }
-    if (member.mode !== undefined && member.mode !== record.mode) {
+    if ((member.mode !== undefined && member.mode !== record.mode) ||
+        (manifest.platform === "win32" && !isDeepStrictEqual(member.permissionObservation, record.permissionObservation))) {
       throw invalidManifest("candidate member mode mismatch", { path: record.path, expected: member.mode, actual: record.mode });
     }
   }
@@ -1140,7 +1313,9 @@ async function verifyCandidateRoot(candidateRoot, targetRoot, manifest) {
     }
   }
   const byPath = new Map(actual.map((record) => [record.path, record]));
-  const resources = actual.map(({ path: rel, sha256, mode }) => ({ path: rel, sha256, mode }));
+  const resources = actual.map(({ path: rel, sha256, mode, permissionObservation }) => ({ path: rel,
+    ...(manifest.platform === "win32" ? { type: "file" } : {}), sha256, mode,
+    ...(manifest.platform === "win32" ? { permissionObservation } : {}) }));
   return {
     rootAbs: candidateAbs,
     byPath,
@@ -1410,6 +1585,194 @@ async function runProjectionV2({ rootAbs, facts, manifestPath, manifest, externa
   };
 }
 
+async function verifyWindowsProjectionInputs({ rootAbs, manifest, candidateRoot, preparedProjection, bindings, candidate }) {
+  if (bindings.manifest) {
+    const input = bindings.manifest;
+    const current = await readFileBound(input.root, input.rel, { rootBinding: input.rootBinding, expectedSha256: input.sha256 });
+    if (!isDeepStrictEqual(current.permissionObservation, input.permissionObservation)) throw invalidManifest("projection manifest permissions changed");
+  }
+  if (candidate?.rootAbs) await verifyCandidateRoot(candidateRoot ?? candidate.rootAbs, rootAbs, manifest, bindings);
+  if (preparedProjection) await verifyPreparedAuthority(rootAbs, preparedProjection, candidate?.rootAbs ?? null, bindings);
+}
+
+async function runProjectionV3({ rootAbs, facts, manifestPath, manifest, externalManifest, candidateRoot, faultInjector,
+  verifiedCandidate, preparedProjection, lockedStates, bindings, runtime, rootOutputs, byteCandidate }) {
+  const candidate = byteCandidate ?? verifiedCandidate ?? (manifest.candidate
+    ? await verifyCandidateRoot(candidateRoot, rootAbs, manifest, bindings) : null);
+  const rawOperations = manifest.operations ?? manifest.entries.map(entry => ({ operation: "write", path: entry.path,
+    owner: { kind: OWNER_KIND, id: KIT_TOOL_NAME }, expect: entry.expect, content: entry.content }));
+  const actions = [];
+  const refusals = [];
+  for (const [index, operation] of rawOperations.entries()) {
+    const rel = validatePlanPath(operation.path, "projection operation path", "win32");
+    const rejection = await validateTargetPath({ rawPath: rel, facts, manifestPath, rootAbs, externalManifest, owner: manifest.operations ? operation.owner : undefined });
+    if (rejection) { refusals.push(rejection); continue; }
+    const before = await readRegularState(rootAbs, rel, { rootBinding: bindings.target });
+    if (!["file", "absent"].includes(before.state)) {
+      refusals.push({ path: rel, kind: before.state === "symlink" ? KIT_ERROR_KINDS.SYMLINK_ON_PLANNED_PATH : KIT_ERROR_KINDS.TYPE_CONFLICT, code: "SFC2004", detail: `a ${before.state} occupies the planned path` });
+      continue;
+    }
+    const source = operation.operation === "write" ? normalizeRelPath(operation.source ?? rel) : null;
+    const record = source === null ? null : candidate?.byPath.get(source);
+    const bytes = operation.operation === "write" ? (record?.bytes ?? desiredBytes(operation)) : null;
+    const sha256 = bytes === null ? null : digestBytes(bytes);
+    if (operation.expect ? !stateMatchesExpect(before, operation.expect) : before.state === "file" && before.sha256 !== sha256) {
+      refusals.push({ path: rel, kind: KIT_ERROR_KINDS.CONFLICT_DRIFT, code: "SFC2004", detail: "target differs from the declared prior state" });
+      continue;
+    }
+    actions.push({ index, rel, operation, before, source, bytes, sha256,
+      changed: operation.operation === "delete" || before.state !== "file" || before.sha256 !== sha256,
+      publicOperation: { operation: operation.operation, path: rel, source, owner: operation.owner,
+        expect: operation.expect ?? (before.state === "file" ? publicState(before) : { state: "absent" }) } });
+  }
+  if (refusals.length) throw refusalError(refusals, "projection refused before directory preparation", { manifest: manifestPath });
+  const rootSet = new Set(rootOutputs ?? manifest.rootOutputs ?? []);
+  actions.sort((a, b) => Number(rootSet.has(a.rel)) - Number(rootSet.has(b.rel)) || a.index - b.index);
+  actions.forEach((action, executionIndex) => { action.executionIndex = executionIndex; });
+  const beforeStates = new Map(actions.map(action => [action.rel, action.before]));
+  const expectedStates = new Map(beforeStates);
+  const originalLocked = lockedStates ? new Map(lockedStates) : null;
+  const liveLocked = lockedStates ? new Map(lockedStates) : null;
+  const inputContext = { rootAbs, manifest, candidateRoot, preparedProjection, bindings, candidate };
+  const verifyInputs = async () => {
+    await verifyWindowsProjectionInputs(inputContext);
+    if (liveLocked) await verifyEngineeringStates(rootAbs, liveLocked, bindings);
+  };
+  const verifyStates = async (expected) => {
+    for (const [rel, state] of expected) {
+      if (!stateEquals(await readRegularState(rootAbs, rel, { rootBinding: bindings.target }), state)) {
+        throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `projection closure drifted at ${rel}`, { path: rel });
+      }
+    }
+  };
+  await verifyInputs();
+  await verifyStates(beforeStates);
+  const recoveryRequest = { root: rootAbs, rootBinding: bindings.target, recoveryRelPath: ".foundation-file-apply",
+    environment: { filesystem: "ntfs", cooperativeWriters: true } };
+  const admission = await inspectFileSetRecovery(recoveryRequest);
+  if (admission.status === "refused") throw kitError(KIT_ERROR_KINDS.PROJECTION_WRITE_FAILED,
+    admission.error.message, { cause: admission.error, completed: [], rollback: { status: "NOT_NEEDED", attempted: false },
+      zeroWriteSuccess: true, fileSet: null, directoryPreparation: { materialRoot: null, businessParents: null }, directoryCleanup: null });
+  const changed = actions.filter(action => action.changed);
+  let fileSet = null;
+  const directoryPreparation = { materialRoot: null, businessParents: null };
+  let directoryCleanup = null;
+  const completed = [];
+  let domainCause = null;
+  let operationCause = null;
+  if (changed.length) {
+    try {
+      directoryPreparation.materialRoot = await createPrivateMaterialDirectory(rootAbs, ".foundation-file-apply", { rootBinding: bindings.target });
+      if (directoryPreparation.materialRoot.status !== "succeeded") throw new Error(directoryPreparation.materialRoot.error?.message ?? "material root preparation failed");
+      directoryPreparation.businessParents = await prepareFileSetParents({ root: rootAbs, rootBinding: bindings.target, paths: changed.map(action => action.rel) });
+      if (directoryPreparation.businessParents.status !== "succeeded") throw new Error(directoryPreparation.businessParents.error?.message ?? "business parent preparation failed");
+      await verifyInputs();
+      await verifyStates(beforeStates);
+      const operations = changed.map(action => {
+        const present = action.before.state === "file";
+        const kind = action.operation.operation === "delete" ? "delete" : present ? "replace" : "create";
+        return { path: action.rel, action: kind, expected: present ? {
+          exists: true, sha256: action.before.sha256, size: action.before.bytes.length, permissions: action.before.permissionObservation,
+        } : { exists: false }, next: kind === "delete" ? null : {
+          sha256: action.sha256, size: action.bytes.length, permissions: { kind: present ? "windows-preserve" : "windows-inherited" }, bytes: action.bytes,
+        } };
+      });
+      const guarded = async callback => {
+        try { return await callback(); } catch (cause) { domainCause ??= cause; throw cause; }
+      };
+      fileSet = await applyFileSet({ schemaVersion: 2, kind: "skill-family.file-set-apply-request", operationId: runtime.operationId,
+        ...recoveryRequest, allowAdjacentStaging: true, validationTimeoutMs: runtime.validationTimeoutMs, operations }, {
+        beforeMutation: context => guarded(async () => {
+          const action = changed[context.index];
+          await verifyInputs();
+          await invokeFault(faultInjector, "beforeMutation", { index: action.executionIndex, operation: action.publicOperation });
+          await verifyInputs();
+          await verifyStates(expectedStates);
+        }),
+        afterMutation: context => guarded(async () => {
+          const action = changed[context.index];
+          const state = await readRegularState(rootAbs, action.rel, { rootBinding: bindings.target });
+          if (action.operation.operation === "delete" ? state.state !== "absent" : state.state !== "file" || state.sha256 !== action.sha256 ||
+              (action.before.state === "file" && !isDeepStrictEqual(state.permissionObservation, action.before.permissionObservation))) {
+            throw kitError(KIT_ERROR_KINDS.PROJECTION_WRITE_FAILED, `post-mutation verification failed for ${action.rel}`);
+          }
+          expectedStates.set(action.rel, state);
+          if (liveLocked) liveLocked.set(action.rel, state);
+          completed.push(action.rel);
+          await invokeFault(faultInjector, "afterMutation", { index: action.executionIndex, operation: action.publicOperation });
+          await verifyInputs();
+        }),
+        validate: () => guarded(async () => {
+          await verifyInputs();
+          await verifyStates(expectedStates);
+          return { passed: true };
+        }),
+      });
+      if (fileSet.outcome !== "committed" || fileSet.errors.length) {
+        const first = fileSet.errors[0];
+        const useDomain = domainCause && first && ["apply-failed", "validation-failed", "validation-incomplete"].includes(first.details.kind);
+        operationCause = useDomain ? domainCause : first ?? kitError(KIT_ERROR_KINDS.PROJECTION_WRITE_FAILED,
+          `file-set outcome ${fileSet.outcome}`);
+      }
+    } catch (cause) { operationCause = cause; }
+  }
+  // No-op still verifies all original inputs and states after read-only admission.
+  if (!operationCause) {
+    try { await verifyInputs(); await verifyStates(expectedStates); } catch (cause) { operationCause = cause; }
+  }
+  if (operationCause) {
+    const committed = fileSet?.outcome === "committed";
+    const confirmedRestore = fileSet?.outcome === "rolled-back" && fileSet.recovery.status === "complete";
+    const safeWithoutApply = fileSet === null || (fileSet.outcome === "rejected" && fileSet.businessWrite === "none");
+    const differences = [];
+    const failures = [];
+    if (!committed) {
+      for (const [rel, state] of beforeStates) {
+        try { if (!stateEquals(await readRegularState(rootAbs, rel, { rootBinding: bindings.target }), state)) differences.push(rel); }
+        catch (cause) { failures.push({ path: rel, message: cause.message }); }
+      }
+      try {
+        await verifyWindowsProjectionInputs(inputContext);
+        if (originalLocked) await verifyEngineeringStates(rootAbs, originalLocked, bindings);
+      } catch (cause) { failures.push({ path: null, message: cause.message }); }
+      if ((safeWithoutApply || confirmedRestore) && directoryPreparation.businessParents?.created.length) {
+        directoryCleanup = await removePreparedFileSetParents({ root: rootAbs, rootBinding: bindings.target,
+          directories: directoryPreparation.businessParents.created });
+      }
+    }
+    const noMutation = fileSet === null && [directoryPreparation.materialRoot, directoryPreparation.businessParents].every(result =>
+      result === null || (result.created.length === 0 && result.unconfirmed.length === 0));
+    const restored = !committed && (safeWithoutApply || confirmedRestore) && differences.length === 0 && failures.length === 0 &&
+      (!directoryCleanup || directoryCleanup.status === "succeeded") &&
+      [directoryPreparation.materialRoot, directoryPreparation.businessParents].every(result => result === null || result.unconfirmed.length === 0);
+    throw kitError(KIT_ERROR_KINDS.PROJECTION_WRITE_FAILED, `projection failed: ${operationCause.message}`, {
+      cause: { code: operationCause.code ?? null, kind: operationCause.details?.kind ?? null, message: operationCause.message },
+      completed, rollback: { status: committed ? "NOT_NEEDED" : restored ? "RESTORED" : "FAILED", attempted: Boolean(fileSet?.recovery.attempted),
+        restored: fileSet?.paths.filter(item => item.restore === "restored").map(item => item.path) ?? [], differences, failures, zeroWriteSuccess: noMutation && restored },
+      zeroWriteSuccess: noMutation && restored, fileSet, directoryPreparation, directoryCleanup,
+    });
+  }
+  const afterStates = new Map(expectedStates);
+  const orderedOperations = actions.map(action => ({ executionIndex: action.executionIndex, declaredIndex: action.index,
+    ...action.publicOperation, before: publicState(action.before), after: publicState(afterStates.get(action.rel)) }));
+  const candidateClosure = candidate?.closure ?? canonicalPlanClosure(actions.map(action => ({ path: action.rel, type: "file", sha256: action.sha256, mode: null })), "inline byte candidate");
+  return { kind: "skill-family.projection-receipt", schemaVersion: 3, platform: "win32", generatedBy: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
+    manifest: { location: manifestPath, sha256: canonicalDigest(manifest), external: externalManifest },
+    candidate: { root: candidate?.rootAbs ?? null, closure: candidateClosure }, operations: orderedOperations,
+    written: actions.filter(action => action.changed && action.operation.operation === "write").map(action => ({ path: action.rel,
+      sha256: action.sha256, mode: null, permissionObservation: afterStates.get(action.rel).permissionObservation, source: action.source })),
+    deleted: actions.filter(action => action.operation.operation === "delete").map(action => ({ path: action.rel,
+      priorSha256: action.before.sha256, priorMode: null, priorPermissionObservation: action.before.permissionObservation })),
+    unchanged: actions.filter(action => !action.changed).map(action => ({ path: action.rel, sha256: action.sha256,
+      mode: null, permissionObservation: action.before.permissionObservation })),
+    rootOutputs: [...rootSet].map(rel => ({ path: rel, after: publicState(afterStates.get(rel)) })),
+    closures: { before: closureForStates(beforeStates), candidate: candidateClosure,
+      operations: { digestAlgorithm: "sha256", digest: canonicalDigest(orderedOperations), operationCount: orderedOperations.length }, after: closureForStates(afterStates) },
+    rollback: { status: "NOT_NEEDED", attempted: false, zeroWriteSuccess: null }, fileSet,
+    policy: "projection mutated only explicitly owned managed paths and committed declared root outputs last",
+  };
+}
+
 async function validateV1Entry({ rawPath, facts, manifestPath, rootAbs }) {
   const rejection = await validateTargetPath({ rawPath, facts, manifestPath, rootAbs, externalManifest: false });
   if (rejection) return rejection;
@@ -1520,8 +1883,13 @@ async function runProjectionV1({ rootAbs, facts, manifestPath, manifest }) {
   };
 }
 
-async function readEngineeringState(rootAbs, rel) {
-  validatePlanPath(rel, "engineering target path");
+async function readEngineeringState(rootAbs, rel, bindings) {
+  validatePlanPath(rel, "engineering target path", process.platform === "win32" ? "win32" : undefined);
+  if (process.platform === "win32") {
+    const state = await readRegularState(rootAbs, rel, { rootBinding: bindings.target });
+    if (state.state !== "file") throw invalidManifest("engineering input must be a regular file", { path: rel });
+    return state;
+  }
   await resolveContained(rootAbs, rel);
   const receipt = await readFileStrict(rootAbs, rel);
   const state = await readRegularState(rootAbs, rel);
@@ -1531,9 +1899,9 @@ async function readEngineeringState(rootAbs, rel) {
   return state;
 }
 
-async function verifyEngineeringStates(rootAbs, states) {
+async function verifyEngineeringStates(rootAbs, states, bindings) {
   for (const [rel, expected] of states) {
-    if (!stateEquals(await readEngineeringState(rootAbs, rel), expected)) {
+    if (!stateEquals(await readEngineeringState(rootAbs, rel, bindings), expected)) {
       throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering update refuses drifted input ${rel}`, { path: rel });
     }
   }
@@ -1547,11 +1915,11 @@ function validateEngineeringDocument(document, objectName) {
   }
 }
 
-async function projectEngineering(rootAbs, engineering, faultInjector) {
+async function projectEngineering(rootAbs, engineering, faultInjector, bindings, runtime) {
   if ((await lstat(rootAbs)).isSymbolicLink()) throw invalidManifest("engineering update requires an ordinary target root");
   const lockedStates = new Map();
   for (const rel of [".foundation/file-registry.json", PROJECT_MANIFEST_PATH, MANAGED_LOCK_PATH]) {
-    lockedStates.set(rel, await readEngineeringState(rootAbs, rel));
+    lockedStates.set(rel, await readEngineeringState(rootAbs, rel, bindings));
   }
   const currentManifest = JSON.parse(lockedStates.get(PROJECT_MANIFEST_PATH).bytes.toString("utf8"));
   const currentLock = JSON.parse(lockedStates.get(MANAGED_LOCK_PATH).bytes.toString("utf8"));
@@ -1559,7 +1927,7 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
   validateEngineeringDocument(currentLock, "managed-file-lock");
   const baseManifest = { ...currentManifest, engineering };
   validateEngineeringDocument(baseManifest, "project-manifest");
-  const facts = await loadTargetFacts(rootAbs);
+  const facts = await loadTargetFacts(rootAbs, bindings ? { rootBinding: bindings.target } : undefined);
   const classes = facts.fileRegistry?.classes;
   const declared = new Set([
     ...(Array.isArray(classes?.managed) ? classes.managed : []),
@@ -1583,7 +1951,7 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
     if (entry.path === MANAGED_LOCK_PATH || lockedPaths.has(entry.path) || !declared.has(entry.path)) {
       throw invalidManifest("engineering update refuses an unowned or duplicate lock entry", { path: entry.path });
     }
-    const state = await readEngineeringState(rootAbs, entry.path);
+    const state = await readEngineeringState(rootAbs, entry.path, bindings);
     if (state.sha256 !== entry.hash.value) {
       throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering update refuses drifted managed bytes ${entry.path}`, { path: entry.path });
     }
@@ -1591,7 +1959,7 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
     lockedStates.set(entry.path, state);
   }
   for (const rel of new Set([...declared, ...(currentManifest.managedFiles ?? [])])) {
-    validatePlanPath(rel, "managed declaration");
+    validatePlanPath(rel, "managed declaration", bindings ? "win32" : undefined);
     if (rel !== MANAGED_LOCK_PATH && !lockedPaths.has(rel)) throw invalidManifest("engineering update refuses an unlocked managed declaration", { path: rel });
   }
   const manifestEntry = currentLock.entries.find(entry => entry.path === PROJECT_MANIFEST_PATH);
@@ -1601,7 +1969,7 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
     ...(engineering.releaseUnits ?? []).flatMap(unit => [unit.versionSource.path, ...(unit.versionMirrors ?? []).map(mirror => mirror.path)]),
   ];
   for (const rel of references) {
-    const state = await readEngineeringState(rootAbs, rel);
+    const state = await readEngineeringState(rootAbs, rel, bindings);
     const original = lockedStates.get(rel);
     if (original && !stateEquals(state, original)) {
       throw kitError(KIT_ERROR_KINDS.CONFLICT_DRIFT, `engineering reference drifted from its original snapshot ${rel}`, { path: rel });
@@ -1615,6 +1983,15 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
     [PROJECT_MANIFEST_PATH, manifestBytes],
     [MANAGED_LOCK_PATH, Buffer.from(`${JSON.stringify(desiredLock, null, 2)}\n`)],
   ].map(([rel, bytes]) => [rel, { path: rel, bytes, sha256: digestBytes(bytes), mode: lockedStates.get(rel).mode }]));
+  if (bindings) {
+    const members = [...byPath.values()].map(({ path: rel, sha256 }) => ({ path: rel, type: "file", sha256, mode: null }));
+    const manifest = { kind: V2_KIND, schemaVersion: 3, platform: "win32",
+      entries: [...byPath.values()].map(record => ({ path: record.path, content: { base64: record.bytes.toString("base64") }, expect: publicState(lockedStates.get(record.path)) })) };
+    await verifyEngineeringStates(rootAbs, lockedStates, bindings);
+    return runProjectionV3({ rootAbs, facts, manifestPath: null, manifest, externalManifest: false, faultInjector,
+      lockedStates, bindings, runtime, rootOutputs: [MANAGED_LOCK_PATH], byteCandidate: {
+        rootAbs: null, byPath, closure: canonicalPlanClosure(members, "engineering byte candidate") } });
+  }
   const manifest = {
     kind: V2_KIND, schemaVersion: 2,
     candidate: { members: [...byPath.values()].map(({ path: rel, sha256, mode }) => ({ path: rel, sha256, mode })) },
@@ -1628,28 +2005,47 @@ async function projectEngineering(rootAbs, engineering, faultInjector) {
 }
 
 /** Runs one backward-compatible projection transaction. */
-export async function runProjection({ root, manifest: manifestInput, candidateRoot, faultInjector, preparedProjection, engineering } = {}) {
+export async function runProjection(options = {}) {
+  const { root, manifest: manifestInput, candidateRoot, faultInjector, preparedProjection, engineering,
+    operationId, validationTimeoutMs, cooperativeWriters } = options;
+  const runtimeKeys = ["operationId", "validationTimeoutMs", "cooperativeWriters"];
+  if (process.platform === "win32") {
+    if (!runtimeKeys.every(key => Object.hasOwn(options, key)) || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u.test(operationId ?? "") ||
+        !Number.isSafeInteger(validationTimeoutMs) || validationTimeoutMs < 1 || validationTimeoutMs > 2147483647 || cooperativeWriters !== true) {
+      throw invalidManifest("Windows projection requires explicit operationId, validationTimeoutMs and cooperativeWriters=true");
+    }
+  } else if (runtimeKeys.some(key => Object.hasOwn(options, key))) throw invalidManifest("Windows projection runtime parameters are not accepted on POSIX");
   if (engineering !== undefined && (manifestInput !== undefined || candidateRoot !== undefined || preparedProjection !== undefined)) {
     throw invalidManifest("engineering cannot be combined with manifest, candidateRoot or preparedProjection");
   }
-  const rootAbs = await resolveTargetRoot(root ?? ".");
-  if (engineering !== undefined) return projectEngineering(rootAbs, engineering, faultInjector);
+  const requestedRoot = await resolveTargetRoot(root ?? ".");
+  const bindings = process.platform === "win32" ? { target: await createFilesystemRootBinding(requestedRoot) } : undefined;
+  const rootAbs = bindings ? (await realpath(requestedRoot)).replaceAll("\\", "/") : requestedRoot;
+  const runtime = { operationId, validationTimeoutMs, cooperativeWriters };
+  if (engineering !== undefined) return projectEngineering(rootAbs, engineering, faultInjector, bindings, runtime);
   let facts;
   let loaded;
   let verifiedCandidate;
   let canonicalPrepared;
   if (preparedProjection === undefined) {
-    facts = await loadTargetFacts(rootAbs);
-    loaded = await loadProjectionManifest(rootAbs, manifestInput);
+    facts = await loadTargetFacts(rootAbs, bindings ? { rootBinding: bindings.target } : undefined);
+    loaded = await loadProjectionManifest(rootAbs, manifestInput, bindings);
   } else {
-    loaded = await loadProjectionManifest(rootAbs, manifestInput);
+    loaded = await loadProjectionManifest(rootAbs, manifestInput, bindings);
     ({ facts, candidate: verifiedCandidate, prepared: canonicalPrepared } = await validatePreparedProjection({
       prepared: preparedProjection,
       rootAbs,
       loaded,
       candidateRoot,
+      bindings,
     }));
   }
+  if (bindings) {
+    if (loaded.manifest.schemaVersion !== 3 || loaded.manifest.platform !== "win32") throw invalidManifest("Windows projection requires manifest v3/platform win32");
+    return runProjectionV3({ rootAbs, facts, manifestPath: loaded.manifestPath, manifest: loaded.manifest,
+      externalManifest: loaded.external, candidateRoot, faultInjector, verifiedCandidate, preparedProjection: canonicalPrepared, bindings, runtime });
+  }
+  if (loaded.manifest.schemaVersion === 3) throw invalidManifest("Windows manifest v3 is not accepted on POSIX");
   if (loaded.manifest.schemaVersion === 1) {
     if (candidateRoot !== undefined || faultInjector !== undefined || preparedProjection !== undefined || loaded.external) {
       if (loaded.external) throw invalidManifest("schemaVersion 1 manifest must remain target-local");

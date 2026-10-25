@@ -1,10 +1,92 @@
-import { lstat, readdir, stat } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 import { isMap, isScalar, isSeq, parseDocument } from "yaml";
 import {
   createFilesystemRootBinding,
+  createPrivateMaterialDirectory as createBoundPrivateMaterialDirectory,
   readFileBound,
+  resolveWindowsExplicitCommand,
+  resolveWindowsPackageShim,
 } from "skill-family-harness-node";
+
+export { resolveWindowsExplicitCommand, resolveWindowsPackageShim };
+
+export async function windowsLaunchFromPath(absolutePath) {
+  if (typeof absolutePath !== "string" || !path.win32.isAbsolute(absolutePath)) throw new TypeError("Windows launch requires an absolute path");
+  const directory = path.dirname(absolutePath);
+  const base = path.basename(absolutePath);
+  const manager = /^(npm|pnpm)\.cmd$/iu.exec(base);
+  if (manager) {
+    const name = manager[1].toLowerCase();
+    const shimStats = await lstat(absolutePath);
+    if (!shimStats.isFile() || shimStats.isSymbolicLink() || shimStats.nlink !== 1) throw new TypeError("Windows package manager shim is not an ordinary single-link file");
+    const localBin = path.basename(directory).toLowerCase() === ".bin" && path.basename(path.dirname(directory)).toLowerCase() === "node_modules";
+    const packageLocation = localBin ? path.join(path.dirname(directory), name) : path.join(directory, "node_modules", name);
+    const packageRoot = await realpath(packageLocation);
+    const packageIdentity = await stat(packageRoot, { bigint: true });
+    const packageJson = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(await readFile(packageJson, "utf8"));
+    const expected = name === "npm" ? "bin/npm-cli.js" : "bin/pnpm.cjs";
+    const declared = typeof manifest.bin === "string" ? manifest.bin : manifest.bin?.[name];
+    if (manifest.name !== name || typeof manifest.version !== "string" || declared?.replace(/^\.\//u, "") !== expected) {
+      throw new TypeError("Windows package manager package entry does not match its shim");
+    }
+    const target = (localBin ? `..\\${name}` : `node_modules\\${name}`) + `\\${expected.replaceAll("/", "\\")}`;
+    const generatedShim = `@ECHO off
+GOTO start
+:find_dp0
+SET dp0=%~dp0
+EXIT /b
+:start
+SETLOCAL
+CALL :find_dp0
+
+IF EXIST "%dp0%\\node.exe" (
+  SET "_prog=%dp0%\\node.exe"
+) ELSE (
+  SET "_prog=node"
+  SET PATHEXT=%PATHEXT:;.JS;=;%
+)
+
+endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\${target}" %*
+`;
+    const selectedShim = (await readFile(absolutePath, "utf8")).replaceAll("\r\n", "\n");
+    const packagedShim = name === "npm" && !localBin
+      ? (await readFile(path.join(packageRoot, "bin/npm.cmd"), "utf8")).replaceAll("\r\n", "\n")
+      : null;
+    if (selectedShim !== generatedShim && selectedShim !== packagedShim) throw new TypeError("Windows package manager shim does not belong to its selected installation");
+    const script = path.join(packageRoot, ...expected.split("/"));
+    const stats = await lstat(script);
+    if (!stats.isFile() || stats.isSymbolicLink() || stats.nlink !== 1) throw new TypeError("Windows package manager script is not an ordinary single-link file");
+    const packageAfter = await stat(packageRoot, { bigint: true });
+    if (!packageIdentity.isDirectory() || packageAfter.dev !== packageIdentity.dev || packageAfter.ino !== packageIdentity.ino ||
+        packageAfter.mode !== packageIdentity.mode || await realpath(packageLocation) !== packageRoot) throw new TypeError("Windows package manager installation changed during lookup");
+    return Object.freeze({ command: process.execPath, argvPrefix: Object.freeze([script]) });
+  }
+  if (/\.(?:cmd|bat)$/iu.test(base)) throw new TypeError("Windows generic launch refuses cmd and bat shims");
+  if (/\.(?:js|mjs|cjs)$/iu.test(base)) return Object.freeze({ command: process.execPath, argvPrefix: Object.freeze([absolutePath]) });
+  const names = await readdir(directory);
+  const resolved = resolveWindowsExplicitCommand(base, names);
+  if (resolved === null) throw new TypeError("Windows command did not resolve inside the executable directory");
+  return Object.freeze({ command: path.join(directory, resolved), argvPrefix: Object.freeze([]) });
+}
+
+// These are task-owned private mechanism materials. The lockstep Kit uses the
+// same packaged native implementation as Harness; it does not reproduce DACLs.
+export async function createPrivateMaterialDirectory(directory, options = {}) {
+  if (process.platform !== "win32") return mkdir(directory, options);
+  const parent = path.dirname(directory);
+  const rootBinding = await createFilesystemRootBinding(parent);
+  const result = await createBoundPrivateMaterialDirectory(parent, path.basename(directory), { rootBinding });
+  if (result.status !== "succeeded" || result.existing.length) {
+    const error = new Error(result.error?.message ?? "private directory already exists");
+    error.code = result.status === "succeeded" && result.existing.length ? "EEXIST" : "EIO";
+    error.directoryPreparation = result;
+    throw error;
+  }
+}
+
 import { bundledHostProfilesRoot, describeHost } from "./host-profiles.mjs";
 import {
   matchNativeHost,
