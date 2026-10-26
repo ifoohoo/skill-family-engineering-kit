@@ -4,27 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.28.0 -->
+<!-- release-skill:release-version: 0.29.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.28.0** (2026-10-24)
+**0.29.0** (2026-10-26)
 
-Engineering Kit 0.28.0 retains the four top-level commands and introduces Windows projection, package entry handling, and bounded WorkBuddy session permission input.
-
-**Added**
-
-- Windows uses projection-plan v2, projection-manifest v3, and projection-receipt v3. runProjection requires explicit operationId (lowercase UUID v4), validationTimeoutMs (integer milliseconds), and cooperativeWriters=true. The target root binding is captured internally, not supplied by the caller.
+Engineering Kit 0.29.0 advances in lockstep with the initialization Plugin, retaining the four top-level commands without new public APIs.
 
 **Changed**
 
-- Projection creates authorized parent directories safely, applies files once through applyFileSet v2, and keeps recovery materials classified by the public read-only inspector. Standard npm.cmd and pnpm.cmd entries are bound to the selected real installation.
-- The WorkBuddy driver accepts its exact supported Node launcher form and an optional declared workbuddy-settings.local.json fixture for the current session. This remains the selected manual WorkBuddy path, not automatic support for every host.
+- Version alignment only; scaffold, adopt-plan, projection, and check retain their existing contracts.
 
 **Upgrade Notes**
 
-Pin all four units to 0.28.0 and follow the Windows API arguments instead of replaying old Windows projection documents. POSIX projection inputs and defaults remain unchanged. Use independent-file package import on Windows. DocRender generation migration is designed but not implemented in its consumer; this release does not claim that migration is complete.
+Pin all four release units to exactly 0.29.0. This version does not add a command or change existing mechanism boundaries.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -67,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.28.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.29.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -75,21 +70,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.28.0.tgz" "$pack_dir/skill-family-harness-node-0.28.0.tgz" "$pack_dir/skill-family-engineering-kit-0.28.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.29.0.tgz" "$pack_dir/skill-family-harness-node-0.29.0.tgz" "$pack_dir/skill-family-engineering-kit-0.29.0.tgz")
 ```
 
-The registry installation below requires exact version 0.28.0 to be formally available:
+The registry installation below requires exact version 0.29.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.28.0
-npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.29.0
+npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.28.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 

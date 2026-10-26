@@ -1,0 +1,15 @@
+version: 0.29.0
+date: 2026-10-26
+locales:
+  en:
+    summary: Engineering Kit 0.29.0 advances in lockstep with the initialization Plugin, retaining the four top-level commands without new public APIs.
+    changes:
+      changed:
+        - Version alignment only; scaffold, adopt-plan, projection, and check retain their existing contracts.
+    upgradeNotes: Pin all four release units to exactly 0.29.0. This version does not add a command or change existing mechanism boundaries.
+  zh-CN:
+    summary: 0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+    changes:
+      changed:
+        - 0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+    upgradeNotes: 四个发布单元须锁步采用0.29.0。无功能变更，仅版本锁步，不影响现有命令使用。

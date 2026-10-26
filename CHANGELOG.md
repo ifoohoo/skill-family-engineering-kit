@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.29.0 locale=en baseline=sha256:9b104f2a7781547c08c6ad26d8e0e51990625dcf6a7bef807973e53251780247 -->
+## [0.29.0] - 2026-10-26
+
+Engineering Kit 0.29.0 advances in lockstep with the initialization Plugin, retaining the four top-level commands without new public APIs.
+
+### Changed
+
+- Version alignment only; scaffold, adopt-plan, projection, and check retain their existing contracts.
+
+### Upgrade Notes
+
+Pin all four release units to exactly 0.29.0. This version does not add a command or change existing mechanism boundaries.
+<!-- release-skill:changelog:end version=0.29.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.28.0 locale=en baseline=sha256:f59cb340fed6a8bf6f2f6336661fa232f961a07c38fca4272ac89851016a2943 -->
 ## [0.28.0] - 2026-10-24
 

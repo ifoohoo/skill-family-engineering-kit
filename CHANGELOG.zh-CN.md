@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.29.0 locale=zh-CN baseline=sha256:27c2f885db1194d37d3fa6eb8f045229819ede167874f70f7854bd79b772d8eb -->
+## [0.29.0] - 2026-10-26
+
+0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+
+### 变更
+
+- 0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+
+### 升级说明
+
+四个发布单元须锁步采用0.29.0。无功能变更，仅版本锁步，不影响现有命令使用。
+<!-- release-skill:changelog:end version=0.29.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.28.0 locale=zh-CN baseline=sha256:1a2b8842ac6d657e0ab2239b132a5f5bb3e5d4a17ecca129f9a1c45f6488b804 -->
 ## [0.28.0] - 2026-10-24
 
