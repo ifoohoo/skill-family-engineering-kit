@@ -1192,7 +1192,8 @@
     "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元",
     "需要读取一份本族专业证明并得到 pass、not_pass 或 unavailable",
     "需要把 Skill 审阅 JSON 投影成排他专业结论",
-    "需要重新读取已选固定文件引用及其目标，不执行目标内容"
+    "需要重新读取已选固定文件引用及其目标，不执行目标内容",
+    "需要实际核对明确给定文档的已采用 Schema 与可信文件字节基准"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1204,23 +1205,27 @@
     "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
     "proof 读取输入：--proof-root 与根内 --proof",
     "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output",
-    "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；仅支持固定 ASCII 相对路径"
+    "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；仅支持固定 ASCII 相对路径",
+    "0.31.0 候选 runSelectedArtifactCheck({root, artifacts})；每项 path，至少选择 schema:{path,dialect} 或 baseline:{sha256,version?}；CLI check selected-artifacts --root <dir> --selection <rel> --json"
    ],
    "outputs": [
     "发现清单；退出码 findings=1、mechanism=2",
     "runCommand check 与 checkEntriesAction 包装入口在显式提供输出根与相对路径时返回可选局部 ENGINEERING_* 结论路径",
     "proof 读取返回 status 为 pass、not_pass 或 unavailable，对应退出 0、1、2",
     "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1",
-    "固定引用返回既有 professional-conclusion；全部完成为 ENGINEERING_CLEAR，否则 ENGINEERING_CHECK_INCOMPLETE；保留每项原输入与读取回执"
+    "固定引用返回既有 professional-conclusion；全部完成为 ENGINEERING_CLEAR，否则 ENGINEERING_CHECK_INCOMPLETE；保留每项原输入与读取回执",
+    "选集返回原 professional-conclusion，保留实际来源和闭包；所有选定子检查完成且无发现才 complete/ENGINEERING_CLEAR，发现可与 partial 并存，全部不足为 not-performed"
    ],
    "sideEffects": [
     "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
     "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖",
-    "runStaticReferenceCheck 不写文件、不启动进程、不联网"
+    "runStaticReferenceCheck 不写文件、不启动进程、不联网",
+    "runSelectedArtifactCheck 与其 CLI 只读，不扫描整树、不执行目标、不联网、不写文件；CLI 仅输出 stdout"
    ],
    "failureSemantics": [
     "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2",
-    "固定引用的来源失配、文件缺失或读取失败均为不足；无效请求抛 SFC2003，意外异常继续抛出"
+    "固定引用的来源失配、文件缺失或读取失败均为不足；无效请求抛 SFC2003，意外异常继续抛出",
+    "真实结构或可信摘要不符为 findings；Schema 支持/读取/缓存不符或资源漂移为 insufficient；两子检查独立，CLI 选集变化整批不足；CLI 0 完整无发现、1 发现或不足、2 用法/未处理机制错误"
    ],
    "invariants": [
     "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
@@ -1228,7 +1233,8 @@
    ],
    "ownedByCaller": [
     "发现项的业务处置",
-    "固定引用是否为实际调用、解析基准与选集完整性，以及来源摘要与冻结目标的核对；局部 CLEAR 不代表完整审阅"
+    "固定引用是否为实际调用、解析基准与选集完整性，以及来源摘要与冻结目标的核对；局部 CLEAR 不代表完整审阅",
+    "Schema 实际采用、自包含前提、可信 SHA 基准和版本与文件的事实、平台语义及选集完整性；version 标签不表示提取文档版本或认证宿主支持"
    ],
    "routeElsewhere": [
     "自动修复执行：调用方"

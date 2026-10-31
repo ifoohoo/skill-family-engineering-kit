@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.31.0 locale=zh-CN baseline=sha256:5edde52a7f0afaa670d223ad6a2500da13b8b25e759597eec94dc3c1f853aa15 -->
+## [0.31.0] - 2026-11-01
+
+新增包根 runSelectedArtifactCheck({root, artifacts}) 及既有 check 下的 selected-artifacts 子动作。对所选文件执行已采用自包含JSON Schema与可信SHA256的真实校验，结果绑定输入、实际来源回执与闭包。结构与字节检查独立，发现与部分结果可并存。返回现有 professional-conclusion，由 reader 解释局部结果。
+
+### 变更
+
+- 包根新增 runSelectedArtifactCheck({root, artifacts})，check 下新增 selected-artifacts 子动作。对所选文件执行已采用Schema与可信SHA256的真实校验。
+
+### 升级说明
+
+四单元必须精确升级至0.31.0。仅读取，不扫描整树、不执行目标、不联网、不写文件。支持现有 draft-07/2020-12 同步对象Schema。不支持输入、已知读取失败、$id缓存差异及资源漂移均如实记为不足。调用方仍负责Schema实际采用、基准信任、版本与文件事实、平台语义及选集完整性。baseline.version 仅为标签，内容版本约束由已采用Schema的 const/enum 表达。局部 ENGINEERING_CLEAR 不代表完整工程审阅、宿主安装/更新/启用或业务运行成功。
+<!-- release-skill:changelog:end version=0.31.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.30.0 locale=zh-CN baseline=sha256:fba4571d444115577bb49f1a80d282e49f6dfa11e3a68a30113a4ce27c42c2c3 -->
 ## [0.30.0] - 2026-10-31
 

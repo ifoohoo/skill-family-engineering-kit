@@ -1193,7 +1193,8 @@
     "Need to compare declared text or JSON version sources and mirrors without scanning undeclared units",
     "Need to read one family professional proof and receive pass, not_pass, or unavailable",
     "Need to project a Skill review JSON into an exclusive professional conclusion",
-    "Re-read selected fixed file references and their targets without executing target content"
+    "Re-read selected fixed file references and their targets without executing target content",
+    "Need to actually check explicitly selected documents against adopted schemas and trusted file byte baselines"
    ],
    "doNotUseWhen": [
     "Need auto-fix (forbidden; check writes no fixes)",
@@ -1205,23 +1206,27 @@
     "Declared version input: policy declared, only version, and project-manifest engineering.releaseUnits",
     "Proof-read input: --proof-root and a contained --proof",
     "proof-create input: --review-root, --review-input, and paired --conclusion-root plus --conclusion-output",
-    "runStaticReferenceCheck: explicit root and non-empty references, each with sourceRef, line, literal and baseDir; fixed ASCII relative paths only"
+    "runStaticReferenceCheck: explicit root and non-empty references, each with sourceRef, line, literal and baseDir; fixed ASCII relative paths only",
+    "0.31.0 candidate runSelectedArtifactCheck({root, artifacts}): each path selects schema:{path,dialect}, baseline:{sha256,version?}, or both; CLI check selected-artifacts --root <dir> --selection <rel> --json"
    ],
    "outputs": [
     "Findings list; exit code findings=1, mechanism=2",
     "Optional local ENGINEERING_* conclusion path from the runCommand check and checkEntriesAction wrappers when an explicit output root and relative path are provided",
     "Proof read returns status pass, not_pass, or unavailable, with exits 0, 1, and 2",
     "proof-create returns a FOUNDATION_STATIC_* conclusion path; CLEAR exits 0, FINDINGS and INCOMPLETE exit 1",
-    "Fixed references return the existing professional-conclusion: ENGINEERING_CLEAR only when all selections complete, otherwise ENGINEERING_CHECK_INCOMPLETE; each original selection and read receipt is retained"
+    "Fixed references return the existing professional-conclusion: ENGINEERING_CLEAR only when all selections complete, otherwise ENGINEERING_CHECK_INCOMPLETE; each original selection and read receipt is retained",
+    "Selections return the existing professional-conclusion with actual source receipts and closure; complete/ENGINEERING_CLEAR requires every selected check to finish without findings, findings can coexist with partial, and all-insufficient means not-performed"
    ],
    "sideEffects": [
     "runChecks and readProfessionalProof are read-only; the declared branch does not spawn, probe Git, or execute target content",
     "runCommand check, checkEntriesAction, and proof-create may exclusively create one conclusion under an explicitly supplied existing output root; they create no parent and overwrite nothing",
-    "runStaticReferenceCheck writes no files, starts no processes and accesses no network"
+    "runStaticReferenceCheck writes no files, starts no processes and accesses no network",
+    "runSelectedArtifactCheck and its CLI are read-only: no target-tree scan, target execution, network or file writes; CLI emits only stdout"
    ],
    "failureSemantics": [
     "findings exit code 1; mechanism rejection, unreadable, or uninterpretable proofs exit code 2",
-    "Binding mismatches, missing files and read failures are incomplete observations; invalid requests throw SFC2003 and unexpected failures propagate"
+    "Binding mismatches, missing files and read failures are incomplete observations; invalid requests throw SFC2003 and unexpected failures propagate",
+    "Real schema or trusted-digest violations are findings; unsupported/unreadable schemas, cache mismatches or resource drift are insufficient; checks are independent, CLI selection drift invalidates all; CLI exits 0 for complete clear, 1 for findings/incomplete, 2 for usage/unhandled mechanism errors"
    ],
    "invariants": [
     "CHECK_CLASSES is a closed set of nine legacy classes, not expanded",
@@ -1229,7 +1234,8 @@
    ],
    "ownedByCaller": [
     "Business disposition of each finding",
-    "Actual-call selection, resolution bases, complete scope and frozen source-digest comparison; a local CLEAR is not a full review"
+    "Actual-call selection, resolution bases, complete scope and frozen source-digest comparison; a local CLEAR is not a full review",
+    "Actual schema adoption, self-contained prerequisites, trusted SHA baseline and version-to-file facts, platform semantics and selection completeness; version labels neither extract document versions nor certify host support"
    ],
    "routeElsewhere": [
     "Auto-fix execution: the caller"

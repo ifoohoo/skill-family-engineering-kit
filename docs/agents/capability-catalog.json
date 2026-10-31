@@ -856,27 +856,31 @@
     "readProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
     "createProfessionalProof (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
     "publishProfessionalConclusion (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
-    "runStaticReferenceCheck (packages/skill-family-engineering-kit/src/static-reference-check.mjs)"
+    "runStaticReferenceCheck (packages/skill-family-engineering-kit/src/static-reference-check.mjs)",
+    "runSelectedArtifactCheck (packages/skill-family-engineering-kit/src/selected-artifact-check.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/check.mjs",
     "packages/skill-family-engineering-kit/src/core-check.mjs",
     "packages/skill-family-engineering-kit/src/engineering-declaration.mjs",
     "packages/skill-family-engineering-kit/src/professional-conclusion.mjs",
-    "packages/skill-family-engineering-kit/src/static-reference-check.mjs"
+    "packages/skill-family-engineering-kit/src/static-reference-check.mjs",
+    "packages/skill-family-engineering-kit/src/selected-artifact-check.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
     "packages/skill-family-engineering-kit/test/core-check.test.mjs",
     "packages/skill-family-engineering-kit/test/check-equivalence.test.mjs",
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
-    "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs"
+    "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs"
    ],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
     "packages/skill-family-engineering-kit/test/core-check.test.mjs",
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
-    "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs"
+    "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs"
    ]
   },
   {

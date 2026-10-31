@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.31.0 locale=en baseline=sha256:51cc2bd4e4aec5e5821cd4838503a678a91b0eb0ca24e66e8275d1530d5904a9 -->
+## [0.31.0] - 2026-11-01
+
+Adds package-root runSelectedArtifactCheck({root, artifacts}) and selected-artifacts sub-action under existing check. Validates selected files using adopted self-contained JSON Schema and trusted SHA256, with results tied to input, origin receipt, and closure. Structure and byte checks are independent; findings and partial results may coexist. Returns existing professional-conclusion, interpreted by reader as local outcomes.
+
+### Changed
+
+- Introduces runSelectedArtifactCheck({root, artifacts}) at package root and selected-artifacts under check. Performs real validation on selected files using adopted schema and trusted SHA256.
+
+### Upgrade Notes
+
+All four units must upgrade to exactly 0.31.0. Only reads; no tree scanning, target execution, network access, or file writes. Supports draft-07 and 2020-12 synchronous object schemas. Unsupported inputs, known read failures, $id cache mismatches, and resource drift are recorded as deficiencies. The caller retains responsibility for schema adoption, baseline trust, version and file facts, platform semantics, and artifact set integrity. baseline.version is only a label; version constraints are expressed via const/enum in the adopted schema. Local ENGINEERING_CLEAR does not imply complete engineering review, host installation/update/enable, or business operation success.
+<!-- release-skill:changelog:end version=0.31.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.30.0 locale=en baseline=sha256:28d4ca4dd7c27c8887b1a8bbc2e1a2c184e2edf52872a0d194ee371e6bde0eaa -->
 ## [0.30.0] - 2026-10-31
 

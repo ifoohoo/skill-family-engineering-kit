@@ -4,27 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.30.0 -->
+<!-- release-skill:release-version: 0.31.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.30.0** (2026-10-31)
+**0.31.0** (2026-11-01)
 
-Adds read-only API runStaticReferenceCheck({root, references}) for actual fixed file references confirmed by the caller.
-
-**Added**
-
-- Each sourceRef, line, literal, and baseDir independently binds the source, base directory, target, and actual digest without silently dropping requests.
-- Supports fixed ASCII relative paths. Source mismatch, dynamic or unsupported paths, unreadable files, and closure insufficiency produce ENGINEERING_CHECK_INCOMPLETE.
+Adds package-root runSelectedArtifactCheck({root, artifacts}) and selected-artifacts sub-action under existing check. Validates selected files using adopted self-contained JSON Schema and trusted SHA256, with results tied to input, origin receipt, and closure. Structure and byte checks are independent; findings and partial results may coexist. Returns existing professional-conclusion, interpreted by reader as local outcomes.
 
 **Changed**
 
-- The existing proof reader describes the new entry as a check of selected fixed file references. The four top-level commands remain unchanged; no CLI was added.
+- Introduces runSelectedArtifactCheck({root, artifacts}) at package root and selected-artifacts under check. Performs real validation on selected files using adopted schema and trusted SHA256.
 
 **Upgrade Notes**
 
-Pin all four release units to exactly 0.30.0. The caller must confirm actual calls, base directories, selection coverage, and source digests against the frozen target. ENGINEERING_CLEAR covers only the selected references, not a complete Foundation static review or host installation, update, activation, or business execution.
+All four units must upgrade to exactly 0.31.0. Only reads; no tree scanning, target execution, network access, or file writes. Supports draft-07 and 2020-12 synchronous object schemas. Unsupported inputs, known read failures, $id cache mismatches, and resource drift are recorded as deficiencies. The caller retains responsibility for schema adoption, baseline trust, version and file facts, platform semantics, and artifact set integrity. baseline.version is only a label; version constraints are expressed via const/enum in the adopted schema. Local ENGINEERING_CLEAR does not imply complete engineering review, host installation/update/enable, or business operation success.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -67,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.30.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.31.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -75,21 +70,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.30.0.tgz" "$pack_dir/skill-family-harness-node-0.30.0.tgz" "$pack_dir/skill-family-engineering-kit-0.30.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.31.0.tgz" "$pack_dir/skill-family-harness-node-0.31.0.tgz" "$pack_dir/skill-family-engineering-kit-0.31.0.tgz")
 ```
 
-The registry installation below requires exact version 0.30.0 to be formally available:
+The registry installation below requires exact version 0.31.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.30.0
-npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.31.0
+npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
