@@ -1,0 +1,35 @@
+version: 0.30.0
+date: 2026-10-31
+locales:
+  en:
+    summary: Adds read-only API runStaticReferenceCheck({root, references}) for
+      actual fixed file references confirmed by the caller.
+    changes:
+      added:
+        - Each sourceRef, line, literal, and baseDir independently binds the
+          source, base directory, target, and actual digest without silently
+          dropping requests.
+        - Supports fixed ASCII relative paths. Source mismatch, dynamic or
+          unsupported paths, unreadable files, and closure insufficiency produce
+          ENGINEERING_CHECK_INCOMPLETE.
+      changed:
+        - The existing proof reader describes the new entry as a check of
+          selected fixed file references. The four top-level commands remain
+          unchanged; no CLI was added.
+    upgradeNotes: Pin all four release units to exactly 0.30.0. The caller must
+      confirm actual calls, base directories, selection coverage, and source
+      digests against the frozen target. ENGINEERING_CLEAR covers only the
+      selected references, not a complete Foundation static review or host
+      installation, update, activation, or business execution.
+  zh-CN:
+    summary: 新增只读 API runStaticReferenceCheck({root, references})，用于重新读取调用方确认的实际固定文件引用。
+    changes:
+      added:
+        - 每项 sourceRef、line、literal、baseDir 独立绑定来源、基准、目标与实际摘要，覆盖全部请求，不静默丢项。
+        - 仅支持固定 ASCII 相对路径；来源失配、动态或不支持的路径、文件不可读及闭包不足均为
+          ENGINEERING_CHECK_INCOMPLETE。
+      changed:
+        - 既有证明读取器按新入口说明所选固定文件引用的局部结果。四个顶层命令保持不变，没有新增 CLI。
+    upgradeNotes: 四个发布单元须精确锁步采用
+      0.30.0。调用方仍需确认实际调用、基准目录与选集完整性，并将来源摘要与冻结目标核对。ENGINEERING_CLEAR
+      仅覆盖所选引用，不证明完整 Foundation 静态审阅或宿主安装、更新、启用、触发及业务成功。

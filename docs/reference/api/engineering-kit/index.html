@@ -829,6 +829,17 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
+  <a href="#runStaticReferenceCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runStaticReferenceCheck
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
   <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2367,6 +2378,17 @@
       <ul class="md-nav__list">
 
           <li class="md-nav__item">
+  <a href="#runStaticReferenceCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runStaticReferenceCheck
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
   <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2971,6 +2993,61 @@ Kit 仍只有四个顶层命令；Quickstart Bundle 继续是 candidate 精确�
 </ul>
 <hr />
 <h2 id="check-foundationkitcheck">check (foundation.kit.check)<a class="headerlink" href="#check-foundationkitcheck" title="Permanent link">&para;</a></h2>
+<h3 id="runStaticReferenceCheck">runStaticReferenceCheck<a class="headerlink" href="#runStaticReferenceCheck" title="Permanent link">&para;</a></h3>
+<p><code>runStaticReferenceCheck</code> 是从 <code>skill-family-engineering-kit</code> 包根导出的公共 API，用于在确定性静态检查上下文中验证固定文件引用的可读性。该接口核对指定来源行上的路径字面量及所指目标文件，不执行目标、不写文件、不联网，也不扫描其他文件。</p>
+<p><strong>输入要求</strong>
+- <code>root</code>：非空字符串，表示获准目录的路径。该路径可为既有 <code>resolveTargetRoot</code> 接受的目录字符串，API 将其解析为词法绝对根。若不可用，沿用旧合同错误传播。
+- <code>references</code>：非空数组，每项必须包含以下四个字段：
+  - <code>sourceRef</code>：获准根内的相对文件路径，表示实际调用所在的源码文件。
+  - <code>line</code>：从 1 开始的安全整数，表示源码中引用出现的行号。
+  - <code>literal</code>：目标文件的固定相对路径，仅支持由 <code>/</code> 分隔的 POSIX 路径；各段由 ASCII 字母、数字、点、下划线、连字符组成，段不能为 <code>.</code> 或 <code>..</code>，可带一个前导 <code>./</code>。不支持含空格、非 ASCII 字符、反斜杠、绝对路径、冒号、变量、引号、通配符或 Shell 语法的路径。
+  - <code>baseDir</code>：相对根目录的解析基准，用于将 <code>literal</code> 解析为完整目标路径。根目录用 <code>.</code> 表示。</p>
+<p>重复的四字段组合（<code>sourceRef</code>, <code>line</code>, <code>literal</code>, <code>baseDir</code>）、顶层未知字段或单项未知字段均抛出 <code>SFC2003</code> 错误。调用方需确保选集完整、来源真实、基准正确，且为实际调用而非注释、否定句或示例。</p>
+<p><strong>检查过程</strong>
+1. 复制输入对象，防止后续修改影响执行。
+2. 重新读取 <code>sourceRef</code> 文件，通过严格读取获取原始字节回执，并将来源内容解码为 UTF-8 文本，按 LF 分行（允许 CRLF），并严格匹配 <code>line</code> 行上的 <code>literal</code>。
+3. <code>literal</code> 必须在该行中<strong>恰好出现一次</strong>，且其左右必须为行边界、空白、单引号、双引号或反引号。更长的文件名不能匹配，多个出现位置即使仅一个满足边界条件也视为不足。
+4. 验证非根 <code>baseDir</code> 是否安全（通过 <code>resolveContained</code>），将 <code>baseDir</code> 与 <code>literal</code> 组合为相对目标路径。
+5. 使用 <code>readFileStrict</code> 读取目标文件，获取真实字节与摘要。若读取失败（如缺失、不可读、权限不足），该项记为 <code>insufficient</code>，保留原始错误 <code>code</code> 与 <code>kind</code>。
+6. 将可完成项的来源与目标输入 <code>computeResourceClosure</code>，计算真实资源闭包。闭包中每项摘要必须与严格读取回执一致。若摘要不符，受影响项降级为 <code>insufficient</code>，但其他项仍可完成；仅当闭包整体计算失败时，所有参与项转为不足，<code>details.closure</code> 设为 <code>null</code>。
+7. 按原顺序生成 <code>details.references</code>，包含：
+   - <code>index</code>：从 1 起的序号
+   - 原始四字段：<code>sourceRef</code>、<code>line</code>、<code>literal</code>、<code>baseDir</code>
+   - <code>status</code>：<code>checked</code> 或 <code>insufficient</code>
+   - <code>reason</code>：实际核对结果或不足原因
+   - <code>source</code>：回执对象，含 <code>ref</code>、<code>sha256</code>、<code>bytes</code>（未取得则为 <code>null</code>）
+   - <code>target</code>：回执对象，含 <code>ref</code>、<code>sha256</code>、<code>bytes</code>（未取得则为 <code>null</code>）
+   - <code>cause</code>：若有既有机制异常，保留原始错误 <code>code</code> 与 <code>kind</code>
+8. <code>source.ref</code> 与 <code>target.ref</code> 由已验证的相对绑定按 POSIX 规范化生成，不基于词法根与绝对路径做 <code>path.relative</code> 计算。符号链接根下仍沿原相对基准，不新增拒绝符号链接根或父目录的政策。
+9. 最终 <code>outcome.completion</code> 依据完成状态设置：
+   - 所有项完成 → <code>complete</code>，<code>code=ENGINEERING_CLEAR</code>
+   - 部分完成 → <code>partial</code>，<code>code=ENGINEERING_CHECK_INCOMPLETE</code>
+   - 无完成项 → <code>not-performed</code>，<code>code=ENGINEERING_CHECK_INCOMPLETE</code></p>
+<p><strong>输出说明</strong>
+- 返回值为 <code>skill-family.professional-conclusion</code> 对象，<code>provider.entry</code> 为 <code>runStaticReferenceCheck</code>，<code>subject.ref</code> 为 <code>resolveTargetRoot</code> 返回的词法绝对根。
+- <code>scope.checked</code> 仅保留完成项，<code>scope.limitations</code> 明示仅覆盖所选固定引用，并列出所有不足原因。
+- 不返回 <code>ENGINEERING_FINDINGS</code>，非既有机制错误的意外异常继续抛出。
+- <code>CLEAR</code> 仅证明选集在观测时可读，不代表完整 Foundation 审阅、Schema 采用、参数/权限/控制流正确或目标运行效果。
+- 闭包数据来自真实读取后计算，不视为原子快照，不支持跨文件一致性保证。
+- 调用方若需持久化结论，应在自己获准的输出根中序列化返回值，已有 <code>readProfessionalProof</code> 可读取，并按新入口身份说明该局部结果。
+- 本轮不为该 API 增加重复的 CLI 路由。</p>
+<p><strong>示例</strong></p>
+<pre><code class="language-js">import { runStaticReferenceCheck } from &quot;skill-family-engineering-kit&quot;;
+const conclusion = await runStaticReferenceCheck({
+  root: &quot;/approved/example-family&quot;,
+  references: [{
+    sourceRef: &quot;skills/review/SKILL.md&quot;,
+    line: 47,
+    literal: &quot;scripts/check.mjs&quot;,
+    baseDir: &quot;skills/review&quot;,
+  }],
+});
+</code></pre>
+<ul>
+<li>来源：<code>packages/skill-family-engineering-kit/src/static-reference-check.mjs</code>。</li>
+<li>直接正反测试：<code>packages/skill-family-engineering-kit/test/static-reference-check.test.mjs</code>。</li>
+<li>发布状态：本地新增候选，精确发布版本另行冻结。</li>
+</ul>
 <h3 id="runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion">runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion<a class="headerlink" href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>

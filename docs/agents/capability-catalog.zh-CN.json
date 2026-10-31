@@ -1185,13 +1185,14 @@
   },
   {
    "id": "foundation.kit.check",
-   "intent": "只诊断不修复：保留九类 legacy 检查和显式 declared 版本分支，并提供本族证明读取与 Skill 审阅结果的排他投影；ENGINEERING_* 仍是局部声明结果，proof/proof-create 是本地未发布入口",
+   "intent": "只诊断不修复：保留九类 legacy 检查和显式 declared 版本分支，提供本族证明读取、Skill 审阅结果的排他投影与已选固定文件引用检查；ENGINEERING_* 按实际入口和覆盖解释为局部工程结果，proof/proof-create 已是正式公共入口",
    "useWhen": [
     "需要发现工程不一致但不自动修改",
     "需要按 --only 缩小 legacy 检查范围",
     "需要比较声明的文本或 JSON 版本来源与镜像，不扫描未声明单元",
     "需要读取一份本族专业证明并得到 pass、not_pass 或 unavailable",
-    "需要把 Skill 审阅 JSON 投影成排他专业结论"
+    "需要把 Skill 审阅 JSON 投影成排他专业结论",
+    "需要重新读取已选固定文件引用及其目标，不执行目标内容"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1202,27 +1203,32 @@
     "legacy --only 取值：contracts|drift|closure|version|docs|git|identity|boundary|platform",
     "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
     "proof 读取输入：--proof-root 与根内 --proof",
-    "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output"
+    "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output",
+    "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；仅支持固定 ASCII 相对路径"
    ],
    "outputs": [
     "发现清单；退出码 findings=1、mechanism=2",
     "runCommand check 与 checkEntriesAction 包装入口在显式提供输出根与相对路径时返回可选局部 ENGINEERING_* 结论路径",
     "proof 读取返回 status 为 pass、not_pass 或 unavailable，对应退出 0、1、2",
-    "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1"
+    "proof-create 返回 FOUNDATION_STATIC_* 结论路径；CLEAR 退出 0，FINDINGS 与 INCOMPLETE 退出 1",
+    "固定引用返回既有 professional-conclusion；全部完成为 ENGINEERING_CLEAR，否则 ENGINEERING_CHECK_INCOMPLETE；保留每项原输入与读取回执"
    ],
    "sideEffects": [
     "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
-    "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖"
+    "runCommand check、checkEntriesAction 与 proof-create 可在显式提供的既有输出根内独占创建一份结论；不建父目录、不覆盖",
+    "runStaticReferenceCheck 不写文件、不启动进程、不联网"
    ],
    "failureSemantics": [
-    "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2"
+    "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2",
+    "固定引用的来源失配、文件缺失或读取失败均为不足；无效请求抛 SFC2003，意外异常继续抛出"
    ],
    "invariants": [
     "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
     "declared 检查只读取具名单元，并区分 partial 与 not-performed"
    ],
    "ownedByCaller": [
-    "发现项的业务处置"
+    "发现项的业务处置",
+    "固定引用是否为实际调用、解析基准与选集完整性，以及来源摘要与冻结目标的核对；局部 CLEAR 不代表完整审阅"
    ],
    "routeElsewhere": [
     "自动修复执行：调用方"

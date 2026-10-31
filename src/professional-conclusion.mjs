@@ -302,7 +302,9 @@ function interpretFoundationProof(document) {
       return proofResult({
         status: "pass",
         reason: local
-          ? "recorded declared engineering check completed without findings; this is not a full Foundation static review"
+          ? conclusion.provider.entry === "runStaticReferenceCheck"
+            ? "recorded selected fixed file references completed without findings; this is not a full Foundation static review"
+            : "recorded declared engineering check completed without findings; this is not a full Foundation static review"
           : "recorded Foundation static professional review completed without findings",
         provider: recognized,
         conclusion,

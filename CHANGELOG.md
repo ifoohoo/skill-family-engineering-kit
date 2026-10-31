@@ -1,5 +1,25 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.30.0 locale=en baseline=sha256:28d4ca4dd7c27c8887b1a8bbc2e1a2c184e2edf52872a0d194ee371e6bde0eaa -->
+## [0.30.0] - 2026-10-31
+
+Adds read-only API runStaticReferenceCheck({root, references}) for actual fixed file references confirmed by the caller.
+
+### Added
+
+- Each sourceRef, line, literal, and baseDir independently binds the source, base directory, target, and actual digest without silently dropping requests.
+- Supports fixed ASCII relative paths. Source mismatch, dynamic or unsupported paths, unreadable files, and closure insufficiency produce ENGINEERING_CHECK_INCOMPLETE.
+
+### Changed
+
+- The existing proof reader describes the new entry as a check of selected fixed file references. The four top-level commands remain unchanged; no CLI was added.
+
+### Upgrade Notes
+
+Pin all four release units to exactly 0.30.0. The caller must confirm actual calls, base directories, selection coverage, and source digests against the frozen target. ENGINEERING_CLEAR covers only the selected references, not a complete Foundation static review or host installation, update, activation, or business execution.
+<!-- release-skill:changelog:end version=0.30.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.29.0 locale=en baseline=sha256:9b104f2a7781547c08c6ad26d8e0e51990625dcf6a7bef807973e53251780247 -->
 ## [0.29.0] - 2026-10-26
 

@@ -110,6 +110,7 @@ import {
   PUBLIC_BOUNDARY_DECLARATION_PATH,
 } from "./skeleton.mjs";
 import { matchAnyGlob } from "./workspace.mjs";
+import { runStaticReferenceCheck } from "./static-reference-check.mjs";
 import {
   createProfessionalProof,
   publishProfessionalConclusion,
@@ -252,6 +253,7 @@ export {
   renderReportAction,
   checkReportAction,
   runEntryContractCheck,
+  runStaticReferenceCheck,
   checkEntriesAction,
   runHostLoadingCheck,
   checkHostLoadingAction,

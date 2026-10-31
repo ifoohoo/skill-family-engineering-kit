@@ -1,5 +1,25 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.30.0 locale=zh-CN baseline=sha256:fba4571d444115577bb49f1a80d282e49f6dfa11e3a68a30113a4ce27c42c2c3 -->
+## [0.30.0] - 2026-10-31
+
+新增只读 API runStaticReferenceCheck({root, references})，用于重新读取调用方确认的实际固定文件引用。
+
+### 新增
+
+- 每项 sourceRef、line、literal、baseDir 独立绑定来源、基准、目标与实际摘要，覆盖全部请求，不静默丢项。
+- 仅支持固定 ASCII 相对路径；来源失配、动态或不支持的路径、文件不可读及闭包不足均为 ENGINEERING_CHECK_INCOMPLETE。
+
+### 变更
+
+- 既有证明读取器按新入口说明所选固定文件引用的局部结果。四个顶层命令保持不变，没有新增 CLI。
+
+### 升级说明
+
+四个发布单元须精确锁步采用 0.30.0。调用方仍需确认实际调用、基准目录与选集完整性，并将来源摘要与冻结目标核对。ENGINEERING_CLEAR 仅覆盖所选引用，不证明完整 Foundation 静态审阅或宿主安装、更新、启用、触发及业务成功。
+<!-- release-skill:changelog:end version=0.30.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.29.0 locale=zh-CN baseline=sha256:27c2f885db1194d37d3fa6eb8f045229819ede167874f70f7854bd79b772d8eb -->
 ## [0.29.0] - 2026-10-26
 

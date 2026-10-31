@@ -5,22 +5,27 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.29.0 -->
+<!-- release-skill:release-version: 0.30.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.29.0** (2026-10-26)
+**0.30.0** (2026-10-31)
 
-0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+新增只读 API runStaticReferenceCheck({root, references})，用于重新读取调用方确认的实际固定文件引用。
+
+**新增**
+
+- 每项 sourceRef、line、literal、baseDir 独立绑定来源、基准、目标与实际摘要，覆盖全部请求，不静默丢项。
+- 仅支持固定 ASCII 相对路径；来源失配、动态或不支持的路径、文件不可读及闭包不足均为 ENGINEERING_CHECK_INCOMPLETE。
 
 **变更**
 
-- 0.29.0仅锁步版本，四命令接口不变，无新增功能或API。
+- 既有证明读取器按新入口说明所选固定文件引用的局部结果。四个顶层命令保持不变，没有新增 CLI。
 
 **升级说明**
 
-四个发布单元须锁步采用0.29.0。无功能变更，仅版本锁步，不影响现有命令使用。
+四个发布单元须精确锁步采用 0.30.0。调用方仍需确认实际调用、基准目录与选集完整性，并将来源摘要与冻结目标核对。ENGINEERING_CLEAR 仅覆盖所选引用，不证明完整 Foundation 静态审阅或宿主安装、更新、启用、触发及业务成功。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,7 +66,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.29.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.30.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -69,21 +74,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.29.0.tgz" "$pack_dir/skill-family-harness-node-0.29.0.tgz" "$pack_dir/skill-family-engineering-kit-0.29.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.30.0.tgz" "$pack_dir/skill-family-harness-node-0.30.0.tgz" "$pack_dir/skill-family-engineering-kit-0.30.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.29.0 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.30.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.29.0
-npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.30.0
+npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.29.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.30.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
