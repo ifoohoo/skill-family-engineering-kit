@@ -4,22 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.31.0 -->
+<!-- release-skill:release-version: 0.32.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.31.0** (2026-11-01)
+**0.32.0** (2026-11-01)
 
-Adds package-root runSelectedArtifactCheck({root, artifacts}) and selected-artifacts sub-action under existing check. Validates selected files using adopted self-contained JSON Schema and trusted SHA256, with results tied to input, origin receipt, and closure. Structure and byte checks are independent; findings and partial results may coexist. Returns existing professional-conclusion, interpreted by reader as local outcomes.
+Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping. Only fixed roots in the same mapping are compared; cross-mapping generated artifacts are allowed as downstream sources. Dynamic paths, unsupported structural forms, or non-equivalent ancestor relationships are explicitly treated as limitations. The check operates on actual declaration files read via strict-read, with receipts bound to resource closure’s byte-level content. Windows-style relative paths are normalized only after successful strict read, without altering pre-read safety handling. Results are returned as `professional-conclusion`, preserving original request, location, conflicts, deficiencies, and actual byte sources. Detection and completeness are expressed independently—partial outcomes are retained when findings exist but unknowns remain. Closure mismatches or failures downgrade validity.
 
 **Changed**
 
-- Introduces runSelectedArtifactCheck({root, artifacts}) at package root and selected-artifacts under check. Performs real validation on selected files using adopted schema and trusted SHA256.
+- Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping
 
 **Upgrade Notes**
 
-All four units must upgrade to exactly 0.31.0. Only reads; no tree scanning, target execution, network access, or file writes. Supports draft-07 and 2020-12 synchronous object schemas. Unsupported inputs, known read failures, $id cache mismatches, and resource drift are recorded as deficiencies. The caller retains responsibility for schema adoption, baseline trust, version and file facts, platform semantics, and artifact set integrity. baseline.version is only a label; version constraints are expressed via const/enum in the adopted schema. Local ENGINEERING_CLEAR does not imply complete engineering review, host installation/update/enable, or business operation success.
+The new API and CLI are optional and require Engineering Kit 0.32.0; the corresponding Skill support is available in foundation-adoption-review 0.32.0. Existing consumers using older versions remain unaffected and continue operating under compatible contracts. The check does not expand the fixed path subset of `sourceRoots/generatedRoots` or extend Windows native eligibility. The new shared schema is an optional read contract, does not imply prior adoption in legacy projects, and does not mandate migration. It does not prove full Foundation review, SFA-ARTIFACT-030@2 compliance, reverse dependencies, generation outcomes, or release eligibility.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.31.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This package version is 0.32.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,21 +70,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.31.0.tgz" "$pack_dir/skill-family-harness-node-0.31.0.tgz" "$pack_dir/skill-family-engineering-kit-0.31.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.32.0.tgz" "$pack_dir/skill-family-harness-node-0.32.0.tgz" "$pack_dir/skill-family-engineering-kit-0.32.0.tgz")
 ```
 
-The registry installation below requires exact version 0.31.0 to be formally available:
+The registry installation below requires exact version 0.32.0 to be formally available:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.31.0
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.32.0
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help`.
+The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 

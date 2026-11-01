@@ -112,6 +112,7 @@ import {
 import { matchAnyGlob } from "./workspace.mjs";
 import { runStaticReferenceCheck } from "./static-reference-check.mjs";
 import { runSelectedArtifactCheck } from "./selected-artifact-check.mjs";
+import { runSourceGeneratedCheck, SOURCE_GENERATED_DECLARATION_SCHEMA_ID } from "./source-generated-check.mjs";
 import {
   createProfessionalProof,
   publishProfessionalConclusion,
@@ -256,6 +257,8 @@ export {
   runEntryContractCheck,
   runStaticReferenceCheck,
   runSelectedArtifactCheck,
+  runSourceGeneratedCheck,
+  SOURCE_GENERATED_DECLARATION_SCHEMA_ID,
   checkEntriesAction,
   runHostLoadingCheck,
   checkHostLoadingAction,

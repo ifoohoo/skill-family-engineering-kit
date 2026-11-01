@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.32.0 locale=zh-CN baseline=sha256:5a14eb1acb784f5f74ad10d8ae8052a41c6680dd58929f1267dc864a562d1eea -->
+## [0.32.0] - 2026-11-01
+
+Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。仅同映射内的固定根可比较；跨映射生成物允许作为后级来源。动态路径、不支持结构或非相等祖先关系明确列为不足。检查基于真实声明文件的严格读取，回执与资源闭包的字节级内容绑定。Windows 相对路径声明文件仅在严格读取成功后按现有闭包规范处理，不改变读取前的安全性处理。返回结果仍为 `professional-conclusion`，保留原始请求、定位、冲突、不足与实际字节来源。发现与完整性独立表达；存在发现但仍有未知时保留 `partial`，不标记为完整通过。闭包失配或失败导致观察有效性降级。
+
+### 变更
+
+- Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。
+
+### 升级说明
+
+新接口与 CLI 为可选使用，需要 Engineering Kit 0.32.0；对应 Skill 支持由 foundation-adoption-review 0.32.0 提供。旧版本消费者不受影响，继续按兼容合同运行。能力未扩大 `sourceRoots/generatedRoots` 固定路径子集，亦未扩展 Windows 原生资格。新共享 Schema 仅为可选读取合同，不代表旧项目已采用，不强制迁移。不证明整个 Foundation 审阅、全部 SFA-ARTIFACT-030@2 合规性、任意反向依赖、生成效果或发布资格。
+<!-- release-skill:changelog:end version=0.32.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.31.0 locale=zh-CN baseline=sha256:5edde52a7f0afaa670d223ad6a2500da13b8b25e759597eec94dc3c1f853aa15 -->
 ## [0.31.0] - 2026-11-01
 

@@ -890,6 +890,67 @@
 </li>
 
           <li class="md-nav__item">
+  <a href="#runSourceGeneratedCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runSourceGeneratedCheck
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="runSourceGeneratedCheck">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#声明和比较范围" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        声明和比较范围
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用与返回" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用与返回
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#固定字段参考" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        固定字段参考
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#如何判断检查结果" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        如何判断检查结果
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+          <li class="md-nav__item">
   <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -2489,6 +2550,67 @@
 </li>
 
           <li class="md-nav__item">
+  <a href="#runSourceGeneratedCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runSourceGeneratedCheck
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="runSourceGeneratedCheck">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#声明和比较范围" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        声明和比较范围
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用与返回" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用与返回
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#固定字段参考" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        固定字段参考
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#如何判断检查结果" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        如何判断检查结果
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
+          <li class="md-nav__item">
   <a href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" class="md-nav__link">
     <span class="md-ellipsis">
 
@@ -3179,6 +3301,88 @@ const conclusion = await runStaticReferenceCheck({
 <p>API 用法错误对应 <code>SFC2003</code> 错误码；已知读取失败保留 <code>SFC2004</code> 及其 <code>kind</code> 信息，用于调试。未知程序异常直接传播，不包装为读取不足。</p>
 <p>该入口不扫描目录树、不执行目标、不启动进程、不联网、不写入目标文件。结果仅覆盖选集内容，不替代平台语义、可信基准、版本政策、选集完整性、完整 Foundation 审阅或发布批准。</p>
 <p>源码位于 <code>packages/skill-family-engineering-kit/src/selected-artifact-check.mjs</code>，测试文件为 <code>packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs</code> 及既有 CLI 和 professional-conclusion 测试。当前版本为 0.31.0 候选，不宣传已发布。</p>
+<h3 id="runSourceGeneratedCheck">runSourceGeneratedCheck<a class="headerlink" href="#runSourceGeneratedCheck" title="Permanent link">&para;</a></h3>
+<p>在技能族生成配置中，<code>sourceRoots</code> 与 <code>generatedRoots</code> 分别定义来源根与生成根的坐标，可指向文件或目录。本检查仅执行一项机械比较：在同一个 mapping 内，是否存在来源根坐标与生成根坐标完全相等的情况。该比较结果用于定位潜在配置冲突，供维护者与独立审阅者复核，不涉及生成执行效果、文件实际存在性或运行时行为验证。当前投影计划、执行收据与文件摘要均未涵盖此项根坐标等价性验证，原生文件角色语义审阅仍保留其独立职责。本次增量仅提供可公开调用的机械比较能力，确保选定声明的相等性判断可被重复执行并返回明确范围，不替代原有职责。</p>
+<h4 id="声明和比较范围">声明和比较范围<a class="headerlink" href="#声明和比较范围" title="Permanent link">&para;</a></h4>
+<p>检查机制读取一份真实存在的JSON文件，不接收临时构造的数组或内存对象。可选的共享读取合同位于 <code>source-generated-declaration.schema.json</code>，其定义了当前支持的配置结构，但<strong>不证明</strong>项目此前已采用该Schema。其他项目可继续保留旧格式，未匹配的声明将被标记为“不足”而非强制迁移。</p>
+<p>未知字段、缺字段、空根数组或版本不匹配时，保留结构错误位置并记为不足，不进入方向判断。合同要求根对象满足以下条件：
+- <code>schemaVersion</code> 为 <code>1</code>
+- <code>kind</code> 为 <code>skill-family.source-authority-declaration</code>
+- <code>mappings</code> 为非空数组</p>
+<p>每条 <code>mapping</code> 必须包含：
+- 非空字符串 <code>capabilityId</code>
+- 非空字符串数组 <code>sourceRoots</code> 与 <code>generatedRoots</code>
+- <code>generator.path</code> 为非空字符串，表示生成器路径坐标</p>
+<p><code>generator.checkArgument</code> 为可选字段，仅用于记录检查参数，<strong>不解析、不传递、不执行</strong>，也不验证生成器是否存在或是否工作正常。</p>
+<p>路径坐标遵循以下规范：
+- 使用正斜杠 <code>/</code> 分隔
+- 每段仅允许字母、数字、下划线 <code>_</code>、点 <code>.</code> 和连字符 <code>-</code>
+- 不接受空段、<code>.</code> 段、<code>..</code> 段
+- 可省略开头的 <code>./</code>，但不支持变量、通配符、排除表达式、反斜杠或绝对路径</p>
+<p>检查仅比较路径的<strong>词法规范化形式</strong>，不探测实际文件存在性、符号链接、磁盘大小写归一化或目录层级结构。但会识别路径之间的词法祖先/后代关系，若存在此类关系，当前版本不推断其是否合规，一律记为“不足”。</p>
+<p>在同一条 <code>mapping</code> 内，若任一 <code>sourceRoot</code> 与任一 <code>generatedRoot</code> 在规范化后完全相等，则判定为方向冲突。结果将记录该冲突的两个字段的 JSON 指针及共同路径坐标。</p>
+<p>跨 <code>mapping</code> 之间允许前级生成物作为后级来源，例如 <code>mapping[0].generatedRoots</code> 中的某个路径作为 <code>mapping[1].sourceRoots</code> 中的某个路径，此为允许的多阶段串联。</p>
+<p>无关路径不因文件名相似而被误判为同一根。所有判断均基于显式声明的固定路径坐标，不依赖上下文或隐含规则。</p>
+<h4 id="调用与返回">调用与返回<a class="headerlink" href="#调用与返回" title="Permanent link">&para;</a></h4>
+<p>公共入口为 <code>runSourceGeneratedCheck({root, declaration})</code>，其中：
+- <code>root</code>：显式非空的本地目录路径，表示声明文件所在根目录。
+- <code>declaration</code>：相对于 <code>root</code> 的 JSON 文件路径，如 <code>config/source-generated.json</code>。</p>
+<p>CLI 调用形式为：</p>
+<pre><code class="language-bash">skill-family-kit check source-generated --root &lt;dir&gt; --declaration &lt;relative-json&gt; --json
+</code></pre>
+<ul>
+<li><code>--json</code> 为必选项，仅向 <code>stdout</code> 输出结构化 JSON 结果。</li>
+</ul>
+<p>共享读取合同路径为：</p>
+<pre><code>skill-family-engineering-kit/source-generated-declaration.schema.json
+</code></pre>
+<p>合同 ID 常量为：</p>
+<pre><code class="language-js">SOURCE_GENERATED_DECLARATION_SCHEMA_ID
+</code></pre>
+<p>检查使用该共享读取合同核对声明结构；匹配结构不证明项目此前已采用它，不匹配时记为 <code>insufficient</code>。</p>
+<h4 id="固定字段参考">固定字段参考<a class="headerlink" href="#固定字段参考" title="Permanent link">&para;</a></h4>
+<pre><code class="language-ts">// 下列类型说明实际字段；不是另一份运行时 Schema 或专业证明。
+type Coordinate = { value: string; normalized: string | null; pointer: string };
+type MappingDirection = {
+  index: number; // 一基序号
+  pointer: string; // JSON 指针，内部数组索引为零基
+  capabilityId: string;
+  sourceRoots: Coordinate[];
+  generatedRoots: Coordinate[];
+  generator: { path: string; pointer: string };
+  status: &quot;pass&quot; | &quot;findings&quot; | &quot;insufficient&quot;;
+  reason: string;
+  conflicts: { source: string; generated: string; root: string }[];
+  unsupported: ({ pointer: string; reason: string }
+    | { source: string; generated: string; reason: string })[];
+};
+type DirectionDetails = {
+  selection: { declaration: string };
+  readingContract: string;
+  declaration: { ref: string; sha256: string; bytes: number } | null;
+  declarationCheck: {
+    status: &quot;pass&quot; | &quot;insufficient&quot;; reason: string;
+    errors?: unknown[]; cause?: { code: string; kind?: string };
+  };
+  mappings: MappingDirection[];
+  closure: unknown | null; // 现有 computeResourceClosure 的实际返回值
+};
+// 沿用 professional-conclusion，不增加外层包装。
+// provider = { id, version, entry: &quot;runSourceGeneratedCheck&quot; }
+// subject = { ref: root }
+// scope.checked 的形式：&quot;mapping:1:direction&quot;
+// outcome.completion: &quot;complete&quot; | &quot;partial&quot; | &quot;not-performed&quot;
+// outcome.code: &quot;ENGINEERING_CLEAR&quot; | &quot;ENGINEERING_FINDINGS&quot;
+//   | &quot;ENGINEERING_CHECK_INCOMPLETE&quot;
+</code></pre>
+<p>同一映射已有相等冲突，另有不支持的根坐标时，冲突贡献可以列入 <code>scope.checked</code>，但 <code>outcome.completion</code> 保持 <code>partial</code>，该映射的 <code>unsupported</code> 逐项保留未知部分；这不表示整条映射的全部根对都已完成判断。</p>
+<p>请求缺字段或根不可用时沿原错误传播，CLI 退出 <code>2</code>；声明读取、路径收容、结构或根坐标支持不足时，返回真实 <code>insufficient</code>，CLI 退出 <code>1</code>。全部完成且 <code>ENGINEERING_CLEAR</code> 才退出 <code>0</code>。存在发现或不足退出 <code>1</code>，未知程序异常退出 <code>2</code>。</p>
+<h4 id="如何判断检查结果">如何判断检查结果<a class="headerlink" href="#如何判断检查结果" title="Permanent link">&para;</a></h4>
+<p>检查结果的完成状态分为三种：
+- <strong>complete</strong>：所有选中的 <code>mapping</code> 均已完成比较，无论是否发现冲突；
+- <strong>partial</strong>：存在已完成的比较，但同条或其他映射仍有未支持的根坐标；
+- <strong>not-performed</strong>：没有有效的映射方向比较贡献。</p>
+<p>结果中若存在冲突，必须明确列出冲突路径的JSON指针与共同坐标；若存在未覆盖的 <code>mapping</code>，也需说明其不足原因（如动态路径或祖先关系的语义未支持）。<strong>结果不证明生成成功、文件存在或运行合规</strong>，也不替代发布资格或运行时验证。所有判断仅限于当前配置中声明的路径坐标，不扩展至祖先关系、执行效果或跨阶段业务合法性。</p>
 <h3 id="runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion">runChecks / runCoreCheck / runEntryContractCheck / checkEntriesAction / isContainedDeclaration / readProfessionalProof / createProfessionalProof / publishProfessionalConclusion<a class="headerlink" href="#runChecks--runCoreCheck--runEntryContractCheck--checkEntriesAction--isContainedDeclaration--readProfessionalProof--createProfessionalProof--publishProfessionalConclusion" title="Permanent link">&para;</a></h3>
 <ul>
 <li>签名：</li>

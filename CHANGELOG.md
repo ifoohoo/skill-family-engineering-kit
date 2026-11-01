@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.32.0 locale=en baseline=sha256:71e318ce3d91de0e09d56cae52100ff59b856812cdff0d2db21800fe3d76b41e -->
+## [0.32.0] - 2026-11-01
+
+Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping. Only fixed roots in the same mapping are compared; cross-mapping generated artifacts are allowed as downstream sources. Dynamic paths, unsupported structural forms, or non-equivalent ancestor relationships are explicitly treated as limitations. The check operates on actual declaration files read via strict-read, with receipts bound to resource closure’s byte-level content. Windows-style relative paths are normalized only after successful strict read, without altering pre-read safety handling. Results are returned as `professional-conclusion`, preserving original request, location, conflicts, deficiencies, and actual byte sources. Detection and completeness are expressed independently—partial outcomes are retained when findings exist but unknowns remain. Closure mismatches or failures downgrade validity.
+
+### Changed
+
+- Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping
+
+### Upgrade Notes
+
+The new API and CLI are optional and require Engineering Kit 0.32.0; the corresponding Skill support is available in foundation-adoption-review 0.32.0. Existing consumers using older versions remain unaffected and continue operating under compatible contracts. The check does not expand the fixed path subset of `sourceRoots/generatedRoots` or extend Windows native eligibility. The new shared schema is an optional read contract, does not imply prior adoption in legacy projects, and does not mandate migration. It does not prove full Foundation review, SFA-ARTIFACT-030@2 compliance, reverse dependencies, generation outcomes, or release eligibility.
+<!-- release-skill:changelog:end version=0.32.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.31.0 locale=en baseline=sha256:51cc2bd4e4aec5e5821cd4838503a678a91b0eb0ca24e66e8275d1530d5904a9 -->
 ## [0.31.0] - 2026-11-01
 

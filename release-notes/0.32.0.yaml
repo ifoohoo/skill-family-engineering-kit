@@ -1,0 +1,15 @@
+version: 0.32.0
+date: 2026-11-01
+locales:
+  en:
+    summary: "Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping. Only fixed roots in the same mapping are compared; cross-mapping generated artifacts are allowed as downstream sources. Dynamic paths, unsupported structural forms, or non-equivalent ancestor relationships are explicitly treated as limitations. The check operates on actual declaration files read via strict-read, with receipts bound to resource closure’s byte-level content. Windows-style relative paths are normalized only after successful strict read, without altering pre-read safety handling. Results are returned as `professional-conclusion`, preserving original request, location, conflicts, deficiencies, and actual byte sources. Detection and completeness are expressed independently—partial outcomes are retained when findings exist but unknowns remain. Closure mismatches or failures downgrade validity."
+    changes:
+      changed:
+        - "Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping"
+    upgradeNotes: "The new API and CLI are optional and require Engineering Kit 0.32.0; the corresponding Skill support is available in foundation-adoption-review 0.32.0. Existing consumers using older versions remain unaffected and continue operating under compatible contracts. The check does not expand the fixed path subset of `sourceRoots/generatedRoots` or extend Windows native eligibility. The new shared schema is an optional read contract, does not imply prior adoption in legacy projects, and does not mandate migration. It does not prove full Foundation review, SFA-ARTIFACT-030@2 compliance, reverse dependencies, generation outcomes, or release eligibility."
+  zh-CN:
+    summary: "Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。仅同映射内的固定根可比较；跨映射生成物允许作为后级来源。动态路径、不支持结构或非相等祖先关系明确列为不足。检查基于真实声明文件的严格读取，回执与资源闭包的字节级内容绑定。Windows 相对路径声明文件仅在严格读取成功后按现有闭包规范处理，不改变读取前的安全性处理。返回结果仍为 `professional-conclusion`，保留原始请求、定位、冲突、不足与实际字节来源。发现与完整性独立表达；存在发现但仍有未知时保留 `partial`，不标记为完整通过。闭包失配或失败导致观察有效性降级。"
+    changes:
+      changed:
+        - "Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。"
+    upgradeNotes: "新接口与 CLI 为可选使用，需要 Engineering Kit 0.32.0；对应 Skill 支持由 foundation-adoption-review 0.32.0 提供。旧版本消费者不受影响，继续按兼容合同运行。能力未扩大 `sourceRoots/generatedRoots` 固定路径子集，亦未扩展 Windows 原生资格。新共享 Schema 仅为可选读取合同，不代表旧项目已采用，不强制迁移。不证明整个 Foundation 审阅、全部 SFA-ARTIFACT-030@2 合规性、任意反向依赖、生成效果或发布资格。"

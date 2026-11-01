@@ -1194,7 +1194,8 @@
     "Need to read one family professional proof and receive pass, not_pass, or unavailable",
     "Need to project a Skill review JSON into an exclusive professional conclusion",
     "Re-read selected fixed file references and their targets without executing target content",
-    "Need to actually check explicitly selected documents against adopted schemas and trusted file byte baselines"
+    "Need to actually check explicitly selected documents against adopted schemas and trusted file byte baselines",
+    "Locate equal source/generated root coordinates within one mapping while allowing cross-mapping chains"
    ],
    "doNotUseWhen": [
     "Need auto-fix (forbidden; check writes no fixes)",
@@ -1207,7 +1208,8 @@
     "Proof-read input: --proof-root and a contained --proof",
     "proof-create input: --review-root, --review-input, and paired --conclusion-root plus --conclusion-output",
     "runStaticReferenceCheck: explicit root and non-empty references, each with sourceRef, line, literal and baseDir; fixed ASCII relative paths only",
-    "0.31.0 candidate runSelectedArtifactCheck({root, artifacts}): each path selects schema:{path,dialect}, baseline:{sha256,version?}, or both; CLI check selected-artifacts --root <dir> --selection <rel> --json"
+    "0.31.0 candidate runSelectedArtifactCheck({root, artifacts}): each path selects schema:{path,dialect}, baseline:{sha256,version?}, or both; CLI check selected-artifacts --root <dir> --selection <rel> --json",
+    "runSourceGeneratedCheck({root,declaration}) reads an actual declaration; source-generated-declaration.schema.json is an optional reading contract, not proof of prior adoption"
    ],
    "outputs": [
     "Findings list; exit code findings=1, mechanism=2",
@@ -1215,13 +1217,15 @@
     "Proof read returns status pass, not_pass, or unavailable, with exits 0, 1, and 2",
     "proof-create returns a FOUNDATION_STATIC_* conclusion path; CLEAR exits 0, FINDINGS and INCOMPLETE exit 1",
     "Fixed references return the existing professional-conclusion: ENGINEERING_CLEAR only when all selections complete, otherwise ENGINEERING_CHECK_INCOMPLETE; each original selection and read receipt is retained",
-    "Selections return the existing professional-conclusion with actual source receipts and closure; complete/ENGINEERING_CLEAR requires every selected check to finish without findings, findings can coexist with partial, and all-insufficient means not-performed"
+    "Selections return the existing professional-conclusion with actual source receipts and closure; complete/ENGINEERING_CLEAR requires every selected check to finish without findings, findings can coexist with partial, and all-insufficient means not-performed",
+    "Equal fixed roots in one mapping produce ENGINEERING_FINDINGS; unsupported dynamic/ancestor semantics remain insufficient; the existing conclusion binds actual declaration reads and closure"
    ],
    "sideEffects": [
     "runChecks and readProfessionalProof are read-only; the declared branch does not spawn, probe Git, or execute target content",
     "runCommand check, checkEntriesAction, and proof-create may exclusively create one conclusion under an explicitly supplied existing output root; they create no parent and overwrite nothing",
     "runStaticReferenceCheck writes no files, starts no processes and accesses no network",
-    "runSelectedArtifactCheck and its CLI are read-only: no target-tree scan, target execution, network or file writes; CLI emits only stdout"
+    "runSelectedArtifactCheck and its CLI are read-only: no target-tree scan, target execution, network or file writes; CLI emits only stdout",
+    "runSourceGeneratedCheck reads the declaration without executing generators, discovering root members or writing the target"
    ],
    "failureSemantics": [
     "findings exit code 1; mechanism rejection, unreadable, or uninterpretable proofs exit code 2",

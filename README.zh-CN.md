@@ -5,22 +5,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.31.0 -->
+<!-- release-skill:release-version: 0.32.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.31.0** (2026-11-01)
+**0.32.0** (2026-11-01)
 
-新增包根 runSelectedArtifactCheck({root, artifacts}) 及既有 check 下的 selected-artifacts 子动作。对所选文件执行已采用自包含JSON Schema与可信SHA256的真实校验，结果绑定输入、实际来源回执与闭包。结构与字节检查独立，发现与部分结果可并存。返回现有 professional-conclusion，由 reader 解释局部结果。
+Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。仅同映射内的固定根可比较；跨映射生成物允许作为后级来源。动态路径、不支持结构或非相等祖先关系明确列为不足。检查基于真实声明文件的严格读取，回执与资源闭包的字节级内容绑定。Windows 相对路径声明文件仅在严格读取成功后按现有闭包规范处理，不改变读取前的安全性处理。返回结果仍为 `professional-conclusion`，保留原始请求、定位、冲突、不足与实际字节来源。发现与完整性独立表达；存在发现但仍有未知时保留 `partial`，不标记为完整通过。闭包失配或失败导致观察有效性降级。
 
 **变更**
 
-- 包根新增 runSelectedArtifactCheck({root, artifacts})，check 下新增 selected-artifacts 子动作。对所选文件执行已采用Schema与可信SHA256的真实校验。
+- Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。
 
 **升级说明**
 
-四单元必须精确升级至0.31.0。仅读取，不扫描整树、不执行目标、不联网、不写文件。支持现有 draft-07/2020-12 同步对象Schema。不支持输入、已知读取失败、$id缓存差异及资源漂移均如实记为不足。调用方仍负责Schema实际采用、基准信任、版本与文件事实、平台语义及选集完整性。baseline.version 仅为标签，内容版本约束由已采用Schema的 const/enum 表达。局部 ENGINEERING_CLEAR 不代表完整工程审阅、宿主安装/更新/启用或业务运行成功。
+新接口与 CLI 为可选使用，需要 Engineering Kit 0.32.0；对应 Skill 支持由 foundation-adoption-review 0.32.0 提供。旧版本消费者不受影响，继续按兼容合同运行。能力未扩大 `sourceRoots/generatedRoots` 固定路径子集，亦未扩展 Windows 原生资格。新共享 Schema 仅为可选读取合同，不代表旧项目已采用，不强制迁移。不证明整个 Foundation 审阅、全部 SFA-ARTIFACT-030@2 合规性、任意反向依赖、生成效果或发布资格。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,7 +61,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.31.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+本包版本为 0.32.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -69,21 +69,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.31.0.tgz" "$pack_dir/skill-family-harness-node-0.31.0.tgz" "$pack_dir/skill-family-engineering-kit-0.31.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.32.0.tgz" "$pack_dir/skill-family-harness-node-0.32.0.tgz" "$pack_dir/skill-family-engineering-kit-0.32.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.31.0 已正式可用为前提：
+以下 registry 安装方式以精确版本 0.32.0 已正式可用为前提：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.31.0
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.32.0
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.31.0 -- skill-family-kit --help`。
+以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help`。
 
 ### 工程声明调用（自 0.24.0 提供）
 
