@@ -858,7 +858,9 @@
     "publishProfessionalConclusion (packages/skill-family-engineering-kit/src/professional-conclusion.mjs)",
     "runStaticReferenceCheck (packages/skill-family-engineering-kit/src/static-reference-check.mjs)",
     "runSelectedArtifactCheck (packages/skill-family-engineering-kit/src/selected-artifact-check.mjs)",
-    "runSourceGeneratedCheck (packages/skill-family-engineering-kit/src/source-generated-check.mjs)"
+    "runSourceGeneratedCheck (packages/skill-family-engineering-kit/src/source-generated-check.mjs)",
+    "runBranchFieldCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
+    "runPublicSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/check.mjs",
@@ -868,7 +870,8 @@
     "packages/skill-family-engineering-kit/src/static-reference-check.mjs",
     "packages/skill-family-engineering-kit/src/selected-artifact-check.mjs",
     "packages/skill-family-engineering-kit/src/source-generated-check.mjs",
-    "packages/skill-family-engineering-kit/data/check-contracts/source-generated-declaration.schema.json"
+    "packages/skill-family-engineering-kit/data/check-contracts/source-generated-declaration.schema.json",
+    "packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",

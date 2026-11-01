@@ -1,5 +1,35 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.34.0 locale=en baseline=sha256:2d5743f72acbf54ae387b61942b05ed334a80d108e950a0b618d9d550a23bc83 -->
+## [0.34.0] - 2026-11-02
+
+Engineering Kit 0.34.0 includes runBranchFieldCheck / check branch-fields for selected ESM if-condition fields and direct Schema properties and enum/const values, plus runPublicSurfaceBindingCheck / check public-surface-bindings for six direct declarations across a selected Skill identity, a complete Python route dictionary, a Method JSON document and four schemas. Neither entry executes targets. Unsupported inputs remain insufficient; supported contradictory values are findings. Public-surface binding drift revokes all comparisons in dependent bindings while independent stable facts remain. Findings and completion are independent; partial is not complete clear. Caller-owned business conditions, schema authority, selection completeness, runtime semantics and full METHOD003 remain outside the mechanical result.
+
+### Changed
+
+- Engineering Kit 0.34.0 includes runBranchFieldCheck / check branch-fields for selected ESM if-condition fields and direct Schema properties and enum/const values, plus runPublicSurfaceBindingCheck / check public-surface-bindings for six direct declarations across a selected Skill identity, a complete Python route dictionary, a Method JSON document and four schemas.
+
+### Upgrade Notes
+
+Use Engineering Kit and foundation-adoption-review 0.34.0 for the new scopes. Existing entrypoints remain compatible, with no mandatory migration for old consumers. Contracts and Harness have no new mechanism behavior and move only in lockstep version and necessary derivations. Version 0.33.0 remains an unpublished source candidate; 0.34.0 combines both capabilities. Local candidates do not establish remote publication or authorization; the four units require formal verification before overall publication is claimed.
+<!-- release-skill:changelog:end version=0.34.0 locale=en -->
+
+
+<!-- release-skill:changelog:start version=0.33.0 locale=en baseline=sha256:0ce88919847c37c263661a47fe971b211f5c753a3196eb31044e00d27355a999 -->
+## [0.33.0] - 2026-11-01
+
+Engineering Kit 0.33.0 adds runBranchFieldCheck and check branch-fields to compare explicitly selected if-condition fields and string literals with direct properties and enum/const declarations. It reads complete ESM and Schema files without importing or executing target code. Unsupported syntax, references or constraints remain insufficient; a field without enum/const contributes field location only. Only the documented closed sibling conditional-required shape can be excluded; those conditions, whole-object validity and business success remain unchecked. Strict reads and the resource closure bind observed bytes and invalidate affected observations on drift.
+
+### Changed
+
+- Engineering Kit 0.33.0 adds runBranchFieldCheck and check branch-fields to compare explicitly selected if-condition fields and string literals with direct properties and enum/const declarations.
+
+### Upgrade Notes
+
+The new API requires Engineering Kit 0.33.0; the corresponding optional Skill scope requires foundation-adoption-review 0.33.0. Existing entrypoints and compatible contracts remain available. Local candidate versions do not establish remote publication or authorize external actions.
+<!-- release-skill:changelog:end version=0.33.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.32.0 locale=en baseline=sha256:71e318ce3d91de0e09d56cae52100ff59b856812cdff0d2db21800fe3d76b41e -->
 ## [0.32.0] - 2026-11-01
 

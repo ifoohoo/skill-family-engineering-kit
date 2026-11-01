@@ -308,6 +308,10 @@ function interpretFoundationProof(document) {
               ? "recorded selected document schema and byte checks completed without findings; this is not a full Foundation static review"
             : conclusion.provider.entry === "runSourceGeneratedCheck"
               ? "recorded selected same-mapping source/generated fixed root identities completed without findings; this is not a full Foundation static review"
+            : conclusion.provider.entry === "runBranchFieldCheck"
+              ? "recorded selected branch field checks completed without findings; actual direct-field and literal coverage is recorded in the conclusion; this is not a full Foundation static review"
+            : conclusion.provider.entry === "runPublicSurfaceBindingCheck"
+              ? "recorded selected public-surface binding checks completed without findings; only the six declared identity and protocol relationships were checked; this is not a full Foundation static review"
             : "recorded declared engineering check completed without findings; this is not a full Foundation static review"
           : "recorded Foundation static professional review completed without findings",
         provider: recognized,

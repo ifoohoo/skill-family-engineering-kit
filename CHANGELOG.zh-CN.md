@@ -1,5 +1,39 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.34.0 locale=zh-CN baseline=sha256:e71f6e1c5e060be78c0d796a325bdf1369ff68c9da81de04e8e61772cfe3216a -->
+## [0.34.0] - 2026-11-02
+
+本版 Engineering Kit 新增两项独立检查入口：`runBranchFieldCheck` 与 `check branch-fields`，以及 `runPublicSurfaceBindingCheck` 与 `check public-surface-bindings`。前者聚焦于指定ESM if分支的直接字段与字符串字面量，核对是否与Schema中定义的 `properties`、`enum`、`const` 保持一致，仅执行静态边界比对，不解析 `$ref`、不执行目标、不判断值域完整性或业务逻辑成功性。无 `enum`/`const` 时仅作字段定位。既有封闭同级条件必填的排除边界维持不变。
+
+后者则读取调用方选定的Skill身份、完整Python路由根字典、共同Method JSON，以及 `task`/`result`/`parameters`/`domainResult` 四个Schema，对六组直接声明进行一致性比对。所有必需材料与支持前提完整时，任意一组值不等即产生 `findings`；若材料缺失、存在歧义、不支持或发生漂移，则判定为 `insufficient`。整绑定依赖失效时，仅保留不受影响的独立绑定事实。`findings` 与 `completion` 状态独立，存在发现即不构成“完整通过”，`partial` 状态不可视为 `complete` 或 `ENGINEERING_CLEAR`。
+
+### 变更
+
+- 本版 Engineering Kit 新增两项独立检查入口：`runBranchFieldCheck` 与 `check branch-fields`，以及 `runPublicSurfaceBindingCheck` 与 `check public-surface-bindings`。
+
+### 升级说明
+
+Contracts与Harness在本版无新增机制行为，仅进行锁步版本同步与必要派生，既有协议与算法保持不变。升级需同时满足Kit与Plugin均升级至0.34.0版本。旧有入口保持兼容，不强制旧消费者迁移。
+
+0.33.0版本仅为未发布源码候选，不具备正式发布效力；0.34.0为首次合并交付，统一包含两项公共能力。本地候选状态不构成远端发布或授权证明，四单元正式验证通过后，方可认定整体发布。
+<!-- release-skill:changelog:end version=0.34.0 locale=zh-CN -->
+
+
+<!-- release-skill:changelog:start version=0.33.0 locale=zh-CN baseline=sha256:f2658f97c9da9ebad05adbf41656eb12ca51a7c90ed820e318ff4a5e3e68c70b -->
+## [0.33.0] - 2026-11-01
+
+Engineering Kit 0.33.0 新增 `runBranchFieldCheck` 与 `check branch-fields` 入口，支持维护者核对指定 `if` 分支的直接字段与所选 Schema 的直接 `properties`、`enum`/`const` 声明。调用者需提供完整 ESM 源码、Schema 及精确行列位置，输入根与选集显式给定，返回原 `professional-conclusion`。直接封闭对象缺字段、字面值缺成员将被发现，不支持的语法、引用或约束保留不足；无 `enum`/`const` 时仅完成字段定位。其他同级字段的条件必填仅按已声明的封闭形状排除，不解释条件逻辑、不判断完整 Schema 有效性或业务成功。源码仅读取，不导入或执行。回执与闭包绑定实际读入字节，漂移导致依赖观察降级，独立事实仍保留。
+
+### 变更
+
+- Engineering Kit 0.33.0 新增 `runBranchFieldCheck` 与 `check branch-fields` 入口，支持维护者核对指定 `if` 分支的直接字段与所选 Schema 的直接 `properties`、`enum`/`const` 声明。
+
+### 升级说明
+
+使用新入口需 Engineering Kit 0.33.0，新 Skill 范围需 `foundation-adoption-review` 0.33.0；旧消费者不强制迁移，原入口与兼容合同保留。Contracts 与 Harness 本版本无新增行为，仅同步锁步版本与必要派生。本地候选不证明远端发布完成，最终四单元载荷与外部动作仍按原流程核准。
+<!-- release-skill:changelog:end version=0.33.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.32.0 locale=zh-CN baseline=sha256:5a14eb1acb784f5f74ad10d8ae8052a41c6680dd58929f1267dc864a562d1eea -->
 ## [0.32.0] - 2026-11-01
 

@@ -111,6 +111,7 @@ import {
 } from "./skeleton.mjs";
 import { matchAnyGlob } from "./workspace.mjs";
 import { runStaticReferenceCheck } from "./static-reference-check.mjs";
+import { runBranchFieldCheck, runPublicSurfaceBindingCheck } from "./static-contract-binding-check.mjs";
 import { runSelectedArtifactCheck } from "./selected-artifact-check.mjs";
 import { runSourceGeneratedCheck, SOURCE_GENERATED_DECLARATION_SCHEMA_ID } from "./source-generated-check.mjs";
 import {
@@ -258,6 +259,8 @@ export {
   runStaticReferenceCheck,
   runSelectedArtifactCheck,
   runSourceGeneratedCheck,
+  runBranchFieldCheck,
+  runPublicSurfaceBindingCheck,
   SOURCE_GENERATED_DECLARATION_SCHEMA_ID,
   checkEntriesAction,
   runHostLoadingCheck,

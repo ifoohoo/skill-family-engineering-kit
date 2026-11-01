@@ -1,0 +1,15 @@
+version: 0.33.0
+date: 2026-11-01
+locales:
+  en:
+    summary: Engineering Kit 0.33.0 adds runBranchFieldCheck and check branch-fields to compare explicitly selected if-condition fields and string literals with direct properties and enum/const declarations. It reads complete ESM and Schema files without importing or executing target code. Unsupported syntax, references or constraints remain insufficient; a field without enum/const contributes field location only. Only the documented closed sibling conditional-required shape can be excluded; those conditions, whole-object validity and business success remain unchecked. Strict reads and the resource closure bind observed bytes and invalidate affected observations on drift.
+    changes:
+      changed:
+        - Engineering Kit 0.33.0 adds runBranchFieldCheck and check branch-fields to compare explicitly selected if-condition fields and string literals with direct properties and enum/const declarations.
+    upgradeNotes: The new API requires Engineering Kit 0.33.0; the corresponding optional Skill scope requires foundation-adoption-review 0.33.0. Existing entrypoints and compatible contracts remain available. Local candidate versions do not establish remote publication or authorize external actions.
+  zh-CN:
+    summary: Engineering Kit 0.33.0 新增 `runBranchFieldCheck` 与 `check branch-fields` 入口，支持维护者核对指定 `if` 分支的直接字段与所选 Schema 的直接 `properties`、`enum`/`const` 声明。调用者需提供完整 ESM 源码、Schema 及精确行列位置，输入根与选集显式给定，返回原 `professional-conclusion`。直接封闭对象缺字段、字面值缺成员将被发现，不支持的语法、引用或约束保留不足；无 `enum`/`const` 时仅完成字段定位。其他同级字段的条件必填仅按已声明的封闭形状排除，不解释条件逻辑、不判断完整 Schema 有效性或业务成功。源码仅读取，不导入或执行。回执与闭包绑定实际读入字节，漂移导致依赖观察降级，独立事实仍保留。
+    changes:
+      changed:
+        - Engineering Kit 0.33.0 新增 `runBranchFieldCheck` 与 `check branch-fields` 入口，支持维护者核对指定 `if` 分支的直接字段与所选 Schema 的直接 `properties`、`enum`/`const` 声明。
+    upgradeNotes: 使用新入口需 Engineering Kit 0.33.0，新 Skill 范围需 `foundation-adoption-review` 0.33.0；旧消费者不强制迁移，原入口与兼容合同保留。Contracts 与 Harness 本版本无新增行为，仅同步锁步版本与必要派生。本地候选不证明远端发布完成，最终四单元载荷与外部动作仍按原流程核准。

@@ -4,22 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.32.0 -->
+<!-- release-skill:release-version: 0.34.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.32.0** (2026-11-01)
+**0.34.0** (2026-11-02)
 
-Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping. Only fixed roots in the same mapping are compared; cross-mapping generated artifacts are allowed as downstream sources. Dynamic paths, unsupported structural forms, or non-equivalent ancestor relationships are explicitly treated as limitations. The check operates on actual declaration files read via strict-read, with receipts bound to resource closure’s byte-level content. Windows-style relative paths are normalized only after successful strict read, without altering pre-read safety handling. Results are returned as `professional-conclusion`, preserving original request, location, conflicts, deficiencies, and actual byte sources. Detection and completeness are expressed independently—partial outcomes are retained when findings exist but unknowns remain. Closure mismatches or failures downgrade validity.
+Engineering Kit 0.34.0 includes runBranchFieldCheck / check branch-fields for selected ESM if-condition fields and direct Schema properties and enum/const values, plus runPublicSurfaceBindingCheck / check public-surface-bindings for six direct declarations across a selected Skill identity, a complete Python route dictionary, a Method JSON document and four schemas. Neither entry executes targets. Unsupported inputs remain insufficient; supported contradictory values are findings. Public-surface binding drift revokes all comparisons in dependent bindings while independent stable facts remain. Findings and completion are independent; partial is not complete clear. Caller-owned business conditions, schema authority, selection completeness, runtime semantics and full METHOD003 remain outside the mechanical result.
 
 **Changed**
 
-- Engineering Kit introduces `runSourceGeneratedCheck({root, declaration})` and extends the `check` action with a `source-generated` sub-action, enabling mechanical identification of `sourceRoots` and `generatedRoots` pairs that are equal after limited lexical normalization within the same mapping
+- Engineering Kit 0.34.0 includes runBranchFieldCheck / check branch-fields for selected ESM if-condition fields and direct Schema properties and enum/const values, plus runPublicSurfaceBindingCheck / check public-surface-bindings for six direct declarations across a selected Skill identity, a complete Python route dictionary, a Method JSON document and four schemas.
 
 **Upgrade Notes**
 
-The new API and CLI are optional and require Engineering Kit 0.32.0; the corresponding Skill support is available in foundation-adoption-review 0.32.0. Existing consumers using older versions remain unaffected and continue operating under compatible contracts. The check does not expand the fixed path subset of `sourceRoots/generatedRoots` or extend Windows native eligibility. The new shared schema is an optional read contract, does not imply prior adoption in legacy projects, and does not mandate migration. It does not prove full Foundation review, SFA-ARTIFACT-030@2 compliance, reverse dependencies, generation outcomes, or release eligibility.
+Use Engineering Kit and foundation-adoption-review 0.34.0 for the new scopes. Existing entrypoints remain compatible, with no mandatory migration for old consumers. Contracts and Harness have no new mechanism behavior and move only in lockstep version and necessary derivations. Version 0.33.0 remains an unpublished source candidate; 0.34.0 combines both capabilities. Local candidates do not establish remote publication or authorization; the four units require formal verification before overall publication is claimed.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This package version is 0.32.0; version 0.24.1 has been formally published. To verify a working tree before formal publication, build all three tarballs into one temporary directory and install those exact files:
+This working tree targets the unpublished 0.34.0 candidate. To verify it, pack all three working-tree packages into one temporary directory and install those exact 0.34.0 tarballs in a new consumer project:
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,21 +70,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.32.0.tgz" "$pack_dir/skill-family-harness-node-0.32.0.tgz" "$pack_dir/skill-family-engineering-kit-0.32.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.34.0.tgz" "$pack_dir/skill-family-harness-node-0.34.0.tgz" "$pack_dir/skill-family-engineering-kit-0.34.0.tgz")
 ```
 
-The registry installation below requires exact version 0.32.0 to be formally available:
+This checks the working-tree candidate without accidentally selecting an older release such as the previously published 0.24.1.
+
+Only after exact version 0.34.0 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.32.0
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.34.0
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit check --root <repo>
 ```
 
-The four commands above cover skeleton generation, read-only inventory, managed projection, and diagnostics respectively; a zero-install form is available via `npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help`.
+The commands show help, skeleton generation, read-only inventory, managed-fact projection and diagnostics for engineering inconsistencies. Once that exact registry version is available, you can also view help without pre-installing Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 

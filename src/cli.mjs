@@ -9,6 +9,7 @@ import { checkEntriesAction } from "./entry-check.mjs";
 import { checkHostLoadingAction } from "./host-loading-check.mjs";
 import { checkSelectedArtifactsAction } from "./selected-artifact-check.mjs";
 import { runSourceGeneratedCheck } from "./source-generated-check.mjs";
+import { checkBranchFieldsAction, checkPublicSurfaceBindingsAction } from "./static-contract-binding-check.mjs";
 import { relockAction } from "./relock.mjs";
 import { registerExistingAction } from "./register-existing.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
@@ -71,6 +72,8 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                从 Skill 审阅结果独占创建一份结论。
                check selected-artifacts 只读核对显式选集的已采用 Schema 与可信字节基准；
                仅输出 stdout，发现或不足退出 1，不执行目标或写文件。
+               check branch-fields  核对指定 if 的直接字段与 Schema 声明；
+               check public-surface-bindings  检查既有双入口共同协议的静态声明；
                check source-generated 读取真实声明，比较同一映射的来源与生成根坐标；
                允许跨映射串联，动态或祖先含义不足，不运行生成器。
                报告子动作: check report 对一份已渲染报告做分级诊断：
@@ -173,6 +176,8 @@ function commandHelp(command) {
       "  确定性: 同一 report-model 反复渲染字节一致；Harness 不推导状态、不补造事实。",
     ],
     check: [
+      "分支字段: skill-family-kit check branch-fields --root <dir> --selection <rel> --json",
+      "双入口协议: skill-family-kit check public-surface-bindings --root <dir> --selection <rel> --json",
       "方向检查: skill-family-kit check source-generated --root <dir> --declaration <rel> --json",
       "  仅比较真实声明内同一映射的固定根相等；跨映射串联允许，祖先或动态坐标记为不足。",
       "选集检查: skill-family-kit check selected-artifacts --root <dir> --selection <rel> --json",
@@ -420,6 +425,20 @@ const COMMAND_SPECS = {
     },
   },
   "check selected-artifacts": {
+    flags: {
+      "--root": { key: "root", value: true },
+      "--selection": { key: "selection", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "check branch-fields": {
+    flags: {
+      "--root": { key: "root", value: true },
+      "--selection": { key: "selection", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "check public-surface-bindings": {
     flags: {
       "--root": { key: "root", value: true },
       "--selection": { key: "selection", value: true },
@@ -733,6 +752,44 @@ async function runSelectedArtifactsSubAction(rest) {
   }
 }
 
+async function runBranchFieldsSubAction(rest) {
+  const specName = "check branch-fields";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags, rejectDuplicates: true });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    requireJsonFlag(options, specName);
+    const output = await checkBranchFieldsAction({ root: options.root, selection: options.selection });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    return output.outcome.completion === "complete" && output.outcome.code === "ENGINEERING_CLEAR"
+      ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runPublicSurfaceBindingsSubAction(rest) {
+  const specName = "check public-surface-bindings";
+  try {
+    const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags, rejectDuplicates: true });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    requireJsonFlag(options, specName);
+    const output = await checkPublicSurfaceBindingsAction({ root: options.root, selection: options.selection });
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    return output.outcome.completion === "complete" && output.outcome.code === "ENGINEERING_CLEAR"
+      ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 async function runSourceGeneratedSubAction(rest) {
   const specName = "check source-generated";
   try {
@@ -932,6 +989,12 @@ export async function cliMain(argv) {
   }
   if (command === "check" && argv[1] === "selected-artifacts") {
     return runSelectedArtifactsSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "branch-fields") {
+    return runBranchFieldsSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "public-surface-bindings") {
+    return runPublicSurfaceBindingsSubAction(argv.slice(2));
   }
   if (command === "check" && argv[1] === "source-generated") {
     return runSourceGeneratedSubAction(argv.slice(2));

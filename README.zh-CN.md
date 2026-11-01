@@ -5,22 +5,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.32.0 -->
+<!-- release-skill:release-version: 0.34.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.32.0** (2026-11-01)
+**0.34.0** (2026-11-02)
 
-Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。仅同映射内的固定根可比较；跨映射生成物允许作为后级来源。动态路径、不支持结构或非相等祖先关系明确列为不足。检查基于真实声明文件的严格读取，回执与资源闭包的字节级内容绑定。Windows 相对路径声明文件仅在严格读取成功后按现有闭包规范处理，不改变读取前的安全性处理。返回结果仍为 `professional-conclusion`，保留原始请求、定位、冲突、不足与实际字节来源。发现与完整性独立表达；存在发现但仍有未知时保留 `partial`，不标记为完整通过。闭包失配或失败导致观察有效性降级。
+本版 Engineering Kit 新增两项独立检查入口：`runBranchFieldCheck` 与 `check branch-fields`，以及 `runPublicSurfaceBindingCheck` 与 `check public-surface-bindings`。前者聚焦于指定ESM if分支的直接字段与字符串字面量，核对是否与Schema中定义的 `properties`、`enum`、`const` 保持一致，仅执行静态边界比对，不解析 `$ref`、不执行目标、不判断值域完整性或业务逻辑成功性。无 `enum`/`const` 时仅作字段定位。既有封闭同级条件必填的排除边界维持不变。
+
+后者则读取调用方选定的Skill身份、完整Python路由根字典、共同Method JSON，以及 `task`/`result`/`parameters`/`domainResult` 四个Schema，对六组直接声明进行一致性比对。所有必需材料与支持前提完整时，任意一组值不等即产生 `findings`；若材料缺失、存在歧义、不支持或发生漂移，则判定为 `insufficient`。整绑定依赖失效时，仅保留不受影响的独立绑定事实。`findings` 与 `completion` 状态独立，存在发现即不构成“完整通过”，`partial` 状态不可视为 `complete` 或 `ENGINEERING_CLEAR`。
 
 **变更**
 
-- Engineering Kit 新增 `runSourceGeneratedCheck({root, declaration})` 接口，并在 `check` 动作下扩展 `source-generated` 子动作，支持对同映射内经有限词法规范化后相等的 `sourceRoots` 与 `generatedRoots` 进行独立机械识别。
+- 本版 Engineering Kit 新增两项独立检查入口：`runBranchFieldCheck` 与 `check branch-fields`，以及 `runPublicSurfaceBindingCheck` 与 `check public-surface-bindings`。
 
 **升级说明**
 
-新接口与 CLI 为可选使用，需要 Engineering Kit 0.32.0；对应 Skill 支持由 foundation-adoption-review 0.32.0 提供。旧版本消费者不受影响，继续按兼容合同运行。能力未扩大 `sourceRoots/generatedRoots` 固定路径子集，亦未扩展 Windows 原生资格。新共享 Schema 仅为可选读取合同，不代表旧项目已采用，不强制迁移。不证明整个 Foundation 审阅、全部 SFA-ARTIFACT-030@2 合规性、任意反向依赖、生成效果或发布资格。
+Contracts与Harness在本版无新增机制行为，仅进行锁步版本同步与必要派生，既有协议与算法保持不变。升级需同时满足Kit与Plugin均升级至0.34.0版本。旧有入口保持兼容，不强制旧消费者迁移。
+
+0.33.0版本仅为未发布源码候选，不具备正式发布效力；0.34.0为首次合并交付，统一包含两项公共能力。本地候选状态不构成远端发布或授权证明，四单元正式验证通过后，方可认定整体发布。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,7 +65,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-本包版本为 0.32.0；0.24.1 已正式发布。验证尚未正式发布的工作树时，先把三个包分别打入同一个临时目录，再安装这三个精确 tarball：
+当您需要验证尚未正式发布的 0.34.0 工作树候选版本时，请将以下三个包分别打包至同一临时目录，并在新创建的消费者项目中安装这三个精确版本的 `.tgz` 文件：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -69,21 +73,30 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.32.0.tgz" "$pack_dir/skill-family-harness-node-0.32.0.tgz" "$pack_dir/skill-family-engineering-kit-0.32.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.34.0.tgz" "$pack_dir/skill-family-harness-node-0.34.0.tgz" "$pack_dir/skill-family-engineering-kit-0.34.0.tgz")
 ```
 
-以下 registry 安装方式以精确版本 0.32.0 已正式可用为前提：
+此流程确保您在本地环境中使用与工作树一致的 0.34.0 版本进行验证，避免误用旧版（如已发布的 0.24.1）。
+
+当精确版本 `0.34.0` 已在公共 registry 中正式可用时，方可使用以下命令进行安装与执行：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.32.0
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.34.0
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit check --root <repo>
 ```
 
-以上四条命令分别覆盖生成骨架、只读盘点、受管投影与诊断；零安装形式可用 `npm exec --package=skill-family-engineering-kit@0.32.0 -- skill-family-kit --help`。
+上述命令分别用于：
+- 查看工具帮助信息
+- 生成项目骨架
+- 执行只读盘点（盘点项目能力与配置）
+- 生成受管事实投影（将受管事实映射至目标项目上下文）
+- 执行诊断检查（识别工程配置中的不一致项）
+
+在精确版本 0.34.0 正式可用后，也可不在目标项目中预先安装 Kit，使用 `npm exec --package=skill-family-engineering-kit@0.34.0 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 
