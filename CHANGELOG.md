@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.35.0 locale=en baseline=sha256:bd365febdc619d1c15d6efc9767e4db3ed34bff5414a221abc998a527bd252ee -->
+## [0.35.0] - 2026-11-02
+
+Version 0.35.0 adds optional nodeType to runBranchFieldCheck / check branch-fields, allowing explicit selection of direct comparisons in callbacks or object properties. Existing six-field If requests remain compatible. Exact unique positions and the existing direct-field and string-comparison grammar remain bounded. Results distinguish findings from insufficient checks without executing targets or establishing domain success or exhaustive branch coverage. Public-surface binding behavior is unchanged.
+
+### Changed
+
+- Version 0.35.0 adds optional nodeType to runBranchFieldCheck / check branch-fields, allowing explicit selection of direct comparisons in callbacks or object properties. Existing six-field If requests remain compatible. Exact unique positions and the existing direct-field and string-comparison grammar remain bounded. Results distinguish findings from insufficient checks without executing targets or establishing domain success or exhaustive branch coverage. Public-surface binding behavior is unchanged.
+
+### Upgrade Notes
+
+Adopt all four units at 0.35.0. Set nodeType explicitly for the new comparison selection; existing callers need no forced migration. A candidate, local tests or a static exit code of zero do not establish publication, installation, loading or business success. The existing four-unit release contract still applies.
+<!-- release-skill:changelog:end version=0.35.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.34.0 locale=en baseline=sha256:2d5743f72acbf54ae387b61942b05ed334a80d108e950a0b618d9d550a23bc83 -->
 ## [0.34.0] - 2026-11-02
 

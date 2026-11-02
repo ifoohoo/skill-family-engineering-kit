@@ -17,7 +17,7 @@ const ANNOTATIONS = ["$schema", "$id", "$comment", "title", "description", "defa
 const OBJECT_KEYS = new Set([...ANNOTATIONS, "type", "properties", "required", "additionalProperties", "$defs", "definitions", "allOf"]);
 const VALUE_KEYS = new Set([...ANNOTATIONS, "type", "enum", "const"]);
 const LIMITATIONS = [
-  "Only caller-selected IfStatement conditions, direct properties paths and direct enum/const membership were checked. The caller owns object/schema correspondence and selection completeness.",
+  "Only caller-selected IfStatement conditions or BinaryExpression comparisons, direct properties paths and direct enum/const membership were checked. The caller owns object/schema correspondence and selection completeness.",
   "Field location without enum/const does not establish literal validity. Literal membership does not establish full Schema validity, object identity, exhaustive branches, control flow or domain success.",
   "No references or Schema combinations are resolved. Conditional required constraints on other sibling fields may be excluded by the supported structural boundary; those conditions and whole-object validity are not checked.",
   "No target code is imported, executed or evaluated; no target files or network state are changed.",
@@ -45,13 +45,16 @@ function requestSnapshot(options) {
   }
   const seen = new Set();
   const branches = Array.from(options.branches, (item) => {
-    if (!fields(item, FIELDS) || !["sourceRef", "schemaRef", "resultIdentifier"].every((key) => typeof item[key] === "string" && item[key])
+    if (!object(item) || !fields(item, Object.hasOwn(item, "nodeType") ? [...FIELDS, "nodeType"] : FIELDS)
+      || (Object.hasOwn(item, "nodeType") && !["IfStatement", "BinaryExpression"].includes(item.nodeType))
+      || !["sourceRef", "schemaRef", "resultIdentifier"].every((key) => typeof item[key] === "string" && item[key])
       || !IDENTIFIER.test(item.resultIdentifier) || typeof item.schemaPointer !== "string" || pointerParts(item.schemaPointer) === null
       || ![item.line, item.column].every((value) => Number.isSafeInteger(value) && value > 0)) {
-      throw invalidParamsError("each branch requires only sourceRef, positive line/column, ASCII resultIdentifier, schemaRef and RFC6901 schemaPointer");
+      throw invalidParamsError("each branch requires only sourceRef, positive line/column, ASCII resultIdentifier, schemaRef, RFC6901 schemaPointer and optional IfStatement/BinaryExpression nodeType");
     }
     const copy = Object.fromEntries(FIELDS.map((key) => [key, item[key]]));
-    const key = JSON.stringify(copy);
+    if (Object.hasOwn(item, "nodeType")) copy.nodeType = item.nodeType;
+    const key = JSON.stringify({ ...copy, nodeType: copy.nodeType ?? "IfStatement" });
     if (seen.has(key)) throw invalidParamsError("branches contains a duplicate selection");
     seen.add(key);
     return copy;
@@ -72,12 +75,12 @@ function mechanismCause(error) {
   return { code: error.code, kind: error.details.kind };
 }
 
-function selectIf(ast, selection) {
+function selectNode(ast, selection) {
   const pending = [ast];
   const matches = [];
   while (pending.length > 0) {
     const node = pending.pop();
-    if (node.type === "IfStatement" && node.loc.start.line === selection.line && node.loc.start.column + 1 === selection.column) matches.push(node);
+    if (node.type === (selection.nodeType ?? "IfStatement") && node.loc.start.line === selection.line && node.loc.start.column + 1 === selection.column) matches.push(node);
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) pending.push(...value.filter((child) => child && typeof child.type === "string"));
       else if (value && typeof value.type === "string") pending.push(value);
@@ -208,12 +211,17 @@ async function execute(root, branches, selectionReceipt = null) {
         Object.assign(record, unknown("source or Schema could not be parsed", { parseError: error.message }));
         continue;
       }
-      const branch = selectIf(ast, selection);
+      const branch = selectNode(ast, selection);
       if (branch === null) {
-        Object.assign(record, unknown("the exact line/column does not select one IfStatement"));
+        Object.assign(record, unknown(`the exact line/column does not select one ${selection.nodeType ?? "IfStatement"}`));
         continue;
       }
-      record.comparisons = comparisons(branch.test, source.content, selection.resultIdentifier).map((item) => compareField(item, document, selection.schemaPointer));
+      const selected = comparisons(branch.type === "IfStatement" ? branch.test : branch, source.content, selection.resultIdentifier);
+      if (branch.type === "BinaryExpression" && selected[0].status === "insufficient") {
+        Object.assign(record, unknown(selected[0].reason));
+        continue;
+      }
+      record.comparisons = selected.map((item) => compareField(item, document, selection.schemaPointer));
       summarize(record);
     } catch (error) {
       const cause = mechanismCause(error);

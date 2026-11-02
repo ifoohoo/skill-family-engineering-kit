@@ -1195,7 +1195,7 @@
     "需要重新读取已选固定文件引用及其目标，不执行目标内容",
     "需要实际核对明确给定文档的已采用 Schema 与可信文件字节基准",
     "需要定位同一生成映射中相等的来源根与生成根，保留合法的跨映射串联",
-    "需要核对指定源码 if 分支的直接字段与所选 Schema 的直接枚举成员关系",
+    "需要核对指定 if 条件或直接比较表达式的字段及字面量，与所选 Schema 的直接声明是否一致",
     "需要核对指定 Skill 身份、Python 路由字典、Method 与四份 Schema 的六组直接声明对应"
    ],
    "doNotUseWhen": [
@@ -1211,7 +1211,7 @@
     "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；仅支持固定 ASCII 相对路径",
     "0.31.0 候选 runSelectedArtifactCheck({root, artifacts})；每项 path，至少选择 schema:{path,dialect} 或 baseline:{sha256,version?}；CLI check selected-artifacts --root <dir> --selection <rel> --json",
     "runSourceGeneratedCheck({root,declaration}) 读取真实声明；共享 source-generated-declaration.schema.json 为可选读取合同，不证明旧项目此前已采用",
-    "0.34.0 候选 runBranchFieldCheck({root,branches})；每项 sourceRef、line、column、resultIdentifier、schemaRef、schemaPointer；CLI check branch-fields --root <dir> --selection <rel> --json",
+    "runBranchFieldCheck({root,branches})；每项仍含 sourceRef、line、column、resultIdentifier、schemaRef、schemaPointer，可选 nodeType 仅 IfStatement 或 BinaryExpression，省略为 IfStatement；CLI check branch-fields --root <dir> --selection <rel> --json",
     "0.34.0 候选 runPublicSurfaceBindingCheck({root,bindings})；每项 skill:{ref,frontmatterKey}、route:{ref,startLine,endLine,constant,entryKey}、method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}、schemas:{task,result,parameters,domainResult}；CLI check public-surface-bindings --root <dir> --selection <rel> --json"
    ],
    "outputs": [

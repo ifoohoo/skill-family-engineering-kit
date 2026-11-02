@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.35.0 locale=zh-CN baseline=sha256:d6f7d26388a7a5fb9bff0bdd299c8527f6e5e4b14fe3a4f7ad0146ab6e9457ed -->
+## [0.35.0] - 2026-11-02
+
+0.35.0 在既有 `runBranchFieldCheck` / `check branch-fields` 中增加可选 `nodeType`，可明确选择回调或对象字段中的直接比较。旧六字段 `If` 请求兼容；精确唯一位置、直接字段和字符串语法边界不扩大。按每项实际结果区分发现与不足，不执行目标，不保证领域成功或全部分支覆盖。既有双公开入口绑定能力不变。
+
+### 变更
+
+- 0.35.0 在既有 `runBranchFieldCheck` / `check branch-fields` 中增加可选 `nodeType`，可明确选择回调或对象字段中的直接比较。旧六字段 `If` 请求兼容；精确唯一位置、直接字段和字符串语法边界不扩大。按每项实际结果区分发现与不足，不执行目标，不保证领域成功或全部分支覆盖。既有双公开入口绑定能力不变。
+
+### 升级说明
+
+四单元同时采用 0.35.0；需要新比较选择时显式提供 `nodeType`，旧调用不强制改写。候选、本地测试与静态退出 0 均不等于正式发布、安装、加载或业务通过；正式发布仍按四单元原发布合同核收。
+<!-- release-skill:changelog:end version=0.35.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.34.0 locale=zh-CN baseline=sha256:e71f6e1c5e060be78c0d796a325bdf1369ff68c9da81de04e8e61772cfe3216a -->
 ## [0.34.0] - 2026-11-02
 

@@ -72,7 +72,7 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                从 Skill 审阅结果独占创建一份结论。
                check selected-artifacts 只读核对显式选集的已采用 Schema 与可信字节基准；
                仅输出 stdout，发现或不足退出 1，不执行目标或写文件。
-               check branch-fields  核对指定 if 的直接字段与 Schema 声明；
+               check branch-fields  核对指定 if 条件或直接比较表达式的字段与 Schema 声明；
                check public-surface-bindings  检查既有双入口共同协议的静态声明；
                check source-generated 读取真实声明，比较同一映射的来源与生成根坐标；
                允许跨映射串联，动态或祖先含义不足，不运行生成器。

@@ -1196,7 +1196,7 @@
     "Re-read selected fixed file references and their targets without executing target content",
     "Need to actually check explicitly selected documents against adopted schemas and trusted file byte baselines",
     "Locate equal source/generated root coordinates within one mapping while allowing cross-mapping chains",
-    "Compare selected if-condition fields and literals with direct Schema property and enum/const declarations",
+    "Compare fields and literals in selected if conditions or direct comparison expressions with direct Schema declarations",
     "Compare six direct declarations across a selected Skill identity, Python route dictionary, Method and four schemas"
    ],
    "doNotUseWhen": [
@@ -1212,7 +1212,7 @@
     "runStaticReferenceCheck: explicit root and non-empty references, each with sourceRef, line, literal and baseDir; fixed ASCII relative paths only",
     "0.31.0 candidate runSelectedArtifactCheck({root, artifacts}): each path selects schema:{path,dialect}, baseline:{sha256,version?}, or both; CLI check selected-artifacts --root <dir> --selection <rel> --json",
     "runSourceGeneratedCheck({root,declaration}) reads an actual declaration; source-generated-declaration.schema.json is an optional reading contract, not proof of prior adoption",
-    "0.34.0 candidate runBranchFieldCheck({root,branches}); each selection has sourceRef, line, column, resultIdentifier, schemaRef and schemaPointer; CLI check branch-fields --root <dir> --selection <rel> --json",
+    "runBranchFieldCheck({root,branches}); each selection retains sourceRef, line, column, resultIdentifier, schemaRef and schemaPointer; optional nodeType is IfStatement or BinaryExpression, defaulting to IfStatement; CLI check branch-fields --root <dir> --selection <rel> --json",
     "0.34.0 candidate runPublicSurfaceBindingCheck({root,bindings}); each selection has skill:{ref,frontmatterKey}, route:{ref,startLine,endLine,constant,entryKey}, method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}, schemas:{task,result,parameters,domainResult}; CLI check public-surface-bindings --root <dir> --selection <rel> --json"
    ],
    "outputs": [

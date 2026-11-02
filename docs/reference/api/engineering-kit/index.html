@@ -4184,15 +4184,9 @@ node -e 'console.log(process.argv[1])' '{\&quot;entries\&quot;:[]}'
 </code></pre>
 <h3 id="runBranchFieldCheck">runBranchFieldCheck<a class="headerlink" href="#runBranchFieldCheck" title="Permanent link">&para;</a></h3>
 <h4 id="API-定义">API 定义<a class="headerlink" href="#API-定义" title="Permanent link">&para;</a></h4>
-<p><code>runBranchFieldCheck({ root, branches })</code><br />
-- <code>root</code>：显式非空本地目录路径；<br />
-- <code>branches</code>：非空数组，每项包含以下六字段：<br />
-  - <code>sourceRef</code>：根内相对文件路径，读取沿原路径合同；<br />
-  - <code>line</code>、<code>column</code>：从 1 开始的安全正整数，精确指向 <code>IfStatement</code> 的起始位置，非 <code>test</code> 子表达式；<br />
-  - <code>resultIdentifier</code>：ASCII JavaScript 标识符，表示左侧属性链的根标识符；<br />
-  - <code>schemaRef</code>：根内相对文件路径，指向 Schema 文件；<br />
-  - <code>schemaPointer</code>：RFC6901 指针，空串表示 Schema 根，非空指针表示对象定义路径。</p>
-<p>输入不接受未知字段或重复条目；请求在首次 <code>await</code> 前复制。</p>
+<p><code>runBranchFieldCheck({ root, branches })</code> 接受显式非空本地目录路径 <code>root</code> 和非空数组 <code>branches</code>。每项 <code>branches</code> 必须包含以下六个必填字段：<code>sourceRef</code>、<code>line</code>、<code>column</code>、<code>resultIdentifier</code>、<code>schemaRef</code>、<code>schemaPointer</code>。其中，<code>sourceRef</code> 与 <code>schemaRef</code> 为根内相对路径，分别指向源文件与 Schema 定义文件；<code>line</code> 与 <code>column</code> 为从 1 开始的安全正整数，精确指向有效 AST 节点的起点；<code>resultIdentifier</code> 为符合 ASCII JavaScript 根标识符命名规则的字符串；<code>schemaPointer</code> 为空串时表示选中 Schema 根节点，非空时为 RFC6901 指针，指向对象定义。</p>
+<p>可选字段 <code>nodeType</code> 仅接受 <code>IfStatement</code> 或 <code>BinaryExpression</code>，省略时默认为 <code>IfStatement</code>。节点起点必须精确匹配 AST 中该节点的起始位置：<code>IfStatement</code> 指整个 <code>if</code> 语句的起始位置（即 <code>if</code> 关键字所在行列），而非其 <code>test</code> 子表达式的起点；<code>BinaryExpression</code> 指该表达式自身在源码中的起始位置，不能以根标识符或运算符位置替代。在无括号的直接比较中，节点起点与最左端根标识符重合；若左侧成员访问带括号，节点起点可能从左括号开始。例如 <code>export const ok = (packet.status) === 'READY';</code> 中，<code>BinaryExpression</code> 节点起点为 <code>1:19</code>，根标识符 <code>packet</code> 起始于 <code>1:20</code>，若选择 <code>1:20</code> 则无法匹配有效节点，返回 <code>insufficient</code> 且不执行任何比较。</p>
+<p>若存在未知字段、未知 <code>nodeType</code>、必填字段缺失或重复选择（以六字段身份与有效 <code>nodeType</code> 为依据去重，省略 <code>nodeType</code> 与显式指定 <code>IfStatement</code> 视为同一项），均按参数错误拒绝。整个请求（含显式 <code>nodeType</code>）在首次 <code>await</code> 前完成复制。</p>
 <h4 id="CLI-命令">CLI 命令<a class="headerlink" href="#CLI-命令" title="Permanent link">&para;</a></h4>
 <p><code>skill-family-kit check branch-fields --root &lt;dir&gt; --selection &lt;relative-json&gt; --json</code><br />
 - <code>selection</code> 文件仅允许 <code>branches</code> 字段，与 API 一致；<br />
@@ -4205,7 +4199,7 @@ node -e 'console.log(process.argv[1])' '{\&quot;entries\&quot;:[]}'
 <ul>
 <li><code>provider.entry</code>：<code>runBranchFieldCheck</code>；</li>
 <li><code>subject.ref</code>：实际根路径；</li>
-<li><code>details.branches</code>：每条分支记录保留六个输入字段（<code>sourceRef</code>、<code>line</code>、<code>column</code>、<code>resultIdentifier</code>、<code>schemaRef</code>、<code>schemaPointer</code>），另含 <code>index</code>、实际 source/schema 读取摘要、<code>status</code>、<code>reason</code>、<code>comparisons</code>；</li>
+<li><code>details.branches</code>：保留原六个选择字段及 <code>index</code>、<code>source</code>/<code>schema</code> 摘要、<code>status</code>、<code>reason</code> 和 <code>comparisons</code>。仅当调用方显式传入 <code>nodeType</code> 时才回显该字段，旧请求不额外补写；</li>
 <li><code>details.closure</code>：既有闭包信息或 <code>null</code>。</li>
 </ul>
 <p>每条 <code>comparison</code> 包含：</p>
@@ -4222,15 +4216,7 @@ node -e 'console.log(process.argv[1])' '{\&quot;entries\&quot;:[]}'
 <p>当字段没有 <code>enum</code> 或 <code>const</code> 定义时，仅完成字段定位，不认定字面值有效。</p>
 <h2 id="算法与错误处理">算法与错误处理<a class="headerlink" href="#算法与错误处理" title="Permanent link">&para;</a></h2>
 <h4 id="AST-选取规则">AST 选取规则<a class="headerlink" href="#AST-选取规则" title="Permanent link">&para;</a></h4>
-<ul>
-<li>仅支持 <code>IfStatement</code>，其 <code>test</code> 为 <code>===</code> 或 <code>!==</code>；  </li>
-<li>左侧为同一行的非计算 ASCII 标识符属性链，根须等于 <code>resultIdentifier</code>；  </li>
-<li>右侧为无转义的字符串字面值；  </li>
-<li>允许 <code>&amp;&amp;</code>、<code>||</code> 连接的有限表达式，支持的叶子节点须满足上述条件；未支持叶子保留不足，独立已完成的比较仍可贡献局部事实；  </li>
-<li>不推断逻辑可达性或真假；  </li>
-<li>注释、字符串中的伪 <code>if</code> 不构成 AST 节点；  </li>
-<li>函数调用、可选链、计算属性、模板字符串、别名、其他运算符、TypeScript、其他语言、位置不匹配均视为 <code>insufficient</code>，不猜测。</li>
-</ul>
+<p>仅匹配指定类型且起点唯一、精确的 AST 节点；无匹配或不唯一时返回 <code>insufficient</code>，且 <code>comparisons</code> 为空。<code>IfStatement</code> 仍对其 <code>test</code> 按原有限 <code>&amp;&amp;</code>/<code>||</code> 叶子算法进行检查。<code>BinaryExpression</code> 仅承接同一行、以 <code>resultIdentifier</code> 为根的非计算、非可选 ASCII 直接属性链、<code>===</code> 或 <code>!==</code> 运算，且右侧无转义字符串字面量。在 <code>BinaryExpression</code> 模式下，若选中节点但语法不支持，或位置不匹配、不唯一，均返回 <code>insufficient</code> 且 <code>comparisons</code> 为空。新模式不选择整个 <code>LogicalExpression</code>，需多个比较时调用方应分别选择叶子节点。注释、字符串、函数调用、可选链、计算属性、模板字面量、其他语言或位置不符的节点均不猜测。保持原 Schema 的 <code>properties</code>、<code>enum</code>、<code>const</code> 支持边界，所有实际读取资源摘要闭包与漂移撤销机制不变；闭包非原子快照，不执行源码，不推断运行真假或完整覆盖。</p>
 <h4 id="Schema-核对规则">Schema 核对规则<a class="headerlink" href="#Schema-核对规则" title="Permanent link">&para;</a></h4>
 <ul>
 <li>仅从所选对象沿直接 <code>properties</code> 链定位；  </li>
