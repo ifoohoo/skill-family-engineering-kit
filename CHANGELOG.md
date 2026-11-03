@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.36.0 locale=en baseline=sha256:f94ca0f5ba97041dd7c4ea3d2d174facde43a85662b056d3ec0bc64ce80c923d -->
+## [0.36.0] - 2026-11-03
+
+Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
+
+### Changed
+
+- Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
+
+### Upgrade Notes
+
+Adopt all four units at 0.36.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. The formal 0.35.0 package does not contain the new API.
+<!-- release-skill:changelog:end version=0.36.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.35.0 locale=en baseline=sha256:bd365febdc619d1c15d6efc9767e4db3ed34bff5414a221abc998a527bd252ee -->
 ## [0.35.0] - 2026-11-02
 

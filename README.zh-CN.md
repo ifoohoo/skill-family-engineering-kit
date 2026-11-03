@@ -5,22 +5,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.35.0 -->
+<!-- release-skill:release-version: 0.36.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.35.0** (2026-11-02)
+**0.36.0** (2026-11-03)
 
-0.35.0 在既有 `runBranchFieldCheck` / `check branch-fields` 中增加可选 `nodeType`，可明确选择回调或对象字段中的直接比较。旧六字段 `If` 请求兼容；精确唯一位置、直接字段和字符串语法边界不扩大。按每项实际结果区分发现与不足，不执行目标，不保证领域成功或全部分支覆盖。既有双公开入口绑定能力不变。
+Kit新增包根接口`runPeerAdapterCheck({root, request, peerRoots})`，在0.36.0中复用既有peer请求与实际目录核验，无新CLI。该接口固定首个peer为锚，对剩余N−1个peer执行真实二peer调用，前后观察衔接并返回既有`professional-conclusion`。完整健康状态为`complete/ENGINEERING_CLEAR`，真实同次`closure-conflict`归为`finding`，混合不足为`partial`，无有效已完成项为`not-performed`。无效全局参数抛出SFC2003，未知异常直接抛出，漂移导致关联pair失效时，从`checked`移除并撤销其`finding`归因。原读取器保留`pass/not_pass`算法，仅对新入口提供准确范围说明。旧有`verifyPeerAdapterDirectories`/`verifyHostPeers`、Contracts Schema、Harness算法及四顶层命令保持不变。仅判断联合一致性，不保证每对或每个内部子比较均运行。
 
 **变更**
 
-- 0.35.0 在既有 `runBranchFieldCheck` / `check branch-fields` 中增加可选 `nodeType`，可明确选择回调或对象字段中的直接比较。旧六字段 `If` 请求兼容；精确唯一位置、直接字段和字符串语法边界不扩大。按每项实际结果区分发现与不足，不执行目标，不保证领域成功或全部分支覆盖。既有双公开入口绑定能力不变。
+- Kit新增包根接口`runPeerAdapterCheck({root, request, peerRoots})`，在0.36.0中复用既有peer请求与实际目录核验，无新CLI。该接口固定首个peer为锚，对剩余N−1个peer执行真实二peer调用，前后观察衔接并返回既有`professional-conclusion`。完整健康状态为`complete/ENGINEERING_CLEAR`，真实同次`closure-conflict`归为`finding`，混合不足为`partial`，无有效已完成项为`not-performed`。无效全局参数抛出SFC2003，未知异常直接抛出，漂移导致关联pair失效时，从`checked`移除并撤销其`finding`归因。原读取器保留`pass/not_pass`算法，仅对新入口提供准确范围说明。旧有`verifyPeerAdapterDirectories`/`verifyHostPeers`、Contracts Schema、Harness算法及四顶层命令保持不变。仅判断联合一致性，不保证每对或每个内部子比较均运行。
 
 **升级说明**
 
-四单元同时采用 0.35.0；需要新比较选择时显式提供 `nodeType`，旧调用不强制改写。候选、本地测试与静态退出 0 均不等于正式发布、安装、加载或业务通过；正式发布仍按四单元原发布合同核收。
+四单元需锁步采用0.36.0，旧调用不强制迁移。源候选、本地测试、静态退出均不能证明正式渠道、安装加载或业务可用性。正式0.35.0不包含新入口。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,7 +61,9 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-要验证尚未正式发布的 0.35.0 工作树候选版本，请将以下三个包分别打包至同一临时目录，并在新创建的消费者项目中安装这三个精确版本的 `.tgz` 文件：
+在正式发布前，若需对本地 0.36.0 源码候选进行已授权的开发验证，可使用以下方式。
+
+为确保本地验证使用与工作树一致的 0.36.0 版本，避免误用已发布的旧版 0.24.1，可执行以下命令打包并构建本地验证环境：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -69,24 +71,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.35.0.tgz" "$pack_dir/skill-family-harness-node-0.35.0.tgz" "$pack_dir/skill-family-engineering-kit-0.35.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.36.0.tgz" "$pack_dir/skill-family-harness-node-0.36.0.tgz" "$pack_dir/skill-family-engineering-kit-0.36.0.tgz")
 ```
 
-该流程确保本地使用与工作树一致的 0.35.0 版本进行验证，避免误用已发布的旧版 0.24.1。
-
-当精确版本 0.35.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
+当精确版本 0.36.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.35.0
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.36.0
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit check --root <repo>
 ```
 
-上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影以映射至目标项目上下文、执行诊断检查以发现工程配置中的不一致项。在 0.35.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit --help` 查看帮助。
-
+上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.36.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 

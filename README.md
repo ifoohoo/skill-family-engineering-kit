@@ -4,22 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.35.0 -->
+<!-- release-skill:release-version: 0.36.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.35.0** (2026-11-02)
+**0.36.0** (2026-11-03)
 
-Version 0.35.0 adds optional nodeType to runBranchFieldCheck / check branch-fields, allowing explicit selection of direct comparisons in callbacks or object properties. Existing six-field If requests remain compatible. Exact unique positions and the existing direct-field and string-comparison grammar remain bounded. Results distinguish findings from insufficient checks without executing targets or establishing domain success or exhaustive branch coverage. Public-surface binding behavior is unchanged.
+Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
 
 **Changed**
 
-- Version 0.35.0 adds optional nodeType to runBranchFieldCheck / check branch-fields, allowing explicit selection of direct comparisons in callbacks or object properties. Existing six-field If requests remain compatible. Exact unique positions and the existing direct-field and string-comparison grammar remain bounded. Results distinguish findings from insufficient checks without executing targets or establishing domain success or exhaustive branch coverage. Public-surface binding behavior is unchanged.
+- Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
 
 **Upgrade Notes**
 
-Adopt all four units at 0.35.0. Set nodeType explicitly for the new comparison selection; existing callers need no forced migration. A candidate, local tests or a static exit code of zero do not establish publication, installation, loading or business success. The existing four-unit release contract still applies.
+Adopt all four units at 0.36.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. The formal 0.35.0 package does not contain the new API.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-This working tree targets the unpublished 0.35.0 candidate. To verify it, pack all three working-tree packages into one temporary directory and install those exact 0.35.0 tarballs in a new consumer project:
+Before the formal publication of version 0.36.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.24.1.
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,23 +70,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.35.0.tgz" "$pack_dir/skill-family-harness-node-0.35.0.tgz" "$pack_dir/skill-family-engineering-kit-0.35.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.36.0.tgz" "$pack_dir/skill-family-harness-node-0.36.0.tgz" "$pack_dir/skill-family-engineering-kit-0.36.0.tgz")
 ```
 
-This checks the working-tree candidate without accidentally selecting an older release such as the previously published 0.24.1.
+This approach validates the working-tree candidate in a fresh consumer project. Third-party dependencies may still be downloaded from the registry.
 
-Only after exact version 0.35.0 is formally available in the public registry do the following installation and execution examples apply:
+Only after version 0.36.0 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.35.0
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.36.0
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit check --root <repo>
 ```
 
-The commands show help, skeleton generation, read-only inventory, managed-fact projection and diagnostics for engineering inconsistencies. Once that exact registry version is available, you can also view help without pre-installing Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.35.0 -- skill-family-kit --help`.
+These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -436,3 +436,50 @@ The declared governance branch and conclusion output ship with the 0.22.0 artifa
 Foundation 0.28.0 targets Windows 11 x64, local NTFS and ordinary users, with Contracts 1.21.0 and 56 registered objects. The three fixed-set-generation objects remain candidate, and other maturity registrations are unchanged. The official `skill-family-contracts@0.27.1` retains `contractsVersion=1.20.0` and 53 objects. Exact remote availability requires formal release evidence; this scope statement does not establish real-host qualification.
 
 The four commands in `skill-family-engineering-kit` remain unchanged. Prebuilt `win32-x64` binaries are loaded without local compilation. Launch via the npm `bin/npm-cli.js` or pnpm `bin/pnpm.cjs` script, with exact version matching required. Real host qualification requires additional driver, version, authentication, and business evidence—local test results do not imply approval. See [API reference](https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/).
+
+## Peer adapter professional conclusions
+
+The runPeerAdapterCheck entry is introduced in version 0.36.0 and is not present in the published 0.35.0 release. An unpublished source candidate is used solely for authorized development verification and does not constitute formal publication. Formal consumption relies on the exact published version actually installed and its public API exports. This API produces a real mechanical professional conclusion for the joint consistency of peer adapter closures, based on a fixed-anchor, N−1 verification pattern. It is **not** a semantic review, nor does it validate Audit or SOURCE rules, execute targets or generators, verify platform metadata, or prove installation, loading, business execution, or release. These responsibilities remain separate.
+
+The public API is:
+
+`runPeerAdapterCheck({root, request, peerRoots})` from the `skill-family-engineering-kit` package root.
+
+- `root` is a directory string representing the subject project root. It is resolved via the existing directory resolver into `subject.ref`, but is **not** treated as a peer root. No tree scanning is performed on `root`.
+- `request` follows the existing `adapter-peer-verification-request` contract and explicitly selects 2 to 16 peers. The entire request, including nested mappings, is fully copied before the first `await`.
+- `peerRoots` maps each unique `peerId` to a **canonical absolute path** representing the real, authoritative root of that peer under the existing filesystem binding contract. The caller owns authorization, selection completeness, and actual source/adapter relationships.
+
+The API performs three phases in sequence:
+
+1. **Pre-observation**: For each `peerRoot` in `peerRoots`, a single `createFilesystemRootBinding` and `observeFilesystemTree` call is made. This captures the binding and the full member list with `path`, `type`, `sha256`, `bytes`, and the relevant `statMode` or `permissionObservation` fields. No `contentBase64` or file content is copied. These observations are neither an atomic snapshot nor a historical baseline.
+2. **N−1 anchored verification**: The peer IDs are sorted. The first peer is fixed as the anchor. For each of the remaining `N−1` peers, a single call to the original `verifyPeerAdapterDirectories` is made, using the anchor and the current peer. This is not a full pairwise comparison. A source conflict may short-circuit the call before mapping equality is compared; do not claim every internal comparison ran. A pair without its required pre-observations is not called and remains insufficient.
+3. **Post-observation**: For each `peerRoot` that passed pre-observation, a second `observeFilesystemTree` is performed. This captures the final state for comparison with the pre-observation.
+
+The actual successful manifest is only valid if it aligns with the observed pre-observation state and original bytes. Unavailable or changed observations, or a manifest mismatch, withdraw that pair from `checked` and invalidate its finding attribution. Keep the actual old call result or error available for diagnosis.
+
+Only a **real, same-call SFC2004** with:
+- `details.kind = "closure-conflict"`,
+- `details.peerId` belonging to the current pair,
+- and input, root, and observation data that correspond to the same call,
+is considered a valid finding. Do not infer the conflict subtype by parsing message text. A schema-valid but incomplete, dangling, or missing mapping, a missing peer directory, or an unsafe, unreadable, or unsupported peer root is insufficient, not a closure finding.
+
+The `outcome.completion` and `outcome.code` are independent fields, with exactly five conditions:
+
+1. Every required pair validly completed, no finding: `completion` = `complete`; `code` = `ENGINEERING_CLEAR`.
+2. Every required pair validly completed, a finding exists: `completion` = `complete`; `code` = `ENGINEERING_FINDINGS`.
+3. A valid finding exists, another required pair is insufficient: `completion` = `partial`; `code` = `ENGINEERING_FINDINGS`.
+4. No finding, not all required pairs completed, at least one valid completed pair: `completion` = `partial`; `code` = `ENGINEERING_CHECK_INCOMPLETE`.
+5. No valid completed pair: `completion` = `not-performed`; `code` = `ENGINEERING_CHECK_INCOMPLETE`. Failed calls may already have occurred.
+
+`scope.checked` contains only valid completed pairs: `pair:<anchor>:<peer>:equivalence`. Invalid global request structure, unknown fields, duplicate peer IDs, root key mismatch, or malformed root coordinates throw `SFC2003` before checking. They do not return `not-performed` or any professional conclusion. Unknown runtime errors propagate. External process termination does not promise an output file.
+
+The returned `details` object retains:
+- The original `selection` (request and peerRoots),
+- Pre- and post-observation results,
+- The actual result or exception from each `verifyPeerAdapterDirectories` call,
+- The original `code`, `message`, and `details` from each call,
+- The reason for `insufficient` cases.
+
+The host saves the **original API return** exclusively in its authorized evidence directory and passes the saved proof to `readProfessionalProof`. The reader does not rerun the check or authenticate its author. No `proof-create` call may be used to fabricate a mechanical result. Combined semantic or other mechanical scopes retain their own originals.
+
+The original `verifyPeerAdapterDirectories` and `verifyHostPeers` APIs, their verified result schema, fail-closed behavior, and reader algorithm remain unchanged. This API does not execute targets or generators, decide Audit or SOURCE rules, check independent common resources or platform metadata, or prove installation, loading, business execution, or release.

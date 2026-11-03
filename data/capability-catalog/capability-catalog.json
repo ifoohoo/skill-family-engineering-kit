@@ -860,7 +860,8 @@
     "runSelectedArtifactCheck (packages/skill-family-engineering-kit/src/selected-artifact-check.mjs)",
     "runSourceGeneratedCheck (packages/skill-family-engineering-kit/src/source-generated-check.mjs)",
     "runBranchFieldCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
-    "runPublicSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)"
+    "runPublicSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
+    "runPeerAdapterCheck (packages/skill-family-engineering-kit/src/peer-adapter-check.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/check.mjs",
@@ -871,7 +872,8 @@
     "packages/skill-family-engineering-kit/src/selected-artifact-check.mjs",
     "packages/skill-family-engineering-kit/src/source-generated-check.mjs",
     "packages/skill-family-engineering-kit/data/check-contracts/source-generated-declaration.schema.json",
-    "packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs"
+    "packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs",
+    "packages/skill-family-engineering-kit/src/peer-adapter-check.mjs"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
@@ -879,14 +881,16 @@
     "packages/skill-family-engineering-kit/test/check-equivalence.test.mjs",
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
     "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
-    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs"
+    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/host.test.mjs"
    ],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
     "packages/skill-family-engineering-kit/test/core-check.test.mjs",
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
     "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
-    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs"
+    "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs",
+    "packages/skill-family-engineering-kit/test/host.test.mjs"
    ]
   },
   {

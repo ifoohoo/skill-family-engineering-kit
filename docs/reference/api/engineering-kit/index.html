@@ -1634,6 +1634,67 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#同级适配器的专业结论" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        同级适配器的专业结论
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="同级适配器的专业结论">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#精确签名与参数职责" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        精确签名与参数职责
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用与观察范围" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用与观察范围
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#输出与错误边界" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        输出与错误边界
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#原件与证明读取器" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        原件与证明读取器
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
     </ul>
 
 </nav>
@@ -3499,6 +3560,67 @@
 
 </li>
 
+        <li class="md-nav__item">
+  <a href="#同级适配器的专业结论" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        同级适配器的专业结论
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="同级适配器的专业结论">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#精确签名与参数职责" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        精确签名与参数职责
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用与观察范围" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用与观察范围
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#输出与错误边界" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        输出与错误边界
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#原件与证明读取器" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        原件与证明读取器
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
     </ul>
 
 </nav>
@@ -4440,6 +4562,61 @@ node -e 'console.log(process.argv[1])' '{\&quot;entries\&quot;:[]}'
 <li>本接口为只读，不扫描未选树、不启动目标、不联网、不写目标。</li>
 <li>保留真实原始结论，后续通过 <code>readProfessionalProof</code> 或 <code>check proof</code> 读取。</li>
 <li>局部 <code>CLEAR</code> 不证明完整 <code>METHOD003</code>、业务同一性/条件、Schema 内容有效、运行时分派、安装加载或发布批准。</li>
+</ul>
+<h2 id="同级适配器的专业结论">同级适配器的专业结论<a class="headerlink" href="#同级适配器的专业结论" title="Permanent link">&para;</a></h2>
+<p>该入口在0.36.0版本引入，正式发布版本0.35.0中不包含该功能。未发布源码候选仅用于已授权的开发验证，不得据此宣称功能已正式发布；正式消费必须基于实际安装的精确已发布版本及其公开导出的API。</p>
+<p><code>runPeerAdapterCheck({root, request, peerRoots})</code></p>
+<h3 id="精确签名与参数职责">精确签名与参数职责<a class="headerlink" href="#精确签名与参数职责" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>root</code></strong>：检查对象目录字符串，由既有目录解析取得实际 <code>subject.ref</code>。它不是某个 peer 的根，不对 <code>root</code> 再作树扫描，也不创建 <code>FileSystemRoot</code> 新类型。</li>
+<li><strong><code>request</code></strong>：复用现有 <code>adapter-peer-verification-request</code> 结构，包含 2 至 16 个显式 peer 与完整逻辑映射，输入在首次 <code>await</code> 前完整复制。</li>
+<li><strong><code>peerRoots</code></strong>：映射对象，键为 <code>peerId</code>，值为对应适配器的规范绝对真实根路径，必须为显式提供、可读且路径合法。真实根继续满足既有根绑定合同。</li>
+</ul>
+<h3 id="调用与观察范围">调用与观察范围<a class="headerlink" href="#调用与观察范围" title="Permanent link">&para;</a></h3>
+<ul>
+<li>固定 <code>peerRoots</code> 中按 <code>peerId</code> 排序的第一个为锚点，对剩余每个 <code>peerId</code> 调用一次原 <code>verifyPeerAdapterDirectories</code> 接口，共 N−1 次（四 peer 为三次）。这里描述完整选集的必需 pair 数；前观察不足时，相应 pair 不调用并保留不足原因。</li>
+<li><strong>第一阶段</strong>：对每个显式 <code>peerRoot</code> 执行一次前观察，调用 <code>createFilesystemRootBinding</code> 与 <code>observeFilesystemTree</code>，记录绑定与成员路径、类型、SHA256、字节数、权限字段。</li>
+<li><strong>第二阶段</strong>：按 <code>peerId</code> 排序，固定首个为锚，对其他 peer 各调用一次原 <code>verifyPeerAdapterDirectories</code>。</li>
+<li><strong>第三阶段</strong>：对具备前观察的 <code>peerRoot</code> 执行一次后观察，调用 <code>createFilesystemRootBinding</code> 与 <code>observeFilesystemTree</code>。</li>
+<li>仅保留路径、类型、摘要、字节数、权限等字段，不复制 <code>contentBase64</code> 或文件全文，不创建永久 manifest、历史基准、锁、控制账或原子隔离承诺。</li>
+<li>实际成功 manifest 与对应前观察的完整成员/原字节衔接；前后观察不一致、不可用或 manifest 不相符时，撤销关联 pair 的 <code>checked</code> 状态及其发现归因。</li>
+<li>真实原调用仍保留供定位，不因漂移或不一致而丢失。</li>
+</ul>
+<p>来源闭包相等与逻辑映射语义相等都是等价关系，因此上述 N−1 个锚关系足以判断所选 peer 的联合一致性。原机制发现来源冲突时，可能不再比较同一 pair 的映射相等；结果不声称这些内部子比较均已运行。</p>
+<h3 id="输出与错误边界">输出与错误边界<a class="headerlink" href="#输出与错误边界" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>completion</code></strong> 为互斥条件，仅取值：</li>
+<li><code>complete</code>：全部必需 pair 有效完成。</li>
+<li><code>partial</code>：存在至少一个有效已完成 pair，但未全部完成。</li>
+<li><code>not-performed</code>：无有效已完成 pair；可能已有失败调用，不等于未曾尝试。</li>
+<li><strong><code>outcome.code</code></strong> 独立于 <code>completion</code>，取值：</li>
+<li><code>ENGINEERING_CLEAR</code>：全部必需 pair 有效完成，无 <code>finding</code>。</li>
+<li><code>ENGINEERING_FINDINGS</code>：全部必需 pair 有效完成，且存在 <code>finding</code>；或部分完成但存在 <code>finding</code>。</li>
+<li><code>ENGINEERING_CHECK_INCOMPLETE</code>：没有有效 <code>finding</code>，且存在必需 pair 未完成。</li>
+<li><strong><code>scope.checked</code></strong> 仅列出实际有效完成的 pair，格式为 <code>pair:&lt;anchor&gt;:&lt;peer&gt;:equivalence</code>，锚点固定为排序首 <code>peerId</code>。未完成或漂移失效的 pair 不列入。</li>
+<li><strong>真实 <code>finding</code></strong> 仅当满足：</li>
+<li><code>SFC2004</code> 且 <code>details.kind=closure-conflict</code></li>
+<li><code>details.peerId</code> 属于本次调用 pair</li>
+<li>输入/根/前后观察可对应</li>
+<li>且未被漂移撤销</li>
+<li><strong><code>insufficient</code></strong> 保留于：</li>
+<li>请求结构合法但对实际 SKILL 集合缺漏/悬空的 mapping</li>
+<li>缺失 peer 目录</li>
+<li>不可读/不安全/不支持的 peer 读取</li>
+<li>未完成的 pair</li>
+<li><strong>非法全局请求结构</strong>（如未知字段、重复 <code>peerId</code>、根键集或坐标格式错误）在检查前抛出参数错误，抛出 <code>SFC2003</code>，不返回 <code>not-performed</code> 等专业结论。</li>
+<li><strong>未知运行异常</strong> 继续抛出，不捕获，不改记为 <code>insufficient</code> 或 <code>not-performed</code>。</li>
+<li><strong>外部进程终止</strong> 时不保证结论存在，不承诺完整性。</li>
+</ul>
+<h3 id="原件与证明读取器">原件与证明读取器<a class="headerlink" href="#原件与证明读取器" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>details</code> 含复制的 <code>selection</code>、前后观察、实际 pair 原返回或异常的 <code>code</code>、<code>message</code>、<code>details</code> 及不足原因，不承诺保存 Error 堆栈等全部进程内部对象。</li>
+<li>宿主在获准证据位置独占保存真实返回，再交 <code>readProfessionalProof</code> 解释；不重跑、不鉴伪。</li>
+<li><strong>禁止以 <code>proof-create</code> 手填机械结果</strong>。</li>
+<li>旧 <code>verifyPeerAdapterDirectories</code>、<code>verifyHostPeers</code>、成功 <code>verified</code> Schema 和失败关闭行为保持不变。</li>
+<li>本入口不判 Audit/SOURCE 规则，不验任意生成器，不承担独立共同资源或平台元数据检查，不证明宿主安装/加载/业务运行/发布。</li>
+<li>完整源权威静态审阅等仍独立核收，不可由 peer 结论替代。</li>
+<li>与语义/其他机械范围合选时分别保留原件，不汇总伪完整。</li>
 </ul>
 
 

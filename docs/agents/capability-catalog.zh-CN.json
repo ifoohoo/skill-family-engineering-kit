@@ -1212,7 +1212,8 @@
     "0.31.0 候选 runSelectedArtifactCheck({root, artifacts})；每项 path，至少选择 schema:{path,dialect} 或 baseline:{sha256,version?}；CLI check selected-artifacts --root <dir> --selection <rel> --json",
     "runSourceGeneratedCheck({root,declaration}) 读取真实声明；共享 source-generated-declaration.schema.json 为可选读取合同，不证明旧项目此前已采用",
     "runBranchFieldCheck({root,branches})；每项仍含 sourceRef、line、column、resultIdentifier、schemaRef、schemaPointer，可选 nodeType 仅 IfStatement 或 BinaryExpression，省略为 IfStatement；CLI check branch-fields --root <dir> --selection <rel> --json",
-    "0.34.0 候选 runPublicSurfaceBindingCheck({root,bindings})；每项 skill:{ref,frontmatterKey}、route:{ref,startLine,endLine,constant,entryKey}、method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}、schemas:{task,result,parameters,domainResult}；CLI check public-surface-bindings --root <dir> --selection <rel> --json"
+    "0.34.0 候选 runPublicSurfaceBindingCheck({root,bindings})；每项 skill:{ref,frontmatterKey}、route:{ref,startLine,endLine,constant,entryKey}、method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}、schemas:{task,result,parameters,domainResult}；CLI check public-surface-bindings --root <dir> --selection <rel> --json",
+    "runPeerAdapterCheck: {root, request, peerRoots} — 该入口在0.36.0版本引入，正式发布版本0.35.0中不包含该功能。未发布源码候选仅用于已授权的开发验证，不得据此宣称功能已正式发布；正式消费必须基于实际安装的精确已发布版本及其公开导出的API。 仅包根 API，无新增 CLI；固定锚点的 N−1 次真实调用核验所选 peer 的联合一致性。"
    ],
    "outputs": [
     "发现清单；退出码 findings=1、mechanism=2",

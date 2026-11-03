@@ -113,6 +113,7 @@ import { matchAnyGlob } from "./workspace.mjs";
 import { runStaticReferenceCheck } from "./static-reference-check.mjs";
 import { runBranchFieldCheck, runPublicSurfaceBindingCheck } from "./static-contract-binding-check.mjs";
 import { runSelectedArtifactCheck } from "./selected-artifact-check.mjs";
+import { runPeerAdapterCheck } from "./peer-adapter-check.mjs";
 import { runSourceGeneratedCheck, SOURCE_GENERATED_DECLARATION_SCHEMA_ID } from "./source-generated-check.mjs";
 import {
   createProfessionalProof,
@@ -258,6 +259,7 @@ export {
   runEntryContractCheck,
   runStaticReferenceCheck,
   runSelectedArtifactCheck,
+  runPeerAdapterCheck,
   runSourceGeneratedCheck,
   runBranchFieldCheck,
   runPublicSurfaceBindingCheck,
