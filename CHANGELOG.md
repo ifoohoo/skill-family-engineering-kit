@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.37.0 locale=en baseline=sha256:d3dab1b367a45cac3362bd7051731899effa853734bfe580baed32bb78e5fd08 -->
+## [0.37.0] - 2026-11-05
+
+Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
+
+### Changed
+
+- Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
+
+### Upgrade Notes
+
+Adopt all four units at 0.37.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. Version 0.36.0 does not contain the new entry.
+<!-- release-skill:changelog:end version=0.37.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.36.0 locale=en baseline=sha256:f94ca0f5ba97041dd7c4ea3d2d174facde43a85662b056d3ec0bc64ce80c923d -->
 ## [0.36.0] - 2026-11-03
 

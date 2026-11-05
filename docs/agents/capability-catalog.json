@@ -861,6 +861,7 @@
     "runSourceGeneratedCheck (packages/skill-family-engineering-kit/src/source-generated-check.mjs)",
     "runBranchFieldCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
     "runPublicSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
+    "runNativeEntryBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
     "runPeerAdapterCheck (packages/skill-family-engineering-kit/src/peer-adapter-check.mjs)"
    ],
    "sourceRefs": [

@@ -5,22 +5,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.36.0 -->
+<!-- release-skill:release-version: 0.37.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.36.0** (2026-11-03)
+**0.37.0** (2026-11-05)
 
-Kit新增包根接口`runPeerAdapterCheck({root, request, peerRoots})`，在0.36.0中复用既有peer请求与实际目录核验，无新CLI。该接口固定首个peer为锚，对剩余N−1个peer执行真实二peer调用，前后观察衔接并返回既有`professional-conclusion`。完整健康状态为`complete/ENGINEERING_CLEAR`，真实同次`closure-conflict`归为`finding`，混合不足为`partial`，无有效已完成项为`not-performed`。无效全局参数抛出SFC2003，未知异常直接抛出，漂移导致关联pair失效时，从`checked`移除并撤销其`finding`归因。原读取器保留`pass/not_pass`算法，仅对新入口提供准确范围说明。旧有`verifyPeerAdapterDirectories`/`verifyHostPeers`、Contracts Schema、Harness算法及四顶层命令保持不变。仅判断联合一致性，不保证每对或每个内部子比较均运行。
+Engineering Kit 0.37.0 版本引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
 
 **变更**
 
-- Kit新增包根接口`runPeerAdapterCheck({root, request, peerRoots})`，在0.36.0中复用既有peer请求与实际目录核验，无新CLI。该接口固定首个peer为锚，对剩余N−1个peer执行真实二peer调用，前后观察衔接并返回既有`professional-conclusion`。完整健康状态为`complete/ENGINEERING_CLEAR`，真实同次`closure-conflict`归为`finding`，混合不足为`partial`，无有效已完成项为`not-performed`。无效全局参数抛出SFC2003，未知异常直接抛出，漂移导致关联pair失效时，从`checked`移除并撤销其`finding`归因。原读取器保留`pass/not_pass`算法，仅对新入口提供准确范围说明。旧有`verifyPeerAdapterDirectories`/`verifyHostPeers`、Contracts Schema、Harness算法及四顶层命令保持不变。仅判断联合一致性，不保证每对或每个内部子比较均运行。
+- Engineering Kit 0.37.0 引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
 
 **升级说明**
 
-四单元需锁步采用0.36.0，旧调用不强制迁移。源候选、本地测试、静态退出均不能证明正式渠道、安装加载或业务可用性。正式0.35.0不包含新入口。
+四单元需同步升级至 0.37.0 才能使用新功能，旧调用方式不强制迁移。源码候选、本地测试与静态退出均不能作为正式渠道、安装加载或业务可用性的依据。0.36.0 不包含此新接口。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,9 +61,9 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-在正式发布前，若需对本地 0.36.0 源码候选进行已授权的开发验证，可使用以下方式。
+在正式发布前，若需对本地 0.37.0 源码候选进行已授权的开发验证，可使用以下方式。
 
-为确保本地验证使用与工作树一致的 0.36.0 版本，避免误用已发布的旧版 0.24.1，可执行以下命令打包并构建本地验证环境：
+为确保本地验证使用与工作树一致的 0.37.0 版本，避免误用已发布的旧版 0.36.0，可执行以下命令打包并构建本地验证环境：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -71,21 +71,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.36.0.tgz" "$pack_dir/skill-family-harness-node-0.36.0.tgz" "$pack_dir/skill-family-engineering-kit-0.36.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.37.0.tgz" "$pack_dir/skill-family-harness-node-0.37.0.tgz" "$pack_dir/skill-family-engineering-kit-0.37.0.tgz")
 ```
 
-当精确版本 0.36.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
+当精确版本 0.37.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.36.0
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.37.0
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit check --root <repo>
 ```
 
-上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.36.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help` 查看帮助。
+上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.37.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 

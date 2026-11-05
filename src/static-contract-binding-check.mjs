@@ -6,7 +6,7 @@ import { parse } from "acorn";
 import { parser as pythonParser } from "@lezer/python";
 import { isMap, isScalar, parseDocument, visit } from "yaml";
 import { ContractsError, findSchemaByObject, validateDocument } from "skill-family-contracts";
-import { computeResourceClosure, readFileStrict } from "skill-family-harness-node";
+import { classifyPathInput, computeResourceClosure, readFileStrict, resolveContained } from "skill-family-harness-node";
 import { invalidParamsError } from "./errors.mjs";
 import { KIT_TOOL_NAME, KIT_VERSION } from "./skeleton.mjs";
 import { resolveTargetRoot } from "./workspace.mjs";
@@ -625,4 +625,267 @@ export async function checkPublicSurfaceBindingsAction(options) {
   if (parsed.reason || !fields(parsed.value, ["bindings"])) throw invalidParamsError("selection must be unambiguous JSON containing only bindings");
   const selected = bindingRequestSnapshot({ root, bindings: parsed.value.bindings });
   return executeBindings(root, selected.bindings, receipt(selection, read));
+}
+
+const NATIVE_BINDING_FIELDS = ["commonManifestRef", "commonSkillIndex", "platformManifestRef", "mappingIndex"];
+const NATIVE_LIMITATIONS = [
+  "Only caller-selected native-entry identities and four direct declaration relationships were compared. The caller owns common-manifest authority, same-business correspondence and selection completeness.",
+  "No Markdown body, method-contract version, natural-language identity, URI follow, Registry or target execution was checked.",
+  "No target code is imported, evaluated or executed; no target files or network state are changed. References are compared as read, never followed to replace the selected authority.",
+  "Strict reads and the resource closure describe observed bytes, not an atomic snapshot or isolation from concurrent writers.",
+];
+
+function nativeBindingRequestSnapshot(options) {
+  if (!fields(options, ["root", "bindings"]) || typeof options.root !== "string" || !options.root
+    || !Array.isArray(options.bindings) || options.bindings.length === 0) {
+    throw invalidParamsError("runNativeEntryBindingCheck requires only explicit root and non-empty bindings");
+  }
+  const seen = new Set();
+  const platformSeen = new Map();
+  const bindings = Array.from(options.bindings, (binding) => {
+    if (!fields(binding, NATIVE_BINDING_FIELDS)) {
+      throw invalidParamsError("each native binding requires only commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex");
+    }
+    const copy = Object.fromEntries(NATIVE_BINDING_FIELDS.map((key) => [key, binding[key]]));
+    if (![copy.commonManifestRef, copy.platformManifestRef].every((value) => typeof value === "string" && value)
+      || ![copy.commonSkillIndex, copy.mappingIndex].every((value) => Number.isSafeInteger(value) && value >= 0)) {
+      throw invalidParamsError("native binding refs must be non-empty strings and indexes must be non-negative safe integers");
+    }
+    const identity = JSON.stringify(copy);
+    if (seen.has(identity)) throw invalidParamsError("bindings contains a duplicate selection");
+    seen.add(identity);
+    const platformKey = JSON.stringify({ platformManifestRef: copy.platformManifestRef, mappingIndex: copy.mappingIndex });
+    const previous = platformSeen.get(platformKey);
+    if (previous && (previous.commonManifestRef !== copy.commonManifestRef || previous.commonSkillIndex !== copy.commonSkillIndex)) {
+      throw invalidParamsError("the same platform mapping is selected with conflicting common records");
+    }
+    platformSeen.set(platformKey, copy);
+    return copy;
+  });
+  return { root: options.root, bindings };
+}
+
+function posixRef(value) {
+  return path.posix.normalize(String(value).replaceAll("\\", "/"));
+}
+
+function identityRef(root, identity) {
+  return path.relative(root, identity).split(path.sep).join("/");
+}
+
+function nativePathIssue(value) {
+  if (typeof value !== "string" || !value) return { reason: "native path is not a direct non-empty local path" };
+  if (/:\/\//.test(value) || value.startsWith("~") || /[*?]/.test(value) || value.includes("${")) {
+    return { reason: "native path is a URI or expansion rather than a direct local path" };
+  }
+  const classification = classifyPathInput(value);
+  if (!classification.ok) {
+    return {
+      reason: `native path is outside the supported contained local subset (${classification.kind})`,
+      cause: { code: "SFC2004", kind: classification.kind },
+    };
+  }
+  return null;
+}
+
+async function containedFile(root, base, relative) {
+  const relativeIssue = nativePathIssue(relative);
+  if (relativeIssue) return relativeIssue;
+  if (base === ".") return { ref: posixRef(relative), identity: await resolveContained(root, relative) };
+  const baseIssue = nativePathIssue(base);
+  if (baseIssue) return baseIssue;
+  await resolveContained(root, base);
+  const combined = path.posix.join(posixRef(base), posixRef(relative));
+  return { ref: combined, identity: await resolveContained(root, combined) };
+}
+
+function directNonEmpty(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
+function selectedNativeRecord(list, index, required, missingReason, fieldReason) {
+  if (!Array.isArray(list) || index >= list.length) return { reason: missingReason };
+  const item = list[index];
+  if (!object(item) || required.some((key) => !directNonEmpty(item[key]))) return { reason: fieldReason };
+  return { value: item };
+}
+
+async function observeNative(root, rel, cache, identity = null) {
+  const resolved = identity ?? await resolveContained(root, rel);
+  if (cache.has(resolved)) return cache.get(resolved);
+  const read = await readFileStrict(root, rel, { encoding: "utf8" });
+  const observed = { identity: resolved, ref: posixRef(rel), sha256: read.sha256, bytes: read.bytes, content: read.content };
+  cache.set(resolved, observed);
+  return observed;
+}
+
+function pushNativeResource(record, role, observed) {
+  record.resources.push({ role, ref: observed.ref, sha256: observed.sha256, bytes: observed.bytes });
+}
+
+async function executeNativeBindings(root, bindings, selectionReceipt = null) {
+  const records = [];
+  for (const [offset, binding] of bindings.entries()) {
+    const record = { index: offset + 1, ...binding, resources: [], comparisons: [], ...unknown("not checked") };
+    records.push(record);
+    try {
+      const cache = new Map();
+      const platformObserved = await observeNative(root, binding.platformManifestRef, cache);
+      pushNativeResource(record, "platform-manifest", platformObserved);
+      const commonObserved = await observeNative(root, binding.commonManifestRef, cache);
+      pushNativeResource(record, "common-manifest", commonObserved);
+      const platformParsed = bindingJson(platformObserved.content);
+      const commonParsed = bindingJson(commonObserved.content);
+      if (platformParsed.reason || commonParsed.reason) {
+        invalidateBinding(record, platformParsed.reason || commonParsed.reason);
+        continue;
+      }
+      if (!object(platformParsed.value) || !directNonEmpty(platformParsed.value.source) || !Array.isArray(platformParsed.value.logicalMappings)) {
+        invalidateBinding(record, "platform manifest is missing a direct source or logicalMappings array");
+        continue;
+      }
+      if (!object(commonParsed.value) || !directNonEmpty(commonParsed.value.sourceRoot) || !Array.isArray(commonParsed.value.skills)) {
+        invalidateBinding(record, "common manifest is missing a direct sourceRoot or skills array");
+        continue;
+      }
+      const mapping = selectedNativeRecord(
+        platformParsed.value.logicalMappings, binding.mappingIndex,
+        ["logicalName", "physicalName", "path"],
+        "selected mappingIndex is outside the platform logicalMappings array",
+        "selected mapping is missing direct non-empty logicalName, physicalName or path",
+      );
+      const skill = selectedNativeRecord(
+        commonParsed.value.skills, binding.commonSkillIndex,
+        ["logicalName", "source"],
+        "selected commonSkillIndex is outside the common skills array",
+        "selected common skill is missing direct non-empty logicalName or source",
+      );
+      if (mapping.reason || skill.reason) {
+        invalidateBinding(record, mapping.reason || skill.reason);
+        continue;
+      }
+      const declaredLocated = await containedFile(root, ".", platformParsed.value.source);
+      if (declaredLocated.reason) {
+        invalidateBinding(record, declaredLocated.reason, declaredLocated.cause);
+        continue;
+      }
+      let declaredObserved;
+      try {
+        declaredObserved = await observeNative(root, declaredLocated.ref, cache, declaredLocated.identity);
+      } catch (error) {
+        const cause = mechanismCause(error);
+        invalidateBinding(record, "declared platform source could not be read (" + cause.kind + ")", cause);
+        continue;
+      }
+      pushNativeResource(record, "declared-source", declaredObserved);
+      if (declaredObserved.identity !== commonObserved.identity) {
+        const declaredParsed = bindingJson(declaredObserved.content);
+        if (declaredParsed.reason || !object(declaredParsed.value)) {
+          invalidateBinding(record, declaredParsed.reason || "declared platform source is not an unambiguous JSON object");
+          continue;
+        }
+      }
+      const platformDir = path.posix.dirname(posixRef(binding.platformManifestRef));
+      const platformSkillLocated = await containedFile(root, platformDir, mapping.value.path);
+      const commonBase = commonParsed.value.sourceRoot === "." ? "." : commonParsed.value.sourceRoot;
+      const commonSkillLocated = await containedFile(root, commonBase, skill.value.source);
+      if (platformSkillLocated.reason || commonSkillLocated.reason) {
+        invalidateBinding(record, platformSkillLocated.reason || commonSkillLocated.reason, platformSkillLocated.cause || commonSkillLocated.cause);
+        continue;
+      }
+      const platformSkillObserved = await observeNative(root, platformSkillLocated.ref, cache, platformSkillLocated.identity);
+      pushNativeResource(record, "platform-skill", platformSkillObserved);
+      const commonSkillObserved = await observeNative(root, commonSkillLocated.ref, cache, commonSkillLocated.identity);
+      pushNativeResource(record, "common-skill", commonSkillObserved);
+      const platformName = bindingSkillIdentity(platformSkillObserved.content, "name");
+      const commonName = bindingSkillIdentity(commonSkillObserved.content, "name");
+      if (platformName.reason || commonName.reason) {
+        invalidateBinding(record, platformName.reason || commonName.reason);
+        continue;
+      }
+      const actual = [
+        identityRef(root, declaredObserved.identity),
+        mapping.value.physicalName,
+        mapping.value.logicalName,
+        skill.value.logicalName,
+      ];
+      const expected = [
+        identityRef(root, commonObserved.identity),
+        platformName.value,
+        skill.value.logicalName,
+        commonName.value,
+      ];
+      record.comparisons = actual.map((value, index) => ({
+        actual: value, expected: expected[index], status: value === expected[index] ? "checked" : "findings",
+        reason: value === expected[index] ? "selected declaration values agree" : "selected declaration values contradict",
+      }));
+      record.status = record.comparisons.some((item) => item.status === "findings") ? "findings" : "checked";
+      record.reason = record.status === "findings" ? "selected native-entry declarations contain a proven conflict" : "all four selected declaration comparisons completed";
+    } catch (error) {
+      const cause = mechanismCause(error);
+      invalidateBinding(record, "a required binding resource could not be read (" + cause.kind + ")", cause);
+    }
+  }
+  const completed = records.filter((record) => record.status !== "insufficient");
+  let closure = null;
+  if (completed.length) {
+    const resources = records.flatMap((record) => record.resources);
+    if (selectionReceipt) resources.push(selectionReceipt);
+    try {
+      closure = await computeResourceClosure({ root, resources: resources.map(({ ref }) => ({ path: ref, role: "input" })) });
+      const actual = new Map(closure.resources.map((item) => [item.path, item.sha256]));
+      const observed = new Map();
+      for (const item of resources) {
+        if (!observed.has(item.ref)) observed.set(item.ref, new Set());
+        observed.get(item.ref).add(item.sha256);
+      }
+      const stable = (item) => observed.get(item.ref).size === 1 && actual.get(item.ref) === item.sha256;
+      for (const record of completed) {
+        if (![...record.resources, ...(selectionReceipt ? [selectionReceipt] : [])].every(stable)) {
+          invalidateBinding(record, "required observation bytes differ between strict reads and resource closure");
+        }
+      }
+    } catch (error) {
+      const cause = mechanismCause(error);
+      closure = null;
+      for (const record of completed) invalidateBinding(record, "binding resource closure could not complete (" + cause.kind + ")", cause);
+    }
+  }
+  const checked = records.flatMap((record) => record.comparisons.map((_item, index) => "binding-" + record.index + "-comparison-" + (index + 1)));
+  const finding = records.some((record) => record.status === "findings");
+  const incomplete = records.some((record) => record.status === "insufficient");
+  const conclusion = {
+    schemaVersion: 1, kind: "skill-family.professional-conclusion",
+    provider: { id: KIT_TOOL_NAME, version: KIT_VERSION, entry: "runNativeEntryBindingCheck" }, subject: { ref: root },
+    scope: { checked, limitations: [...NATIVE_LIMITATIONS, ...records.filter((record) => record.status === "insufficient").map((record) => "binding-" + record.index + ": " + record.reason)] },
+    outcome: {
+      completion: incomplete ? checked.length ? "partial" : "not-performed" : "complete",
+      code: finding ? "ENGINEERING_FINDINGS" : incomplete ? "ENGINEERING_CHECK_INCOMPLETE" : "ENGINEERING_CLEAR",
+      summary: finding ? "The selected native-entry bindings contain direct declaration conflicts."
+        : incomplete ? "The selected native-entry bindings were not completely checked." : "All four comparisons in every selected native-entry binding completed without findings.",
+    },
+    details: { bindings: records, selection: selectionReceipt, closure },
+  };
+  const schema = findSchemaByObject("professional-conclusion");
+  const validated = validateDocument(conclusion, { schemaId: schema.$id, dialect: schema.dialect, policy: "strict" });
+  if (!validated.valid) throw new ContractsError("SFC1001", "generated native-entry binding conclusion violates its public contract", { errors: validated.errors });
+  return validated.data;
+}
+
+export async function runNativeEntryBindingCheck(options) {
+  const selected = nativeBindingRequestSnapshot(options);
+  const root = await resolveTargetRoot(selected.root);
+  return executeNativeBindings(root, selected.bindings);
+}
+
+export async function checkNativeEntryBindingsAction(options) {
+  if (!fields(options, ["root", "selection"]) || typeof options.root !== "string" || !options.root
+    || typeof options.selection !== "string" || !options.selection) throw invalidParamsError("native-entry-bindings requires explicit root and relative selection file");
+  const { root: requestedRoot, selection } = options;
+  const root = await resolveTargetRoot(requestedRoot);
+  const read = await readFileStrict(root, selection, { encoding: "utf8" });
+  const parsed = bindingJson(read.content);
+  if (parsed.reason || !fields(parsed.value, ["bindings"])) throw invalidParamsError("selection must be unambiguous JSON containing only bindings");
+  const selected = nativeBindingRequestSnapshot({ root, bindings: parsed.value.bindings });
+  return executeNativeBindings(root, selected.bindings, receipt(selection, read));
 }

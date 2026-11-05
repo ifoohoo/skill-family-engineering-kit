@@ -1,5 +1,20 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.37.0 locale=zh-CN baseline=sha256:481e2cb0315637221e677ffdfa693c18ae66359a4046a2d8ac380993268e7910 -->
+## [0.37.0] - 2026-11-05
+
+Engineering Kit 0.37.0 版本引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
+
+### 变更
+
+- Engineering Kit 0.37.0 引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
+
+### 升级说明
+
+四单元需同步升级至 0.37.0 才能使用新功能，旧调用方式不强制迁移。源码候选、本地测试与静态退出均不能作为正式渠道、安装加载或业务可用性的依据。0.36.0 不包含此新接口。
+<!-- release-skill:changelog:end version=0.37.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.36.0 locale=zh-CN baseline=sha256:41552fa34ed38f790bae3274eb0ff0531331a05c1775e396fba940e21e1206f1 -->
 ## [0.36.0] - 2026-11-03
 

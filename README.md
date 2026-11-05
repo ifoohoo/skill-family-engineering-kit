@@ -4,22 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.36.0 -->
+<!-- release-skill:release-version: 0.37.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.36.0** (2026-11-03)
+**0.37.0** (2026-11-05)
 
-Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
+Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
 
 **Changed**
 
-- Kit introduces the root-level API `runPeerAdapterCheck({root, request, peerRoots})` in version 0.36.0, reusing existing peer requests and actual directory verification without a new CLI. The API fixes the first peer as the anchor and performs N−1 real two-peer calls on the remaining peers, binding before/after filesystem observations and returning the existing `professional-conclusion`. Full health is `complete/ENGINEERING_CLEAR`, an attributable `closure-conflict` from the same actual call is classified as `finding`, mixed unmet conditions as `partial`, and no valid completed pair as `not-performed`, even when failed calls were attempted. Invalid global parameters raise SFC2003, unknown exceptions are thrown directly, and drift causing a pair to become invalid results in its removal from `checked` and withdrawal of its `finding` attribution. The original reader retains the `pass/not_pass` logic, with only the new entry receiving precise scope clarification. Existing `verifyPeerAdapterDirectories`/`verifyHostPeers`, Contracts Schema, Harness algorithms, and four top-level commands remain unchanged. Only joint consistency is assessed; no guarantee is made that every pairwise or internal sub-comparison was executed.
+- Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
 
 **Upgrade Notes**
 
-Adopt all four units at 0.36.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. The formal 0.35.0 package does not contain the new API.
+Adopt all four units at 0.37.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. Version 0.36.0 does not contain the new entry.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Before the formal publication of version 0.36.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.24.1.
+Before the formal publication of version 0.37.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.36.0.
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,23 +70,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.36.0.tgz" "$pack_dir/skill-family-harness-node-0.36.0.tgz" "$pack_dir/skill-family-engineering-kit-0.36.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.37.0.tgz" "$pack_dir/skill-family-harness-node-0.37.0.tgz" "$pack_dir/skill-family-engineering-kit-0.37.0.tgz")
 ```
 
 This approach validates the working-tree candidate in a fresh consumer project. Third-party dependencies may still be downloaded from the registry.
 
-Only after version 0.36.0 is formally available in the public registry do the following installation and execution examples apply:
+Only after version 0.37.0 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.36.0
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.37.0
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit check --root <repo>
 ```
 
-These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.36.0 -- skill-family-kit --help`.
+These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 

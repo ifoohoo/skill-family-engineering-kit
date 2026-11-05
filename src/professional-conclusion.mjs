@@ -312,6 +312,8 @@ function interpretFoundationProof(document) {
               ? "recorded selected branch field checks completed without findings; actual direct-field and literal coverage is recorded in the conclusion; this is not a full Foundation static review"
             : conclusion.provider.entry === "runPublicSurfaceBindingCheck"
               ? "recorded selected public-surface binding checks completed without findings; only the six declared identity and protocol relationships were checked; this is not a full Foundation static review"
+            : conclusion.provider.entry === "runNativeEntryBindingCheck"
+              ? "recorded selected native-entry binding checks completed without findings; only the four declared identity relationships were checked; this is not a full Foundation static review"
             : conclusion.provider.entry === "runPeerAdapterCheck"
               ? "recorded selected anchor-peer joint-equivalence checks completed without findings; this is not a full Foundation static review and does not imply every pairwise or internal sub-comparison was executed"
             : "recorded declared engineering check completed without findings; this is not a full Foundation static review"

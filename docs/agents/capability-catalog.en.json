@@ -1197,7 +1197,8 @@
     "Need to actually check explicitly selected documents against adopted schemas and trusted file byte baselines",
     "Locate equal source/generated root coordinates within one mapping while allowing cross-mapping chains",
     "Compare fields and literals in selected if conditions or direct comparison expressions with direct Schema declarations",
-    "Compare six direct declarations across a selected Skill identity, Python route dictionary, Method and four schemas"
+    "Compare six direct declarations across a selected Skill identity, Python route dictionary, Method and four schemas",
+    "Compare four contained identities across a selected common manifest, platform mapping and the two actual Skills"
    ],
    "doNotUseWhen": [
     "Need auto-fix (forbidden; check writes no fixes)",
@@ -1214,7 +1215,8 @@
     "runSourceGeneratedCheck({root,declaration}) reads an actual declaration; source-generated-declaration.schema.json is an optional reading contract, not proof of prior adoption",
     "runBranchFieldCheck({root,branches}); each selection retains sourceRef, line, column, resultIdentifier, schemaRef and schemaPointer; optional nodeType is IfStatement or BinaryExpression, defaulting to IfStatement; CLI check branch-fields --root <dir> --selection <rel> --json",
     "0.34.0 candidate runPublicSurfaceBindingCheck({root,bindings}); each selection has skill:{ref,frontmatterKey}, route:{ref,startLine,endLine,constant,entryKey}, method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}, schemas:{task,result,parameters,domainResult}; CLI check public-surface-bindings --root <dir> --selection <rel> --json",
-    "runPeerAdapterCheck: {root, request, peerRoots} — The runPeerAdapterCheck entry is introduced in version 0.36.0 and is not present in the published 0.35.0 release. An unpublished source candidate is used solely for authorized development verification and does not constitute formal publication. Formal consumption relies on the exact published version actually installed and its public API exports. Package-root API only, with no new CLI; N−1 actual fixed-anchor calls check the selected peers’ joint equivalence."
+    "runPeerAdapterCheck: {root, request, peerRoots} — The runPeerAdapterCheck entry is introduced in version 0.36.0 and is not present in the published 0.35.0 release. An unpublished source candidate is used solely for authorized development verification and does not constitute formal publication. Formal consumption relies on the exact published version actually installed and its public API exports. Package-root API only, with no new CLI; N−1 actual fixed-anchor calls check the selected peers’ joint equivalence.",
+    "0.37.0 unpublished source candidate runNativeEntryBindingCheck({root,bindings}); each selection has commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex; CLI check native-entry-bindings --root <dir> --selection <rel> --json. 0.36.0 remains the published four-unit version."
    ],
    "outputs": [
     "Findings list; exit code findings=1, mechanism=2",
@@ -1225,7 +1227,8 @@
     "Selections return the existing professional-conclusion with actual source receipts and closure; complete/ENGINEERING_CLEAR requires every selected check to finish without findings, findings can coexist with partial, and all-insufficient means not-performed",
     "Equal fixed roots in one mapping produce ENGINEERING_FINDINGS; unsupported dynamic/ancestor semantics remain insufficient; the existing conclusion binds actual declaration reads and closure",
     "Existing professional-conclusion with per-comparison facts, findings and limitations; no enum/const means field location only; sibling conditional-required constraints are excluded only by the declared closed structural boundary",
-    "Existing professional-conclusion retains selections, seven resource receipts and six comparisons per completed binding; complete requires every binding to finish, stable conflicts yield ENGINEERING_FINDINGS, mixed insufficient coverage is partial, all-insufficient is not-performed; CLI exits 0 for complete clear, 1 for findings/incomplete, 2 for usage or unhandled mechanism errors"
+    "Existing professional-conclusion retains selections, seven resource receipts and six comparisons per completed binding; complete requires every binding to finish, stable conflicts yield ENGINEERING_FINDINGS, mixed insufficient coverage is partial, all-insufficient is not-performed; CLI exits 0 for complete clear, 1 for findings/incomplete, 2 for usage or unhandled mechanism errors",
+    "Existing professional-conclusion retains selections, resource receipts and four comparisons per completed native-entry binding; complete requires every binding to finish, stable conflicts yield ENGINEERING_FINDINGS, mixed insufficient coverage is partial, all-insufficient is not-performed; CLI exits 0 for complete clear, 1 for findings/incomplete, 2 for usage or unhandled mechanism errors"
    ],
    "sideEffects": [
     "runChecks and readProfessionalProof are read-only; the declared branch does not spawn, probe Git, or execute target content",
@@ -1234,13 +1237,15 @@
     "runSelectedArtifactCheck and its CLI are read-only: no target-tree scan, target execution, network or file writes; CLI emits only stdout",
     "runSourceGeneratedCheck reads the declaration without executing generators, discovering root members or writing the target",
     "runBranchFieldCheck reads complete ESM and Schema files without executing targets, resolving references, solving Schema constraints or certifying object correspondence, complete domains or business success",
-    "runPublicSurfaceBindingCheck and its CLI read only explicitly selected resources; no Python imports or execution, unselected tree scan, following declaration URIs to replace selected schemas, network access or target writes"
+    "runPublicSurfaceBindingCheck and its CLI read only explicitly selected resources; no Python imports or execution, unselected tree scan, following declaration URIs to replace selected schemas, network access or target writes",
+    "runNativeEntryBindingCheck and its CLI read only explicitly selected resources; no target execution, unselected tree scan, network access or target writes; sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root"
    ],
    "failureSemantics": [
     "findings exit code 1; mechanism rejection, unreadable, or uninterpretable proofs exit code 2",
     "Binding mismatches, missing files and read failures are incomplete observations; invalid requests throw SFC2003 and unexpected failures propagate",
     "Real schema or trusted-digest violations are findings; unsupported/unreadable schemas, cache mismatches or resource drift are insufficient; checks are independent, CLI selection drift invalidates all; CLI exits 0 for complete clear, 1 for findings/incomplete, 2 for usage/unhandled mechanism errors",
-    "Unsupported whole-file Python CST declarations or explicit uses, opening YAML mappings or direct JSON values make the whole binding insufficient; read conflicts or closure drift revoke every comparison in dependent bindings, CLI selection drift revokes all, independent stable findings remain; invalid requests throw SFC2003"
+    "Unsupported whole-file Python CST declarations or explicit uses, opening YAML mappings or direct JSON values make the whole binding insufficient; read conflicts or closure drift revoke every comparison in dependent bindings, CLI selection drift revokes all, independent stable findings remain; invalid requests throw SFC2003",
+    "URI, expansion, glob, missing direct fields, index out of range or unreadable JSON/YAML make the whole native-entry binding insufficient; read conflicts or closure drift revoke every comparison in dependent bindings, CLI selection drift revokes all, independent stable findings remain; invalid requests throw SFC2003"
    ],
    "invariants": [
     "CHECK_CLASSES is a closed set of nine legacy classes, not expanded",
@@ -1250,7 +1255,8 @@
     "Business disposition of each finding",
     "Actual-call selection, resolution bases, complete scope and frozen source-digest comparison; a local CLEAR is not a full review",
     "Actual schema adoption, self-contained prerequisites, trusted SHA baseline and version-to-file facts, platform semantics and selection completeness; version labels neither extract document versions nor certify host support",
-    "Publicness, same business and conditions, schema authority, selection completeness and runtime meaning; six agreeing declarations do not prove complete METHOD003, runtime-unique dispatch, installation/loading or release approval"
+    "Publicness, same business and conditions, schema authority, selection completeness and runtime meaning; six agreeing declarations do not prove complete METHOD003, runtime-unique dispatch, installation/loading or release approval",
+    "Common-manifest authority, same-business correspondence and selection completeness; four agreeing identities do not prove Markdown body meaning, method-contract version, installation/loading or release approval"
    ],
    "routeElsewhere": [
     "Auto-fix execution: the caller"

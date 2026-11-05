@@ -1629,6 +1629,89 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#runNativeEntryBindingCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runNativeEntryBindingCheck
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="runNativeEntryBindingCheck">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#用途与调用方责任_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        用途与调用方责任
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用输入与结构_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用输入与结构
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#路径基准与解析规则" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        路径基准与解析规则
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#实际比较逻辑_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        实际比较逻辑
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#支持边界与失败条件_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        支持边界与失败条件
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#结果解释与聚合逻辑_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        结果解释与聚合逻辑
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
       </ul>
     </nav>
 
@@ -3555,6 +3638,89 @@
 
 </li>
 
+          <li class="md-nav__item">
+  <a href="#runNativeEntryBindingCheck" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        runNativeEntryBindingCheck
+
+    </span>
+  </a>
+
+    <nav class="md-nav" aria-label="runNativeEntryBindingCheck">
+      <ul class="md-nav__list">
+
+          <li class="md-nav__item">
+  <a href="#用途与调用方责任_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        用途与调用方责任
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#调用输入与结构_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        调用输入与结构
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#路径基准与解析规则" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        路径基准与解析规则
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#实际比较逻辑_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        实际比较逻辑
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#支持边界与失败条件_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        支持边界与失败条件
+
+    </span>
+  </a>
+
+</li>
+
+          <li class="md-nav__item">
+  <a href="#结果解释与聚合逻辑_1" class="md-nav__link">
+    <span class="md-ellipsis">
+
+        结果解释与聚合逻辑
+
+    </span>
+  </a>
+
+</li>
+
+      </ul>
+    </nav>
+
+</li>
+
       </ul>
     </nav>
 
@@ -4563,6 +4729,143 @@ node -e 'console.log(process.argv[1])' '{\&quot;entries\&quot;:[]}'
 <li>保留真实原始结论，后续通过 <code>readProfessionalProof</code> 或 <code>check proof</code> 读取。</li>
 <li>局部 <code>CLEAR</code> 不证明完整 <code>METHOD003</code>、业务同一性/条件、Schema 内容有效、运行时分派、安装加载或发布批准。</li>
 </ul>
+<h3 id="runNativeEntryBindingCheck">runNativeEntryBindingCheck<a class="headerlink" href="#runNativeEntryBindingCheck" title="Permanent link">&para;</a></h3>
+<h4 id="用途与调用方责任_1">用途与调用方责任<a class="headerlink" href="#用途与调用方责任_1" title="Permanent link">&para;</a></h4>
+<p>本接口用于验证共同源清单、平台清单与两端实际 Skill 之间四组显式声明的受收容身份关系。检查范围限于已声明的身份类型，不涵盖 Markdown 业务正文、方法契约版本、自然语言身份、URI 跟随、Registry、安装加载或发布批准。</p>
+<p>该接口自版本 0.37.0 起引入。正式消费须基于实际安装的精确已发布版本及其公开入口进行验证；源码验证仅在获准范围内有效，不得替代正式消费。调用方需确保共同清单的权威性、业务关系的一致性以及选集的完整性。</p>
+<h4 id="调用输入与结构_1">调用输入与结构<a class="headerlink" href="#调用输入与结构_1" title="Permanent link">&para;</a></h4>
+<p>接口调用形式为 <code>runNativeEntryBindingCheck({root, bindings})</code>，参数要求如下：</p>
+<ul>
+<li><code>root</code>：显式非空本地目录路径，作为本次资源读取根。</li>
+<li><code>bindings</code>：非空数组，每项仅含以下四字段，不接受未知字段或完全重复项。入口在首次 <code>await</code> 前复制这些字段。</li>
+</ul>
+<p><strong>绑定项字段说明</strong></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>commonManifestRef</code></td>
+<td>非空字符串</td>
+<td>调用方选定的共同 JSON 清单，按 <code>root</code> 路径定位。</td>
+</tr>
+<tr>
+<td><code>commonSkillIndex</code></td>
+<td>大于等于零的安全整数</td>
+<td>精确指定共同清单 <code>skills</code> 数组中的索引项。</td>
+</tr>
+<tr>
+<td><code>platformManifestRef</code></td>
+<td>非空字符串</td>
+<td>平台 JSON 清单，按 <code>root</code> 路径定位。</td>
+</tr>
+<tr>
+<td><code>mappingIndex</code></td>
+<td>大于等于零的安全整数</td>
+<td>精确指定平台清单 <code>logicalMappings</code> 数组中的索引项。</td>
+</tr>
+</tbody>
+</table>
+<p>同一 <code>platformManifestRef</code> 与 <code>mappingIndex</code> 被重复选择但指定不同共同记录时，视为请求冲突并拒绝。下标超出范围属于资源不足，不是非法参数。额外 JSON 字段保持不透明。</p>
+<p>CLI 调用形式为：</p>
+<pre><code class="language-bash">skill-family-kit check native-entry-bindings --root &lt;dir&gt; --selection &lt;relative-json&gt; --json
+</code></pre>
+<ul>
+<li><code>--selection</code> 指向仅含 <code>bindings</code> 数组的 JSON 文件，格式与 API 一致。</li>
+<li>返回码：<code>0</code> = <code>complete/ENGINEERING_CLEAR</code>，<code>1</code> = 发现或不足，<code>2</code> = 坏参数或未处理机制错误。</li>
+<li>坏参数时抛出现有 <code>SFC2003</code> 异常，意外异常传播至调用层。</li>
+</ul>
+<h4 id="路径基准与解析规则">路径基准与解析规则<a class="headerlink" href="#路径基准与解析规则" title="Permanent link">&para;</a></h4>
+<p>所有路径解析均基于以下三个固定基准，且严格遵循收容与读取规则：</p>
+<ol>
+<li><strong>共同清单引用、平台清单引用与平台清单的 <code>source</code></strong>：都相对 <code>root</code> 解析。</li>
+<li><strong>共同清单 <code>sourceRoot</code></strong>：相对 <code>root</code> 解析，当其值严格等于 <code>.</code> 时，仅作为已解析 <code>root</code> 的目录基准标记，不提交给 <code>classifyPathInput</code> 或 <code>resolveContained</code>；所选 <code>skills.source</code> 相对这个目录解析。</li>
+<li><strong>平台映射 <code>path</code></strong>：相对平台清单所在目录解析，当该目录为 <code>.</code> 时，同样仅作基准标记。</li>
+</ol>
+<p>除上述目录基准标记外，各原始路径段先分类，目录基准与最终文件沿既有收容和严格读取规则处理，不使用其他基准回退。原生声明若使用 URI、展开式、通配或 <code>~</code>，记为不足。</p>
+<h4 id="实际比较逻辑_1">实际比较逻辑<a class="headerlink" href="#实际比较逻辑_1" title="Permanent link">&para;</a></h4>
+<p>每条绑定读取平台清单、共同清单、声明来源、平台 Skill 与共同 Skill。同实际文件复用该次观察，并可同时保留多个资源角色。所有必需资源完整后，按固定顺序比较四组身份：</p>
+<table>
+<thead>
+<tr>
+<th>比较序号</th>
+<th>比较内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>平台 <code>source</code> 解析后的实际清单根内引用 vs <code>commonManifestRef</code> 解析后的实际清单根内引用</td>
+</tr>
+<tr>
+<td>2</td>
+<td>平台映射 <code>physicalName</code> vs 实际平台 Skill 的 <code>frontmatter.name</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>平台映射 <code>logicalName</code> vs 所选共同 <code>skills</code> 项的 <code>logicalName</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>所选共同 <code>skills</code> 项的 <code>logicalName</code> vs 该共同项 <code>source</code> 实际指向 Skill 的 <code>frontmatter.name</code></td>
+</tr>
+</tbody>
+</table>
+<p>第一组使用受收容路径解析所得的实际文件身份，其余三组对实际字符串逐字比较。路径基准与安全处理沿上节规则。</p>
+<h4 id="支持边界与失败条件_1">支持边界与失败条件<a class="headerlink" href="#支持边界与失败条件_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>共同清单必须有直接非空字符串 <code>sourceRoot</code> 与数组 <code>skills</code>；所选项必须有直接非空字符串 <code>logicalName</code>、<code>source</code>。</li>
+<li>平台清单必须有直接非空字符串 <code>source</code> 与数组 <code>logicalMappings</code>；所选项必须有直接非空字符串 <code>logicalName</code>、<code>physicalName</code>、<code>path</code>。</li>
+<li>两份实际 Skill 仅解析文首完整 YAML 映射中的直接非空字符串 <code>name</code>。</li>
+<li>声明来源与所选共同清单解析到同一实际文件时复用观察；若不同，声明来源也须为可读、无歧义的 JSON 对象，才能确认来源地址矛盾。其余比较仍以调用方明确选择的共同记录为准。</li>
+<li>任一必需资源重复读取冲突或闭包漂移，撤销依赖该资源的整条绑定所有比较（含 <code>findings</code>）和 <code>checked</code>。共享资源失效会撤销所有依赖绑定；CLI 选集漂移影响整批。不受影响的独立稳定发现仍保留。</li>
+<li>读取失败、缺失、不支持、下标越界或歧义均为 <code>insufficient</code>，不构成冲突。完整可读的直接不等才是 <code>findings</code>。</li>
+</ul>
+<h4 id="结果解释与聚合逻辑_1">结果解释与聚合逻辑<a class="headerlink" href="#结果解释与聚合逻辑_1" title="Permanent link">&para;</a></h4>
+<p>每绑定输出 <code>status</code> 为 <code>checked</code>、<code>findings</code> 或 <code>insufficient</code>。完成的绑定包含四项 <code>comparisons</code>。<code>scope.checked</code> 仅记录 <code>binding-&lt;index&gt;-comparison-&lt;序号&gt;</code>。不足绑定的 <code>comparisons</code> 数组为空。</p>
+<table>
+<thead>
+<tr>
+<th>完成状态</th>
+<th>聚合结果</th>
+<th>CLI 退出码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>所有绑定完成，无冲突</td>
+<td><code>complete/ENGINEERING_CLEAR</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>所有绑定完成，存在稳定冲突</td>
+<td><code>complete/ENGINEERING_FINDINGS</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>完成与不足混合，且存在稳定冲突</td>
+<td><code>partial/ENGINEERING_FINDINGS</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>完成与不足混合，无稳定冲突</td>
+<td><code>partial/ENGINEERING_CHECK_INCOMPLETE</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>所有绑定均为不足</td>
+<td><code>not-performed/ENGINEERING_CHECK_INCOMPLETE</code></td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+<p>返回值沿用 <code>professional-conclusion</code>：<code>provider.entry</code> 为 <code>runNativeEntryBindingCheck</code>，<code>subject.ref</code> 为实际读取根。<code>details.bindings</code> 的每项直接保留四个选择字段，另含从 1 起的 <code>index</code>、实际 <code>resources</code> 读取回执数组、<code>status</code>、<code>reason</code> 和 <code>comparisons</code>。回执记录实际读取的 <code>ref</code>、<code>sha256</code> 和 <code>bytes</code>，并在绑定资源中保留 <code>role</code>：<code>platform-manifest</code>、<code>common-manifest</code>、<code>declared-source</code>、<code>platform-skill</code>、<code>common-skill</code>。<code>details.selection</code> 为 CLI 选集读取回执，API 调用时为 <code>null</code>。</p>
+<p>本接口为只读。局部 <code>CLEAR</code> 不证明 Markdown 正文、方法契约版本、安装加载或发布批准。旧 <code>runPublicSurfaceBindingCheck</code> 七来源六比较与 peer 联合检查保持不变。</p>
 <h2 id="同级适配器的专业结论">同级适配器的专业结论<a class="headerlink" href="#同级适配器的专业结论" title="Permanent link">&para;</a></h2>
 <p>该入口在0.36.0版本引入，正式发布版本0.35.0中不包含该功能。未发布源码候选仅用于已授权的开发验证，不得据此宣称功能已正式发布；正式消费必须基于实际安装的精确已发布版本及其公开导出的API。</p>
 <p><code>runPeerAdapterCheck({root, request, peerRoots})</code></p>
