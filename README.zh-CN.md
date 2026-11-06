@@ -5,26 +5,24 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.38.0 -->
+<!-- release-skill:release-version: 0.39.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.38.0** (2026-11-06)
+**0.39.0** (2026-11-06)
 
-本版 Kit 新增 `check skill-surface-bindings` 与 `check native-projections` 两个 CLI 子动作及对应公共 API，同时扩展 `runStaticReferenceCheck` 支持以 `../` 开头的有限路径前缀，确保固定文件引用在严格根收容下安全核对。新增 `runFixedSchemaUseCheck` 包根 API，用于独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本，可选验证 Python 实现中实际采用的 Schema 文件、同一数据绑定与验证早于业务解释的关系。
+Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
+原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
 
 **变更**
 
-- 新增 `check skill-surface-bindings` 与 `check native-projections` CLI 子动作及对应公共 API `runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck`，分别用于验证技能表面绑定与原生投影的一致性。技能表面绑定比较身份、参数赋值、实现路径、协议路径四组直接声明。
-- 原生投影检查复用四组原生身份比较，完整 Skill 文件比较时仅将每个唯一直接单行 YAML name 标量的原始字节区间替换为统一标记，其余全部字节原样参与比对；显式指定的 commonRef 与 platformRef 之间资源对进行独立全字节完整比对，支持二进制内容。
-- 任何直接值、正文、权限、协议或资源字节不一致均视为发现项。绑定缺失、不支持、歧义、不可读或漂移将导致相关绑定不足且不参与比较，稳定独立绑定予以保留。领域含义由调用方 LLM 解释，机械状态与实际 scope 取 API 原始返回。
-- 既有 `runStaticReferenceCheck` API 扩展支持 `literal` 字段以一个或多个连续 `../` 开头，后接由 `/` 分隔的合法普通文件段，段内仅含 ASCII 字母、数字、点、下划线、连字符，且不为 `.` 或 `..`。目标路径必须严格留在 `root` 内，通过 `path.posix.join(baseDir,literal)` 派生 `targetRef`，`join` 执行 POSIX 词法规范化但保留原始 `literal`。所有读取、闭包与安全政策保持不变，该路径使用既有包根 API。
-- 新增 `runFixedSchemaUseCheck` 包根 API，独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本。可选验证 Python 实现中数据加载与验证是否早于业务解释，仅在有限直接链路可分类时进行比较。JSON 解码与直接版本头读取可先行，不构成业务解释。无法分类时仅实现不足，声明仍保留。结果为 `professional-conclusion`，由 `readProfessionalProof` 按实际 scope 读取，领域适用与完整审计由调用方核收。
+- Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
+  原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
 
 **升级说明**
 
-四单元同步采用 0.38.0 版本，旧调用无需迁移。正式消费应以精确已发布载荷与导出包为准，开发观察阶段保持自身对象身份。`runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck` 分别验证技能表面绑定与原生投影，结果由宿主保存 `professional-conclusion`，调用方通过 `readProfessionalProof` 按实际 scope 读取。`runFixedSchemaUseCheck` 仅在显式调用时生效，Plugin 应在 foundation-engineering-check 中显式选择范围并调用该 API 及公共 reader，不凭手填结果通过。
+四个发行单元同步采用0.39.0。新入口须核实精确正式包；旧默认登记、MIT及Apache路径保持兼容。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -65,9 +63,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-在正式发布前，若需对本地 0.38.0 源码候选进行已授权的开发验证，可使用以下方式。
-
-为确保本地验证使用与工作树一致的 0.38.0 版本，避免误用已发布的旧版 0.37.0，可执行以下命令打包并构建本地验证环境：
+在正式发布前，若需对本地 0.39.0 源码候选进行已授权的开发验证，可使用以下方式。为确保本地验证环境使用与工作树一致的 0.39.0 版本，避免误用已发布的旧版 0.38.0，需执行以下命令打包并构建隔离的验证环境。
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -75,21 +71,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.38.0.tgz" "$pack_dir/skill-family-harness-node-0.38.0.tgz" "$pack_dir/skill-family-engineering-kit-0.38.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.0.tgz" "$pack_dir/skill-family-harness-node-0.39.0.tgz" "$pack_dir/skill-family-engineering-kit-0.39.0.tgz")
 ```
 
-当精确版本 0.38.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
+当精确版本 0.39.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行。
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.38.0
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.39.0
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit check --root <repo>
 ```
 
-上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.38.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help` 查看帮助。
+各命令分别用于查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.39.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -743,3 +739,11 @@ skill-family-kit check native-projections --root <dir> --selection <rel> --json
 Foundation 0.28.0 面向 Windows 11 x64、本地 NTFS 与普通用户，采用 Contracts 1.21.0、56 个登记对象。三个固定世代对象保持 candidate，其他成熟度维持原登记。官方 npm 包 `skill-family-contracts@0.27.1` 仍承载 `contractsVersion=1.20.0` 与 53 个对象。精确版本的远端可用性须由正式发布凭据核实，本节范围说明不证明真实宿主资格。
 
 `skill-family-engineering-kit` 四命令保持不变，安装闭包内预构建 `win32-x64` 二进制，无需本地编译器。启动需使用 npm 的 `bin/npm-cli.js` 或 pnpm 的 `bin/pnpm.cjs`，版本必须精确匹配。真实宿主资格需额外提供 driver、版本、认证与业务证据，本地自测结果不构成通过。详见 [API 文档](https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/)。
+
+## 精确运行产物与第三方许可
+
+首次初始化与中途接入均需先读取实际发布工具配置，确认该版本提供方声明的运行路径。运行产物、可编辑源配置与持久工具锁分别归类。`/.release-skill/runs/` 为运行时自动生成的记录目录，按实际采用情况登记为运行产物；同级其他目录或别名文件仅按实际声明路径纳入管理，不得默认包含。`.release-skill/project.yaml` 与 `.release-skill/testing/requirements.json` 属于源配置文件，制品图锁仍登记于 `trackedToolLocks`。`.gitignore` 由工具生成时，维护者修改其生成源。采用手写忽略规则的项目，则直接补齐该文件，登记 artifacts 本身不修改 `.gitignore`，也不主动创建运行目录。
+
+非空且尚未登记的项目，沿用 `check register-existing` 命令，通过 `--artifacts` 传入核实后的忽略项。已有合法三份登记且无受管漂移的项目，应使用命令 `skill-family-kit check relock --root <target> --registration-class artifacts --files /.release-skill/runs/`。对应 API 接口为 `runRelock/relockAction`，其中 `registrationClass` 取值为 `artifacts`，`files` 为非空显式清单。新模式仅支持以项目根目录为起点的精确字面文件或尾随斜杠目录，允许尚未生成的路径。登记表与受管锁仅在必要时更新，原锁版本历史完整保留，重复项的 `registered` 为空数组，不写入，也不递增 `lockVersion`。未发生写入时，报告中省略 `publicationState`。符号链接、路径越界、源与工具锁冲突、无法证明与手写通配源分离，或存在既有受管漂移的情况，均在首写前拒绝。半写发布失败时，继续按原机制报告实际状态，不伪造发布收据。
+
+原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`；MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色及 CC 许可引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。采用 0.39.0 新入口前须核对实际已发布 SDK。入口尚未提供时保留对应接线缺口，0.38.0 不包含这些新增能力。

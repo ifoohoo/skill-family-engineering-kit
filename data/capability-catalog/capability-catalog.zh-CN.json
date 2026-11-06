@@ -1412,7 +1412,8 @@
     "profiles/licensing/registry.json + schema.json 存在"
    ],
    "inputs": [
-    "Profile 标识、变体选择"
+    "Profile 标识、变体选择",
+    "CC-BY-NC-SA-4.0 的版权年份可显式为 null，NOTICE 保留各 author/contributor；MIT/Apache 年份仍为整数"
    ],
    "outputs": [
     "许可证/声明/身份记录文本"
@@ -1421,7 +1422,8 @@
     "无副作用（纯函数生成）"
    ],
    "failureSemantics": [
-    "多变体未指定、非法 Profile 抛错"
+    "多变体未指定、非法 Profile 抛错",
+    "未知 SPDX 拒绝，不回退 MIT；CC 缺少 NOTICE、署名或完整法律正文不能通过身份检查"
    ],
    "invariants": [
     "默认取 registry 第一变体，多变体须显式选择"
@@ -1606,11 +1608,12 @@
   },
   {
    "id": "foundation.kit.relock",
-   "intent": "运行受控 relock 事务：默认登记新增手写文件；显式选择 trackedToolLocks 时登记持久工具锁路径，并在原事务中同步 registry 与受管文件锁。工具锁内容不纳入受管摘要。",
+   "intent": "默认登记新增手写源，显式登记持久工具锁或精确运行产物，在原事务内同步登记与受管锁。",
    "useWhen": [
     "需要把新手写文件纳入闭域而不手改 registry",
     "需要在登记后以当前字节重算受管文件锁",
-    "需要将原工具生成的持久锁显式登记到既有 trackedToolLocks 类别，且不锁定其内容"
+    "需要将原工具生成的持久锁显式登记到既有 trackedToolLocks 类别，且不锁定其内容",
+    "已有登记项目需要增补实际工具运行产物的精确忽略项，并保留锁历史"
    ],
    "doNotUseWhen": [
     "需要合法化已漂移的受管字节（relock 拒绝漂移）",
@@ -1619,7 +1622,7 @@
    "prerequisites": [],
    "inputs": [
     "携带 .foundation/file-registry.json 与 skill-family.managed-file-lock.json 的项目根",
-    "registrationClass 默认为 handwritten；仅可选 handwritten 或 trackedToolLocks，CLI 对应 --registration-class。trackedToolLocks 必须传非空 files 显式清单（CLI --files 为逗号分隔路径）"
+    "registrationClass 默认 handwritten，可选 trackedToolLocks 或 artifacts，CLI 为 --registration-class。后两者必须传非空显式 files；artifacts 仅支持根锚定精确字面文件或尾随 / 的目录。"
    ],
    "outputs": [
     "relock 报告（kind skill-family.relock-report）"
@@ -1629,12 +1632,14 @@
    ],
    "failureSemantics": [
     "写入前的参数、路径、登记与漂移检查拒绝时零写入",
-    "半更新状态绝不呈现为成功"
+    "半更新状态绝不呈现为成功",
+    "artifacts 无法证明与手写通配源分离时拒绝；不支持任意通配或源分类迁移"
    ],
    "invariants": [
     "不新增第五个顶层命令，落在 check relock 子动作",
     "新锁先绑定新 registry 字节，再提交任一文档",
-    "trackedToolLocks 缺省时在同一事务初始化 entries 数组；已有类别不是对象或 entries 不是数组时拒绝，不替换异常字段"
+    "trackedToolLocks 缺省时在同一事务初始化 entries 数组；已有类别不是对象或 entries 不是数组时拒绝，不替换异常字段",
+    "artifacts 保留其他分类及锁元数据；重复精确项完整预检后不写，不增加 lockVersion，不产生 publicationState 收据；不改 .gitignore"
    ],
    "ownedByCaller": [
     "relock 前对已漂移受管字节的对账"

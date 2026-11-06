@@ -4,26 +4,22 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.38.0 -->
+<!-- release-skill:release-version: 0.39.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.38.0** (2026-11-06)
+**0.39.0** (2026-11-06)
 
-This Kit release adds the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs, while extending `runStaticReferenceCheck` to support limited `../`-prefixed raw literals for safe fixed file reference validation within strict root containment. The new `runFixedSchemaUseCheck` root-level API enables independent validation of Markdown declarations against actual Schema identity and required fixed version, with optional finite checks of the actual Schema file, the same data binding, and validation before business interpretation.
+Adds explicit exact runtime-artifact registration through the existing relock APIs and CLI, with future-path support, source separation checks and byte-preserving repeats. Adds CC-BY-NC-SA-4.0 legal text, per-author NOTICE attribution and explicit unknown copyright years through existing custom licensing profiles. Existing MIT, Apache and default registration behavior is retained.
 
 **Changed**
 
-- Added the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs `runSkillSurfaceBindingCheck` and `runNativeProjectionCheck`, which validate skill surface bindings and native projections respectively. Skill surface binding checks identity, parameter-assignment, implementation-path, and protocol-path declarations.
-- Native projection checks reuse the four native identity comparisons. Complete Skill file comparison replaces only each unique direct single-line YAML name scalar byte range with a fixed marker, while all other bytes are compared in their original form. Explicitly selected common/platform resource pairs are compared byte-by-byte in entirety, including binary content.
-- Discrepancies in direct values, content, permissions, protocols, or resource bytes are recorded as findings. Missing, unsupported, ambiguous, unreadable, or drifting bindings result in insufficient binding and zero comparison; stable, independent bindings are preserved. Domain meaning is interpreted by the caller’s LLM. Mechanical outcomes and actual scope come from the original API return.
-- The existing `runStaticReferenceCheck` API is extended to support `literal` fields beginning with one or more consecutive `../`, followed by one or more valid path segments separated by `/`. Segments contain only ASCII letters, digits, dots, underscores, and hyphens, and must not be `.` or `..`. The target path must remain strictly within `root`. `targetRef` is derived via `path.posix.join(baseDir,literal)`, with POSIX lexical normalization applied but the original `literal` preserved. All existing read, closure, and security policies remain unchanged, using the existing package-root API.
-- Added `runFixedSchemaUseCheck` root-level API to independently validate $id and schemaVersion=N in Markdown declarations against the actual required 2020-12 Schema version. Optionally verifies that data loading and validation in Python occur prior to business interpretation, only when classifiable. JSON decoding and direct version header reading are permitted ahead of validation and do not constitute business interpretation. Unclassifiable cases make the optional implementation insufficient while preserving stable declaration comparisons. Returns `professional-conclusion` read via `readProfessionalProof` within actual scope; domain applicability and full audit conclusion are the caller’s responsibility.
+- Adds explicit exact runtime-artifact registration through the existing relock APIs and CLI, with future-path support, source separation checks and byte-preserving repeats. Adds CC-BY-NC-SA-4.0 legal text, per-author NOTICE attribution and explicit unknown copyright years through existing custom licensing profiles. Existing MIT, Apache and default registration behavior is retained.
 
 **Upgrade Notes**
 
-All four units adopt version 0.38.0 in lockstep, with no migration required for existing calls. Formal consumption must use the exact published payload and exported package; development observation retains its own object identity. The host saves the actual `professional-conclusion` returned by `runSkillSurfaceBindingCheck` or `runNativeProjectionCheck` and reads it through `readProfessionalProof` within its recorded scope. `runFixedSchemaUseCheck` activates only when explicitly invoked. Plugins must explicitly select the scope within foundation-engineering-check and invoke this API and the public reader directly, not relying on hand-filled results.
+Adopt all four 0.39.0 release units together and verify new entries in the exact published package. Existing default registration, MIT and Apache behavior is retained.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -66,7 +62,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Before the formal publication of version 0.38.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.37.0.
+Before the formal publication of version 0.39.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.38.0.
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -74,23 +70,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.38.0.tgz" "$pack_dir/skill-family-harness-node-0.38.0.tgz" "$pack_dir/skill-family-engineering-kit-0.38.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.0.tgz" "$pack_dir/skill-family-harness-node-0.39.0.tgz" "$pack_dir/skill-family-engineering-kit-0.39.0.tgz")
 ```
 
 This approach validates the working-tree candidate in a fresh consumer project. Third-party dependencies may still be downloaded from the registry.
 
-Only after version 0.38.0 is formally available in the public registry do the following installation and execution examples apply:
+Only after version 0.39.0 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.38.0
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.39.0
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit check --root <repo>
 ```
 
-These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help`.
+These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -754,3 +750,11 @@ The returned `details` object retains:
 The host saves the **original API return** exclusively in its authorized evidence directory and passes the saved proof to `readProfessionalProof`. The reader does not rerun the check or authenticate its author. No `proof-create` call may be used to fabricate a mechanical result. Combined semantic or other mechanical scopes retain their own originals.
 
 The original `verifyPeerAdapterDirectories` and `verifyHostPeers` APIs, their verified result schema, fail-closed behavior, and reader algorithm remain unchanged. This API does not execute targets or generators, decide Audit or SOURCE rules, check independent common resources or platform metadata, or prove installation, loading, business execution, or release.
+
+## Exact runtime artifacts and third-party licensing
+
+For initial onboarding and later adoption, read the actual release configuration and the provider's generated-path declarations. Classify runtime artifacts, editable configuration and persistent tool locks separately. Use exact ignore entries such as `/.release-skill/runs/` only for adopted outputs. Keep `.release-skill/project.yaml` and `.release-skill/testing/requirements.json` as source, and persistent graph locks under `trackedToolLocks`. Maintain `.gitignore` through its existing source. Registering artifacts does not edit `.gitignore` or create output directories.
+
+For an unregistered non-empty target, pass confirmed patterns through `check register-existing --artifacts`. For a target with valid registration and an undrifted lock, use `skill-family-kit check relock --root <target> --registration-class artifacts --files /.release-skill/runs/`, or the existing `runRelock` / `relockAction` APIs with `registrationClass: "artifacts"` and a non-empty `files` array. This mode accepts root-anchored literal files or directories ending in `/`, including future paths. It preserves other classes and lock metadata. Exact repeats validate drift, return `registered: []`, leave bytes and `lockVersion` unchanged and omit publication receipts. Escapes, symlinks, source/tool-lock overlap, uncertain separation from handwritten globs and managed drift are refused before writing. Partial publication failures retain their existing error and publication state.
+
+Use the existing `--profiles-root` mechanism for confirmed original authors and adaptation contributors, preserving the `author` and `contributor` roles. CC-BY-NC-SA-4.0 requires `noticeRequired: true`. An unverified copyright year is explicitly `null`; MIT and Apache retain integer years. The complete CC legal text is preserved in LICENSE, and NOTICE retains each declared name, role and license reference. Contributors are not inferred to be copyright holders. Preserve existing source links, historical attribution and modification notices for human review. Identity checking reads the standard text and declared attribution without assessing legal applicability or fetching links. Confirm the new entry in the exact published SDK before adoption.

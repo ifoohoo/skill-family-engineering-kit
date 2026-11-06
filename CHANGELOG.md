@@ -1,5 +1,20 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.39.0 locale=en baseline=sha256:f66979036566e7c3c07143906a08edd95ef75dfa724583b95b735cd261c6f5ac -->
+## [0.39.0] - 2026-11-06
+
+Adds explicit exact runtime-artifact registration through the existing relock APIs and CLI, with future-path support, source separation checks and byte-preserving repeats. Adds CC-BY-NC-SA-4.0 legal text, per-author NOTICE attribution and explicit unknown copyright years through existing custom licensing profiles. Existing MIT, Apache and default registration behavior is retained.
+
+### Changed
+
+- Adds explicit exact runtime-artifact registration through the existing relock APIs and CLI, with future-path support, source separation checks and byte-preserving repeats. Adds CC-BY-NC-SA-4.0 legal text, per-author NOTICE attribution and explicit unknown copyright years through existing custom licensing profiles. Existing MIT, Apache and default registration behavior is retained.
+
+### Upgrade Notes
+
+Adopt all four 0.39.0 release units together and verify new entries in the exact published package. Existing default registration, MIT and Apache behavior is retained.
+<!-- release-skill:changelog:end version=0.39.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.38.0 locale=en baseline=sha256:9ee22cb1f4a5c42f6690ae40caed5983395428ed215804af4d9ddcafaf6c929d -->
 ## [0.38.0] - 2026-11-06
 

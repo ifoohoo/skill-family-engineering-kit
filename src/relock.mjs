@@ -57,14 +57,15 @@ import {
  *   - entries are sorted by path, hashed with the frozen sha256 algorithm,
  *     and carry the relock tool/version generator.
  *
- * Registration rules: each candidate is appended verbatim to the registry's
- * `classes.handwritten.entries` (handwritten source material — never to a
- * managed class, so it never becomes re-projectable). A candidate is refused
- * when it escapes the root, fails the frozen lock path shape, is not an
- * existing regular file, or is already admitted by any closed-world class.
+ * Handwritten and trackedToolLocks candidates remain existing regular files.
+ * Artifacts accepts explicit root-anchored literal file/directory patterns,
+ * including future outputs, after proving separation from source and locks.
+ * This mode preserves lock metadata and returns a byte-preserving no-op for
+ * exact repeats, after the same managed-drift validation. No-op reports omit
+ * publicationState because no publication occurred. It never edits .gitignore.
  *
- * Options: { root, files } where `files` is the explicit registration list;
- * a null/empty list auto-discovers the unregistered regular files exactly as
+ * Options: { root, files, registrationClass }. Only the default handwritten
+ * mode with a null/empty list auto-discovers unregistered regular files as
  * the closed-world stage of the core check classifies them (symlinks and
  * special entries are never registerable and refuse the transaction).
  *
@@ -98,18 +99,74 @@ async function readContainedBytes(rootAbs, rel) {
   return readFile(abs);
 }
 
+async function validateArtifactCandidates(rootAbs, facts, files) {
+  const protectedPaths = [FILE_REGISTRY_PATH, MANAGED_LOCK_PATH, ...facts.managedSet, ...facts.trackedToolLocks];
+  const targetEntries = await listTargetEntries(rootAbs);
+  for (const pattern of files) {
+    if (typeof pattern !== "string" || !/^\/[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\/?$/.test(pattern)
+        || pattern.split("/").some(segment => segment === "." || segment === "..")) {
+      refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts requires root-anchored literal file or directory patterns", { path: pattern });
+    }
+    const directory = pattern.endsWith("/");
+    const rel = pattern.slice(1).replace(/\/$/, "");
+    if ([".git", ".foundation-file-apply"].includes(rel.split("/")[0])) {
+      refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts refuses a reserved state path", { path: pattern });
+    }
+    if (protectedPaths.some(candidate => matchAnyGitignorePattern([pattern], candidate))
+        || matchAnyGlob(facts.handwrittenPatterns, rel)) {
+      refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts overlaps a source or persistent tool lock", { path: pattern });
+    }
+    if (directory) {
+      for (const source of facts.handwrittenPatterns) {
+        const segments = normalizeRelPath(source).split("/");
+        const wildcard = segments.findIndex(segment => segment.includes("*"));
+        if (wildcard === -1) {
+          if (!matchAnyGitignorePattern([pattern], normalizeRelPath(source))) continue;
+        } else {
+          const prefix = segments.slice(0, wildcard).join("/");
+          if (prefix && rel !== prefix && !rel.startsWith(`${prefix}/`) && !prefix.startsWith(`${rel}/`)) continue;
+        }
+        refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts cannot prove separation from a handwritten declaration", { path: pattern, source });
+      }
+    }
+    if (targetEntries.some(entry => matchAnyGitignorePattern([pattern], entry.path)
+        && (matchAnyGlob(facts.handwrittenPatterns, entry.path) || !["file", "directory", "directory-opaque"].includes(entry.kind)))) {
+      refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts covers handwritten material or an unsafe entry", { path: pattern });
+    }
+    // Future outputs are allowed. Existing ancestors and final entries must
+    // remain ordinary contained directories/files, including inward symlinks.
+    const segments = rel.split("/");
+    for (let length = 1; length <= segments.length; length += 1) {
+      const component = segments.slice(0, length).join("/");
+      const abs = await resolveContained(rootAbs, component);
+      let state;
+      try {
+        state = await lstat(abs);
+      } catch (cause) {
+        if (cause?.code === "ENOENT") break;
+        throw cause;
+      }
+      const expectedDirectory = length < segments.length || directory;
+      if (state.isSymbolicLink() || (expectedDirectory ? !state.isDirectory() : !state.isFile())) {
+        refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "artifacts refuses a symbolic link or mismatched path type", { path: pattern });
+      }
+    }
+  }
+}
+
 /**
  * Runs the controlled relock transaction over one target.
  * Returns the relock report; throws on every refusal (fail closed).
  */
 export async function runRelock({ root, files = null, registrationClass = "handwritten" } = {}) {
-  if (registrationClass !== "handwritten" && registrationClass !== "trackedToolLocks") {
-    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "relock registrationClass must be handwritten or trackedToolLocks", {
+  const artifacts = registrationClass === "artifacts";
+  if (registrationClass !== "handwritten" && registrationClass !== "trackedToolLocks" && !artifacts) {
+    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "relock registrationClass must be handwritten, trackedToolLocks or artifacts", {
       field: "registrationClass",
     });
   }
-  if (registrationClass === "trackedToolLocks" && (!Array.isArray(files) || files.length === 0)) {
-    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, "trackedToolLocks registration requires an explicit non-empty files array", {
+  if (registrationClass !== "handwritten" && (!Array.isArray(files) || files.length === 0)) {
+    refuse(KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED, `${registrationClass} registration requires an explicit non-empty files array`, {
       field: "files",
     });
   }
@@ -140,12 +197,13 @@ export async function runRelock({ root, files = null, registrationClass = "handw
       });
     }
     mode = "explicit";
-    candidates = files.map((entry) => normalizeRelPath(entry));
+    candidates = artifacts ? files : files.map((entry) => normalizeRelPath(entry));
   }
+  if (artifacts) await validateArtifactCandidates(rootAbs, facts, candidates);
   candidates = [...new Set(candidates)].sort();
 
   // ---- candidate validation (all before any write) --------------------------
-  for (const rel of candidates) {
+  for (const rel of artifacts ? [] : candidates) {
     if (!isContainedDeclaration(rel) || !RELOCK_LOCK_PATH_PATTERN.test(rel)) {
       refuse(
         KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED,
@@ -222,17 +280,20 @@ export async function runRelock({ root, files = null, registrationClass = "handw
   }
   const categoryAbsent = !Object.hasOwn(registryDoc.classes, registrationClass);
   const category = registryDoc.classes[registrationClass];
-  if (!(registrationClass === "trackedToolLocks" && categoryAbsent) &&
-      (!isPlainObject(category) || !Array.isArray(category.entries))) {
+  const categoryField = artifacts ? "patterns" : "entries";
+  if (!(registrationClass !== "handwritten" && categoryAbsent) &&
+      (!isPlainObject(category) || !Array.isArray(category[categoryField])
+        || (artifacts && category.patterns.some(pattern => typeof pattern !== "string")))) {
     refuse(
       KIT_ERROR_KINDS.RELOCK_REGISTRATION_REFUSED,
-      `relock requires a classes.${registrationClass}.entries array to register into: ${FILE_REGISTRY_PATH}`,
+      `relock requires a classes.${registrationClass}.${categoryField} array to register into: ${FILE_REGISTRY_PATH}`,
       { path: FILE_REGISTRY_PATH },
     );
   }
   const newRegistryDoc = JSON.parse(JSON.stringify(registryDoc));
-  if (categoryAbsent) newRegistryDoc.classes[registrationClass] = { entries: [] };
-  newRegistryDoc.classes[registrationClass].entries = [...newRegistryDoc.classes[registrationClass].entries, ...candidates];
+  if (categoryAbsent) newRegistryDoc.classes[registrationClass] = { [categoryField]: [] };
+  if (artifacts) candidates = candidates.filter(pattern => !newRegistryDoc.classes.artifacts.patterns.includes(pattern));
+  newRegistryDoc.classes[registrationClass][categoryField] = [...newRegistryDoc.classes[registrationClass][categoryField], ...candidates];
   const registryBytes = Buffer.from(jsonString(newRegistryDoc), "utf8");
 
   // ---- lock: validate the surviving state, then recompute --------------------
@@ -254,7 +315,8 @@ export async function runRelock({ root, files = null, registrationClass = "handw
       path: MANAGED_LOCK_PATH,
     });
   }
-  const lockVersion = lock.lockVersion + 1;
+  const unchanged = artifacts && candidates.length === 0;
+  const lockVersion = lock.lockVersion + (unchanged ? 0 : 1);
   const entries = Array.isArray(lock.entries) ? lock.entries : [];
   for (const entry of entries) {
     const rel = isPlainObject(entry) && typeof entry.path === "string" ? entry.path : null;
@@ -306,6 +368,10 @@ export async function runRelock({ root, files = null, registrationClass = "handw
     .sort();
   const newEntries = [];
   for (const rel of lockTargets) {
+    const previousEntry = entries.find(entry => entry.path === rel);
+    if (artifacts && !previousEntry) {
+      refuse(KIT_ERROR_KINDS.RELOCK_LOCK_DRIFT, "artifacts refuses an unlocked managed declaration", { path: rel });
+    }
     if (!isContainedDeclaration(rel)) {
       refuse(KIT_ERROR_KINDS.RELOCK_LOCK_DRIFT, `relock refuses a managed declaration escaping the target root: ${rel}`, {
         path: rel,
@@ -319,7 +385,7 @@ export async function runRelock({ root, files = null, registrationClass = "handw
         path: rel,
       });
     }
-    newEntries.push({
+    newEntries.push(artifacts ? previousEntry : {
       path: rel,
       hash: { algorithm: "sha256", value: digestBytes(bytes) },
       generator: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
@@ -331,7 +397,14 @@ export async function runRelock({ root, files = null, registrationClass = "handw
       path: MANAGED_LOCK_PATH,
     });
   }
-  newEntries.push({
+  const previousRegistryEntry = entries.find(entry => entry.path === FILE_REGISTRY_PATH);
+  if (artifacts && !previousRegistryEntry) {
+    refuse(KIT_ERROR_KINDS.RELOCK_LOCK_DRIFT, "artifacts requires the existing registry lock binding", { path: FILE_REGISTRY_PATH });
+  }
+  newEntries.push(artifacts ? {
+    ...previousRegistryEntry,
+    hash: { ...previousRegistryEntry.hash, value: digestBytes(registryBytes) },
+  } : {
     path: FILE_REGISTRY_PATH,
     hash: { algorithm: "sha256", value: digestBytes(registryBytes) },
     generator: { tool: KIT_TOOL_NAME, version: KIT_VERSION },
@@ -346,18 +419,26 @@ export async function runRelock({ root, files = null, registrationClass = "handw
     dedupedEntries.push(entry);
   }
   const newLockDoc = {
+    ...(artifacts ? lock : {}),
     schemaVersion: 1,
     kind: "skill-family.managed-file-lock",
     lockVersion,
     entries: dedupedEntries,
   };
   const lockBytes = Buffer.from(jsonString(newLockDoc), "utf8");
+  const previousLockBytes = unchanged ? await readContainedBytes(rootAbs, MANAGED_LOCK_PATH) : null;
 
   // ---- commit phase: registry first, lock second (fail closed) ------------
-  const registryReceipt = await publishFileOrReplace(rootAbs, FILE_REGISTRY_PATH, registryBytes);
+  const registryReceipt = unchanged
+    ? { sha256: digestBytes(Buffer.from(registryText)), bytes: Buffer.byteLength(registryText) }
+    : await publishFileOrReplace(rootAbs, FILE_REGISTRY_PATH, registryBytes);
   let lockReceipt;
   try {
-    lockReceipt = await publishFileOrReplace(rootAbs, MANAGED_LOCK_PATH, lockBytes);
+    if (unchanged) {
+      lockReceipt = { sha256: digestBytes(previousLockBytes), bytes: previousLockBytes.length };
+    } else {
+      lockReceipt = await publishFileOrReplace(rootAbs, MANAGED_LOCK_PATH, lockBytes);
+    }
   } catch (cause) {
     // The registry commit already happened: do not mask it. The harness
     // publicationState makes the partial state explicit; the drift class will
@@ -385,7 +466,7 @@ export async function runRelock({ root, files = null, registrationClass = "handw
       path: FILE_REGISTRY_PATH,
       sha256: registryReceipt.sha256,
       bytes: registryReceipt.bytes,
-      publicationState: registryReceipt.publicationState,
+      ...(unchanged ? {} : { publicationState: registryReceipt.publicationState }),
     },
     lock: {
       path: MANAGED_LOCK_PATH,
@@ -393,7 +474,7 @@ export async function runRelock({ root, files = null, registrationClass = "handw
       entryCount: dedupedEntries.length,
       sha256: lockReceipt.sha256,
       bytes: lockReceipt.bytes,
-      publicationState: lockReceipt.publicationState,
+      ...(unchanged ? {} : { publicationState: lockReceipt.publicationState }),
     },
     policy:
       "relock is one fail-closed transaction: every validation runs before the first write; the new lock binds the new registry bytes before either document is committed; a mid-transaction failure is reported with its harness publicationState and is mechanically detectable by the drift class, never presented as success",

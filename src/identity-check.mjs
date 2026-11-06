@@ -1,9 +1,11 @@
 import { readdir } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { readFileContained } from "skill-family-harness-node";
 import { loadLicensingProfile } from "./licensing.mjs";
 
 const CODE = "SFC2004";
+const CC_BY_NC_SA_TEXT = readFileSync(new URL("./license-texts/CC-BY-NC-SA-4.0.txt", import.meta.url), "utf8");
 const PROJECTION_KINDS = new Set(["plugin-manifest", "marketplace", "public-snapshot"]);
 const COMMERCIAL_PAYLOAD_NAMES = new Set([
   "ee",
@@ -253,7 +255,11 @@ async function checkLicense(rootAbs, record, findings) {
         { expected: "Apache-2.0 complete legal text" },
       ));
     }
-  } else {
+  } else if (record.licensing.spdx === "CC-BY-NC-SA-4.0") {
+    if (!text.replace(/\s+/gu, " ").includes(CC_BY_NC_SA_TEXT.replace(/\s+/gu, " ").trim())) {
+      findings.push(finding("license-file-drift", "LICENSE is not the complete CC-BY-NC-SA-4.0 legal text", "LICENSE"));
+    }
+  } else if (record.licensing.spdx === "MIT") {
     const required = [
       "MIT License",
       "Permission is hereby granted, free of charge",
@@ -271,10 +277,30 @@ async function checkLicense(rootAbs, record, findings) {
         { expected: "MIT text with the identity record copyright line" },
       ));
     }
+  } else {
+    findings.push(finding("invalid-spdx", "LICENSE uses an unsupported SPDX identity", "LICENSE"));
   }
 }
 
 async function checkNotice(rootAbs, record, findings) {
+  if (record.licensing.spdx === "CC-BY-NC-SA-4.0") {
+    try {
+      const notice = await readFileContained(rootAbs, "NOTICE", { encoding: "utf8" });
+      const authors = Array.isArray(record.authors) ? record.authors : [];
+      const hasLicenseReference = notice.includes("CC-BY-NC-SA-4.0")
+        || notice.includes("CC BY-NC-SA 4.0")
+        || notice.includes(CC_BY_NC_SA_TEXT.split("\n")[0].trim())
+        || notice.includes("/licenses/by-nc-sa/4.0/");
+      const yearDrift = record.licensing.copyrightYear !== null
+        && !notice.includes(String(record.licensing.copyrightYear));
+      if (!hasLicenseReference || authors.some(author => !notice.includes(author.displayName)) || yearDrift) {
+        findings.push(finding("notice-drift", "NOTICE does not retain every declared author and the CC license reference", "NOTICE"));
+      }
+    } catch {
+      findings.push(finding("notice-missing", "NOTICE is required for the CC-BY-NC-SA-4.0 profile", "NOTICE"));
+    }
+    return;
+  }
   if (record.licensing.spdx !== "Apache-2.0") return;
   try {
     const notice = await readFileContained(rootAbs, "NOTICE", { encoding: "utf8" });
@@ -417,7 +443,7 @@ export async function checkIdentityDrift({ rootAbs, identityRecord } = {}) {
   await checkLicense(rootAbs, record, findings);
   sources.license = !findings.some((item) => item.source === "LICENSE" && item.kind === "license-file-missing");
   await checkNotice(rootAbs, record, findings);
-  sources.notice = record.licensing.spdx !== "Apache-2.0"
+  sources.notice = !["Apache-2.0", "CC-BY-NC-SA-4.0"].includes(record.licensing.spdx)
     || !findings.some((item) => item.source === "NOTICE" && item.kind === "notice-missing");
   await checkExternalAttribution(rootAbs, record, findings);
   checkOwnerSeparation(record, findings);

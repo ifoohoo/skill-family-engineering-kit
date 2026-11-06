@@ -1,5 +1,22 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.39.0 locale=zh-CN baseline=sha256:4c05e1fb5dc6d331ae75fe5fb9d9ce82b1ef3084e2d0cd6c7a9acb076645fc4b -->
+## [0.39.0] - 2026-11-06
+
+Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
+原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
+
+### 变更
+
+- Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
+  原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
+
+### 升级说明
+
+四个发行单元同步采用0.39.0。新入口须核实精确正式包；旧默认登记、MIT及Apache路径保持兼容。
+<!-- release-skill:changelog:end version=0.39.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.38.0 locale=zh-CN baseline=sha256:dd2b9a5193bc0d4a707302500049431918292e218d5aa36963d9454eef9aa7d0 -->
 ## [0.38.0] - 2026-11-06
 

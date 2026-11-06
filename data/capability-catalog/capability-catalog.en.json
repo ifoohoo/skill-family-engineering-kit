@@ -1413,7 +1413,8 @@
     "profiles/licensing/registry.json + schema.json exist"
    ],
    "inputs": [
-    "Profile identifier, variant selection"
+    "Profile identifier, variant selection",
+    "CC-BY-NC-SA-4.0 may declare a null unknown copyrightYear; NOTICE retains each author/contributor. MIT/Apache years remain integers."
    ],
    "outputs": [
     "License/notice/identity-record text"
@@ -1422,7 +1423,8 @@
     "No side effects (pure-function generation)"
    ],
    "failureSemantics": [
-    "Unspecified variant among many, or illegal Profile, throws"
+    "Unspecified variant among many, or illegal Profile, throws",
+    "Unknown SPDX is refused without MIT fallback. CC identity checking rejects missing NOTICE, attribution or complete legal text."
    ],
    "invariants": [
     "By default the first registry variant is taken; multiple variants must be explicitly selected"
@@ -1607,11 +1609,12 @@
   },
   {
    "id": "foundation.kit.relock",
-   "intent": "Run the controlled relock transaction: register new handwritten files by default, or persistent tool-lock paths with explicit trackedToolLocks selection; update the registry and managed-file lock in the existing transaction without hashing tool-lock contents.",
+   "intent": "Register new handwritten source by default, or explicit persistent tool locks or exact runtime artifact paths, synchronizing the existing registry and managed lock.",
    "useWhen": [
     "Need to admit a newly handwritten file into the closed world without hand-editing the registry",
     "Need to recompute the managed-file lock from current bytes after registration",
-    "Explicitly register provider-generated persistent lock paths in the existing trackedToolLocks category without locking their contents"
+    "Explicitly register provider-generated persistent lock paths in the existing trackedToolLocks category without locking their contents",
+    "Add exact runtime artifact ignore declarations to a registered project while preserving lock history"
    ],
    "doNotUseWhen": [
     "Need to legitimize drifted managed bytes (relock refuses drift)",
@@ -1620,7 +1623,7 @@
    "prerequisites": [],
    "inputs": [
     "Project root carrying .foundation/file-registry.json and skill-family.managed-file-lock.json",
-    "registrationClass defaults to handwritten and accepts only handwritten or trackedToolLocks; CLI: --registration-class. trackedToolLocks requires an explicit non-empty files array (CLI --files: comma-separated paths)"
+    "registrationClass defaults to handwritten; trackedToolLocks and artifacts require a non-empty explicit files array. CLI uses --registration-class. Artifacts accepts only root-anchored literal file paths or directory paths ending in /."
    ],
    "outputs": [
     "Relock report (kind skill-family.relock-report)"
@@ -1630,12 +1633,14 @@
    ],
    "failureSemantics": [
     "Pre-write parameter, path, registration and drift validation refusals leave the target unchanged",
-    "A half-updated state is never presented as success"
+    "A half-updated state is never presented as success",
+    "Artifacts refuses when separation from handwritten glob declarations cannot be established; arbitrary globs and source reclassification are unsupported."
    ],
    "invariants": [
     "Adds no fifth top-level command; it runs as the check relock sub-action",
     "The new lock binds the new registry bytes before either document is committed",
-    "Initialize entries within the same transaction when trackedToolLocks is absent; reject an existing non-object category or non-array entries without replacing malformed fields"
+    "Initialize entries within the same transaction when trackedToolLocks is absent; reject an existing non-object category or non-array entries without replacing malformed fields",
+    "Artifacts preserves other classes and lock metadata. Exact repeats validate drift then leave bytes and lockVersion unchanged and omit publicationState receipts. It does not edit .gitignore."
    ],
    "ownedByCaller": [
     "Reconciliation of drifted managed bytes before relocking"

@@ -1010,7 +1010,8 @@
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/licensing.mjs",
     "profiles/licensing/registry.json",
-    "profiles/licensing/schema.json"
+    "profiles/licensing/schema.json",
+    "packages/skill-family-engineering-kit/src/license-texts/CC-BY-NC-SA-4.0.txt"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/licensing.test.mjs"

@@ -39,6 +39,11 @@ const MIT_TEMPLATE = readFileSync(
   new URL("./license-texts/MIT.txt", import.meta.url),
   "utf8",
 );
+const LICENSE_TEMPLATES = {
+  "Apache-2.0": APACHE_2_TEXT,
+  MIT: MIT_TEMPLATE,
+  "CC-BY-NC-SA-4.0": readFileSync(new URL("./license-texts/CC-BY-NC-SA-4.0.txt", import.meta.url), "utf8"),
+};
 
 function failure(message, details = {}) {
   return kitError(KIT_ERROR_KINDS.INVALID_MANIFEST, message, details);
@@ -105,9 +110,16 @@ export function validateLicensingProfile(profile) {
     ["spdx", "noticeRequired", "copyrightStrategy", "copyrightYear"],
     `${key} licensing`,
   );
-  // NOTICE is an Apache-2.0 mechanism requirement, independent of profile.
-  if (profile.licensing.noticeRequired !== (profile.licensing.spdx === "Apache-2.0")) {
-    throw failure(`${key} noticeRequired must be ${profile.licensing.spdx === "Apache-2.0"} for ${profile.licensing.spdx}`);
+  const { spdx, copyrightYear } = profile.licensing;
+  if (!Object.hasOwn(LICENSE_TEMPLATES, spdx)) {
+    throw failure(`${key} unsupported SPDX license: ${spdx}`);
+  }
+  // Apache and CC attribution is carried in a separate NOTICE.
+  if (profile.licensing.noticeRequired !== (spdx !== "MIT")) {
+    throw failure(`${key} noticeRequired must be ${spdx !== "MIT"} for ${spdx}`);
+  }
+  if (copyrightYear === null && spdx !== "CC-BY-NC-SA-4.0") {
+    throw failure(`${key} copyrightYear may be null only for CC-BY-NC-SA-4.0`);
   }
 
   exactKeys(profile.identity, ["authors", "displayValue", "ownerSeparation"], `${key} identity`);
@@ -225,8 +237,9 @@ function copyrightHolder(profile) {
  */
 export function generateLicenseContent(profile) {
   validateLicensingProfile(profile);
-  if (profile.licensing.spdx === "Apache-2.0") {
-    return APACHE_2_TEXT.endsWith("\n") ? APACHE_2_TEXT : `${APACHE_2_TEXT}\n`;
+  const template = LICENSE_TEMPLATES[profile.licensing.spdx];
+  if (profile.licensing.spdx !== "MIT") {
+    return template.endsWith("\n") ? template : `${template}\n`;
   }
   return MIT_TEMPLATE
     .replaceAll("{{YEAR}}", String(profile.licensing.copyrightYear))
@@ -239,6 +252,22 @@ export function generateNoticeContent(profile, { projectName }) {
   if (!profile.licensing.noticeRequired) return null;
   if (typeof projectName !== "string" || !projectName.trim()) {
     throw invalidParamsError("projectName is required to generate NOTICE");
+  }
+  if (profile.licensing.spdx === "CC-BY-NC-SA-4.0") {
+    return [
+      projectName,
+      "=".repeat(projectName.length),
+      "",
+      ...profile.identity.authors.map(author => `${author.role}: ${author.displayName}`),
+      ...(profile.licensing.copyrightYear === null ? [] : [`Declared copyright year: ${profile.licensing.copyrightYear}`]),
+      "",
+      "CC-BY-NC-SA-4.0",
+      "License text: ./LICENSE",
+      "",
+      "Existing attribution, source links, modification notices, third-party",
+      "license notices, and historical copyright statements must be preserved.",
+      "",
+    ].join("\n");
   }
   return [
     projectName,
