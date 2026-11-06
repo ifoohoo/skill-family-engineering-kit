@@ -9,7 +9,7 @@ import { checkEntriesAction } from "./entry-check.mjs";
 import { checkHostLoadingAction } from "./host-loading-check.mjs";
 import { checkSelectedArtifactsAction } from "./selected-artifact-check.mjs";
 import { runSourceGeneratedCheck } from "./source-generated-check.mjs";
-import { checkBranchFieldsAction, checkNativeEntryBindingsAction, checkPublicSurfaceBindingsAction } from "./static-contract-binding-check.mjs";
+import { checkBranchFieldsAction, checkNativeEntryBindingsAction, checkNativeProjectionsAction, checkPublicSurfaceBindingsAction, checkSkillSurfaceBindingsAction } from "./static-contract-binding-check.mjs";
 import { relockAction } from "./relock.mjs";
 import { registerExistingAction } from "./register-existing.mjs";
 import { checkReportAction, renderReportAction } from "./report.mjs";
@@ -75,6 +75,8 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                check branch-fields  核对指定 if 条件或直接比较表达式的字段与 Schema 声明；
                check public-surface-bindings  检查既有双入口共同协议的静态声明；
                check native-entry-bindings  检查共同源清单、平台清单与实际 Skill 的有限身份关系；
+               check skill-surface-bindings  检查选定 Skill 与 Markdown 合同的四组直接声明关系；
+               check native-projections  检查选定原生身份、完整 Skill 内容与资源字节；
                check source-generated 读取真实声明，比较同一映射的来源与生成根坐标；
                允许跨映射串联，动态或祖先含义不足，不运行生成器。
                报告子动作: check report 对一份已渲染报告做分级诊断：
@@ -180,6 +182,8 @@ function commandHelp(command) {
       "分支字段: skill-family-kit check branch-fields --root <dir> --selection <rel> --json",
       "双入口协议: skill-family-kit check public-surface-bindings --root <dir> --selection <rel> --json",
       "原生入口身份: skill-family-kit check native-entry-bindings --root <dir> --selection <rel> --json",
+      "Skill 文本声明: skill-family-kit check skill-surface-bindings --root <dir> --selection <rel> --json",
+      "原生投影: skill-family-kit check native-projections --root <dir> --selection <rel> --json",
       "方向检查: skill-family-kit check source-generated --root <dir> --declaration <rel> --json",
       "  仅比较真实声明内同一映射的固定根相等；跨映射串联允许，祖先或动态坐标记为不足。",
       "选集检查: skill-family-kit check selected-artifacts --root <dir> --selection <rel> --json",
@@ -448,6 +452,20 @@ const COMMAND_SPECS = {
     },
   },
   "check native-entry-bindings": {
+    flags: {
+      "--root": { key: "root", value: true },
+      "--selection": { key: "selection", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "check skill-surface-bindings": {
+    flags: {
+      "--root": { key: "root", value: true },
+      "--selection": { key: "selection", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "check native-projections": {
     flags: {
       "--root": { key: "root", value: true },
       "--selection": { key: "selection", value: true },
@@ -799,8 +817,7 @@ async function runPublicSurfaceBindingsSubAction(rest) {
   }
 }
 
-async function runNativeEntryBindingsSubAction(rest) {
-  const specName = "check native-entry-bindings";
+async function runBindingCheckSubAction(rest, specName = "check native-entry-bindings", action = checkNativeEntryBindingsAction) {
   try {
     const options = parseOptions(rest, { command: specName, flags: COMMAND_SPECS[specName].flags, rejectDuplicates: true });
     if (options.help) {
@@ -808,7 +825,7 @@ async function runNativeEntryBindingsSubAction(rest) {
       return KIT_EXIT_CODES.ok;
     }
     requireJsonFlag(options, specName);
-    const output = await checkNativeEntryBindingsAction({ root: options.root, selection: options.selection });
+    const output = await action({ root: options.root, selection: options.selection });
     process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
     return output.outcome.completion === "complete" && output.outcome.code === "ENGINEERING_CLEAR"
       ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
@@ -1025,7 +1042,13 @@ export async function cliMain(argv) {
     return runPublicSurfaceBindingsSubAction(argv.slice(2));
   }
   if (command === "check" && argv[1] === "native-entry-bindings") {
-    return runNativeEntryBindingsSubAction(argv.slice(2));
+    return runBindingCheckSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "skill-surface-bindings") {
+    return runBindingCheckSubAction(argv.slice(2), "check skill-surface-bindings", checkSkillSurfaceBindingsAction);
+  }
+  if (command === "check" && argv[1] === "native-projections") {
+    return runBindingCheckSubAction(argv.slice(2), "check native-projections", checkNativeProjectionsAction);
   }
   if (command === "check" && argv[1] === "source-generated") {
     return runSourceGeneratedSubAction(argv.slice(2));

@@ -1,5 +1,24 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.38.0 locale=en baseline=sha256:9ee22cb1f4a5c42f6690ae40caed5983395428ed215804af4d9ddcafaf6c929d -->
+## [0.38.0] - 2026-11-06
+
+This Kit release adds the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs, while extending `runStaticReferenceCheck` to support limited `../`-prefixed raw literals for safe fixed file reference validation within strict root containment. The new `runFixedSchemaUseCheck` root-level API enables independent validation of Markdown declarations against actual Schema identity and required fixed version, with optional finite checks of the actual Schema file, the same data binding, and validation before business interpretation.
+
+### Changed
+
+- Added the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs `runSkillSurfaceBindingCheck` and `runNativeProjectionCheck`, which validate skill surface bindings and native projections respectively. Skill surface binding checks identity, parameter-assignment, implementation-path, and protocol-path declarations.
+- Native projection checks reuse the four native identity comparisons. Complete Skill file comparison replaces only each unique direct single-line YAML name scalar byte range with a fixed marker, while all other bytes are compared in their original form. Explicitly selected common/platform resource pairs are compared byte-by-byte in entirety, including binary content.
+- Discrepancies in direct values, content, permissions, protocols, or resource bytes are recorded as findings. Missing, unsupported, ambiguous, unreadable, or drifting bindings result in insufficient binding and zero comparison; stable, independent bindings are preserved. Domain meaning is interpreted by the caller’s LLM. Mechanical outcomes and actual scope come from the original API return.
+- The existing `runStaticReferenceCheck` API is extended to support `literal` fields beginning with one or more consecutive `../`, followed by one or more valid path segments separated by `/`. Segments contain only ASCII letters, digits, dots, underscores, and hyphens, and must not be `.` or `..`. The target path must remain strictly within `root`. `targetRef` is derived via `path.posix.join(baseDir,literal)`, with POSIX lexical normalization applied but the original `literal` preserved. All existing read, closure, and security policies remain unchanged, using the existing package-root API.
+- Added `runFixedSchemaUseCheck` root-level API to independently validate $id and schemaVersion=N in Markdown declarations against the actual required 2020-12 Schema version. Optionally verifies that data loading and validation in Python occur prior to business interpretation, only when classifiable. JSON decoding and direct version header reading are permitted ahead of validation and do not constitute business interpretation. Unclassifiable cases make the optional implementation insufficient while preserving stable declaration comparisons. Returns `professional-conclusion` read via `readProfessionalProof` within actual scope; domain applicability and full audit conclusion are the caller’s responsibility.
+
+### Upgrade Notes
+
+All four units adopt version 0.38.0 in lockstep, with no migration required for existing calls. Formal consumption must use the exact published payload and exported package; development observation retains its own object identity. The host saves the actual `professional-conclusion` returned by `runSkillSurfaceBindingCheck` or `runNativeProjectionCheck` and reads it through `readProfessionalProof` within its recorded scope. `runFixedSchemaUseCheck` activates only when explicitly invoked. Plugins must explicitly select the scope within foundation-engineering-check and invoke this API and the public reader directly, not relying on hand-filled results.
+<!-- release-skill:changelog:end version=0.38.0 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.37.0 locale=en baseline=sha256:d3dab1b367a45cac3362bd7051731899effa853734bfe580baed32bb78e5fd08 -->
 ## [0.37.0] - 2026-11-05
 

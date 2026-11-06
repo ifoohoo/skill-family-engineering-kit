@@ -862,7 +862,10 @@
     "runBranchFieldCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
     "runPublicSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
     "runNativeEntryBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
-    "runPeerAdapterCheck (packages/skill-family-engineering-kit/src/peer-adapter-check.mjs)"
+    "runPeerAdapterCheck (packages/skill-family-engineering-kit/src/peer-adapter-check.mjs)",
+    "runSkillSurfaceBindingCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
+    "runNativeProjectionCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)",
+    "runFixedSchemaUseCheck (packages/skill-family-engineering-kit/src/static-contract-binding-check.mjs)"
    ],
    "sourceRefs": [
     "packages/skill-family-engineering-kit/src/check.mjs",
@@ -883,7 +886,8 @@
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
     "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
     "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs",
-    "packages/skill-family-engineering-kit/test/host.test.mjs"
+    "packages/skill-family-engineering-kit/test/host.test.mjs",
+    "packages/skill-family-engineering-kit/test/cli.test.mjs"
    ],
    "negativeTestRefs": [
     "packages/skill-family-engineering-kit/test/check.test.mjs",
@@ -891,7 +895,8 @@
     "packages/skill-family-engineering-kit/test/professional-conclusion.test.mjs",
     "packages/skill-family-engineering-kit/test/static-reference-check.test.mjs",
     "packages/skill-family-engineering-kit/test/selected-artifact-check.test.mjs",
-    "packages/skill-family-engineering-kit/test/host.test.mjs"
+    "packages/skill-family-engineering-kit/test/host.test.mjs",
+    "packages/skill-family-engineering-kit/test/cli.test.mjs"
    ]
   },
   {

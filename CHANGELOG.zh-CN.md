@@ -1,5 +1,24 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.38.0 locale=zh-CN baseline=sha256:dd2b9a5193bc0d4a707302500049431918292e218d5aa36963d9454eef9aa7d0 -->
+## [0.38.0] - 2026-11-06
+
+本版 Kit 新增 `check skill-surface-bindings` 与 `check native-projections` 两个 CLI 子动作及对应公共 API，同时扩展 `runStaticReferenceCheck` 支持以 `../` 开头的有限路径前缀，确保固定文件引用在严格根收容下安全核对。新增 `runFixedSchemaUseCheck` 包根 API，用于独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本，可选验证 Python 实现中实际采用的 Schema 文件、同一数据绑定与验证早于业务解释的关系。
+
+### 变更
+
+- 新增 `check skill-surface-bindings` 与 `check native-projections` CLI 子动作及对应公共 API `runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck`，分别用于验证技能表面绑定与原生投影的一致性。技能表面绑定比较身份、参数赋值、实现路径、协议路径四组直接声明。
+- 原生投影检查复用四组原生身份比较，完整 Skill 文件比较时仅将每个唯一直接单行 YAML name 标量的原始字节区间替换为统一标记，其余全部字节原样参与比对；显式指定的 commonRef 与 platformRef 之间资源对进行独立全字节完整比对，支持二进制内容。
+- 任何直接值、正文、权限、协议或资源字节不一致均视为发现项。绑定缺失、不支持、歧义、不可读或漂移将导致相关绑定不足且不参与比较，稳定独立绑定予以保留。领域含义由调用方 LLM 解释，机械状态与实际 scope 取 API 原始返回。
+- 既有 `runStaticReferenceCheck` API 扩展支持 `literal` 字段以一个或多个连续 `../` 开头，后接由 `/` 分隔的合法普通文件段，段内仅含 ASCII 字母、数字、点、下划线、连字符，且不为 `.` 或 `..`。目标路径必须严格留在 `root` 内，通过 `path.posix.join(baseDir,literal)` 派生 `targetRef`，`join` 执行 POSIX 词法规范化但保留原始 `literal`。所有读取、闭包与安全政策保持不变，该路径使用既有包根 API。
+- 新增 `runFixedSchemaUseCheck` 包根 API，独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本。可选验证 Python 实现中数据加载与验证是否早于业务解释，仅在有限直接链路可分类时进行比较。JSON 解码与直接版本头读取可先行，不构成业务解释。无法分类时仅实现不足，声明仍保留。结果为 `professional-conclusion`，由 `readProfessionalProof` 按实际 scope 读取，领域适用与完整审计由调用方核收。
+
+### 升级说明
+
+四单元同步采用 0.38.0 版本，旧调用无需迁移。正式消费应以精确已发布载荷与导出包为准，开发观察阶段保持自身对象身份。`runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck` 分别验证技能表面绑定与原生投影，结果由宿主保存 `professional-conclusion`，调用方通过 `readProfessionalProof` 按实际 scope 读取。`runFixedSchemaUseCheck` 仅在显式调用时生效，Plugin 应在 foundation-engineering-check 中显式选择范围并调用该 API 及公共 reader，不凭手填结果通过。
+<!-- release-skill:changelog:end version=0.38.0 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.37.0 locale=zh-CN baseline=sha256:481e2cb0315637221e677ffdfa693c18ae66359a4046a2d8ac380993268e7910 -->
 ## [0.37.0] - 2026-11-05
 

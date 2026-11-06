@@ -4,22 +4,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.37.0 -->
+<!-- release-skill:release-version: 0.38.0 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.37.0** (2026-11-05)
+**0.38.0** (2026-11-06)
 
-Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
+This Kit release adds the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs, while extending `runStaticReferenceCheck` to support limited `../`-prefixed raw literals for safe fixed file reference validation within strict root containment. The new `runFixedSchemaUseCheck` root-level API enables independent validation of Markdown declarations against actual Schema identity and required fixed version, with optional finite checks of the actual Schema file, the same data binding, and validation before business interpretation.
 
 **Changed**
 
-- Engineering Kit 0.37.0 adds runNativeEntryBindingCheck({root, bindings}) and check native-entry-bindings --root <dir> --selection <relative-json> --json. Each binding selects commonManifestRef, commonSkillIndex, platformManifestRef and mappingIndex, then compares four contained identities: platform source versus the selected common manifest, platform physicalName versus the platform Skill frontmatter name, platform logicalName versus the selected common logicalName, and that common logicalName versus the common Skill frontmatter name. sourceRoot strictly equal to '.' is only a directory-base marker of the already-resolved root and is not passed to classifyPathInput or resolveContained. Unsupported or unreadable inputs remain insufficient; supported contradictory values are findings. Resource drift revokes every comparison in dependent bindings, while independent stable findings remain. Existing runPublicSurfaceBindingCheck seven-source six-comparison behavior, peer joint checks, Contracts Schema and Harness algorithms remain unchanged. The original reader retains pass/not_pass logic and adds local scope text for the new entry.
+- Added the `check skill-surface-bindings` and `check native-projections` CLI actions and their corresponding public APIs `runSkillSurfaceBindingCheck` and `runNativeProjectionCheck`, which validate skill surface bindings and native projections respectively. Skill surface binding checks identity, parameter-assignment, implementation-path, and protocol-path declarations.
+- Native projection checks reuse the four native identity comparisons. Complete Skill file comparison replaces only each unique direct single-line YAML name scalar byte range with a fixed marker, while all other bytes are compared in their original form. Explicitly selected common/platform resource pairs are compared byte-by-byte in entirety, including binary content.
+- Discrepancies in direct values, content, permissions, protocols, or resource bytes are recorded as findings. Missing, unsupported, ambiguous, unreadable, or drifting bindings result in insufficient binding and zero comparison; stable, independent bindings are preserved. Domain meaning is interpreted by the caller’s LLM. Mechanical outcomes and actual scope come from the original API return.
+- The existing `runStaticReferenceCheck` API is extended to support `literal` fields beginning with one or more consecutive `../`, followed by one or more valid path segments separated by `/`. Segments contain only ASCII letters, digits, dots, underscores, and hyphens, and must not be `.` or `..`. The target path must remain strictly within `root`. `targetRef` is derived via `path.posix.join(baseDir,literal)`, with POSIX lexical normalization applied but the original `literal` preserved. All existing read, closure, and security policies remain unchanged, using the existing package-root API.
+- Added `runFixedSchemaUseCheck` root-level API to independently validate $id and schemaVersion=N in Markdown declarations against the actual required 2020-12 Schema version. Optionally verifies that data loading and validation in Python occur prior to business interpretation, only when classifiable. JSON decoding and direct version header reading are permitted ahead of validation and do not constitute business interpretation. Unclassifiable cases make the optional implementation insufficient while preserving stable declaration comparisons. Returns `professional-conclusion` read via `readProfessionalProof` within actual scope; domain applicability and full audit conclusion are the caller’s responsibility.
 
 **Upgrade Notes**
 
-Adopt all four units at 0.37.0; existing callers need no forced migration. Source candidates, local testing, or static exits cannot validate formal channels, installation, loading, or business readiness. Version 0.36.0 does not contain the new entry.
+All four units adopt version 0.38.0 in lockstep, with no migration required for existing calls. Formal consumption must use the exact published payload and exported package; development observation retains its own object identity. The host saves the actual `professional-conclusion` returned by `runSkillSurfaceBindingCheck` or `runNativeProjectionCheck` and reads it through `readProfessionalProof` within its recorded scope. `runFixedSchemaUseCheck` activates only when explicitly invoked. Plugins must explicitly select the scope within foundation-engineering-check and invoke this API and the public reader directly, not relying on hand-filled results.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -62,7 +66,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Before the formal publication of version 0.37.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.36.0.
+Before the formal publication of version 0.38.0, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.37.0.
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -70,23 +74,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.37.0.tgz" "$pack_dir/skill-family-harness-node-0.37.0.tgz" "$pack_dir/skill-family-engineering-kit-0.37.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.38.0.tgz" "$pack_dir/skill-family-harness-node-0.38.0.tgz" "$pack_dir/skill-family-engineering-kit-0.38.0.tgz")
 ```
 
 This approach validates the working-tree candidate in a fresh consumer project. Third-party dependencies may still be downloaded from the registry.
 
-Only after version 0.37.0 is formally available in the public registry do the following installation and execution examples apply:
+Only after version 0.38.0 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.37.0
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.38.0
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit check --root <repo>
 ```
 
-These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help`.
+These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 
@@ -354,7 +358,274 @@ Foundation itself does not issue network requests, but the bound executable may 
 - Adoption and migration: [Migration guide](https://ifoohoo.github.io/skill-family-engineering-kit/migration/)
 - Side-effect matrix: [Failure and side-effect matrix](https://ifoohoo.github.io/skill-family-engineering-kit/reference/failure-and-side-effect-matrix/)
 
+## Skill Text Binding and Native Projection Checks
+
+### Skill Text Binding Check (`runSkillSurfaceBindingCheck`)
+
+The caller invokes the independent read-only API `runSkillSurfaceBindingCheck`, with input `{root, bindings}`, where `root` is a non-empty string representing the project root directory path, and `bindings` is a non-empty array. Each entry in `bindings` requires `naturalSkill`, `parameterDeclaration`, `commonMethod`, and `parameterName`. All fields must be present, and no additional keys are accepted.
+
+**Request JSON Structure Example**
+
+The example illustrates the request format. Actual coordinates are derived from existing source files.
+
+```json
+{
+  "bindings": [{
+    "naturalSkill": {"ref": "SKILL.md", "protocolRef": {"line": 4, "column": 11, "length": 10}},
+    "parameterDeclaration": {"ref": "methods.md", "parameterLiteral": {"line": 3, "column": 7, "length": 12}},
+    "commonMethod": {
+      "ref": "methods.md",
+      "methodId": {"line": 1, "column": 3, "length": 12},
+      "methodValue": {"line": 1, "column": 10, "length": 5},
+      "implementationRef": {"line": 2, "column": 8, "length": 8}
+    },
+    "parameterName": "method"
+  }]
+}
+```
+
+**Field Requirements**
+
+- `root` is a non-empty string, representing the project root directory. Can be absolute or relative.
+- `bindings` is a non-empty array. Each item requires the following fields.
+  - `naturalSkill.ref` is a path string pointing to the actual Skill Markdown file.
+  - `parameterDeclaration.ref` is a path string pointing to the parameter declaration file.
+  - `commonMethod.ref` is a path string pointing to the common method definition file.
+  - `parameterName` is a string matching the regular expression `^[A-Za-z_$][A-Za-z0-9_$]*$`, representing the parameter name.
+- All span objects (`protocolRef`, `parameterLiteral`, `methodId`, `methodValue`, `implementationRef`) must have `line`, `column`, and `length` values as positive safe integers. Coordinates are one-based UTF-16 code units within one physical line, with no splitting of surrogate pairs.
+- `methodId` and `methodValue` must be on the same line, and the `methodValue` span must be strictly contained within the `methodId` span.
+- `parameterDeclaration.ref` and `commonMethod.ref` must resolve to the same actual file path.
+- `parameterName` and `methodValue` are not compared against each other.
+
+**Four Actual Comparison Relationships**
+
+The API strictly reads actual Skill and Markdown content, extracting raw values from initial YAML and selected text spans. Parameters support only direct `key=value` syntax, with the key matching `parameterName`. Local values must match `^[A-Za-z_][A-Za-z0-9_-]*$`. The full method identity is a single-line unquoted value.
+
+1. The actual Skill `name` (from initial YAML) compared to the value of the common `methodId`.
+2. The actual `parameterLiteral` is compared with the string formed from `parameterName`, an equals sign, and the actual local value read from the common `methodValue` span.
+3. The actual contained file identity resolved from the `implementationRef` span is compared with the identity of `naturalSkill.ref`.
+4. The actual contained file identity resolved from the `protocolRef` span is compared with the identity of `commonMethod.ref`.
+
+**scope.checked Identifiers**
+
+- `binding:N:method-identity`
+- `binding:N:parameter-declaration`
+- `binding:N:implementation-reference`
+- `binding:N:protocol-reference`
+
+File references and selected path literals are direct local relative paths within root. Target files must be strictly readable. Missing or unreadable files result in binding deficiency.
+
+---
+
+### Native Projection Check (`runNativeProjectionCheck`)
+
+The caller invokes the independent read-only API `runNativeProjectionCheck`, with input `{root, bindings}`, where `root` is a non-empty string representing the project root directory, and `bindings` is a non-empty array.
+
+**Request JSON Structure Example**
+
+The example illustrates the request format. Actual coordinates are derived from existing source files.
+
+```json
+{
+  "bindings": [{
+    "commonManifestRef": "common/manifest.json",
+    "commonSkillIndex": 0,
+    "platformManifestRef": "adapters/codex/manifest.json",
+    "mappingIndex": 0,
+    "resources": [{"commonRef": "common/rules.bin", "platformRef": "adapters/codex/rules.bin"}]
+  }]
+}
+```
+
+**Field Requirements**
+
+- `root` is a non-empty string, representing the project root directory.
+- `bindings` is a non-empty array. Each item requires the following fields.
+  - `commonManifestRef` is a non-empty string, pointing to the common manifest file path.
+  - `commonSkillIndex` is a non-negative safe integer, indicating the Skill index in the common manifest.
+  - `platformManifestRef` is a non-empty string, pointing to the platform manifest file path.
+  - `mappingIndex` is a non-negative safe integer, indicating the mapping index in the platform manifest.
+  - `resources` is an array that may be empty, but each item must have both `commonRef` and `platformRef` as non-empty strings, representing file path pairs.
+
+**Four Identity Source Chains**
+
+1. The platform `source` actual file path compared to the selected common manifest file path.
+2. The platform `physicalName` compared to the platform Skill’s `name`.
+3. The platform `logicalName` compared to the selected common `logicalName`.
+4. The common `logicalName` compared to the common Skill’s `name`.
+
+**Actual Skill Comparison**
+
+- The common `sourceRoot` is resolved relative to `root`, then used to locate the actual Skill via `skills[index].source`. When `sourceRoot` is exactly `.`, the resolved `root` is used as the base directory.
+- The platform Skill (Markdown) is located at the platform manifest directory plus `logicalMappings[index].path`.
+- Both actual Skill files are strictly decoded as UTF-8. The unique direct single-line YAML `name` scalar range is located, supporting `plain`, `single-quote`, and `double-quote` formats.
+- Only the `name` scalar ranges are replaced with a fixed value. All other bytes are compared in full.
+- `skillNormalization` retains the actual `name`, original byte range, and `normalizedSha256`.
+
+- Aliases, merges, duplicate keys, unknown tags, indirect or multi-line `name`, non-unique ranges, or invalid UTF-8 make the binding insufficient.
+
+**Resource Comparison**
+
+- Each pair of `commonRef` and `platformRef` files is compared by their complete raw bytes, allowing binary content.
+- Each resource pair is compared separately from the Skill files. Every comparison in a binding still depends on that binding’s valid read closure.
+- The dual paths only indicate positional correspondence. Additional content adaptation rules are not included in the closed input. Known content, permission, and protocol byte differences are treated as actual findings. Domain meaning is determined by the caller.
+
+**scope.checked Identifiers**
+
+- `binding:N:native-identity:1` through `binding:N:native-identity:4`, corresponding to the four identity relationships above.
+- `binding:N:skill-content`, indicating the result of the full file byte comparison for the Skill.
+- `"binding:" + N + ":resource:" + M + ":bytes"`, where `M` is the resource pair index, indicating the byte comparison result for that resource pair.
+
+### Results, CLI and Proof Reading
+
+**Request Error Conditions**
+
+- Structural or type mismatches, unknown fields, empty or duplicate bindings, invalid span values, an invalid containment relationship between the methodId and methodValue spans, duplicate resource pairs, or the same platform resource selected with conflicting common resources.
+
+**Binding Deficiency Conditions**
+
+- Actual text out of bounds, unsupported direct text or path subsets, key mismatch, failure of common file premise, missing/unreadable/ambiguous files, strict UTF-8 failure, or closure drift.
+
+These conditions invalidate every comparison in the dependent binding. Stable independent bindings remain, and unexpected errors propagate.
+
+**Known Finding Conditions**
+
+- After premise validity, direct values or content do not match.
+
+**Five Result Aggregations**
+
+- `complete/ENGINEERING_CLEAR` means all checks completed with no findings.
+- `complete/ENGINEERING_FINDINGS` means all checks completed with findings.
+- `partial/ENGINEERING_FINDINGS` means stable findings and deficiencies coexist.
+- `partial/ENGINEERING_CHECK_INCOMPLETE` means some comparisons completed with no findings but still has deficiencies.
+- `not-performed/ENGINEERING_CHECK_INCOMPLETE` means no completed comparisons available.
+
+**CLI Invocation Commands**
+
+```text
+skill-family-kit check skill-surface-bindings --root <dir> --selection <rel> --json
+skill-family-kit check native-projections --root <dir> --selection <rel> --json
+```
+
+**Selection Receipt**
+
+- The selected file is located within the root and contains only `bindings`. No ambiguous JSON parsing is allowed. The closure includes a read receipt.
+
+- CLI exit codes have the following meanings.
+  - `0` means complete with no findings.
+  - `1` means findings or deficiencies present.
+  - `2` means invalid request or unhandled mechanism error.
+
+**Real API Original and Reader**
+
+Returns the original `skill-family.professional-conclusion`. `provider.entry` is the actual API name, `subject.ref` is the resolved actual root directory, and `details` retains the selection, read receipt, location, actual values or file identities, comparisons, and closure. Static read-only observation is limited to this byte set. No atomic snapshots are provided.
+
+- The host maintains the original return exclusively, then passes it to `readProfessionalProof({proofRoot,proof})` or `check proof` for interpretation.
+- For the read conclusions, `complete/ENGINEERING_CLEAR` is interpreted as `pass`. Findings or incompleteness are interpreted as `not_pass`. If the proof is unreadable or uninterpretable, it is `unavailable`.
+- Do not use `proof-create` to manually fill mechanical results.
+- The `reader` does not rescan or audit the author.
+- When selecting other ranges, original files are preserved separately. Professional conclusions only cover actual `scope`.
+- Domain-level adaptation, violations, and full selection interpretation are the caller’s responsibility.
+
 <!-- agent-quick-reference:start -->
+## Fixed File Reference Check
+
+Call the public API `runStaticReferenceCheck({root, references})` to perform a read-only validation of selected fixed file references. The request must include an explicit non-empty `root` directory and a non-empty `references` array. Each reference must contain exactly `sourceRef`, `line`, `literal`, and `baseDir`, with all three path fields as non-empty strings and `line` as a positive safe integer starting from 1. Duplicate entries or unknown keys are rejected with `SFC2003` error. Each reference is processed independently, without requiring full set support. The caller must ensure actual invocation, explicit resolution of the base, and inclusion of all necessary references.
+
+### Supported Path Forms
+
+- **Standard relative paths** such as `utils/helper.js`, including single `./` prefix, e.g., `./utils/helper.js`.
+- **New raw literal form**: Begins with one or more consecutive `../`, followed by one or more path segments separated by `/`. Each segment contains only ASCII letters, digits, dots, underscores, and hyphens, and must not be `.` or `..`. Valid file names include `index.mjs` and `variable.js`.
+
+### Examples of Valid References
+
+- `baseDir=scripts`, `literal=../runtime/index.mjs` → `targetRef=runtime/index.mjs`
+- `baseDir=nested/scripts`, `literal=../../runtime/index.mjs` → `targetRef=runtime/index.mjs`
+
+### Unsupported Path Forms
+
+- `nested/scripts/../../runtime/index.mjs` (intermediate `../` sequences)
+- `./../file`, `.././file`, `../`, empty suffix
+- Paths containing variables, globs, whitespace, non-ASCII characters, backslashes, absolute paths, URIs, dynamic syntax, or module resolution patterns
+
+### Processing Flow
+
+1. Copy and validate the request.
+2. Resolve the `root` directory.
+3. Use `readFileStrict` to read the file at `sourceRef`.
+4. Bind `literal` to the specified `line`, ensuring it is within bounds and appears only once.
+5. Apply strict lexical validation.
+6. If `baseDir` is not `.` , call `resolveContained` to verify the actual base directory.
+7. Derive `targetRef` using `path.posix.join(baseDir, literal)`. This operation applies POSIX lexical normalization but preserves the original `literal` unchanged.
+8. The resulting `targetRef` may extend beyond `baseDir`, but must remain strictly within `root`. Relative `..` that would escape `root` are retained in the target path and rejected by the Harness.
+9. Use `readFileStrict` to read the target file and enforce strict root containment.
+
+### Receipts and Closure
+
+- Preserve real `ref`, `sha256`, and `bytes` receipts for both source and target.
+- Retain original `details.references` and `closure`.
+- Use `computeResourceClosure` to compute summary for complete items. Repeated reads or closure drift invalidate dependencies; independent stable items are preserved. If the entire closure fails, `closure=null`.
+- Unknown program exceptions are propagated directly, not converted to insufficient.
+
+### Aggregated Results and Errors
+
+- Each reference returns `checked` or `insufficient`.
+- All `checked` → `complete/ENGINEERING_CLEAR`
+- At least one `checked` with any insufficient → `partial/ENGINEERING_CHECK_INCOMPLETE`
+- No `checked` → `not-performed/ENGINEERING_CHECK_INCOMPLETE`
+- `not-performed` is not a per-item status and does not imply no call was made.
+- Insufficiency reasons include missing, unreadable, ambiguous, unsupported, or out-of-bounds conditions. Retain `reason` and any existing `cause`.
+
+### Reader and Caller Semantics
+
+- Save the actual returned conclusion and read it through `readProfessionalProof({proofRoot,proof})`. Compare source receipt digests against the caller’s frozen target. The reader retains its original interpretation scope.
+- Local results reflect only the completion state at observation time. Semantic correctness, permissions, and business integrity are the caller’s responsibility.
+- Observations are non-atomic snapshots.
+- Actual execution does not write, run target code, start processes, or connect to networks.
+
+### Example Request
+
+```json
+{
+  "root": "/project",
+  "references": [
+    {
+      "sourceRef": "tools/run.mjs",
+      "line": 1,
+      "literal": "../runtime/index.mjs",
+      "baseDir": "tools"
+    }
+  ]
+}
+```
+
+### Version and Dependencies
+
+- This revision is version 0.38.0 (development candidate); the current stable release is 0.37.0.
+- Public consumption is based on the exact published version installed.
+- `runStaticReferenceCheck` already exists; this update only expands the allowed `literal` subset.
+- No new API, CLI, exports, patterns, fields, proof formats, Schema, dependencies, or Harness algorithms are introduced.
+- The other two new APIs from original 038 remain independent; this unit does not involve them and adds no execution dependencies.
+- No dedicated fixed-reference CLI exists. Skills call the package-root API and public reader directly.
+
+### Fixed Schema Declaration and Use Link Check (runFixedSchemaUseCheck)
+
+This section is intended for callers with foundational knowledge of JSON and Python. A Schema is a JSON contract defining object structure, with `$id` as the full type identity and `schemaVersion` as the required data version specified in the contract. The correspondence between the selected Markdown declaration and the actual Schema can be independently verified; optional Python implementation checks further validate the order between actual Schema adoption and business interpretation.
+
+This scope uses the package-root API `runFixedSchemaUseCheck({root, bindings})`. `root` must be a non-empty string indicating an approved root directory, and `bindings` must be a non-empty array. Unknown keys, duplicate selections, or invalid coordinates are rejected via SFC2003. Input is synchronously deeply copied before asynchronous reading. All paths are read through existing strict root containment, with no execution of target Python code.
+
+`declaration` must contain `ref`, `unit`, `schemaPath`, `schemaId`, and `schemaVersion`. `ref` is the actual Markdown path; the other four are `{line, column, length}` positive safe integers using 1-based UTF-16 code-unit positioning. A physical `unit` contains three sub-segments, each unique and with complete literal boundaries, without splitting surrogate pairs. Different `unit`s must not overlap, and the same `unit` may be associated with different implementations. The three spans select the actual root-contained Schema path, the full `$id`, and the literal `schemaVersion=N`, respectively. The caller is responsible for the declaration’s actual business meaning, public availability, applicability, and selection completeness.
+
+Supports real, standard, self-contained 2020-12 JSON Schema, requiring root `type=object`, non-empty direct `$id`, `required` containing `schemaVersion`, and `properties.schemaVersion.const` as a positive safe integer. Parsing validity is verified via the public `Contracts` compilation entry point, rejecting asynchronous and external references, but allowing self-contained `#` references. A compiled cache entry differing from the current Schema content is insufficient. Callers must preserve cached validators and their schemas without mutation in the same process. Declaration comparison checks only the full `$id` and version number, without inferring from URN suffixes or requiring additional identity formats in the target.
+
+Each binding requires `declaration` and may omit `implementation`. When supplied, `implementation` must contain `ref`, `dataLoad`, and `validation`. `ref` is the actual Python path; the other two are `{line, column}` positive safe integers selecting the unique starting point of actual direct assignment or validation statements. The full strict Python CST must be error-free, with a single top-level `main` having no parameters and the selected nodes directly in the same `try` Body. `dataLoad` is restricted to `dataLocal=json.loads(Path(args.input).read_text())`, where `args.input` denotes the caller’s actual direct argument name. `validation` is restricted to `jsonschema.Draft202012Validator(schemaLocal).validate(dataLocal)`. `schemaLocal` is derived from `schemaLocal=json.loads((root / "contracts/input.json").read_text())`, with `root` originating from `main` via `Path(__file__).resolve().parent.parent`. Variable names and example paths are illustrative; direct binding, import, and absence of write operations, aliases, or dynamic escapes must hold under limited premises.
+
+JSON syntax decoding of data may occur before Schema loading. Each must complete prior to actual validation, and direct reading of `dataLocal["schemaVersion"]` at the header may precede validation. Direct reading of other business fields in the actual Schema `properties`, or embedding the entire data in the result, constitutes business interpretation. Classified business interpretation occurring before corresponding actual validation constitutes a finding. Using a different, already parsed Schema with distinct identity/version in the actual validator also constitutes a finding. Different local names loading the same actual file are permitted. Branching, looping, aliasing, rebinding, indirect calls, other compatible strategies, or paths/uses not classifiable result in only optional implementation insufficiency, with zero implementation comparison. This check does not prove general multi-version compatibility, arbitrary control flow, environment library authenticity, lossless transformation, or execution success.
+
+The declaration independently compares the full identity and fixed version. Optional implementation checks three additional aspects: actual Schema file, same data binding, and validation preceding business interpretation. Returns the original `professional-conclusion`, with `provider.entry` set to `runFixedSchemaUseCheck`. `details.bindings` contains independent `declaration` and optional `implementation` per item, preserving `selection`, actual values, resource receipts, `comparisons`, `status`, `reason`, and respective `closure`. `scope.checked` lists only truly completed comparisons. Closures are based on actual dependencies, with overlapping shared resources and closure summaries cross-verified. Python missing, unsupported, or drifted only removes implementation; shared Schema drift removes actual dependency sub-checks. Full closure failure removes the participating item; unknown exceptions propagate. Observations are not atomic snapshots.
+
+All completed with no findings yields `complete/ENGINEERING_CLEAR`. All completed with findings yields `complete/ENGINEERING_FINDINGS`. Comparison preserved but insufficient yields `partial`. A known finding yields `ENGINEERING_FINDINGS` even when another subcheck is insufficient. Otherwise the incomplete code is `ENGINEERING_CHECK_INCOMPLETE`. No comparison yields `not-performed/ENGINEERING_CHECK_INCOMPLETE`. Not selecting `implementation` does not constitute insufficiency. `readProfessionalProof` reads only the actual selected scope; domain applicability and full audit conclusion are the caller’s responsibility.
+
 ## Agent Quick Reference
 
 ### Use when

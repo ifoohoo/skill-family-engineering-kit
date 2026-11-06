@@ -1197,7 +1197,9 @@
     "需要定位同一生成映射中相等的来源根与生成根，保留合法的跨映射串联",
     "需要核对指定 if 条件或直接比较表达式的字段及字面量，与所选 Schema 的直接声明是否一致",
     "需要核对指定 Skill 身份、Python 路由字典、Method 与四份 Schema 的六组直接声明对应",
-    "需要核对指定共同清单、平台映射与两端实际 Skill 的四组受收容身份关系"
+    "需要核对指定共同清单、平台映射与两端实际 Skill 的四组受收容身份关系",
+    "需要比较现存 Skill 与共同 Markdown 中明确选定的身份、参数字面量、实现路径和协议路径",
+    "需要在既有原生身份关系上核对两端完整 Skill 的 name 唯一标量规范化字节与显式资源对原始字节"
    ],
    "doNotUseWhen": [
     "需要自动修复（禁止，check 不写修复）",
@@ -1209,13 +1211,17 @@
     "declared 版本输入：policy declared、only version 与项目清单 engineering.releaseUnits",
     "proof 读取输入：--proof-root 与根内 --proof",
     "proof-create 输入：--review-root、--review-input，以及成对的 --conclusion-root 与 --conclusion-output",
-    "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；仅支持固定 ASCII 相对路径",
+    "runStaticReferenceCheck：明确 root 与非空 references，每项 sourceRef、line、literal、baseDir；普通 ASCII 相对路径、单个 ./ 或一个及以上连续前置 ../ 后接普通段，目标严格位于 root 内",
     "0.31.0 候选 runSelectedArtifactCheck({root, artifacts})；每项 path，至少选择 schema:{path,dialect} 或 baseline:{sha256,version?}；CLI check selected-artifacts --root <dir> --selection <rel> --json",
     "runSourceGeneratedCheck({root,declaration}) 读取真实声明；共享 source-generated-declaration.schema.json 为可选读取合同，不证明旧项目此前已采用",
     "runBranchFieldCheck({root,branches})；每项仍含 sourceRef、line、column、resultIdentifier、schemaRef、schemaPointer，可选 nodeType 仅 IfStatement 或 BinaryExpression，省略为 IfStatement；CLI check branch-fields --root <dir> --selection <rel> --json",
     "0.34.0 候选 runPublicSurfaceBindingCheck({root,bindings})；每项 skill:{ref,frontmatterKey}、route:{ref,startLine,endLine,constant,entryKey}、method:{ref,idPointer,profilePointer,parameterRefPointer,resultRefPointer}、schemas:{task,result,parameters,domainResult}；CLI check public-surface-bindings --root <dir> --selection <rel> --json",
     "runPeerAdapterCheck: {root, request, peerRoots} — 该入口在0.36.0版本引入，正式发布版本0.35.0中不包含该功能。未发布源码候选仅用于已授权的开发验证，不得据此宣称功能已正式发布；正式消费必须基于实际安装的精确已发布版本及其公开导出的API。 仅包根 API，无新增 CLI；固定锚点的 N−1 次真实调用核验所选 peer 的联合一致性。",
-    "0.37.0 未发布源码候选 runNativeEntryBindingCheck({root,bindings})；每项 commonManifestRef、commonSkillIndex、platformManifestRef、mappingIndex；CLI check native-entry-bindings --root <dir> --selection <rel> --json。已发布四单元仍是 0.36.0。"
+    "0.37.0 引入 runNativeEntryBindingCheck({root,bindings})；每项 commonManifestRef、commonSkillIndex、platformManifestRef、mappingIndex；CLI check native-entry-bindings --root <dir> --selection <rel> --json。正式消费核对实际安装的精确已发布版本。",
+    "0.38.0 开发候选 runSkillSurfaceBindingCheck({root,bindings})；每项 naturalSkill:{ref,protocolRef}、parameterDeclaration:{ref,parameterLiteral}、commonMethod:{ref,methodId,methodValue,implementationRef}、parameterName；五个片段均为 {line,column,length}，1 起始 UTF-16 单行位置；CLI check skill-surface-bindings --root <dir> --selection <rel> --json",
+    "0.38.0 开发候选 runNativeProjectionCheck({root,bindings})；每项 commonManifestRef、commonSkillIndex、platformManifestRef、mappingIndex、resources:[{commonRef,platformRef}]；资源数组可空，引用为非空根内相对文件路径；CLI check native-projections --root <dir> --selection <rel> --json",
+    "runFixedSchemaUseCheck({root,bindings}) — `declaration` 必须包含 `ref`、`unit`、`schemaPath`、`schemaId`、`schemaVersion`。`ref` 为实际Markdown路径，其余四项均为 `{line, column, length}` 形式的正安全整数，按从1开始的UTF-16码元定位。一个物理行 `unit` 包含三个子片段，子片段需唯一且具有完整字面边界，不拆分代理对。不同 `unit` 之间不得交叉重叠，同一 `unit` 可关联不同实现。三个子片段分别选中实际根目录内的Schema路径、完整 `$id` 和 `schemaVersion=N` 原文。调用方负责声明的真实业务含义、公开性、适用性及选集完整性。",
+    "每项必需 `declaration`，可以省略 `implementation`。提供后，`implementation` 必须包含 `ref`、`dataLoad`、`validation`。`ref` 为实际Python路径，后两者为 `{line, column}` 形式的正安全整数，用于选择真实直接赋值或验证语句的唯一起点。完整Python具体语法树（CST）须经严格解析且无错误，所选两节点须是唯一无参数顶层 `main` 中同一 `try` 语句体的直接节点。`dataLoad` 限定为 `dataLocal=json.loads(Path(args.input).read_text())`，其中 `args.input` 表示调用方实际直接参数名。`validation` 限定为 `jsonschema.Draft202012Validator(schemaLocal).validate(dataLocal)`。`schemaLocal` 从实际 `schemaLocal=json.loads((root / \"contracts/input.json\").read_text())` 派生，`root` 实际源于 `main` 内先行唯一 `Path(__file__).resolve().parent.parent`。变量名与示例路径仅为示例，相关直接绑定、导入及无写入/别名/动态逃逸等有限前提须成立。"
    ],
    "outputs": [
     "发现清单；退出码 findings=1、mechanism=2",
@@ -1227,7 +1233,9 @@
     "同映射固定根相等为 ENGINEERING_FINDINGS；动态或祖先含义不足保留 insufficient；实际声明摘要与闭包绑定原 professional-conclusion",
     "原 professional-conclusion 保留逐比较事实、发现与不足；无 enum/const 只定位字段；直接同级条件必填仅按已声明封闭结构排除，其他条件未检查",
     "原 professional-conclusion 保留每项选集、七资源读取回执与六组比较；全部完成才 complete，存在稳定冲突为 ENGINEERING_FINDINGS，部分不足为 partial，全部不足为 not-performed；CLI 0 为完整无发现，1 为发现或不足，2 为参数或未处理机制错误",
-    "原 professional-conclusion 保留每项选集、资源读取回执与四组原生入口比较；全部完成才 complete，存在稳定冲突为 ENGINEERING_FINDINGS，部分不足为 partial，全部不足为 not-performed；CLI 0 为完整无发现，1 为发现或不足，2 为参数或未处理机制错误"
+    "原 professional-conclusion 保留每项选集、资源读取回执与四组原生入口比较；全部完成才 complete，存在稳定冲突为 ENGINEERING_FINDINGS，部分不足为 partial，全部不足为 not-performed；CLI 0 为完整无发现，1 为发现或不足，2 为参数或未处理机制错误",
+    "两个新入口返回原 professional-conclusion，按实际四关系或原生身份/Skill/资源逐项记录 scope.checked、位置、值或摘要与闭包；五种 complete/partial/not-performed 与 ENGINEERING_CLEAR/FINDINGS/CHECK_INCOMPLETE 组合保留实际发现及不足，reader 按该局部范围解释",
+    "runFixedSchemaUseCheck — 仅选择声明核对两项关系，可选实现另核对实际Schema文件、同一数据绑定及验证早于业务解释三项。返回原 `professional-conclusion`，`provider.entry` 为 `runFixedSchemaUseCheck`，`details.bindings` 每项内含独立 `declaration` 和可选 `implementation`，保存 `selection`、实际值、资源回执、`comparisons`、`status`、`reason` 及各自 `closure`。`scope.checked` 仅列出真实完成比较。闭包基于各自实际依赖，重叠共享资源的原始读取及闭包摘要交叉核对。Python单独缺失/不支持/漂移仅撤实现；共享Schema漂移撤实际依赖子检查。全闭包失败撤参与项，未知异常传播。观察不是原子快照。"
    ],
    "sideEffects": [
     "runChecks 与 readProfessionalProof 只读；declared 分支不启动进程、不探测 Git、不执行目标内容",
@@ -1237,14 +1245,17 @@
     "runSourceGeneratedCheck 只读声明，不执行生成器、不探测根坐标所指成员、不写入目标",
     "runBranchFieldCheck 只读完整 ESM 与 Schema，不执行目标；不解析引用、不求解 Schema，不认证对象对应、完整值域或业务成功",
     "runPublicSurfaceBindingCheck 与其 CLI 只读取明确资源，不导入或执行 Python，不扫描未选树、不跟随声明 URI 替换所选 Schema、不联网或写目标",
-    "runNativeEntryBindingCheck 与其 CLI 只读取明确资源，不执行目标、不扫描未选树、不联网或写目标；sourceRoot 严格为 '.' 时只作已解析 root 的目录基准标记"
+    "runNativeEntryBindingCheck 与其 CLI 只读取明确资源，不执行目标、不扫描未选树、不联网或写目标；sourceRoot 严格为 '.' 时只作已解析 root 的目录基准标记",
+    "runSkillSurfaceBindingCheck、runNativeProjectionCheck 及其 CLI 严格只读现存选集，不执行目标、生成器或 Hook；CLI 只输出 stdout，API 原件由宿主在获准证据目录保存"
    ],
    "failureSemantics": [
     "findings 退出码 1；mechanism 拒绝、读不到或无法解释的证明退出码 2",
     "固定引用的来源失配、文件缺失或读取失败均为不足；无效请求抛 SFC2003，意外异常继续抛出",
     "真实结构或可信摘要不符为 findings；Schema 支持/读取/缓存不符或资源漂移为 insufficient；两子检查独立，CLI 选集变化整批不足；CLI 0 完整无发现、1 发现或不足、2 用法/未处理机制错误",
     "完整 Python CST 的有限根字典及显式使用、YAML 开头映射或 JSON 直接值不受支持时整绑定不足；重复读取冲突或闭包漂移撤销所有依赖绑定的全部比较，CLI 选集漂移撤销整批，独立稳定发现保留；坏请求抛 SFC2003",
-    "URI、展开式、通配、缺失直接字段、下标越界或不可读 JSON/YAML 使整项原生入口绑定不足；重复读取冲突或闭包漂移撤销所有依赖绑定的全部比较，CLI 选集漂移撤销整批，独立稳定发现保留；坏请求抛 SFC2003"
+    "URI、展开式、通配、缺失直接字段、下标越界或不可读 JSON/YAML 使整项原生入口绑定不足；重复读取冲突或闭包漂移撤销所有依赖绑定的全部比较，CLI 选集漂移撤销整批，独立稳定发现保留；坏请求抛 SFC2003",
+    "新入口闭字段/空或重复选择/非法数值为 SFC2003；实际不可定位、不支持、歧义、不可读或漂移使整个依赖绑定不足并清空比较，独立稳定绑定保留；前提成立的声明或字节差异为 findings；原生仅规范化唯一直接单行 name，额外正文适配不受支持",
+    "runFixedSchemaUseCheck — 全部完成无发现为 `complete/ENGINEERING_CLEAR`，全部完成有发现为 `complete/ENGINEERING_FINDINGS`。保留比较但有不足为 `partial`，已知发现优先 `ENGINEERING_FINDINGS`，否则 `ENGINEERING_CHECK_INCOMPLETE`。无比较为 `not-performed/ENGINEERING_CHECK_INCOMPLETE`。未选择 `implementation` 不构成不足。`readProfessionalProof` 仅读取上述实际选定范围，领域适用和完整审计结论由调用方核收。"
    ],
    "invariants": [
     "CHECK_CLASSES 仍为九类 legacy 闭集，不扩张",
@@ -1255,7 +1266,8 @@
     "固定引用是否为实际调用、解析基准与选集完整性，以及来源摘要与冻结目标的核对；局部 CLEAR 不代表完整审阅",
     "Schema 实际采用、自包含前提、可信 SHA 基准和版本与文件的事实、平台语义及选集完整性；version 标签不表示提取文档版本或认证宿主支持",
     "公开性、同一业务与条件、Schema 权威、选集完整性和运行时含义；六组声明一致不证明完整 METHOD003、运行时唯一分派、安装加载或发布批准",
-    "共同清单权威性、同业务对应和选集完整性；四组身份一致不证明 Markdown 正文含义、方法契约版本、安装加载或发布批准"
+    "共同清单权威性、同业务对应和选集完整性；四组身份一致不证明 Markdown 正文含义、方法契约版本、安装加载或发布批准",
+    "现存 Skill/Markdown 的源权威、同业务条件、完整选集，以及原生正文差异是否属于允许适配或领域违规；实际字节发现不自动替代领域语义判断"
    ],
    "routeElsewhere": [
     "自动修复执行：调用方"

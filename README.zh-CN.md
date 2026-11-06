@@ -5,22 +5,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.37.0 -->
+<!-- release-skill:release-version: 0.38.0 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.37.0** (2026-11-05)
+**0.38.0** (2026-11-06)
 
-Engineering Kit 0.37.0 版本引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
+本版 Kit 新增 `check skill-surface-bindings` 与 `check native-projections` 两个 CLI 子动作及对应公共 API，同时扩展 `runStaticReferenceCheck` 支持以 `../` 开头的有限路径前缀，确保固定文件引用在严格根收容下安全核对。新增 `runFixedSchemaUseCheck` 包根 API，用于独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本，可选验证 Python 实现中实际采用的 Schema 文件、同一数据绑定与验证早于业务解释的关系。
 
 **变更**
 
-- Engineering Kit 0.37.0 引入 `runNativeEntryBindingCheck({root, bindings})` 接口与 `check native-entry-bindings --root <dir> --selection <relative-json> --json` CLI 命令。该功能基于绑定项的四个核心字段：`commonManifestRef`、`commonSkillIndex`、`platformManifestRef` 与 `mappingIndex`，执行四组受收容身份比对：平台 `source` 的实际清单身份与调用方选定的共同清单、平台映射的 `physicalName` 与实际平台 Skill 文首 `name`、平台映射的 `logicalName` 与选定共同记录的 `logicalName`、该共同逻辑名与实际共同源 Skill 文首 `name`。当 `sourceRoot` 严格为 `.` 时，仅作为已解析 `root` 目录的基准标记，不参与 `classifyPathInput` 或 `resolveContained` 处理。输入不支持或不可读时判定为不足；受支持但字段值直接不等判定为发现。资源漂移场景下，依赖绑定的全部比对被撤销，但独立且稳定的发现结果仍予保留。原有 `runPublicSurfaceBindingCheck` 保持七来源六比较逻辑、peer 联合检查机制、Contracts Schema 与 Harness 算法不变。原读取器仍返回 `pass`/`not_pass`，仅对新入口补充局部范围说明。
+- 新增 `check skill-surface-bindings` 与 `check native-projections` CLI 子动作及对应公共 API `runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck`，分别用于验证技能表面绑定与原生投影的一致性。技能表面绑定比较身份、参数赋值、实现路径、协议路径四组直接声明。
+- 原生投影检查复用四组原生身份比较，完整 Skill 文件比较时仅将每个唯一直接单行 YAML name 标量的原始字节区间替换为统一标记，其余全部字节原样参与比对；显式指定的 commonRef 与 platformRef 之间资源对进行独立全字节完整比对，支持二进制内容。
+- 任何直接值、正文、权限、协议或资源字节不一致均视为发现项。绑定缺失、不支持、歧义、不可读或漂移将导致相关绑定不足且不参与比较，稳定独立绑定予以保留。领域含义由调用方 LLM 解释，机械状态与实际 scope 取 API 原始返回。
+- 既有 `runStaticReferenceCheck` API 扩展支持 `literal` 字段以一个或多个连续 `../` 开头，后接由 `/` 分隔的合法普通文件段，段内仅含 ASCII 字母、数字、点、下划线、连字符，且不为 `.` 或 `..`。目标路径必须严格留在 `root` 内，通过 `path.posix.join(baseDir,literal)` 派生 `targetRef`，`join` 执行 POSIX 词法规范化但保留原始 `literal`。所有读取、闭包与安全政策保持不变，该路径使用既有包根 API。
+- 新增 `runFixedSchemaUseCheck` 包根 API，独立核对 Markdown 声明中 $id 与 schemaVersion=N 和实际采用的 2020-12 Schema 必需版本。可选验证 Python 实现中数据加载与验证是否早于业务解释，仅在有限直接链路可分类时进行比较。JSON 解码与直接版本头读取可先行，不构成业务解释。无法分类时仅实现不足，声明仍保留。结果为 `professional-conclusion`，由 `readProfessionalProof` 按实际 scope 读取，领域适用与完整审计由调用方核收。
 
 **升级说明**
 
-四单元需同步升级至 0.37.0 才能使用新功能，旧调用方式不强制迁移。源码候选、本地测试与静态退出均不能作为正式渠道、安装加载或业务可用性的依据。0.36.0 不包含此新接口。
+四单元同步采用 0.38.0 版本，旧调用无需迁移。正式消费应以精确已发布载荷与导出包为准，开发观察阶段保持自身对象身份。`runSkillSurfaceBindingCheck` 与 `runNativeProjectionCheck` 分别验证技能表面绑定与原生投影，结果由宿主保存 `professional-conclusion`，调用方通过 `readProfessionalProof` 按实际 scope 读取。`runFixedSchemaUseCheck` 仅在显式调用时生效，Plugin 应在 foundation-engineering-check 中显式选择范围并调用该 API 及公共 reader，不凭手填结果通过。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -61,9 +65,9 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-在正式发布前，若需对本地 0.37.0 源码候选进行已授权的开发验证，可使用以下方式。
+在正式发布前，若需对本地 0.38.0 源码候选进行已授权的开发验证，可使用以下方式。
 
-为确保本地验证使用与工作树一致的 0.37.0 版本，避免误用已发布的旧版 0.36.0，可执行以下命令打包并构建本地验证环境：
+为确保本地验证使用与工作树一致的 0.38.0 版本，避免误用已发布的旧版 0.37.0，可执行以下命令打包并构建本地验证环境：
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -71,21 +75,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.37.0.tgz" "$pack_dir/skill-family-harness-node-0.37.0.tgz" "$pack_dir/skill-family-engineering-kit-0.37.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.38.0.tgz" "$pack_dir/skill-family-harness-node-0.38.0.tgz" "$pack_dir/skill-family-engineering-kit-0.38.0.tgz")
 ```
 
-当精确版本 0.37.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
+当精确版本 0.38.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行：
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.37.0
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.38.0
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit check --root <repo>
 ```
 
-上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.37.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.37.0 -- skill-family-kit --help` 查看帮助。
+上述命令依次实现：查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.38.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.38.0 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -394,7 +398,270 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 - 采用与迁移：[迁移指南](https://ifoohoo.github.io/skill-family-engineering-kit/migration/)
 - 副作用矩阵：[失败与副作用矩阵](https://ifoohoo.github.io/skill-family-engineering-kit/reference/failure-and-side-effect-matrix/)
 
+## Skill 文本声明与原生投影检查
+
+### Skill文本声明检查（runSkillSurfaceBindingCheck）
+
+调用方选用独立只读API `runSkillSurfaceBindingCheck`，输入为 `{root, bindings}`，其中 `root` 为非空字符串，表示项目根目录路径。`bindings` 为非空数组，每项包含四个字段，所有字段必须同时存在，闭字段不接受额外键。
+
+**请求 JSON 结构示例**
+
+示例只展示请求形态，实际坐标从现存原件取得。
+
+```json
+{
+  "bindings": [{
+    "naturalSkill": {"ref": "SKILL.md", "protocolRef": {"line": 4, "column": 11, "length": 10}},
+    "parameterDeclaration": {"ref": "methods.md", "parameterLiteral": {"line": 3, "column": 7, "length": 12}},
+    "commonMethod": {
+      "ref": "methods.md",
+      "methodId": {"line": 1, "column": 3, "length": 12},
+      "methodValue": {"line": 1, "column": 10, "length": 5},
+      "implementationRef": {"line": 2, "column": 8, "length": 8}
+    },
+    "parameterName": "method"
+  }]
+}
+```
+
+**字段要求**
+
+- `root`，非空字符串，表示项目根目录，可使用绝对或相对目录路径。
+- `bindings`，非空数组，每项必须同时包含 naturalSkill、parameterDeclaration、commonMethod 三个对象与 parameterName 字符串。
+  - `naturalSkill.ref`，路径字符串，指向实际Skill Markdown文件。
+  - `parameterDeclaration.ref`，路径字符串，指向参数声明文件。
+  - `commonMethod.ref`，路径字符串，指向共同方法定义文件。
+  - `parameterName`，字符串，符合正则 `^[A-Za-z_$][A-Za-z0-9_$]*$`，表示参数名。
+- 所有片段对象（`protocolRef`, `parameterLiteral`, `methodId`, `methodValue`, `implementationRef`）的 `line`、`column`、`length` 必须为正安全整数，按1起始的UTF-16码元坐标取单物理行原文，不切开代理对。
+- `methodId` 与 `methodValue` 必须同行，且 `methodValue` 为 `methodId` 的严格子片段。
+- `parameterDeclaration.ref` 与 `commonMethod.ref` 必须解析为同一实际文件路径。
+- `parameterName` 为键，`methodValue` 为局部方法值，两者不互相比较。
+
+**四组实际比较关系**
+
+API 严格读取实际 Skill 和 Markdown，从初始 YAML 与所选文本片段取得原始值。参数只支持直接 `key=value`，其中 key 必须与 `parameterName` 相同。局部值符合 `^[A-Za-z_][A-Za-z0-9_-]*$`，共同完整方法身份是单行未包裹值。
+
+1. 实际Skill的 `name`（从初始YAML取）对共同 `methodId` 的值。
+2. 实际 `parameterLiteral` 与由 `parameterName`、等号和共同原件 `methodValue` 片段实际局部名拼成的值比较。
+3. 共同 `implementationRef` 片段中的路径字面量所指实际文件身份对 `naturalSkill.ref` 指向的真实文件路径。
+4. Skill `protocolRef` 片段中的路径字面量所指实际文件身份对 `commonMethod.ref` 指向的真实文件路径。
+
+**scope.checked 标识**
+
+- `binding:N:method-identity`
+- `binding:N:parameter-declaration`
+- `binding:N:implementation-reference`
+- `binding:N:protocol-reference`
+
+各文件引用与所选路径字面量均为根内直接本地相对路径，目标文件必须严格读取，缺失或不可读时，相关绑定记为不足。
+
+---
+
+### 原生投影检查（runNativeProjectionCheck）
+
+调用方选用独立只读API `runNativeProjectionCheck`，输入为 `{root, bindings}`，其中 `root` 为非空字符串，`bindings` 为非空数组。
+
+**请求 JSON 结构示例**
+
+示例只展示请求形态，实际坐标从现存原件取得。
+
+```json
+{
+  "bindings": [{
+    "commonManifestRef": "common/manifest.json",
+    "commonSkillIndex": 0,
+    "platformManifestRef": "adapters/codex/manifest.json",
+    "mappingIndex": 0,
+    "resources": [{"commonRef": "common/rules.bin", "platformRef": "adapters/codex/rules.bin"}]
+  }]
+}
+```
+
+**字段要求**
+
+- `root`，非空字符串，表示项目根目录。
+- `bindings`，非空数组，每项必须同时包含下列字段。
+  - `commonManifestRef`，非空字符串，指向共同清单文件路径。
+  - `commonSkillIndex`，非负安全整数，表示共同清单中Skill索引。
+  - `platformManifestRef`，非空字符串，指向平台清单文件路径。
+  - `mappingIndex`，非负安全整数，表示平台映射索引。
+  - `resources`，可为空数组，但每项中 `commonRef` 与 `platformRef` 均为非空字符串，表示资源文件路径对。
+
+前四字段沿用 `runNativeEntryBindingCheck` 的选择合同，文件引用为根内相对路径。
+
+**四身份来源链**
+
+1. 平台 `source` 真实文件路径对所选共同清单文件路径。
+2. 平台 `physicalName` 对平台Skill的 `name`。
+3. 平台 `logicalName` 对所选共同 `logicalName`。
+4. 共同 `logicalName` 对共同Skill的 `name`。
+
+**实际Skill比较**
+
+- 共同 `sourceRoot` 相对于 root，再与 `skills[index].source` 共同定位实际 Skill。`sourceRoot` 严格为 `.` 时采用已解析 root 作为目录基准。
+- 平台清单目录 + `logicalMappings[index].path` 定位平台Skill（Markdown）。
+- 严格解码两份实际Skill为UTF-8，定位各自唯一直接单行YAML `name` 标量原始范围，支持 `plain`、`single-quote`、`double-quote`。
+- 仅将两边 `name` 标量范围替换为同一固定值，其余全部字节进行完整比较。
+- `skillNormalization` 保留实际 `name`、原始字节范围、`normalizedSha256`。
+- 若存在别名、合并、重复键、未知标签、间接/多行 `name`、不唯一范围或非法UTF-8，导致绑定不足。
+
+**资源比较**
+
+- 每对 `resources` 中的 `commonRef` 与 `platformRef` 文件，比较其完整原始字节，允许二进制。
+- 比较独立于Skill字节比较，不交叉比较。
+- 双路径仅表示位置对应。额外正文适配规则不在闭合输入中，已知正文、权限与协议字节差异仍作为实际发现，领域含义由调用方判断。
+
+**scope.checked 标识**
+
+- `binding:N:native-identity:1` 至 `binding:N:native-identity:4`，分别对应上述四身份关系。
+- `binding:N:skill-content`，表示Skill整文件字节比较结果。
+- `"binding:" + N + ":resource:" + M + ":bytes"`，`M` 为资源对序号，表示该资源文件对的字节比较结果。
+
+### 结果、CLI 与证明读取
+
+**请求错误条件**
+
+- 结构/类型/未知字段、空或重复绑定、非法片段数值、`methodValue` 内含位置关系、重复资源对、同平台资源对应冲突共同文件。
+
+**绑定不足条件**
+
+- 实际文本越界、直接文本/路径子集不支持、键不匹配、同文件前提不成立、缺失/不可读/歧义、严格UTF-8失败、闭包漂移。
+
+**已知发现条件**
+
+- 前提成立后，直接值或内容不等。
+
+**五种结果聚合**
+
+- `complete/ENGINEERING_CLEAR`，所有完成且无发现。
+- `complete/ENGINEERING_FINDINGS`，所有完成但有发现。
+- `partial/ENGINEERING_FINDINGS`，有稳定发现与不足并存。
+- `partial/ENGINEERING_CHECK_INCOMPLETE`，完成无发现但仍有不足。
+- `not-performed/ENGINEERING_CHECK_INCOMPLETE`，无完成可归属比较。
+
+**CLI调用命令**
+
+```text
+skill-family-kit check skill-surface-bindings --root <dir> --selection <rel> --json
+skill-family-kit check native-projections --root <dir> --selection <rel> --json
+```
+
+**选择回执**
+
+- 选择文件位于根内，仅含 `bindings`，无歧义JSON读取回执加入闭包。
+- CLI 退出码按下列含义解释。
+  - `0`，完整无发现。
+  - `1`，发现或不足。
+  - `2`，非法请求或未处理机制错误。
+
+**真实 API 原件与 reader**
+
+返回原 `skill-family.professional-conclusion`，`provider.entry` 为实际 API 名，`subject.ref` 为解析后的实际根目录，`details` 保留选集、读取回执、位置与实际值或文件身份、比较及闭包。静态读取观察限本次字节，不能提供原子快照。
+
+- 宿主独占保存真实原返回，再交原 `readProfessionalProof({proofRoot,proof})` 或 `check proof` 解释。
+- 对上述已读取结论，reader 将 `complete/ENGINEERING_CLEAR` 解释为 `pass`，发现或不完整解释为 `not_pass`。证明不可读或不可解释时为 `unavailable`。
+- 不能用 `proof-create` 手填机械结果。
+- `reader` 不重扫或鉴作者。
+- 合选其他范围时原件分别保留，专业结论只承接实际 `scope`。
+- 领域允许适配/违规与全选集解释由调用方负责。
+
 <!-- agent-quick-reference:start -->
+## 固定文件引用检查
+
+调用公开 API `runStaticReferenceCheck({root, references})` 可只读核对选定的实际固定文件引用。请求必须包含显式非空 `root` 目录，以及非空 `references` 数组。每项引用恰含 `sourceRef`、`line`、`literal`、`baseDir`，其中三个路径字段为非空字符串，`line` 为从 1 开始的安全整数。重复项或未知键将被拒绝，抛出 `SFC2003` 错误。每个引用独立处理，不依赖全集支持。调用方需确认真实调用、显式解析基准与全部必要选集。
+
+### 支持的路径形态
+
+- **普通相对路径** 如 `utils/helper.js`，也支持单个 `./` 前缀，如 `./utils/helper.js`。
+- **新增 raw literal** 以一个或多个连续 `../` 开头，后接一个或多个由 `/` 分隔的普通文件段。各段仅允许 ASCII 字母、数字、点、下划线、连字符，且不能为 `.` 或 `..`。`index.mjs` 和 `variable.js` 均为合法文件名。
+- 合法示例包括以下两种。
+  - `baseDir=scripts`，`literal=../runtime/index.mjs` → `targetRef=runtime/index.mjs`
+  - `baseDir=nested/scripts`，`literal=../../runtime/index.mjs` → `targetRef=runtime/index.mjs`
+
+### 不支持的路径形态
+
+- `nested/scripts/../../runtime/index.mjs`（中间 `../` 形态）
+- `./../file`、`.././file`、`../`、空后缀
+- 包含变量、glob、空白、非 ASCII 字符、反斜杠、绝对路径、URI、动态或模块搜索语法
+
+### 处理流程
+
+1. 复制并验证请求
+2. 解析 `root`
+3. 使用 `readFileStrict` 读取 `sourceRef`
+4. 在指定 `line` 上绑定 `literal`，确保有边界且仅一次
+5. 校验有限词法
+6. 若 `baseDir` 非 `.`，则调用 `resolveContained` 核实实际基准
+7. 使用 `path.posix.join(baseDir, literal)` 派生 `targetRef`，该操作执行 POSIX 词法规范化，但保留原始 `literal` 不变
+8. `join` 后目标坐标可能越出 `baseDir`，但必须严格位于 `root` 内。越出 `root` 的相对 `..` 仍保留在目标坐标，由 Harness 拒绝
+9. 使用 `readFileStrict` 读取目标文件，执行严格根收容检查
+
+### 回执与闭包
+
+- 保留来源与目标的真实 `ref`、`sha256`、`bytes` 回执
+- 保留原始 `details.references` 与 `closure`
+- 可完成项使用 `computeResourceClosure` 核摘要。重复读取或闭包漂移将撤销依赖项，独立稳定项保留；整体闭包失败时，`closure=null`
+- 未知程序异常直接传播，不吞为不足
+
+### 返回聚合与错误
+
+- 每项返回 `checked` 或 `insufficient`
+- 全部 `checked` → `complete/ENGINEERING_CLEAR`
+- 至少一项 `checked` 但存在不足 → `partial/ENGINEERING_CHECK_INCOMPLETE`
+- 无 `checked` → `not-performed/ENGINEERING_CHECK_INCOMPLETE`
+- `not-performed` 非逐项状态，也不等同于未调用
+- 不足原因包括缺失、不可读、歧义、不支持、越界，保留 `reason` 与已有 `cause`（若有）
+
+### 读取器与调用方语义
+
+- 宿主保存实际返回，再由 `readProfessionalProof({proofRoot,proof})` 读取。核对来源回执摘要与调用方冻结目标，读取器沿用原解释范围
+- 局部结果仅反映观察时刻的完成情况，语义、权限、业务完整性由调用方负责
+- 观察非原子快照
+- 实际执行不写入、不运行目标代码、不启动进程或联网
+
+### 示例请求
+
+```json
+{
+  "root": "/project",
+  "references": [
+    {
+      "sourceRef": "tools/run.mjs",
+      "line": 1,
+      "literal": "../runtime/index.mjs",
+      "baseDir": "tools"
+    }
+  ]
+}
+```
+
+### 版本与依赖
+
+- 本修订版本为 0.38.0（开发候选），当前正式版为 0.37.0
+- 公开消费以实际安装的精确发布版为准
+- `runStaticReferenceCheck` 已存在，本次仅扩大 `literal` 子集
+- 无新 API、CLI、导出、模式、字段、证明格式、Schema、依赖或 Harness 算法
+- 原 038 的另两项新 API 保持独立，本单元不涉及，不增加执行依赖
+- 无专用固定引用 CLI，Skill 直接调用包根 API 与公共 reader
+
+### 固定Schema声明与采用链路检查（runFixedSchemaUseCheck）
+
+本节面向具备JSON与Python基础的调用方。Schema是定义对象结构的JSON契约，$id为完整类型标识，schemaVersion为契约要求的数据版本。选定的Markdown声明与实际Schema的对应关系可独立核对；可选的Python实现检查进一步验证实际采用的Schema与业务解释的先后顺序。
+
+公开调用仅支持 `runFixedSchemaUseCheck({root, bindings})` 包根API。`root` 必须为非空字符串，表示获准根目录；`bindings` 必须为非空数组。未知键、重复选集或非法坐标将被SFC2003拒绝。输入在异步读取前进行同步深复制。所有路径均通过现有严格根收容机制读取，不执行目标Python代码。
+
+`declaration` 必须包含 `ref`、`unit`、`schemaPath`、`schemaId`、`schemaVersion`。`ref` 为实际Markdown路径，其余四项均为 `{line, column, length}` 形式的正安全整数，按从1开始的UTF-16码元定位。一个物理行 `unit` 包含三个子片段，子片段需唯一且具有完整字面边界，不拆分代理对。不同 `unit` 之间不得交叉重叠，同一 `unit` 可关联不同实现。三个子片段分别选中实际根目录内的Schema路径、完整 `$id` 和 `schemaVersion=N` 原文。调用方负责声明的真实业务含义、公开性、适用性及选集完整性。
+
+支持真实、普通、自包含的2020-12 JSON Schema，要求根 `type=object`，非空直接 `$id`，`required` 包含 `schemaVersion`，`properties.schemaVersion.const` 为正安全整数。通过调用 `Contracts` 公开编译入口核验解析性，拒绝异步与外部引用，允许自包含 `#` 引用。当读取编译缓存与当前Schema全文不符时，判定为不足。调用方须保持同进程中已编译验证器及其Schema不被改写。声明比较仅核验完整 `$id` 及版本数值，不依据URN后缀推断，也不要求目标增设其他身份格式。
+
+每项必需 `declaration`，可以省略 `implementation`。提供后，`implementation` 必须包含 `ref`、`dataLoad`、`validation`。`ref` 为实际Python路径，后两者为 `{line, column}` 形式的正安全整数，用于选择真实直接赋值或验证语句的唯一起点。完整Python具体语法树（CST）须经严格解析且无错误，所选两节点须是唯一无参数顶层 `main` 中同一 `try` 语句体的直接节点。`dataLoad` 限定为 `dataLocal=json.loads(Path(args.input).read_text())`，其中 `args.input` 表示调用方实际直接参数名。`validation` 限定为 `jsonschema.Draft202012Validator(schemaLocal).validate(dataLocal)`。`schemaLocal` 从实际 `schemaLocal=json.loads((root / "contracts/input.json").read_text())` 派生，`root` 实际源于 `main` 内先行唯一 `Path(__file__).resolve().parent.parent`。变量名与示例路径仅为示例，相关直接绑定、导入及无写入/别名/动态逃逸等有限前提须成立。
+
+数据JSON语法解码可早于Schema加载。两者须各自在实际验证前完成，直接读取 `dataLocal["schemaVersion"]` 头部识别也可先行。直接读取实际Schema `properties` 中其他业务字段，或把整个数据嵌入结果，属于业务解释。已分类的业务解释早于对应实际验证构成发现。实际验证器使用另一已解析且身份/版本不同的Schema也构成发现。不同局部名加载同一实际文件可通过。分支、循环、别名、重绑定、间接调用、其他兼容策略、未知用途或路径无法分类时，仅可选实现不足，零实现比较。该检查不证明一般多版本兼容、任意控制流、环境库真实性、转换无损或执行成功。
+
+仅选择声明核对两项关系，可选实现另核对实际Schema文件、同一数据绑定及验证早于业务解释三项。返回原 `professional-conclusion`，`provider.entry` 为 `runFixedSchemaUseCheck`，`details.bindings` 每项内含独立 `declaration` 和可选 `implementation`，保存 `selection`、实际值、资源回执、`comparisons`、`status`、`reason` 及各自 `closure`。`scope.checked` 仅列出真实完成比较。闭包基于各自实际依赖，重叠共享资源的原始读取及闭包摘要交叉核对。Python单独缺失/不支持/漂移仅撤实现；共享Schema漂移撤实际依赖子检查。全闭包失败撤参与项，未知异常传播。观察不是原子快照。
+
+全部完成无发现为 `complete/ENGINEERING_CLEAR`，全部完成有发现为 `complete/ENGINEERING_FINDINGS`。保留比较但有不足为 `partial`，已知发现优先 `ENGINEERING_FINDINGS`，否则 `ENGINEERING_CHECK_INCOMPLETE`。无比较为 `not-performed/ENGINEERING_CHECK_INCOMPLETE`。未选择 `implementation` 不构成不足。`readProfessionalProof` 仅读取上述实际选定范围，领域适用和完整审计结论由调用方核收。
+
 ## Agent Quick Reference
 
 ### Use when

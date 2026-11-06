@@ -46,7 +46,7 @@ function requestSnapshot(options) {
 }
 
 function fixedLiteral(literal) {
-  const relative = literal.startsWith("./") ? literal.slice(2) : literal;
+  const relative = literal.replace(/^(?:(?:\.\.\/)+|\.\/)/u, "");
   return relative.split("/").every((segment) => /^[A-Za-z0-9_.-]+$/.test(segment) && segment !== "." && segment !== "..");
 }
 
