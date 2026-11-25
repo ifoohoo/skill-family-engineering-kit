@@ -1,5 +1,12 @@
 #!/usr/bin/env node
+// @feature FND-FR-001
+// @feature FND-FR-005
+// @feature FND-FR-023
+// @feature FND-FR-025
+// @decision FND-ADR-031
+// @design FND-DES-002
 import { realpathSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -19,18 +26,47 @@ import {
   REFUSED_MUTATION_FLAGS,
   runCommand,
   TOP_LEVEL_COMMANDS,
-  unknownCommandError,
-  invalidParamsError,
-  mutationModeError,
-  describeHost,
-  probeHost,
-  buildHostAdapter,
-  materializeHostBuild,
-  planHost,
-  refuseHostApply,
-  createProfessionalProof,
-  readProfessionalProof,
 } from "./index.mjs";
+import { invalidParamsError, mutationModeError, unknownCommandError } from "./errors.mjs";
+import { describeHost } from "./host-profiles.mjs";
+import { buildHostAdapter, materializeHostBuild, planHost, probeHost, refuseHostApply } from "./host.mjs";
+import { createProfessionalProof, readProfessionalProof } from "./professional-conclusion.mjs";
+import {
+  bumpInternalDependencyMin,
+  checkSupportWorkspaceDependencies,
+  describePublishTopology,
+  formatDepsResolveReport,
+  formatPublishTopologyReport,
+  formatSupportLagReport,
+  linkWorkspaceDependencies,
+  resolveInternalDependencies,
+  unlinkWorkspaceDependencies,
+} from "./internal-dependencies.mjs";
+import { checkSkillShadowing, formatSkillShadowingReport } from "./skill-shadowing-check.mjs";
+import {
+  collectMonitorSnapshot,
+  DEFAULT_LOCK_WARN_MS,
+  DEFAULT_MONITOR_PORT,
+  DEFAULT_REGISTRY_PATH,
+  ensureRuntimeMonitor,
+  probeRuntimeMonitorHealth,
+  registerMonitorTarget,
+  serveRuntimeMonitorViaStudio,
+} from "./runtime-monitor.mjs";
+import { applyAdoption, formatAdoptApplyReport } from "./adopt-apply.mjs";
+import {
+  addAdoptedCapability,
+  formatCapabilityReport,
+  listAdoptedCapabilities,
+  removeAdoptedCapability,
+} from "./capability-cli.mjs";
+import { checkPrereqs, formatPrereqsReport } from "./prereqs-check.mjs";
+import {
+  formatSimulatedHostReport,
+  listSimulatedHosts,
+  materializeSimulatedHostShims,
+  runSimulatedHostMatrix,
+} from "./host-simulator.mjs";
 import { buildCapabilityAssessment } from "./capability-assessment.mjs";
 import { QUALIFICATION_NOTICE, runQualification } from "./qualification.mjs";
 
@@ -100,6 +136,16 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
                宿主加载子动作: check host-loading 按已校准宿主版本只读检查所选项目技能容器
                （Codex 0.154.0 的 .agents/skills，以及 Claude/Cursor/Kimi/WorkBuddy/CodeBuddy/Qoder/DSH
                各自精确版本的项目根类别）；不启动宿主、模型、hook 或脚本，零写入。
+               受控写子动作（归口 adopt-plan，显式收容写入）:
+               adopt-plan apply  复用 adopt-plan 探测结果，在不覆盖或删除已有业务文件的前提下补齐 skill-family.project-manifest.json、迁移清单与目录骨架。
+               adopt-plan capability <list|add|remove>  管理 adoptedCapabilities，remove 时只读扫描项目内残留宿主投影与配置引用。
+               adopt-plan deps <bump-min|--bump|--link-workspace|--unlink-workspace|resolve>  受控抬升内部依赖 minVersion 或管理支撑仓本地联调覆盖。
+               内部依赖只读检查: check deps [resolve] [--root <dir>] [--workspace-root <dir>] [--topology] [--format <json|text>]  只读解析兼容版本（无参默认检查当前目录）、检查支撑仓滞后与输出第 0-3 层拓扑顺序。
+               同名遮蔽排障: check shadowing（兼容 check check-shadowing）只读扫描项目/插件/用户多层技能目录，定位同名覆盖关系并给出修复建议。
+               运行态无界面监控与工作台委托: check monitor <serve|ensure|register|snapshot>  只读观测 state-store 哈希链、token-lock 排他锁、supervise-process 子进程与执行计划；serve/ensure 轻量委托启动 skill-family-studio。
+               按需能力只读查询: check capability [list]  只读查询已采用能力清单（修改能力须用 adopt-plan capability add|remove）。
+               运行期前置环境体检: check prereqs（兼容 check check-prereqs）核验 Node.js / Python / 环境变量（零值回显）、SKILL.md 摘要一致性及业务仓温和基线提示。
+               多宿主生命周期模拟: check host-sim <run|materialize-shims|list-hosts>  无需本机安装各家 CLI 或付费登录，在本地隔离沙箱内完成十大规范宿主八阶段全生命周期核验。
 
 全局选项:
   --root <dir>  目标工作区根目录（默认当前目录）
@@ -111,8 +157,20 @@ const HELP_TEXT = `skill-family-engineering-kit —— 构建期工程工具包�
 禁止项: git init/commit/push/tag、发布、删除、远端写入；不存在第五个顶层命令。
 `;
 
+const COMMAND_HELP_SIDE_EFFECTS_ZH = Object.freeze({
+  scaffold:
+    "仅向空目标目录（或父目录已存在的不存在路径）写入骨架文件；全部写入均为原子写且严格路径收容，非空或冲突目标在写入前直接拒绝。",
+  "adopt-plan":
+    "默认规划模式无任何写入——严格只读：不写任何文件（含临时文件），不执行 git 写命令，不改名、不触碰远端，将写集、冲突、风险、旧实现退出清单、临时例外校验与完成判定输出至 stdout；仅当显式调用 apply、capability add/remove 或 deps bump-min/--link-workspace/--unlink-workspace 子动作时，才在收容边界内写入对应清单与覆盖状态文件。",
+  projection:
+    "仅写入或清理 manifest 显式授权且归属本工程的受管业务生成物；Windows 在显式投影合同下还可能创建邻接暂存目录并保留 .foundation-file-apply 日志与前后对照材料（恢复原状不等于零写入）；报告子动作（projection report）仅写入 --root 收容范围内显式指定的 --out/--binding 路径（未传 --out 时只输出至 stdout）；未授权、手写、越界或冲突路径一律在变更前拒绝。",
+  check:
+    "默认诊断及纯函数 runChecks/runEntryContractCheck 零写入，绝不自动修复，git 仅执行单次只读状态探测；declared 策略下，仅 runCommand('check') 与 checkEntriesAction 包装入口在调用方显式提供已有输出根与根内收容相对路径时独占创建一份结论，绝不建父目录、不覆盖既有条目；check proof 只读解释证明且零写入，check proof-create 按同一排他规则从审阅输入独占创建一份结论；check host-loading 与 check selected-artifacts 均严格只读，零写入、不启动外部进程、不访问网络；check relock 仍为独立显式的受控写事务；check register-existing 仍为独立显式的首次非空三份闭世界文档登记写入，绝不覆盖字节不匹配的既有文件；check qualification 仍为独立显式入口，仅在预检通过后方可调用能力绑定的原生宿主。Foundation 自身不发起网络请求，沙箱与出网控制由调用方及运行环境负责。",
+});
+
 function commandHelp(command) {
   const sideEffect = COMMAND_SIDE_EFFECTS[command];
+  const sideEffectZh = COMMAND_HELP_SIDE_EFFECTS_ZH[command] ?? sideEffect.sideEffect;
   const details = {
     scaffold: [
       "选项:",
@@ -153,10 +211,18 @@ function commandHelp(command) {
       "  host-plan 必须显式提供 --build-manifest/--probe-facts，绝不隐式探测；",
       "  host-apply 在本阶段稳定拒绝，且不会产生占位文件或临时目录。",
       "",
-      "  迁移闭环（FND-070）: 只读读取目标仓 skill-family.migration.json",
+      "迁移闭环（FND-070）: 只读读取目标仓 skill-family.migration.json",
       "  （旧实现退出清单 + 临时例外）；例外缺 owner/reason/deadline/",
       "  migrationTarget 任一字段即计为冲突；到期例外不自动续期；",
       "  旧实现未全部退出时完成判定恒为 false（双轨接入不算完成）。",
+      "",
+      "显式写子动作（归口 adopt-plan，严禁放入只读 check）:",
+      "  adopt-plan apply [--root <dir>] [--dry-run] [--update-manifest] [--format <json|text>]",
+      "  adopt-plan capability <list | add --id <cap> | remove --id <cap>> [--root <dir>] [--dry-run] [--format <json|text>]",
+      "  adopt-plan deps bump-min [--root <dir>] --package <pkg> --to <ver> [--verified-ceiling <ver>] [--clear-ceiling] [--allow-major-upgrade] [--json]",
+      "  adopt-plan deps --bump [--root <dir>] --package <pkg> --to <ver> [...]",
+      "  adopt-plan deps --link-workspace <sourceRoot> [--root <dir>] [--package <pkg>]... [--dry-run] [--json]",
+      "  adopt-plan deps --unlink-workspace [--root <dir>] [--dry-run] [--json]",
     ],
     projection: [
       "选项:",
@@ -241,11 +307,34 @@ function commandHelp(command) {
       "  --path-category <id>  发现形态（codex-project-skills 或对应已校准项目根类别）",
       "  --activation-rules <relpath>  仅 Codex：根内相对 JSON，有序 name XOR path + enabled 规则；其他宿主仅允许省略或 null",
       "  --hosts-root <dir>    可选宿主 Profile 根；缺省为包内 bundledHostProfilesRoot()",
+      "",
+      "内部依赖只读检查与拓扑: skill-family-kit check deps [resolve] [--root <dir>] [--catalog <json-path>] [--workspace-root <sourceRoot>] [--topology] [--format <json|text>] [--json]",
+      "  check deps [resolve] [--root <dir>] [--catalog <json-path>] [--session-id <id>] [--receipt-out <relpath>] [--format <json|text>] [--json]（无参默认解析当前目录）",
+      "  check deps --workspace-root <sourceRoot> [--format <json|text>] [--json]  扫描支撑层仓库落后基线（发现滞后退出 1）",
+      "  check deps --topology [--workspace-root <sourceRoot>] [--format <json|text>] [--json]  输出第 0-3 层发版拓扑顺序",
+      "  （写动作 bump-min / --link-workspace / --unlink-workspace 请改用 adopt-plan deps）",
+      "",
+      "同名技能遮蔽排障: skill-family-kit check shadowing（兼容 check check-shadowing）",
+      "  [--root <dir>] [--plugin-root <dir>]... [--user-home <dir>] [--host <id>] [--hosts-root <dir>]",
+      "  [--layer <scope:dir>]... [--format <json|markdown>] [--json]",
+      "",
+      "运行态无界面监控与工作台委托: skill-family-kit check monitor <serve|ensure|register|snapshot>",
+      "  check monitor serve [--root <dir>] [--port <0..65535>] [--registry <path>] [--lock-warn-ms <ms>] [--allowed-root <dir>]...（委托 skill-family-studio，未安装时回退 JSON 摘要）",
+      "  check monitor ensure [--root <dir>] [--port <0..65535>] [--registry <path>] [--id <id> --title <name>] [--state-dir <dir>] [--plan <file>] [--runs-dir <dir>] [--lock-path <path>]... [--no-spawn]",
+      "  check monitor register [--root <dir>] [--port <0..65535>] [--registry <path>] --id <id> --title <name> [--state-dir <dir>] [--plan <file>] [--runs-dir <dir>] [--lock-path <path>]...",
+      "  check monitor snapshot [--root <dir>] [--registry <path>] [--lock-warn-ms <ms>] [--target <id>] [--json]",
+      "",
+      "按需能力只读查询: skill-family-kit check capability [list] [--root <dir>] [--format <json|text>]",
+      "运行期前置环境体检: skill-family-kit check prereqs（兼容 check check-prereqs）[--root <dir>] [--require-python] [--require-env <VAR>]... [--skill-file <path> --loaded-sha256 <hex>] [--latest-versions <json-or-file>] [--format <json|text>]",
+      "多宿主全生命周期模拟器: skill-family-kit check host-sim <run|materialize-shims|list-hosts>",
+      "  check host-sim run --root <skill-or-plugin-dir> [--hosts <all|claude,codex,antigravity,...>] [--output <receipt.json>] [--prompt <text>] [--format <json|text>]",
+      "  check host-sim materialize-shims --output-dir <dir> [--hosts <all|claude,codex,antigravity,...>] [--json]",
+      "  check host-sim list-hosts [--json]",
     ],
   };
   return [
     `${command} —— ${sideEffect.summary}`,
-    `副作用: ${sideEffect.sideEffect}`,
+    `副作用: ${sideEffectZh}`,
     "",
     ...details[command],
     "",
@@ -489,6 +578,111 @@ const COMMAND_SPECS = {
       "--json": { key: "json", value: false },
     },
   },
+  "check deps": {
+    rejectDuplicates: true,
+    flags: {
+      "--root": { key: "root", value: true },
+      "--catalog": { key: "catalogPath", value: true },
+      "--session-id": { key: "sessionId", value: true },
+      "--resolved-at": { key: "resolvedAt", value: true },
+      "--receipt-out": { key: "receiptOut", value: true },
+      "--workspace-root": { key: "workspaceRoot", value: true },
+      "--topology": { key: "topology", value: false },
+      "--format": { key: "format", value: true },
+      "--json": { key: "json", value: false },
+    },
+  },
+  "adopt-plan deps": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--bump": { key: "bump", value: false, rejectDuplicate: true },
+      "--package": { key: "packages", value: true, repeat: true },
+      "--to": { key: "toVersion", value: true, rejectDuplicate: true },
+      "--verified-ceiling": { key: "verifiedCeiling", value: true, rejectDuplicate: true },
+      "--clear-ceiling": { key: "clearCeiling", value: false, rejectDuplicate: true },
+      "--allow-major-upgrade": { key: "allowMajorUpgrade", value: false, rejectDuplicate: true },
+      "--link-workspace": { key: "linkWorkspace", value: true, rejectDuplicate: true },
+      "--unlink-workspace": { key: "unlinkWorkspace", value: false, rejectDuplicate: true },
+      "--workspace-root": { key: "workspaceRoot", value: true, rejectDuplicate: true },
+      "--catalog": { key: "catalogPath", value: true, rejectDuplicate: true },
+      "--session-id": { key: "sessionId", value: true, rejectDuplicate: true },
+      "--resolved-at": { key: "resolvedAt", value: true, rejectDuplicate: true },
+      "--receipt-out": { key: "receiptOut", value: true, rejectDuplicate: true },
+      "--dry-run": { key: "dryRun", value: false, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check shadowing": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--project-root": { key: "projectRoot", value: true, rejectDuplicate: true },
+      "--plugin-root": { key: "pluginRoots", value: true, repeat: true },
+      "--user-home": { key: "userHome", value: true, rejectDuplicate: true },
+      "--host": { key: "hostId", value: true, rejectDuplicate: true },
+      "--hosts-root": { key: "hostsRoot", value: true, rejectDuplicate: true },
+      "--layer": { key: "layerSpecs", value: true, repeat: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check monitor serve": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--port": { key: "port", value: true, rejectDuplicate: true },
+      "--registry": { key: "registryPath", value: true, rejectDuplicate: true },
+      "--lock-warn-ms": { key: "lockWarnMs", value: true, rejectDuplicate: true },
+      "--allowed-root": { key: "allowedRoots", value: true, repeat: true },
+      "--workbench-url": { key: "workbenchUrl", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check monitor ensure": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--port": { key: "port", value: true, rejectDuplicate: true },
+      "--registry": { key: "registryPath", value: true, rejectDuplicate: true },
+      "--lock-warn-ms": { key: "lockWarnMs", value: true, rejectDuplicate: true },
+      "--id": { key: "id", value: true, rejectDuplicate: true },
+      "--title": { key: "title", value: true, rejectDuplicate: true },
+      "--badge": { key: "badge", value: true, rejectDuplicate: true },
+      "--description": { key: "description", value: true, rejectDuplicate: true },
+      "--state-dir": { key: "stateDir", value: true, rejectDuplicate: true },
+      "--plan": { key: "planPath", value: true, rejectDuplicate: true },
+      "--runs-dir": { key: "runsDir", value: true, rejectDuplicate: true },
+      "--lock-path": { key: "lockPaths", value: true, repeat: true },
+      "--allowed-root": { key: "allowedRoots", value: true, repeat: true },
+      "--no-spawn": { key: "noSpawn", value: false, rejectDuplicate: true },
+      "--timeout-ms": { key: "timeoutMs", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check monitor register": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--port": { key: "port", value: true, rejectDuplicate: true },
+      "--registry": { key: "registryPath", value: true, rejectDuplicate: true },
+      "--id": { key: "id", value: true, rejectDuplicate: true },
+      "--title": { key: "title", value: true, rejectDuplicate: true },
+      "--badge": { key: "badge", value: true, rejectDuplicate: true },
+      "--description": { key: "description", value: true, rejectDuplicate: true },
+      "--state-dir": { key: "stateDir", value: true, rejectDuplicate: true },
+      "--plan": { key: "planPath", value: true, rejectDuplicate: true },
+      "--runs-dir": { key: "runsDir", value: true, rejectDuplicate: true },
+      "--lock-path": { key: "lockPaths", value: true, repeat: true },
+      "--allowed-root": { key: "allowedRoots", value: true, repeat: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check monitor snapshot": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--registry": { key: "registryPath", value: true, rejectDuplicate: true },
+      "--lock-warn-ms": { key: "lockWarnMs", value: true, rejectDuplicate: true },
+      "--target": { key: "targetFilter", value: true, rejectDuplicate: true },
+      "--allowed-root": { key: "allowedRoots", value: true, repeat: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
   "scaffold host-build": {
     flags: {
       "--root": { key: "root", value: true },
@@ -521,6 +715,91 @@ const COMMAND_SPECS = {
     },
   },
   "adopt-plan host-apply": { flags: {} },
+  "adopt-plan apply": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--project-id": { key: "projectId", value: true, rejectDuplicate: true },
+      "--project-name": { key: "projectName", value: true, rejectDuplicate: true },
+      "--profile": { key: "profileId", value: true, rejectDuplicate: true },
+      "--licensing-profile": { key: "licensingProfile", value: true, rejectDuplicate: true },
+      "--licensing-variant": { key: "licensingVariant", value: true, rejectDuplicate: true },
+      "--profiles-root": { key: "profilesRoot", value: true, rejectDuplicate: true },
+      "--capability": { key: "capabilities", value: true, repeat: true },
+      "--no-git-spawn": { key: "noGitSpawn", value: false, rejectDuplicate: true },
+      "--dry-run": { key: "dryRun", value: false, rejectDuplicate: true },
+      "--update-manifest": { key: "updateManifest", value: false, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check capability": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "adopt-plan capability list": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "adopt-plan capability add": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--id": { key: "id", value: true, rejectDuplicate: true },
+      "--dry-run": { key: "dryRun", value: false, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "adopt-plan capability remove": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--id": { key: "id", value: true, rejectDuplicate: true },
+      "--dry-run": { key: "dryRun", value: false, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check prereqs": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--require-python": { key: "requirePython", value: false, rejectDuplicate: true },
+      "--require-env": { key: "requireEnv", value: true, repeat: true },
+      "--skill-file": { key: "skillFile", value: true, rejectDuplicate: true },
+      "--loaded-sha256": { key: "loadedSha256", value: true, rejectDuplicate: true },
+      "--latest-versions": { key: "latestVersions", value: true, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check host-sim run": {
+    flags: {
+      "--root": { key: "root", value: true, rejectDuplicate: true },
+      "--hosts": { key: "hosts", value: true, rejectDuplicate: true },
+      "--output": { key: "output", value: true, rejectDuplicate: true },
+      "--prompt": { key: "prompt", value: true, rejectDuplicate: true },
+      "--hosts-root": { key: "hostsRoot", value: true, rejectDuplicate: true },
+      "--format": { key: "format", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check host-sim materialize-shims": {
+    flags: {
+      "--output-dir": { key: "outputDir", value: true, rejectDuplicate: true },
+      "--hosts": { key: "hosts", value: true, rejectDuplicate: true },
+      "--hosts-root": { key: "hostsRoot", value: true, rejectDuplicate: true },
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
+  "check host-sim list-hosts": {
+    flags: {
+      "--json": { key: "json", value: false, rejectDuplicate: true },
+    },
+  },
 };
 
 function conclusionOutputFromOptions(options) {
@@ -976,6 +1255,654 @@ async function runQualificationSubAction(rest) {
   }
 }
 
+async function parseCatalogJsonOption(catalogPath) {
+  if (catalogPath === undefined) return undefined;
+  let rawText;
+  try {
+    rawText = await readFile(path.resolve(catalogPath), "utf8");
+  } catch (cause) {
+    throw invalidParamsError(
+      `无法读取 --catalog 文件 "${catalogPath}"：${cause?.message ?? "读取失败"}`,
+      { flag: "--catalog" },
+    );
+  }
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    throw invalidParamsError(
+      `--catalog 文件 "${catalogPath}" 不是合法 JSON`,
+      { flag: "--catalog" },
+    );
+  }
+}
+
+async function runDepsSubAction(parentCommand, argv) {
+  try {
+    if (argv[0] === "--help" || argv[0] === "-h" || (parentCommand === "adopt-plan" && argv.length === 0)) {
+      process.stdout.write(`${commandHelp(parentCommand)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    const firstArg = argv[0];
+    const hasPositional = firstArg !== undefined && !firstArg.startsWith("-");
+    const action = hasPositional ? firstArg : null;
+    const flagArgs = hasPositional ? argv.slice(1) : argv;
+
+    if (parentCommand === "check") {
+      const writeActions = ["bump-min", "bump", "link-workspace", "unlink-workspace"];
+      const writeFlags = [
+        "--bump",
+        "--to",
+        "--package",
+        "--verified-ceiling",
+        "--clear-ceiling",
+        "--allow-major-upgrade",
+        "--link-workspace",
+        "--unlink-workspace",
+        "--dry-run",
+      ];
+      if ((action && writeActions.includes(action)) || flagArgs.some((arg) => writeFlags.includes(arg))) {
+        throw invalidParamsError(
+          "check deps 仅允许只读检查（resolve / --workspace-root / --topology）；如需修改 minVersion 或写入本地联调覆盖，请改用 skill-family-kit adopt-plan deps ...",
+          { action, suggestedCommand: "adopt-plan deps" },
+        );
+      }
+      if (action && action !== "resolve") {
+        throw invalidParamsError(
+          `check deps 不支持子动作 "${action}"；支持只读用法：check deps [resolve]、check deps --workspace-root <dir>、check deps --topology`,
+          { action },
+        );
+      }
+      const options = parseOptions(flagArgs, {
+        command: "check deps",
+        flags: COMMAND_SPECS["check deps"].flags,
+        rejectDuplicates: true,
+      });
+      if (options.help) {
+        process.stdout.write(`${commandHelp("check")}\n`);
+        return KIT_EXIT_CODES.ok;
+      }
+      const useTextFormat = resolveOutputFormat(options) === "text";
+      if (options.topology === true) {
+        const topology = await describePublishTopology({ workspaceRoot: options.workspaceRoot });
+        process.stdout.write(
+          useTextFormat ? formatPublishTopologyReport(topology) : `${JSON.stringify(topology, null, 2)}\n`,
+        );
+        return KIT_EXIT_CODES.ok;
+      }
+      if (options.workspaceRoot !== undefined) {
+        const report = await checkSupportWorkspaceDependencies({ workspaceRoot: options.workspaceRoot });
+        process.stdout.write(
+          useTextFormat ? formatSupportLagReport(report) : `${JSON.stringify(report, null, 2)}\n`,
+        );
+        if (!report.ok) {
+          process.stderr.write(
+            "[kit] 存在版本落后于本机最新底座源码且未开启本地联调覆盖的支撑层仓库，请同迭代拉齐版本或运行 adopt-plan deps --link-workspace。\n",
+          );
+          return KIT_EXIT_CODES.findings;
+        }
+        return KIT_EXIT_CODES.ok;
+      }
+      const catalog = await parseCatalogJsonOption(options.catalogPath);
+      const receipt = await resolveInternalDependencies({
+        root: options.root ?? ".",
+        catalog,
+        sessionId: options.sessionId,
+        resolvedAt: options.resolvedAt,
+        receiptOut: options.receiptOut,
+      });
+      process.stdout.write(
+        useTextFormat ? formatDepsResolveReport(receipt) : `${JSON.stringify(receipt, null, 2)}\n`,
+      );
+      if (receipt.status !== "resolved") {
+        process.stderr.write(
+          "[kit] 存在未命中的内部依赖，请检查各包的 minVersion、verifiedCeiling 与候选版本目录。\n",
+        );
+        return KIT_EXIT_CODES.findings;
+      }
+      return KIT_EXIT_CODES.ok;
+    }
+
+    // parentCommand === "adopt-plan"
+    const allowedActions = ["bump-min", "bump", "resolve", "link-workspace", "unlink-workspace"];
+    if (action && !allowedActions.includes(action)) {
+      throw invalidParamsError(
+        `未知的 adopt-plan deps 子动作 "${action}"；支持动作：bump-min（或 --bump）、link-workspace（或 --link-workspace）、unlink-workspace（或 --unlink-workspace）、resolve`,
+        { action },
+      );
+    }
+    const options = parseOptions(flagArgs, {
+      command: "adopt-plan deps",
+      flags: COMMAND_SPECS["adopt-plan deps"].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("adopt-plan")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (action === "unlink-workspace" || options.unlinkWorkspace === true) {
+      const report = await unlinkWorkspaceDependencies({
+        root: options.root ?? ".",
+        dryRun: options.dryRun === true,
+      });
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (action === "link-workspace" || options.linkWorkspace !== undefined) {
+      const sourceRoot = options.linkWorkspace ?? options.workspaceRoot;
+      const report = await linkWorkspaceDependencies({
+        root: options.root ?? ".",
+        sourceRoot,
+        packages: options.packages,
+        dryRun: options.dryRun === true,
+      });
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (action === "resolve") {
+      const catalog = await parseCatalogJsonOption(options.catalogPath);
+      const receipt = await resolveInternalDependencies({
+        root: options.root ?? ".",
+        catalog,
+        sessionId: options.sessionId,
+        resolvedAt: options.resolvedAt,
+        receiptOut: options.receiptOut,
+      });
+      process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+      return receipt.status === "resolved" ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+    }
+
+    if (
+      action === "bump-min"
+      || action === "bump"
+      || options.bump === true
+      || options.toVersion !== undefined
+    ) {
+      const packageList = Array.isArray(options.packages) ? options.packages : [];
+      if (packageList.length > 1) {
+        throw invalidParamsError("bump-min 仅允许指定单个 --package", { flag: "--package" });
+      }
+      const report = await bumpInternalDependencyMin({
+        root: options.root ?? ".",
+        packageName: packageList[0],
+        toVersion: options.toVersion,
+        verifiedCeiling: options.verifiedCeiling,
+        clearCeiling: options.clearCeiling === true,
+        allowMajorUpgrade: options.allowMajorUpgrade === true,
+      });
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    throw invalidParamsError(
+      "请为 adopt-plan deps 指定有效操作：bump-min（或 --bump --package <pkg> --to <ver>）、--link-workspace <sourceRoot> 或 --unlink-workspace",
+    );
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runCheckShadowingSubAction(argv) {
+  try {
+    const options = parseOptions(argv, {
+      command: "check shadowing",
+      flags: COMMAND_SPECS["check shadowing"].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    if (options.root !== undefined && options.projectRoot !== undefined) {
+      throw invalidParamsError(
+        "--root 与 --project-root 不能同时指定，请仅保留其一",
+        { reason: "invalid-option-combination" },
+      );
+    }
+    if (options.format !== undefined && options.format !== "json" && options.format !== "markdown" && options.format !== "text") {
+      throw invalidParamsError(
+        `--format 仅支持 json、markdown 或 text（收到 "${String(options.format)}"）`,
+        { flag: "--format" },
+      );
+    }
+    const shadowingFormat = options.json === true
+      ? "json"
+      : (options.format ?? (Boolean(process.stdout && process.stdout.isTTY) ? "markdown" : "json"));
+    let layers;
+    if (Array.isArray(options.layerSpecs) && options.layerSpecs.length > 0) {
+      layers = options.layerSpecs.map((raw, idx) => {
+        const colonIdx = raw.indexOf(":");
+        if (colonIdx <= 0 || colonIdx === raw.length - 1) {
+          throw invalidParamsError(
+            `--layer 参数 "${raw}" 格式错误；请使用 <scope>:<dir>（例如 project:./.codex/skills）`,
+            { flag: "--layer", value: raw },
+          );
+        }
+        const scope = raw.slice(0, colonIdx);
+        const dir = raw.slice(colonIdx + 1);
+        return { id: `${scope}-${idx + 1}`, scope, root: dir, label: `<${scope}-${idx + 1}>` };
+      });
+    }
+
+    const report = await checkSkillShadowing({
+      layers,
+      root: options.projectRoot ?? options.root,
+      pluginRoots: options.pluginRoots ?? [],
+      userHome: options.userHome,
+      hostId: options.hostId,
+      hostsRoot: options.hostsRoot,
+    });
+    if (shadowingFormat === "markdown" || shadowingFormat === "text") {
+      process.stdout.write(formatSkillShadowingReport(report));
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    return report.ok ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+function parseNonNegativeIntOption(raw, flag, { max = 2147483647 } = {}) {
+  if (raw === undefined) return undefined;
+  if (!/^[0-9]+$/u.test(String(raw))) {
+    throw invalidParamsError(`${flag} 必须是 0 至 ${max} 之间的非负整数`, { flag });
+  }
+  const num = Number(raw);
+  if (!Number.isSafeInteger(num) || num < 0 || num > max) {
+    throw invalidParamsError(`${flag} 必须是 0 至 ${max} 之间的非负整数`, { flag });
+  }
+  return num;
+}
+
+async function runMonitorSubAction(argv) {
+  try {
+    if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const action = argv[0];
+    if (!["serve", "ensure", "register", "snapshot"].includes(action)) {
+      throw invalidParamsError(
+        `未知的 check monitor 子动作 "${action}"；支持动作：serve、ensure、register、snapshot`,
+        { action },
+      );
+    }
+    const specKey = `check monitor ${action}`;
+    const options = parseOptions(argv.slice(1), {
+      command: specKey,
+      flags: COMMAND_SPECS[specKey].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    const root = options.root ?? ".";
+    const explicitRegistryPath = options.registryPath;
+    const explicitLockWarnMs = options.lockWarnMs !== undefined
+      ? parseNonNegativeIntOption(options.lockWarnMs, "--lock-warn-ms")
+      : undefined;
+    const registryPath = explicitRegistryPath ?? DEFAULT_REGISTRY_PATH;
+    const lockWarnMs = explicitLockWarnMs ?? DEFAULT_LOCK_WARN_MS;
+    const port = parseNonNegativeIntOption(options.port, "--port", { max: 65535 }) ?? DEFAULT_MONITOR_PORT;
+    const timeoutMs = parseNonNegativeIntOption(options.timeoutMs, "--timeout-ms", { max: 120000 }) ?? 6000;
+    const allowedRoots = Array.isArray(options.allowedRoots) && options.allowedRoots.length > 0
+      ? options.allowedRoots
+      : undefined;
+
+    if (action === "snapshot") {
+      const snapshot = await collectMonitorSnapshot({
+        root,
+        registryPath,
+        lockWarnMs,
+        targetFilter: options.targetFilter ?? null,
+        allowedRoots,
+      });
+      process.stdout.write(`${JSON.stringify(snapshot, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (action === "register") {
+      if (!options.id || !options.title) {
+        throw invalidParamsError(
+          "monitor register 需要同时提供 --id <任务唯一标识> 与 --title <显示名称>",
+          { reason: "missing-required-option" },
+        );
+      }
+      const targetPayload = {
+        id: options.id,
+        title: options.title,
+        badge: options.badge,
+        description: options.description,
+        stateDir: options.stateDir,
+        planPath: options.planPath,
+        runsDir: options.runsDir,
+        lockPaths: options.lockPaths,
+      };
+      if (options.port !== undefined && port > 0) {
+        const health = await probeRuntimeMonitorHealth(port);
+        if (health.online) {
+          const ensured = await ensureRuntimeMonitor({
+            root,
+            port,
+            registryPath,
+            lockWarnMs,
+            target: targetPayload,
+            spawnIfOffline: false,
+            allowedRoots,
+          });
+          process.stdout.write(`${JSON.stringify({ ok: true, command: "register", mode: "http", url: ensured.url, entry: ensured.registered, registryPath }, null, 2)}\n`);
+          return KIT_EXIT_CODES.ok;
+        }
+      }
+      const result = await registerMonitorTarget(root, targetPayload, registryPath, { allowedRoots });
+      process.stdout.write(`${JSON.stringify({ ok: true, command: "register", mode: "local", entry: result.entry, registryPath }, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (action === "ensure") {
+      const targetPayload = options.id
+        ? {
+          id: options.id,
+          title: options.title ?? options.id,
+          badge: options.badge,
+          description: options.description,
+          stateDir: options.stateDir,
+          planPath: options.planPath,
+          runsDir: options.runsDir,
+          lockPaths: options.lockPaths,
+        }
+        : null;
+      const ensured = await ensureRuntimeMonitor({
+        root,
+        port,
+        ...(explicitRegistryPath !== undefined ? { registryPath: explicitRegistryPath } : {}),
+        ...(explicitLockWarnMs !== undefined ? { lockWarnMs: explicitLockWarnMs } : {}),
+        target: targetPayload,
+        spawnIfOffline: options.noSpawn !== true,
+        timeoutMs,
+        allowedRoots,
+      });
+      if (ensured.status === "studio-unavailable-headless-fallback" && ensured.message) {
+        process.stderr.write(`[monitor] ${ensured.message}\n`);
+      }
+      process.stdout.write(`${JSON.stringify({ ...ensured, command: "ensure", registryPath }, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+
+    const served = await serveRuntimeMonitorViaStudio({
+      root,
+      port,
+      ...(explicitRegistryPath !== undefined ? { registryPath: explicitRegistryPath } : {}),
+      ...(explicitLockWarnMs !== undefined ? { lockWarnMs: explicitLockWarnMs } : {}),
+      allowedRoots,
+      workbenchUrl: options.workbenchUrl ?? null,
+    });
+    if (!served.delegated) {
+      if (served.message) process.stderr.write(`[monitor] ${served.message}\n`);
+      process.stdout.write(`${JSON.stringify({ ...served, command: "serve" }, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    return served.exitCode === 0 ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.rejected;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+function resolveOutputFormat(options, { isTTY = Boolean(process.stdout && process.stdout.isTTY) } = {}) {
+  if (options.format !== undefined && options.format !== "json" && options.format !== "text") {
+    throw invalidParamsError(
+      `--format 仅支持 json 或 text（收到 "${String(options.format)}"）`,
+      { flag: "--format" },
+    );
+  }
+  if (options.json === true) return "json";
+  if (options.format !== undefined) return options.format;
+  return isTTY ? "text" : "json";
+}
+
+async function runAdoptApplySubAction(argv) {
+  try {
+    const options = parseOptions(argv, {
+      command: "adopt-plan apply",
+      flags: COMMAND_SPECS["adopt-plan apply"].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("adopt-plan")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const format = resolveOutputFormat(options);
+    const report = await applyAdoption({
+      root: options.root ?? ".",
+      projectId: options.projectId,
+      projectName: options.projectName,
+      profileId: options.profileId,
+      licensingProfile: options.licensingProfile,
+      licensingVariant: options.licensingVariant,
+      profilesRoot: options.profilesRoot ?? bundledProfilesRoot(),
+      capabilities: options.capabilities ?? [],
+      allowGitSpawn: !options.noGitSpawn,
+      dryRun: options.dryRun === true,
+      updateManifest: options.updateManifest === true,
+    });
+    if (format === "text") {
+      process.stdout.write(formatAdoptApplyReport(report));
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    return KIT_EXIT_CODES.ok;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runCapabilitySubAction(parentCommand, argv) {
+  try {
+    if (parentCommand === "check") {
+      if (argv.length > 0 && (argv[0] === "--help" || argv[0] === "-h")) {
+        process.stdout.write(`${commandHelp("check")}\n`);
+        return KIT_EXIT_CODES.ok;
+      }
+      const first = argv[0];
+      const hasAction = first !== undefined && !first.startsWith("-");
+      const action = hasAction ? first : "list";
+      const flagArgs = hasAction ? argv.slice(1) : argv;
+      if (action === "add" || action === "remove") {
+        throw invalidParamsError(
+          `check capability 仅支持只读 list 查询；如需修改能力清单，请改用 skill-family-kit adopt-plan capability ${action} ...`,
+          { action, suggestedCommand: `adopt-plan capability ${action}` },
+        );
+      }
+      if (action !== "list") {
+        throw invalidParamsError(
+          `未知的 check capability 子动作 "${action}"；只读模式仅支持 list（修改请用 adopt-plan capability add|remove）`,
+          { action },
+        );
+      }
+      const options = parseOptions(flagArgs, {
+        command: "check capability",
+        flags: COMMAND_SPECS["check capability"].flags,
+      });
+      if (options.help) {
+        process.stdout.write(`${commandHelp("check")}\n`);
+        return KIT_EXIT_CODES.ok;
+      }
+      const format = resolveOutputFormat(options);
+      const report = await listAdoptedCapabilities({ root: options.root ?? "." });
+      if (format === "text") {
+        process.stdout.write(formatCapabilityReport(report));
+      } else {
+        process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      }
+      return KIT_EXIT_CODES.ok;
+    }
+
+    if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
+      process.stdout.write(`${commandHelp("adopt-plan")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const action = argv[0];
+    if (!["list", "add", "remove"].includes(action)) {
+      throw invalidParamsError(
+        `未知的 adopt-plan capability 子动作 "${action}"；支持动作：list、add、remove`,
+        { action },
+      );
+    }
+    const specKey = `adopt-plan capability ${action}`;
+    const options = parseOptions(argv.slice(1), {
+      command: specKey,
+      flags: COMMAND_SPECS[specKey].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("adopt-plan")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const format = resolveOutputFormat(options);
+    let report;
+    if (action === "list") {
+      report = await listAdoptedCapabilities({ root: options.root ?? "." });
+    } else if (action === "add") {
+      report = await addAdoptedCapability({
+        root: options.root ?? ".",
+        id: options.id,
+        dryRun: options.dryRun === true,
+      });
+    } else {
+      report = await removeAdoptedCapability({
+        root: options.root ?? ".",
+        id: options.id,
+        dryRun: options.dryRun === true,
+      });
+    }
+    if (format === "text") {
+      process.stdout.write(formatCapabilityReport(report));
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    return KIT_EXIT_CODES.ok;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function parseLatestVersionsOption(rawValue) {
+  if (rawValue === undefined) return undefined;
+  const trimmed = String(rawValue).trim();
+  let jsonText = trimmed;
+  if (!trimmed.startsWith("{")) {
+    try {
+      jsonText = await readFile(path.resolve(trimmed), "utf8");
+    } catch (cause) {
+      throw invalidParamsError(
+        `无法读取 --latest-versions 文件 "${rawValue}"：${cause?.message ?? "读取失败"}`,
+        { flag: "--latest-versions" },
+      );
+    }
+  }
+  try {
+    return JSON.parse(jsonText);
+  } catch {
+    throw invalidParamsError(
+      "--latest-versions 必须是合法的 JSON 对象或 JSON 文件路径",
+      { flag: "--latest-versions" },
+    );
+  }
+}
+
+async function runCheckPrereqsSubAction(argv) {
+  try {
+    const options = parseOptions(argv, {
+      command: "check prereqs",
+      flags: COMMAND_SPECS["check prereqs"].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const format = resolveOutputFormat(options);
+    const latestVersions = await parseLatestVersionsOption(options.latestVersions);
+    const report = await checkPrereqs({
+      root: options.root ?? ".",
+      requirePython: options.requirePython === true,
+      requireEnv: options.requireEnv ?? [],
+      skillFile: options.skillFile,
+      loadedSha256: options.loadedSha256,
+      latestVersions,
+    });
+    if (format === "text") {
+      process.stdout.write(formatPrereqsReport(report));
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    return report.ok ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
+async function runHostSimSubAction(argv) {
+  try {
+    if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const action = argv[0];
+    if (!["run", "materialize-shims", "list-hosts"].includes(action)) {
+      throw invalidParamsError(
+        `未知的 check host-sim 子动作 "${action}"；支持动作：run、materialize-shims、list-hosts`,
+        { action },
+      );
+    }
+    const specKey = `check host-sim ${action}`;
+    const options = parseOptions(argv.slice(1), {
+      command: specKey,
+      flags: COMMAND_SPECS[specKey].flags,
+    });
+    if (options.help) {
+      process.stdout.write(`${commandHelp("check")}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    if (action === "list-hosts") {
+      process.stdout.write(`${JSON.stringify(listSimulatedHosts(), null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    if (action === "materialize-shims") {
+      const shims = await materializeSimulatedHostShims({
+        outputDir: options.outputDir,
+        hosts: options.hosts ?? "all",
+        hostsRoot: options.hostsRoot,
+      });
+      process.stdout.write(`${JSON.stringify(shims, null, 2)}\n`);
+      return KIT_EXIT_CODES.ok;
+    }
+    const format = resolveOutputFormat(options);
+    const report = await runSimulatedHostMatrix({
+      root: options.root ?? ".",
+      hosts: options.hosts ?? "all",
+      output: options.output,
+      prompt: options.prompt,
+      hostsRoot: options.hostsRoot,
+    });
+    if (format === "text") {
+      process.stdout.write(formatSimulatedHostReport(report));
+    } else {
+      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    }
+    return report.ok ? KIT_EXIT_CODES.ok : KIT_EXIT_CODES.findings;
+  } catch (error) {
+    printError(error);
+    return KIT_EXIT_CODES.rejected;
+  }
+}
+
 export async function cliMain(argv) {
   if (argv.length === 0) {
     process.stdout.write(HELP_TEXT);
@@ -996,7 +1923,7 @@ export async function cliMain(argv) {
   }
   const command = argv[0];
   if (!TOP_LEVEL_COMMANDS.includes(command)) {
-    printError(unknownCommandError(command));
+    printError(unknownCommandError(command, argv.slice(1)));
     return KIT_EXIT_CODES.rejected;
   }
 
@@ -1054,11 +1981,55 @@ export async function cliMain(argv) {
   if (command === "check" && argv[1] === "source-generated") {
     return runSourceGeneratedSubAction(argv.slice(2));
   }
+  if (command === "check" && argv[1] === "deps") {
+    return runDepsSubAction("check", argv.slice(2));
+  }
+  if (command === "check" && (argv[1] === "shadowing" || argv[1] === "check-shadowing")) {
+    return runCheckShadowingSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "monitor") {
+    return runMonitorSubAction(argv.slice(2));
+  }
+  if (command === "check" && (argv[1] === "prereqs" || argv[1] === "check-prereqs")) {
+    return runCheckPrereqsSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "capability") {
+    return runCapabilitySubAction("check", argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "host-sim") {
+    return runHostSimSubAction(argv.slice(2));
+  }
+  if (command === "check" && argv[1] === "adopt-apply") {
+    printError(
+      invalidParamsError(
+        "check 命令严格保持只读，已移除 check adopt-apply 写入口；请改用 skill-family-kit adopt-plan apply ...",
+        { suggestedCommand: "adopt-plan apply" },
+      ),
+    );
+    return KIT_EXIT_CODES.rejected;
+  }
+  if (command === "adopt-plan" && argv[1] === "apply") {
+    return runAdoptApplySubAction(argv.slice(2));
+  }
+  if (command === "adopt-plan" && argv[1] === "capability") {
+    return runCapabilitySubAction("adopt-plan", argv.slice(2));
+  }
+  if (command === "adopt-plan" && argv[1] === "deps") {
+    return runDepsSubAction("adopt-plan", argv.slice(2));
+  }
   if (command === "scaffold" && argv[1] === "host-build") {
     return runHostSubAction(command, "host-build", argv.slice(2));
   }
   if (command === "adopt-plan" && ["host-describe", "host-probe", "host-plan", "host-apply"].includes(argv[1])) {
     return runHostSubAction(command, argv[1], argv.slice(2));
+  }
+  if ((command === "check" || command === "adopt-plan") && argv.length > 1 && !argv[1].startsWith("-")) {
+    const subaction = argv[1];
+    const message = command === "check"
+      ? `未知的 check 子动作 "${subaction}"；支持子动作：deps、prereqs、shadowing、monitor、capability、host-sim、entries、relock、register-existing、qualification、host-loading、report、proof、proof-create、selected-artifacts、branch-fields、public-surface-bindings、native-entry-bindings、skill-surface-bindings、native-projections、source-generated（或运行 skill-family-kit check --help 查看完整用法）`
+      : `未知的 adopt-plan 子动作 "${subaction}"；支持子动作：apply、capability、deps、host-describe、host-probe、host-plan、host-apply（或运行 skill-family-kit adopt-plan --help 查看完整用法）`;
+    printError(invalidParamsError(message, { reason: "unknown-subaction", command, subaction }));
+    return KIT_EXIT_CODES.rejected;
   }
 
   try {

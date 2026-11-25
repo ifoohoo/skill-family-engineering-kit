@@ -1,3 +1,6 @@
+// @decision FND-ADR-007
+// @decision FND-ADR-016
+// @design FND-DES-001
 import { ContractsError } from "skill-family-contracts";
 import { buildProfileDraft, planAdoption } from "./adopt-plan.mjs";
 import { CHECK_CLASSES, DOCUMENT_STATES, PLATFORM_SUBSET_DECLARATION_KIND, runChecks } from "./check.mjs";
@@ -33,8 +36,6 @@ import {
   invalidParamsError,
   KitError,
   KIT_ERROR_KINDS,
-  kitError,
-  mutationModeError,
   REFUSED_MUTATION_FLAGS,
   unknownCommandError,
 } from "./errors.mjs";
@@ -239,10 +240,6 @@ export async function runCommand(command, options = {}) {
 export {
   KitError,
   KIT_ERROR_KINDS,
-  kitError,
-  invalidParamsError,
-  unknownCommandError,
-  mutationModeError,
   REFUSED_MUTATION_FLAGS,
 };
 export {
@@ -368,3 +365,69 @@ export {
   assessLegacyReferences,
   evaluateMigrationCompletion,
 };
+
+// Internal dependency resolution, controlled minVersion bump & multi-repo topology/link (P0-1 / FND-FR-034 / B-07)
+export {
+  INTERNAL_DEPENDENCY_BUMP_REPORT_KIND,
+  INTERNAL_DEPENDENCY_SUPPORT_LAG_REPORT_KIND,
+  INTERNAL_DEPENDENCY_TOPOLOGY_REPORT_KIND,
+  LOCAL_WORKSPACE_OVERRIDES_PATH,
+  resolveInternalDependencies,
+  bumpInternalDependencyMin,
+  checkSupportWorkspaceDependencies,
+  describePublishTopology,
+  linkWorkspaceDependencies,
+  unlinkWorkspaceDependencies,
+} from "./internal-dependencies.mjs";
+
+// Ten-host skill shadowing & precedence diagnosis (P1-6 / FND-FR-035)
+export {
+  SKILL_SHADOWING_REPORT_KIND,
+  checkSkillShadowing,
+} from "./skill-shadowing-check.mjs";
+
+// Zero-intrusion Foundation headless runtime monitor & studio delegation (M3.2 / FND-FR-036)
+export {
+  RUNTIME_MONITOR_SNAPSHOT_KIND,
+  registerMonitorTarget,
+  collectMonitorSnapshot,
+  createRuntimeMonitorServer,
+  probeRuntimeMonitorHealth,
+  ensureRuntimeMonitor,
+  serveRuntimeMonitorViaStudio,
+} from "./runtime-monitor.mjs";
+
+// Wave 7 non-empty adoption apply, capability management & runtime prereqs
+export {
+  ADOPT_APPLY_REPORT_KIND,
+  applyAdoption,
+} from "./adopt-apply.mjs";
+
+export {
+  CAPABILITY_REPORT_KIND,
+  listAdoptedCapabilities,
+  addAdoptedCapability,
+  removeAdoptedCapability,
+} from "./capability-cli.mjs";
+
+export {
+  PREREQS_CHECK_REPORT_KIND,
+  STALE_SKILL_INSTRUCTION_MESSAGE,
+  DEFAULT_BASELINE_VERSIONS,
+  satisfiesNodeEngineRange,
+  checkPrereqs,
+} from "./prereqs-check.mjs";
+
+// Wave 8 universal multi-host simulator & lifecycle fixture (host-sim)
+export {
+  SIMULATED_EXECUTION_MODE,
+  HOST_SIMULATOR_REPORT_KIND,
+  HOST_SIMULATOR_SHIMS_KIND,
+  SIMULATED_HOST_IDS,
+  SIMULATED_LIFECYCLE_STAGES,
+  normalizeSimulatedHosts,
+  listSimulatedHosts,
+  materializeSimulatedHostShims,
+  createSimulatedHostEnvironment,
+  runSimulatedHostMatrix,
+} from "./host-simulator.mjs";

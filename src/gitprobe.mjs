@@ -1,3 +1,6 @@
+// @feature FND-FR-002
+// @decision FND-ADR-003
+// @design FND-DES-002
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";

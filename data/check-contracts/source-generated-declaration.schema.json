@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://contracts.skill-family.example/kit/v1/source-generated-declaration.json",
   "title": "Source/generated direction reading contract",
-  "description": "Optional fixed reading contract for explicit source and generated root coordinates. Matching this contract does not establish prior project adoption, authority, filesystem membership or generation correctness.",
+  "description": "显式源码根与生成产物根坐标的可选读取契约；符合本结构本身并不自动证明项目已接入、拥有权威真源、满足目录归属或生成产物无漂移。",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "kind", "mappings"],

@@ -1,3 +1,6 @@
+// @feature FND-FR-025
+// @decision FND-ADR-033
+// @design FND-DES-033
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

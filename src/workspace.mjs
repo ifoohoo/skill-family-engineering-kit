@@ -1,3 +1,6 @@
+// @feature FND-FR-025
+// @decision FND-ADR-033
+// @design FND-DES-033
 import { lstat, readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { HARNESS_ERROR_KINDS, readFileBound } from "skill-family-harness-node";

@@ -2640,6 +2640,296 @@
     "目录操作、符号链接、跨设备写入或完整元数据备份由消费者保留原路径处理，或交回 Foundation 形成新的最小能力合同",
     "业务状态机与编排转 loop-agent；分发与发布状态转 release-skill"
    ]
+  },
+  {
+   "id": "foundation.kit.internal-dependency-resolution",
+   "intent": "按固定主版本轨道（0.x 或 N.x）与最低可用版本自动选择已验证最高兼容内部依赖版本，生成自绑定会话收据，并支持受控抬升下限、support 仓同代检查、第 0-3 层拓扑输出与本地联调覆盖往返",
+   "useWhen": [
+    "技能族项目需要在同主版本范围内自动吸收上游已验证兼容版本并保留会话命中收据",
+    "消费方开始使用新公共 API，需要通过 adopt-plan deps bump-min 单调抬升 minVersion",
+    "底层支撑仓（repoTier=support）需要通过 check deps --workspace-root 核查版本是否落后于本机底座源码、通过 --topology 查看发版拓扑，或通过 adopt-plan deps --link-workspace/--unlink-workspace 往返切换本地联调覆盖"
+   ],
+   "doNotUseWhen": [
+    "需要联网拉取外部 npm 注册表或解析未验证草稿包",
+    "需要无审查自动跨主版本升级或回退最低可用版本"
+   ],
+   "prerequisites": [
+    "目标工作区存在符合契约的 skill-family.project-manifest.json（同时兼容旧版精确版本字符串、固定主版本范围对象与可选 repoTier）",
+    "候选版本来自调用方提供的已验证 catalog 或项目本地已安装 node_modules；support 层检查与本地联调覆盖需提供有效源码根目录"
+   ],
+   "inputs": [
+    "resolveInternalDependencies({ root, manifest?, catalog?, sessionId?, resolvedAt?, receiptOut? })",
+    "bumpInternalDependencyMin({ root, packageName, toVersion, verifiedCeiling?, clearCeiling?, allowMajorUpgrade? })",
+    "checkSupportWorkspaceDependencies({ workspaceRoot }) / describePublishTopology({ workspaceRoot? })",
+    "linkWorkspaceDependencies({ root, sourceRoot, packages?, dryRun? }) / unlinkWorkspaceDependencies({ root, dryRun? })"
+   ],
+   "outputs": [
+    "经 Contracts 校验的 skill-family.internal-dependency-resolution-receipt 会话选版收据、skill-family.internal-dependency-bump-report 抬升报告、support 仓滞后诊断报告与第 0-3 层发版拓扑报告"
+   ],
+   "sideEffects": [
+    "check deps 严格只读（resolve 仅在显式传入 receiptOut 时向根内原子写入收据）；adopt-plan deps 原子更新 project-manifest（同步递增托管锁）或在受收容根目录写入/还原 package.json pnpm.overrides 与 .skill-family-local-overrides.json；Foundation 本身不发起网络请求"
+   ],
+   "failureSemantics": [
+    "在只读 check deps 下传入写参数将立即以 SFC2003 拒绝并指引改用 adopt-plan deps；回退 minVersion、未授权跨主版本或低于 verifiedCeiling 的冲突均以 SFC2004（internal-dependency-bump-refused）拒绝且零写入；存在未命中依赖或 support 仓滞后基线时 CLI 返回退出码 1"
+   ],
+   "invariants": [
+    "0.x 对应 major=0、N.x 对应 major=N，绝不隐式跨越主版本边界",
+    "收据携带剔除 digest 字段后规范化 JSON 的 SHA-256 自绑定摘要；--unlink-workspace 严格按备份恢复原正式语义版本号并删除临时覆盖状态文件"
+   ],
+   "ownedByCaller": [
+    "候选版本的验证准入、声明 repoTier、何时调用 adopt-plan deps bump-min 或联调覆盖，以及跨主版本迁移时的业务兼容性评估"
+   ],
+   "routeElsewhere": [
+    "外部包管理器锁文件安装与发布流程交给 pnpm 或 release-skill"
+   ]
+  },
+  {
+   "id": "foundation.kit.skill-shadowing-check",
+   "intent": "基于十宿主注册表按加载优先级只读扫描项目、插件与用户全局技能目录，定位同名技能遮蔽关系并输出修复步骤",
+   "useWhen": [
+    "项目目录、插件目录与用户全局目录同时部署了技能，需要排查哪个副本实际生效、哪个副本被同名遮蔽",
+    "需要解析十个规范宿主（含 antigravity 与 grok）及其别名的技能根目录优先级"
+   ],
+   "doNotUseWhen": [
+    "需要自动删除用户目录或插件目录中的重复技能文件",
+    "需要启动真实宿主进程验证运行时模型输出"
+   ],
+   "prerequisites": [
+    "调用方提供至少一个扫描层级（--root、--plugin-root、--user-home 或显式 --layer <scope:dir>）"
+   ],
+   "inputs": [
+    "checkSkillShadowing({ layers?, root?, pluginRoots?, userHome?, hostId?, hostsRoot? })"
+   ],
+   "outputs": [
+    "skill-family.skill-shadowing-report 结构化报告与 CLI check shadowing --format markdown 生成的中文排障说明"
+   ],
+   "sideEffects": [
+    "无（纯只读 lstat/readdir/readFile 扫描，不跟随符号链接、不改写任何文件、不启动子进程、不发起网络请求）"
+   ],
+   "failureSemantics": [
+    "无遮蔽冲突退出 0；检出内容分叉遮蔽、冗余重复或同层重名冲突退出 1；参数非法或层级非真实目录以 SFC2003/SFC2004 退出 2"
+   ],
+   "invariants": [
+    "默认严格遵循 project > plugin > user 加载优先级，或保持调用方显式传入的 --layer 顺序",
+    "报告展示路径统一使用 <project-root>、<plugin-k>、<user-home> 锚点，不泄露本机家目录路径"
+   ],
+   "ownedByCaller": [
+    "决定保留哪一层的技能副本或如何重命名项目定制技能"
+   ],
+   "routeElsewhere": [
+    "单宿主原生 YAML 解析细则校准交给 check host-loading；真实宿主调用验证交给 check qualification"
+   ]
+  },
+  {
+   "id": "foundation.kit.runtime-monitor",
+   "intent": "只读挂载 Foundation 状态库哈希链、令牌排他锁、子进程监督轨迹与执行计划进度，提供无界面纯 JSON 快照/登记底座并轻量委托 skill-family-studio 启动可视化工作台",
+   "useWhen": [
+    "运行长程开发或跨仓任务时，需要在不改动业务代码的前提下实时查看进度、排他锁持有时长、子进程超时记录与 state-store 事件链完整性",
+    "需要在任务启动时通过一行命令幂等探测本地看板端口、复用已有实例或按需后台拉起并注册监控目标"
+   ],
+   "doNotUseWhen": [
+    "需要向公网网卡暴露监控服务或建立跨机器集中遥测系统",
+    "需要通过监控看板反向修改业务 state-store 事件、强制解锁他人任务或改写产品源码"
+   ],
+   "prerequisites": [
+    "观测路径位于声明的工作区根目录或系统临时目录之内，且不包含敏感隐藏目录（如 .ssh、.gnupg、.aws、.env）"
+   ],
+   "inputs": [
+    "collectMonitorSnapshot({ root, registryPath?, lockWarnMs?, targetFilter?, allowedRoots? })",
+    "ensureRuntimeMonitor({ root, port?, registryPath?, lockWarnMs?, target?, spawnIfOffline?, timeoutMs?, allowedRoots? })",
+    "createRuntimeMonitorServer({ root, port?, registryPath?, lockWarnMs?, allowedRoots? })"
+   ],
+   "outputs": [
+    "skill-family.runtime-monitor-snapshot 结构化运行态快照、无界面回环 JSON/SSE 接口，以及对 skill-family-studio 的委托启动或回退摘要收据"
+   ],
+   "sideEffects": [
+    "collectMonitorSnapshot 纯只读零写入；registerMonitorTarget 仅向受收容注册表原子写入监控目标元数据；createRuntimeMonitorServer 仅监听 127.0.0.1 无界面 JSON 接口；check monitor serve/ensure 优先委托启动 skill-family-studio，未安装时回退输出 JSON 状态摘要"
+   ],
+   "failureSemantics": [
+    "非本地回环 Host 或 Origin 请求头返回 HTTP 403；包含上级目录跳转、敏感隐藏目录或越出允许根目录的路径返回 HTTP 403（API/CLI 为 SFC2004 monitor-path-forbidden，退出码 2）；事件载荷篡改或序号断裂时快照标记 CHAIN_BROKEN"
+   ],
+   "invariants": [
+    "服务固定仅绑定 127.0.0.1，所有注册与沙箱写动作统一经单链 enqueueWrite 队列串行执行",
+    "逐事件重算剔除 recordDigest 后的规范化 JSON SHA-256 摘要，校验从 STATE_GENESIS_DIGEST 起算的完整链连续性"
+   ],
+   "ownedByCaller": [
+    "长程任务的执行计划维护、何时挂载或停止本地监控服务，以及发现陈旧锁或超时进程后的业务恢复裁决"
+   ],
+   "routeElsewhere": [
+    "持久事件写入与显式锁恢复走 skill-family-harness-node 的 state-store；受管子进程超时控制走 superviseProcess"
+   ]
+  },
+  {
+   "id": "foundation.contracts.task-handoff-envelope",
+   "intent": "定义并校验跨技能族协作请求的任务范围、方法选排、允许写入集合与摘要绑定上游制品交接信封",
+   "useWhen": [
+    "上游技能族需要将任务范围、需求引用、已选与排除的方法及输入文件摘要结构化移交给下游技能族"
+   ],
+   "doNotUseWhen": [
+    "需要在 Foundation 契约内直接编排多模型调度、重试或业务状态流转"
+   ],
+   "prerequisites": [
+    "所有允许写入路径与上游制品路径均为受收容的项目相对路径，制品摘要为真实 64 位小写十六进制 SHA-256"
+   ],
+   "inputs": [
+    "validateTaskHandoffEnvelope(document) 或 createTaskHandoffEnvelope(input)"
+   ],
+   "outputs": [
+    "校验结果 { valid, errorCode, errors, data } 或深度冻结的 skill-family.task-handoff-envelope 对象"
+   ],
+   "sideEffects": [
+    "无（纯内存校验与对象冻结，无文件系统、进程或网络访问）"
+   ],
+   "failureSemantics": [
+    "未知字段、路径跳转、selectedMethods 与 excludedMethods 重叠或重复制品路径均返回 SFC1001"
+   ],
+   "invariants": [
+    "additionalProperties 固定为 false，已选与排除方法集合严格互斥"
+   ],
+   "ownedByCaller": [
+    "上游制品的真实字节哈希计算与下游动作执行结果验收"
+   ],
+   "routeElsewhere": [
+    "受收容文件读取与原子写入走 skill-family-harness-node"
+   ]
+  },
+  {
+   "id": "foundation.kit.adopt-apply",
+   "intent": "复用 adopt-plan 探测事实对存量非空目录执行无损引导式接入（adopt-plan apply），按需创建 skill-family.project-manifest.json 与目录骨架",
+   "useWhen": [
+    "需要将已有业务代码的非空仓库接入 Foundation，同时要求保留全部既有业务文件零覆盖"
+   ],
+   "doNotUseWhen": [
+    "目标是全新空目录初始化（应使用 scaffold）或仅需纯只读规划（应使用 adopt-plan）"
+   ],
+   "prerequisites": [
+    "目标根目录可读且为普通目录；若 skill-family.project-manifest.json 已存在且需更新，须显式传入 --update-manifest"
+   ],
+   "inputs": [
+    "applyAdoption({ root, projectId?, projectName?, profileId?, capabilities?, repoTier?, dryRun?, updateManifest? })"
+   ],
+   "outputs": [
+    "skill-family.adopt-apply-report（含 appliedPaths、preservedPaths 与下一步校验指引）"
+   ],
+   "sideEffects": [
+    "--dry-run 模式零磁盘写入；常规模式通过 adopt-plan apply 仅原子创建缺失的 skill-family.project-manifest.json、迁移清单与标准目录骨架，绝不覆盖或删除既有业务文件"
+   ],
+   "failureSemantics": [
+    "当 skill-family.project-manifest.json 已存在且未传 --update-manifest，或目标路径被软链接/非目录占用时，以 SFC2004 adopt-apply-refused 退出 2 且零写入"
+   ],
+   "invariants": [
+    "所有既有业务文件与冲突骨架路径一律记入 preservedPaths，字节保持不变"
+   ],
+   "ownedByCaller": [
+    "审查后续校验指引并决定何时执行闭世界文件分类登记"
+   ],
+   "routeElsewhere": [
+    "空目录生成走 scaffold；首次三文件闭世界登记走 check register-existing"
+   ]
+  },
+  {
+   "id": "foundation.kit.capability-declaration",
+   "intent": "通过 adopt-plan capability 受控管理项目清单中的 adoptedCapabilities 按需能力声明，通过 check capability 只读查询，并在解绑时只读扫描项目内残留引用",
+   "useWhen": [
+    "需要查询、登记或从项目清单解绑已采用的 Foundation 能力，并定位残留的宿主投影或配置引用"
+   ],
+   "doNotUseWhen": [
+    "期望自动删除用户业务源码或宿主目录文件"
+   ],
+   "prerequisites": [
+    "目标工作区已存在合法的 skill-family.project-manifest.json"
+   ],
+   "inputs": [
+    "listAdoptedCapabilities({ root }) / addAdoptedCapability({ root, id, dryRun? }) / removeAdoptedCapability({ root, id, dryRun? })"
+   ],
+   "outputs": [
+    "skill-family.capability-report（remove 时附带 residualReferences 与中文清理提示）"
+   ],
+   "sideEffects": [
+    "check capability list 与 --dry-run 零写入；adopt-plan capability add/remove 仅原子更新 skill-family.project-manifest.json（及关联受管锁），残留扫描严格只读"
+   ],
+   "failureSemantics": [
+    "在只读 check capability 下传入 add/remove 或非法能力 ID 返回 SFC2003；目录中声明为 unsupported 的能力返回 SFC2004 capability-mutation-refused"
+   ],
+   "invariants": [
+    "adoptedCapabilities 自动去重且有序；remove 绝不修改或删除任何宿主投影与业务源码"
+   ],
+   "ownedByCaller": [
+    "根据 residualReferences 人工核对并清理宿主投影或源码中的旧引用"
+   ],
+   "routeElsewhere": [
+    "全量能力目录查询与适用性矩阵评估走 adopt-plan --list-capabilities"
+   ]
+  },
+  {
+   "id": "foundation.kit.prereqs-check",
+   "intent": "执行运行期 Node.js、Python 3、零值回显环境变量体检，检测长会话内 SKILL.md 磁盘更新残留，并为业务仓（repoTier !== support）输出温和基线版本提示",
+   "useWhen": [
+    "技能或工程命令启动前需要核验运行时版本与必需环境变量存在性，检测磁盘 SKILL.md 是否已被修改，或在业务仓开工时查看温和依赖升级提示"
+   ],
+   "doNotUseWhen": [
+    "需要自动安装运行时、修改系统 PATH 或读取导出敏感凭据明文"
+   ],
+   "prerequisites": [
+    "--skill-file 与 --loaded-sha256 若启用须成对传入，且技能文件路径必须收容于目标根目录内"
+   ],
+   "inputs": [
+    "checkPrereqs({ root, requirePython?, requireEnv?, skillFile?, loadedSha256?, latestVersions? })"
+   ],
+   "outputs": [
+    "skill-family.prereqs-check-report（磁盘 SKILL.md 摘要变化时返回明确重开会话提示；业务仓版本滞后时仅追加 info 级 dependencyAdvisories，不改变 ok 与退出码）"
+   ],
+   "sideEffects": [
+    "纯只读文件读取；仅在指定 --require-python 时启动一次受限的 python3 --version 探测"
+   ],
+   "failureSemantics": [
+    "全部硬检查通过退出 0（含仅存在 dependencyAdvisories 温和提示的情形）；版本不匹配、缺环境变量或技能指令已更新退出 1；参数错误或路径越界退出 2"
+   ],
+   "invariants": [
+    "环境变量检查只记录布尔值 present 与 nonEmpty，严禁在返回值、标准输出或错误日志中回显任何环境变量值",
+    "dependencyAdvisories 级别恒为 info，绝不将 ok 置为 false 或阻断开工退出码"
+   ],
+   "ownedByCaller": [
+    "在会话启动时记录初始 SKILL.md 摘要，收到过期提示后开启新会话或重新加载技能，并自主安排业务仓依赖升级窗口"
+   ],
+   "routeElsewhere": [
+    "十宿主多层同名技能遮蔽检查走 check shadowing；静态宿主容器校验走 check host-loading"
+   ]
+  },
+  {
+   "id": "foundation.kit.host-simulator",
+   "intent": "在无需本机安装各家宿主 CLI、无需付费账号登录的本地隔离沙箱内，确定性生成十大规范宿主伪可执行垫片并跑通安装/发现/调用/禁用/启用/升级/卸载全生命周期验证",
+   "useWhen": [
+    "业务域技能族需要在本地离线或无厂商账号环境下验证跨十大规范宿主（claude、codex、kimi-code、qoder、workbuddy、codebuddy、cursor、deepseek-harness、antigravity、grok）的目录发现、YAML frontmatter、启停配置与流式协议接线",
+    "测试套件需要通过 materialize-shims 在临时目录生成匹配各驱动 versionPattern 与流式协议的可复用伪宿主二进制"
+   ],
+   "doNotUseWhen": [
+    "需要证明真实厂商云端登录态、线上模型语义推理质量或冒充真实宿主在线验收凭据"
+   ],
+   "prerequisites": [
+    "候选根目录包含至少一个合法的技能或插件目录（单技能 SKILL.md、skills/<name>/SKILL.md 或带 plugin.json 的插件包）"
+   ],
+   "inputs": [
+    "runSimulatedHostMatrix({ root, hosts?, output?, prompt? }) 或 materializeSimulatedHostShims({ outputDir, hosts? })"
+   ],
+   "outputs": [
+    "显式携带 executionMode = \"foundation-simulated-fixture\" 与 CONTROLLED_NATIVE_LIFECYCLE_FIXTURE_PROTOCOL 的八阶段验证报告或垫片物化收据"
+   ],
+   "sideEffects": [
+    "源候选目录严格只读零改动（通过前后闭包 SHA-256 核验）；仅在操作系统临时目录内创建并自动清理隔离沙箱，或向显式指定的 --output / --output-dir 写入结果"
+   ],
+   "failureSemantics": [
+    "当 SKILL.md 缺少 --- 包裹的 name/description YAML frontmatter、禁用态未能拦截调用或卸载残留文件时返回 ok=false（CLI 退出码 1）；参数或源目录非法返回退出码 2"
+   ],
+   "invariants": [
+    "所有产出收据强制标记 executionMode = \"foundation-simulated-fixture\"，绝不伪装为真实厂商在线鉴权收据；不改动既有冻结真实宿主驱动字节向量"
+   ],
+   "ownedByCaller": [
+    "业务技能正文的领域语义断言与发布前按需开展的真实宿主抽样复核"
+   ],
+   "routeElsewhere": [
+    "复用用户现有登录态执行真实宿主进程核验走 runHostVerification 或 check qualification"
+   ]
   }
  ]
 }

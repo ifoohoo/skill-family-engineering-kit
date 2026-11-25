@@ -1,3 +1,6 @@
+// @decision FND-ADR-007
+// @decision FND-ADR-016
+// @design FND-DES-001
 import kitPackage from "../package.json" with { type: "json" };
 
 // The package manifest is the version authority. A static JSON import keeps

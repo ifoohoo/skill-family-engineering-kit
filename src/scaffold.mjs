@@ -1,3 +1,7 @@
+// @feature FND-FR-001
+// @feature FND-FR-025
+// @decision FND-ADR-033
+// @design FND-DES-002
 import { lstat, mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
 import { CONTRACTS_VERSION, ContractsError, findSchemaByObject } from "skill-family-contracts";

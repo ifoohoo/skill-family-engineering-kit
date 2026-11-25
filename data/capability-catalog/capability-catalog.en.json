@@ -2641,6 +2641,296 @@
     "Directory operations, symbolic links, cross-device writes, or complete metadata backup stay on the consumer path, or return to Foundation as a new minimal capability contract",
     "Business state machines and orchestration go to loop-agent; distribution and release state go to release-skill"
    ]
+  },
+  {
+   "id": "foundation.kit.internal-dependency-resolution",
+   "intent": "Select the highest verified compatible internal dependency version within a fixed major track (0.x or N.x), emit a self-binding session receipt, enforce support-tier version alignment, emit layer 0-3 publish topology, and manage reversible local workspace overrides",
+   "useWhen": [
+    "A Skill Family project needs to adopt verified compatible internal updates automatically within the same major track while preserving a session resolution receipt",
+    "A consumer adopts a new public API and needs to lift minVersion monotonically via adopt-plan deps bump-min",
+    "Support-tier repositories (repoTier=support) need to verify against local base sources via check deps --workspace-root, inspect layer 0-3 topology via --topology, or toggle local overrides via adopt-plan deps --link-workspace/--unlink-workspace"
+   ],
+   "doNotUseWhen": [
+    "Fetching unverified packages over the network from external registries is needed",
+    "Unreviewed cross-major jumps or minVersion downgrades are requested"
+   ],
+   "prerequisites": [
+    "The target workspace carries a contract-valid skill-family.project-manifest.json (supporting legacy exact strings, fixed-major range objects, and optional repoTier)",
+    "Candidate versions come from a caller-provided catalog or local node_modules; workspace checks and local override linking require a valid source root directory"
+   ],
+   "inputs": [
+    "resolveInternalDependencies({ root, manifest?, catalog?, sessionId?, resolvedAt?, receiptOut? })",
+    "bumpInternalDependencyMin({ root, packageName, toVersion, verifiedCeiling?, clearCeiling?, allowMajorUpgrade? })",
+    "checkSupportWorkspaceDependencies({ workspaceRoot }) / describePublishTopology({ workspaceRoot? })",
+    "linkWorkspaceDependencies({ root, sourceRoot, packages?, dryRun? }) / unlinkWorkspaceDependencies({ root, dryRun? })"
+   ],
+   "outputs": [
+    "Contract-validated skill-family.internal-dependency-resolution-receipt session receipts, bump reports, support-tier version lag reports, and layer 0-3 publish topology reports"
+   ],
+   "sideEffects": [
+    "check deps is strictly read-only (resolve writes only inside root when receiptOut is passed); adopt-plan deps atomically updates project-manifest (synchronizing managed-file-lock) or updates/restores pnpm.overrides and .skill-family-local-overrides.json; Foundation never issues network requests"
+   ],
+   "failureSemantics": [
+    "Write arguments passed to read-only check deps reject immediately with SFC2003 guiding callers to adopt-plan deps; minVersion downgrades, unauthorized cross-major jumps, or ceiling conflicts fail closed with SFC2004 and zero writes; unresolved dependencies or support-tier lag exit 1 on CLI"
+   ],
+   "invariants": [
+    "0.x maps to major=0 and N.x maps to major=N, never crossing major boundaries implicitly",
+    "Every receipt binds its canonical SHA-256 digest; --unlink-workspace cleanly restores original semantic versions and removes temporary override state"
+   ],
+   "ownedByCaller": [
+    "Candidate verification qualification, declaring repoTier, deciding when to run adopt-plan deps bump-min or workspace linking, and cross-major compatibility evaluation"
+   ],
+   "routeElsewhere": [
+    "External package-manager lockfiles and release publication belong to pnpm or release-skill"
+   ]
+  },
+  {
+   "id": "foundation.kit.skill-shadowing-check",
+   "intent": "Scan project, plugin, and user-global skill roots in precedence order across the ten-host registry, identifying same-name skill shadowing and remediation steps",
+   "useWhen": [
+    "Skills exist across project, plugin, and user-global directories and maintainers need to know which copy wins and which copies are shadowed",
+    "Ten canonical hosts (including antigravity and grok) and their source aliases need consistent skill-root precedence diagnosis"
+   ],
+   "doNotUseWhen": [
+    "Automatic deletion of duplicate skills in user or plugin directories is wanted",
+    "Spawning a live host process to test runtime model output is required"
+   ],
+   "prerequisites": [
+    "The caller supplies at least one scan layer (--root, --plugin-root, --user-home, or explicit --layer <scope:dir>)"
+   ],
+   "inputs": [
+    "checkSkillShadowing({ layers?, root?, pluginRoots?, userHome?, hostId?, hostsRoot? })"
+   ],
+   "outputs": [
+    "skill-family.skill-shadowing-report structured JSON reports and human-readable remediation summaries via CLI check shadowing --format markdown"
+   ],
+   "sideEffects": [
+    "None (strictly read-only lstat/readdir/readFile traversal; never follows symlinks, never mutates files, never spawns subprocesses, and never issues network requests)"
+   ],
+   "failureSemantics": [
+    "Exits 0 when clean, 1 when divergent shadowing, redundant duplicates, or same-layer collisions are found, and 2 with SFC2003/SFC2004 on invalid parameters or non-directory roots"
+   ],
+   "invariants": [
+    "Follows project > plugin > user precedence by default or preserves explicit caller --layer order",
+    "Display labels use <project-root>, <plugin-k>, and <user-home> anchors so local home paths never leak"
+   ],
+   "ownedByCaller": [
+    "Choosing which layer copy to retain or how to rename project-specific skills"
+   ],
+   "routeElsewhere": [
+    "Per-host native YAML calibration belongs to check host-loading; live host execution qualification belongs to check qualification"
+   ]
+  },
+  {
+   "id": "foundation.kit.runtime-monitor",
+   "intent": "Observe Foundation state-store hash chains, exclusive token locks, supervised process trajectories, and execution plans in read-only mode via a headless loopback JSON snapshot/registry SDK while delegating dashboard UI startup to skill-family-studio",
+   "useWhen": [
+    "Maintainers or coordinating sessions running long tasks need live visibility into progress, lock hold durations, watchdog timeouts, and state-store SHA-256 chain integrity without instrumenting business code",
+    "A long-running task wants a single idempotent command to probe a local monitor port, reuse an online server or spawn one on demand, and register its paths"
+   ],
+   "doNotUseWhen": [
+    "Exposing a dashboard beyond 127.0.0.1 or operating a remote multi-host telemetry service is desired",
+    "Mutating business state-store events, forcibly breaking active locks, or editing product files from the dashboard is requested"
+   ],
+   "prerequisites": [
+    "Target paths resolve within allowed workspace or system temporary roots and contain no sensitive hidden directory segments (.ssh, .gnupg, .aws, .env)"
+   ],
+   "inputs": [
+    "collectMonitorSnapshot({ root, registryPath?, lockWarnMs?, targetFilter?, allowedRoots? })",
+    "ensureRuntimeMonitor({ root, port?, registryPath?, lockWarnMs?, target?, spawnIfOffline?, timeoutMs?, allowedRoots? })",
+    "createRuntimeMonitorServer({ root, port?, registryPath?, lockWarnMs?, allowedRoots? })"
+   ],
+   "outputs": [
+    "skill-family.runtime-monitor-snapshot JSON snapshots, headless loopback JSON/SSE endpoints, and skill-family-studio delegation or headless JSON fallback receipts"
+   ],
+   "sideEffects": [
+    "collectMonitorSnapshot is strictly read-only; registerMonitorTarget atomically updates only the contained monitor registry; createRuntimeMonitorServer binds 127.0.0.1 as a pure headless JSON server; check monitor serve/ensure delegates UI startup to skill-family-studio and falls back to JSON status summaries when unavailable"
+   ],
+   "failureSemantics": [
+    "Non-loopback Host or Origin headers return HTTP 403; path traversal, sensitive hidden segments, or paths escaping allowedRoots return HTTP 403 (or SFC2004 monitor-path-forbidden, CLI exit 2); tampered state-store events report CHAIN_BROKEN"
+   ],
+   "invariants": [
+    "Binds exclusively to 127.0.0.1 and serializes all registry and sandbox mutations through a single-chain enqueueWrite queue",
+    "Recomputes canonical SHA-256 digests from STATE_GENESIS_DIGEST across every event file without opening a writer lock"
+   ],
+   "ownedByCaller": [
+    "Authoring execution plans, choosing when to start or stop the local monitor daemon, and deciding recovery actions when stale locks or timed-out processes appear"
+   ],
+   "routeElsewhere": [
+    "Durable event writes and explicit lock recovery belong to skill-family-harness-node state-store; subprocess supervision belongs to superviseProcess"
+   ]
+  },
+  {
+   "id": "foundation.contracts.task-handoff-envelope",
+   "intent": "Define and validate closed task scope, method selection/exclusion, allowed write sets, and SHA-256-bound upstream artifacts across skill families",
+   "useWhen": [
+    "An upstream skill family hands off bounded requirements, selected/excluded methods, write scope, and digest-pinned artifacts to a downstream skill family"
+   ],
+   "doNotUseWhen": [
+    "Multi-model orchestration, retry loops, or business state machines are expected inside Contracts"
+   ],
+   "prerequisites": [
+    "All allowedWriteSet and upstreamArtifacts.path entries are contained relative paths and digests are lowercase 64-hex SHA-256 values"
+   ],
+   "inputs": [
+    "validateTaskHandoffEnvelope(document) or createTaskHandoffEnvelope(input)"
+   ],
+   "outputs": [
+    "Validation result { valid, errorCode, errors, data } or a deeply frozen skill-family.task-handoff-envelope object"
+   ],
+   "sideEffects": [
+    "None (pure in-memory validation and object freezing; no filesystem, process, or network access)"
+   ],
+   "failureSemantics": [
+    "Unknown fields, path escapes, overlapping selectedMethods/excludedMethods, or duplicate artifact paths fail with SFC1001"
+   ],
+   "invariants": [
+    "additionalProperties is false and selectedMethods is disjoint from excludedMethods"
+   ],
+   "ownedByCaller": [
+    "Computing real upstream artifact digests and verifying downstream business deliverables"
+   ],
+   "routeElsewhere": [
+    "Contained file reads and atomic writes belong to skill-family-harness-node"
+   ]
+  },
+  {
+   "id": "foundation.kit.adopt-apply",
+   "intent": "Reuse adopt-plan probing facts via adopt-plan apply to seed missing skill-family.project-manifest.json and standard directories in non-empty repositories without overwriting existing files",
+   "useWhen": [
+    "Onboarding an existing non-empty repository into Foundation while preserving every existing business file untouched"
+   ],
+   "doNotUseWhen": [
+    "Generating into a brand-new empty directory (use scaffold) or performing strictly read-only planning (use adopt-plan)"
+   ],
+   "prerequisites": [
+    "Target root is a readable directory; updating an existing skill-family.project-manifest.json requires explicit --update-manifest"
+   ],
+   "inputs": [
+    "applyAdoption({ root, projectId?, projectName?, profileId?, capabilities?, repoTier?, dryRun?, updateManifest? })"
+   ],
+   "outputs": [
+    "skill-family.adopt-apply-report with appliedPaths, preservedPaths, and next-step verification guidance"
+   ],
+   "sideEffects": [
+    "--dry-run writes nothing; normal adopt-plan apply mode atomically creates only missing skill-family.project-manifest.json, migration manifest, and skeleton directories while never overwriting or deleting existing user files"
+   ],
+   "failureSemantics": [
+    "Refuses with SFC2004 adopt-apply-refused (exit 2, zero writes) when skill-family.project-manifest.json already exists without --update-manifest or when symlinks/non-regular entries occupy target paths"
+   ],
+   "invariants": [
+    "Every existing file and conflicting skeleton path is preserved byte-for-byte and listed in preservedPaths"
+   ],
+   "ownedByCaller": [
+    "Reviewing next-step verification commands and choosing closed-world file classification rules"
+   ],
+   "routeElsewhere": [
+    "Empty-directory generation belongs to scaffold; initial three-file closed-world registration belongs to check register-existing"
+   ]
+  },
+  {
+   "id": "foundation.kit.capability-declaration",
+   "intent": "Manage adoptedCapabilities in skill-family.project-manifest.json via adopt-plan capability (and read-only check capability list) while scanning residual references read-only upon removal",
+   "useWhen": [
+    "Listing, adding, or removing adopted Foundation capability IDs and locating leftover references after unbinding"
+   ],
+   "doNotUseWhen": [
+    "Automatic deletion of user source files or host projection trees is expected"
+   ],
+   "prerequisites": [
+    "Target workspace has a contract-valid skill-family.project-manifest.json"
+   ],
+   "inputs": [
+    "listAdoptedCapabilities({ root }) / addAdoptedCapability({ root, id, dryRun? }) / removeAdoptedCapability({ root, id, dryRun? })"
+   ],
+   "outputs": [
+    "skill-family.capability-report including residualReferences and cleanupGuidance on remove"
+   ],
+   "sideEffects": [
+    "check capability list and --dry-run write nothing; adopt-plan capability add/remove atomically update only skill-family.project-manifest.json (and optional managed lock) while residual scanning is strictly read-only"
+   ],
+   "failureSemantics": [
+    "Write sub-actions on read-only check capability or malformed capability IDs fail with SFC2003; catalog-declared unsupported capabilities fail with SFC2004 capability-mutation-refused"
+   ],
+   "invariants": [
+    "adoptedCapabilities stays deduplicated and sorted; remove never deletes or mutates user source or host projection files"
+   ],
+   "ownedByCaller": [
+    "Inspecting residualReferences and manually cleaning obsolete imports or projections"
+   ],
+   "routeElsewhere": [
+    "Full capability catalog queries and use-matrix assessments belong to adopt-plan --list-capabilities"
+   ]
+  },
+  {
+   "id": "foundation.kit.prereqs-check",
+   "intent": "Verify runtime Node.js engine ranges, optional Python 3 availability, zero-echo required environment variables, in-session stale SKILL.md SHA-256 drift, and non-blocking business-repo dependency advisories",
+   "useWhen": [
+    "Checking runtime prerequisites before running a skill, detecting whether SKILL.md changed on disk during a session, or checking gentle dependency baseline advisories in business repositories"
+   ],
+   "doNotUseWhen": [
+    "Automatic runtime installation, PATH mutation, or echoing secret environment variable values is requested"
+   ],
+   "prerequisites": [
+    "--skill-file and --loaded-sha256 must be supplied together when enabled, with --skill-file contained inside --root"
+   ],
+   "inputs": [
+    "checkPrereqs({ root, requirePython?, requireEnv?, skillFile?, loadedSha256?, latestVersions? })"
+   ],
+   "outputs": [
+    "skill-family.prereqs-check-report with explicit session-reload guidance on SKILL.md drift and info-only dependencyAdvisories for non-support repositories"
+   ],
+   "sideEffects": [
+    "Read-only file checks plus at most one bounded python3 --version probe when --require-python is passed"
+   ],
+   "failureSemantics": [
+    "Exits 0 when all hard checks pass (including when info-level dependencyAdvisories are emitted), 1 when findings exist (Node mismatch, missing Python/env, or stale SKILL.md), and 2 on invalid options or escaping paths"
+   ],
+   "invariants": [
+    "Environment variable checks record only boolean present and nonEmpty flags and never echo, slice, or log variable values",
+    "dependencyAdvisories stay strictly informational (level=info) and never flip ok to false or block startup"
+   ],
+   "ownedByCaller": [
+    "Recording the initial SKILL.md SHA-256 at session start, reloading on drift, and scheduling business dependency upgrades"
+   ],
+   "routeElsewhere": [
+    "Multi-layer same-name skill shadowing belongs to check shadowing; static host skill container validation belongs to check host-loading"
+   ]
+  },
+  {
+   "id": "foundation.kit.host-simulator",
+   "intent": "Materialize deterministic Node host shims and execute full eight-stage skill/plugin lifecycle verification across ten canonical coding-agent hosts in isolated local sandboxes without vendor CLIs or cloud accounts",
+   "useWhen": [
+    "Domain skill families need local, deterministic cross-host install/discover/invoke/disable/enable/update/uninstall verification across claude, codex, kimi-code, qoder, workbuddy, codebuddy, cursor, deepseek-harness, antigravity, and grok without local CLI installs or paid logins",
+    "Test suites need materialize-shims to generate executable Node host shims matching frozen versionPattern and stream-output grammars"
+   ],
+   "doNotUseWhen": [
+    "Claiming real cloud vendor authentication, live model reasoning quality, or substituting for real-host online qualification evidence"
+   ],
+   "prerequisites": [
+    "Candidate root contains at least one skill or plugin entry (single SKILL.md, skills/<name>/SKILL.md, or a plugin directory with plugin.json)"
+   ],
+   "inputs": [
+    "runSimulatedHostMatrix({ root, hosts?, output?, prompt? }) or materializeSimulatedHostShims({ outputDir, hosts? })"
+   ],
+   "outputs": [
+    "Eight-stage lifecycle verification report or shim materialization receipt explicitly stamped with executionMode = \"foundation-simulated-fixture\" and CONTROLLED_NATIVE_LIFECYCLE_FIXTURE_PROTOCOL"
+   ],
+   "sideEffects": [
+    "Candidate root stays strictly read-only (verified by pre/post closure SHA-256); creates and cleans isolated temporary sandboxes, writing only to explicit --output or --output-dir when requested"
+   ],
+   "failureSemantics": [
+    "Missing or malformed --- YAML frontmatter (name/description), unblocked disabled invocations, or post-uninstall leftovers report ok=false (CLI exit 1); invalid arguments or missing roots exit 2"
+   ],
+   "invariants": [
+    "Every receipt carries executionMode = \"foundation-simulated-fixture\" and never impersonates real vendor authentication receipts; frozen real-host driver byte vectors remain untouched"
+   ],
+   "ownedByCaller": [
+    "Domain-specific prompt/answer assertions and optional post-release real-host sampling"
+   ],
+   "routeElsewhere": [
+    "Real-host process verification reusing existing user login state belongs to runHostVerification or check qualification"
+   ]
   }
  ]
 }

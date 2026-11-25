@@ -1,5 +1,21 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.39.1 locale=en baseline=sha256:091c9dd8dc6ca234f40d9d3b06c6bc0ca145709db3a2bd92ea67735b5ffbe64e -->
+## [0.39.1] - 2026-11-25
+
+Lockstep 0.39.1 patch release: skill-family-kit diagnostic and onboarding subcommands now default to Chinese human-readable text in interactive TTY terminals when neither --json nor --format is passed while keeping deterministic JSON in non-TTY pipes and automation; retires legacy bundled MkDocs site assets in favor of the standalone ifoohoo/skill-family-foundation-site documentation repository.
+
+### Changed
+
+- Defaults check deps, check prereqs, check capability, check host-sim run, check shadowing, adopt-plan apply, and adopt-plan capability to Chinese human-readable output on interactive TTY stdout when --json and --format are omitted, preserving deterministic JSON in non-TTY environments.
+- Retires legacy bundled MkDocs site assets and points package homepage and bilingual README documentation links to https://ifoohoo.github.io/skill-family-foundation-site/.
+
+### Upgrade Notes
+
+Adopt all 0.39.1 release units in lockstep. Non-TTY subprocesses and explicit --json / --format json invocations keep identical JSON output; pass --json explicitly when capturing JSON in an interactive terminal.
+<!-- release-skill:changelog:end version=0.39.1 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.39.0 locale=en baseline=sha256:f66979036566e7c3c07143906a08edd95ef75dfa724583b95b735cd261c6f5ac -->
 ## [0.39.0] - 2026-11-06
 

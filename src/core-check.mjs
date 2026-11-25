@@ -1,3 +1,6 @@
+// @feature FND-FR-025
+// @decision FND-ADR-033
+// @design FND-DES-033
 import { lstat } from "node:fs/promises";
 import path from "node:path";
 import { createFilesystemRootBinding, inspectFileSetRecovery } from "skill-family-harness-node";

@@ -1,3 +1,7 @@
+// @feature FND-FR-008
+// @feature FND-FR-035
+// @decision FND-ADR-036
+// @design FND-DES-045
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { validateDocument } from "skill-family-contracts";

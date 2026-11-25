@@ -1,3 +1,6 @@
+// @feature FND-FR-025
+// @decision FND-ADR-033
+// @design FND-DES-033
 import { readdir } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";

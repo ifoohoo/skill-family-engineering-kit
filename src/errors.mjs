@@ -1,3 +1,6 @@
+// @decision FND-ADR-007
+// @decision FND-ADR-016
+// @design FND-DES-001
 import { ContractsError, isRegisteredErrorCode } from "skill-family-contracts";
 
 /**
@@ -99,6 +102,21 @@ export const KIT_ERROR_KINDS = Object.freeze({
   HOST_PROBE_FAILED: "host-probe-failed",
   HOST_BUILD_FAILED: "host-build-failed",
   CAPABILITY_CATALOG_INVALID: "capability-catalog-invalid",
+  // P0-1 internal dependency resolution & controlled minVersion bump
+  INTERNAL_DEPENDENCY_UNRESOLVED: "internal-dependency-unresolved",
+  INTERNAL_DEPENDENCY_BUMP_REFUSED: "internal-dependency-bump-refused",
+  // P1-6 same-name skill shadowing diagnosis
+  SKILL_SHADOWING_DETECTED: "skill-shadowing-detected",
+  SKILL_SHADOWING_SCAN_FAILED: "skill-shadowing-scan-failed",
+  // M3.2 runtime monitor security & operation boundaries
+  MONITOR_PATH_FORBIDDEN: "monitor-path-forbidden",
+  MONITOR_OPERATION_FAILED: "monitor-operation-failed",
+  // Wave 7 non-empty adoption apply, capability declaration & runtime prereqs
+  ADOPT_APPLY_REFUSED: "adopt-apply-refused",
+  CAPABILITY_MUTATION_REFUSED: "capability-mutation-refused",
+  PREREQ_CHECK_FAILED: "prereq-check-failed",
+  // Wave 8 universal multi-host simulator & lifecycle fixture
+  HOST_SIMULATOR_FAILED: "host-simulator-failed",
 });
 
 /** Error carrying one frozen SFC code plus a stable kit kind in details. */
@@ -143,12 +161,98 @@ export function refusalError(refusals, message, extraDetails) {
   return new KitError("SFC2004", message, { ...(extraDetails ?? {}), kind, refusals });
 }
 
+const DEPS_WRITE_TOKENS = new Set([
+  "bump-min",
+  "bump",
+  "link-workspace",
+  "unlink-workspace",
+  "--bump",
+  "--to",
+  "--package",
+  "--verified-ceiling",
+  "--clear-ceiling",
+  "--allow-major-upgrade",
+  "--link-workspace",
+  "--unlink-workspace",
+  "--dry-run",
+]);
+
+function describeLegacyCommandMigration(cmd, restArgs) {
+  const args = Array.isArray(restArgs) ? restArgs : [];
+  if (cmd === "deps") {
+    const wantsWrite = args.some((token) => DEPS_WRITE_TOKENS.has(token));
+    if (wantsWrite) {
+      return {
+        suggestedCommand: "adopt-plan deps",
+        hint: "已收敛至四大顶层命令；检测到依赖写参数，请改用: skill-family-kit adopt-plan deps ...",
+      };
+    }
+    return {
+      suggestedCommand: "check deps",
+      hint: "已收敛至四大顶层命令；只读检查请改用: skill-family-kit check deps ...（修改依赖或本地联调覆盖请改用: skill-family-kit adopt-plan deps ...）",
+    };
+  }
+  if (cmd === "monitor") {
+    return {
+      suggestedCommand: "check monitor",
+      hint: "已收敛至四大顶层命令；请改用: skill-family-kit check monitor <serve|ensure|register|snapshot> ...",
+    };
+  }
+  if (cmd === "check-prereqs" || cmd === "prereqs") {
+    return {
+      suggestedCommand: "check prereqs",
+      hint: "已收敛至四大顶层命令；请改用: skill-family-kit check prereqs ...",
+    };
+  }
+  if (cmd === "adopt-apply") {
+    return {
+      suggestedCommand: "adopt-plan apply",
+      hint: "已收敛至四大顶层命令；请改用: skill-family-kit adopt-plan apply ...",
+    };
+  }
+  if (cmd === "capability") {
+    const sub = args[0];
+    if (sub === "add" || sub === "remove") {
+      return {
+        suggestedCommand: `adopt-plan capability ${sub}`,
+        hint: `已收敛至四大顶层命令；修改能力声明请改用: skill-family-kit adopt-plan capability ${sub} ...`,
+      };
+    }
+    return {
+      suggestedCommand: "check capability",
+      hint: "已收敛至四大顶层命令；只读查询请改用: skill-family-kit check capability [list]（修改请改用: skill-family-kit adopt-plan capability <add|remove> ...）",
+    };
+  }
+  if (cmd === "host-sim") {
+    return {
+      suggestedCommand: "check host-sim",
+      hint: "已收敛至四大顶层命令；请改用: skill-family-kit check host-sim <run|materialize-shims|list-hosts> ...",
+    };
+  }
+  if (cmd === "check-shadowing" || cmd === "shadowing") {
+    return {
+      suggestedCommand: "check shadowing",
+      hint: "已收敛至四大顶层命令；请改用: skill-family-kit check shadowing ...",
+    };
+  }
+  return null;
+}
+
 /** Intake rejection: a name outside the frozen four-command vocabulary. */
-export function unknownCommandError(name) {
+export function unknownCommandError(name, restArgs = []) {
+  const cmd = String(name);
+  const migration = describeLegacyCommandMigration(cmd, restArgs);
+  if (migration) {
+    return new KitError(
+      "SFC2002",
+      `unknown command: ${cmd} (${migration.hint})`,
+      { kind: "unknown-command", command: cmd, suggestedCommand: migration.suggestedCommand },
+    );
+  }
   return new KitError(
     "SFC2002",
-    `unknown command: ${String(name)} (the kit has exactly four top-level commands)`,
-    { kind: "unknown-command", command: String(name) },
+    `unknown command: ${cmd} (the kit has exactly four top-level commands: scaffold | adopt-plan | projection | check)`,
+    { kind: "unknown-command", command: cmd },
   );
 }
 

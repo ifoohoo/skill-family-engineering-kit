@@ -1,3 +1,6 @@
+// @feature FND-FR-026
+// @feature FND-FR-027
+// @design FND-DES-035
 import { lstat, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";

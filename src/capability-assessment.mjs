@@ -1,3 +1,6 @@
+// @feature FND-FR-018
+// @decision FND-ADR-023
+// @design FND-DES-016
 import { lstat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

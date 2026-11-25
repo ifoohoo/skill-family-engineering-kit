@@ -1,3 +1,6 @@
+// @feature FND-FR-018
+// @decision FND-ADR-023
+// @design FND-DES-015
 import { lstat, mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { validateDocument } from "skill-family-contracts";

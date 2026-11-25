@@ -1,3 +1,6 @@
+// @feature FND-FR-016
+// @decision FND-ADR-025
+// @design FND-DES-020
 import { CONTRACTS_VERSION, ContractsError, digestDocument, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { readFile } from "node:fs/promises";
 import { classifyPathInput, digestBytes } from "skill-family-harness-node";

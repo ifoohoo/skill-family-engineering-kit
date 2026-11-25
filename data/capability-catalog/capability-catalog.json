@@ -1276,11 +1276,14 @@
     "profiles/hosts/registry.json",
     "profiles/hosts/claude/host-descriptor.json",
     "profiles/hosts/codex/host-descriptor.json",
+    "profiles/hosts/cursor/host-descriptor.json",
     "profiles/hosts/qoder/host-descriptor.json",
     "profiles/hosts/kimi-code/host-descriptor.json",
     "profiles/hosts/workbuddy/host-descriptor.json",
     "profiles/hosts/codebuddy/host-descriptor.json",
-    "profiles/hosts/deepseek-harness/host-descriptor.json"
+    "profiles/hosts/deepseek-harness/host-descriptor.json",
+    "profiles/hosts/antigravity/host-descriptor.json",
+    "profiles/hosts/grok/host-descriptor.json"
    ],
    "positiveTestRefs": [
     "packages/skill-family-engineering-kit/test/host.test.mjs"
@@ -1886,6 +1889,245 @@
     "packages/skill-family-harness-node/test/file-set-recovery.test.mjs",
     "packages/skill-family-harness-node/test/file-set-recovery-crash.test.mjs",
     "packages/skill-family-contracts/test/file-set-contract.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.kit.internal-dependency-resolution",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "candidate",
+   "adoptionScopes": [
+    "contracts",
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "parseExactSemver (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "compareExactSemver (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "validateInternalDependencySpec (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "validateInternalDependencyMap (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "validateInternalDependencyResolutionReceipt (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "describeInternalDependencyResolutionReceipt (packages/skill-family-contracts/src/internal-dependencies.mjs)",
+    "resolveInternalDependencies (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "bumpInternalDependencyMin (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "checkSupportWorkspaceDependencies (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "describePublishTopology (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "linkWorkspaceDependencies (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "unlinkWorkspaceDependencies (packages/skill-family-engineering-kit/src/internal-dependencies.mjs)",
+    "skill-family-kit check deps (packages/skill-family-engineering-kit/src/cli.mjs)",
+    "skill-family-kit adopt-plan deps (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-contracts/src/internal-dependencies.mjs",
+    "packages/skill-family-contracts/src/schemas/project-manifest.schema.json",
+    "packages/skill-family-contracts/src/schemas/internal-dependency-resolution-receipt.schema.json",
+    "packages/skill-family-engineering-kit/src/internal-dependencies.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-contracts/test/internal-dependencies.test.mjs",
+    "packages/skill-family-engineering-kit/test/internal-dependencies.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-contracts/test/internal-dependencies.test.mjs",
+    "packages/skill-family-engineering-kit/test/internal-dependencies.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.kit.skill-shadowing-check",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "candidate",
+   "adoptionScopes": [
+    "engineering-kit",
+    "profile"
+   ],
+   "entrypoints": [
+    "checkSkillShadowing (packages/skill-family-engineering-kit/src/skill-shadowing-check.mjs)",
+    "skill-family-kit check shadowing (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/skill-shadowing-check.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs",
+    "profiles/hosts/registry.json",
+    "profiles/hosts/antigravity/host-descriptor.json",
+    "profiles/hosts/grok/host-descriptor.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/skill-shadowing-check.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/skill-shadowing-check.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.kit.runtime-monitor",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "candidate",
+   "adoptionScopes": [
+    "harness",
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "collectMonitorSnapshot (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "registerMonitorTarget (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "createRuntimeMonitorServer (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "ensureRuntimeMonitor (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "serveRuntimeMonitorViaStudio (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "probeRuntimeMonitorHealth (packages/skill-family-engineering-kit/src/runtime-monitor.mjs)",
+    "skill-family-kit check monitor (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/runtime-monitor.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/runtime-monitor.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/runtime-monitor.test.mjs"
+   ],
+   "migration": "none",
+   "promotionPolicy": "consumer-transparent"
+  },
+  {
+   "id": "foundation.contracts.task-handoff-envelope",
+   "package": "skill-family-contracts",
+   "layer": "contracts",
+   "since": "0.39.0",
+   "stability": "stable",
+   "adoptionScopes": [
+    "contracts"
+   ],
+   "entrypoints": [
+    "validateTaskHandoffEnvelope (packages/skill-family-contracts/src/task-handoff-envelope.mjs)",
+    "createTaskHandoffEnvelope (packages/skill-family-contracts/src/task-handoff-envelope.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-contracts/src/task-handoff-envelope.mjs",
+    "packages/skill-family-contracts/src/schemas/task-handoff-envelope.schema.json"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-contracts/test/task-handoff-envelope.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-contracts/test/task-handoff-envelope.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.adopt-apply",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "stable",
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "applyAdoption (packages/skill-family-engineering-kit/src/adopt-apply.mjs)",
+    "skill-family-kit adopt-plan apply (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/adopt-apply.mjs",
+    "packages/skill-family-engineering-kit/src/adopt-plan.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.capability-declaration",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "stable",
+   "adoptionScopes": [
+    "contracts",
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "listAdoptedCapabilities (packages/skill-family-engineering-kit/src/capability-cli.mjs)",
+    "addAdoptedCapability (packages/skill-family-engineering-kit/src/capability-cli.mjs)",
+    "removeAdoptedCapability (packages/skill-family-engineering-kit/src/capability-cli.mjs)",
+    "skill-family-kit adopt-plan capability (packages/skill-family-engineering-kit/src/cli.mjs)",
+    "skill-family-kit check capability (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/capability-cli.mjs",
+    "packages/skill-family-contracts/src/schemas/project-manifest.schema.json",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.prereqs-check",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "stable",
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "checkPrereqs (packages/skill-family-engineering-kit/src/prereqs-check.mjs)",
+    "satisfiesNodeEngineRange (packages/skill-family-engineering-kit/src/prereqs-check.mjs)",
+    "skill-family-kit check prereqs (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/prereqs-check.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/wave7-capabilities.test.mjs"
+   ]
+  },
+  {
+   "id": "foundation.kit.host-simulator",
+   "package": "skill-family-engineering-kit",
+   "layer": "engineering-kit",
+   "since": "0.39.0",
+   "stability": "candidate",
+   "adoptionScopes": [
+    "engineering-kit"
+   ],
+   "entrypoints": [
+    "runSimulatedHostMatrix (packages/skill-family-engineering-kit/src/host-simulator.mjs)",
+    "materializeSimulatedHostShims (packages/skill-family-engineering-kit/src/host-simulator.mjs)",
+    "createSimulatedHostEnvironment (packages/skill-family-engineering-kit/src/host-simulator.mjs)",
+    "listSimulatedHosts (packages/skill-family-engineering-kit/src/host-simulator.mjs)",
+    "skill-family-kit check host-sim (packages/skill-family-engineering-kit/src/cli.mjs)"
+   ],
+   "sourceRefs": [
+    "packages/skill-family-engineering-kit/src/host-simulator.mjs",
+    "packages/skill-family-engineering-kit/src/host-verification-drivers.mjs",
+    "packages/skill-family-engineering-kit/src/cli.mjs"
+   ],
+   "positiveTestRefs": [
+    "packages/skill-family-engineering-kit/test/host-simulator.test.mjs"
+   ],
+   "negativeTestRefs": [
+    "packages/skill-family-engineering-kit/test/host-simulator.test.mjs"
    ],
    "migration": "none",
    "promotionPolicy": "consumer-transparent"

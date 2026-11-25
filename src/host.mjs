@@ -1,3 +1,7 @@
+// @feature FND-FR-001
+// @feature FND-FR-008
+// @decision FND-ADR-003
+// @design FND-DES-010
 import path from "node:path";
 import { canonicalJson, digestDocument, validateDocument } from "skill-family-contracts";
 import {
@@ -41,6 +45,9 @@ function validateContract(document, schemaId, message) {
 function selectCategory(descriptor, pathCategoryId) {
   const category = descriptor.pathCategories.find((candidate) => candidate.id === pathCategoryId);
   if (!category) throw invalidParamsError(`host ${descriptor.hostId} does not declare path category ${String(pathCategoryId)}`);
+  if (category.role && category.role !== "skill-root") {
+    throw invalidParamsError(`host ${descriptor.hostId} path category ${String(pathCategoryId)} has role ${category.role}; skill-root is required`);
+  }
   return { id: category.id, scope: category.scope, anchor: category.anchor, relPath: category.relPath };
 }
 

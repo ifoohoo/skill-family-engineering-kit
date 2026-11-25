@@ -1,3 +1,7 @@
+// @feature FND-FR-011
+// @feature FND-FR-020
+// @decision FND-ADR-020
+// @design FND-DES-013
 import path from "node:path";
 
 export const CONTROLLED_NATIVE_LIFECYCLE_FIXTURE_PROTOCOL = "skill-family.controlled-native-lifecycle-fixture/v1";

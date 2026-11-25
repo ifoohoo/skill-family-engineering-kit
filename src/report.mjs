@@ -1,3 +1,6 @@
+// @feature FND-FR-004
+// @decision FND-ADR-005
+// @design FND-DES-004
 import process from "node:process";
 import { lstat, readFile, realpath, rm, stat } from "node:fs/promises";
 import path from "node:path";

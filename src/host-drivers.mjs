@@ -1,3 +1,7 @@
+// @feature FND-FR-010
+// @feature FND-FR-011
+// @decision FND-ADR-019
+// @design FND-DES-012
 import path from "node:path";
 import { probeVersionVector } from "skill-family-harness-node";
 

@@ -1,3 +1,6 @@
+// @feature FND-FR-005
+// @decision FND-ADR-013
+// @design FND-DES-002
 import { CONTRACTS_VERSION, findSchemaByObject } from "skill-family-contracts";
 import {
   computeResourceClosure,

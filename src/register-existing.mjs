@@ -1,3 +1,6 @@
+// @feature FND-FR-037
+// @decision FND-ADR-038
+// @design FND-DES-047
 import { lstat } from "node:fs/promises";
 import { CONTRACTS_VERSION, ContractsError, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { classifyPathInput, digestBytes, publishFileExclusive, readFileContained, resolveContained } from "skill-family-harness-node";

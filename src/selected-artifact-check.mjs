@@ -1,3 +1,5 @@
+// @feature FND-FR-030
+// @design FND-DES-040
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { compileSchema, ContractsError, findSchemaByObject, SUPPORTED_DIALECTS, validateDocument } from "skill-family-contracts";

@@ -1,0 +1,17 @@
+version: 0.39.1
+date: 2026-11-25
+locales:
+  zh-CN:
+    summary: 随 Foundation 0.39.1 锁步补丁发布：skill-family-kit 支持交互式终端（TTY）在未传 --json/--format 时默认输出中文可读报告，管道与非 TTY 自动化调用保持默认确定性 JSON；同时退役随包分发的旧 MkDocs 静态站资产，将包主页与双语 README 在线文档入口切换至独立公开文档站 ifoohoo/skill-family-foundation-site。
+    upgradeNotes: 五个发布单元同步采用 0.39.1；非 TTY 子进程与显式 --json/--format json 调用输出保持不变，交互式终端需机器解析 JSON 时请显式传入 --json。
+    changes:
+      changed:
+        - check deps、check prereqs、check capability、check host-sim run、check shadowing、adopt-plan apply 与 adopt-plan capability 在交互式终端未指定 --json/--format 时默认输出中文可读汇总，非 TTY 环境与 --json 保持确定性 JSON 输出。
+        - 退役旧 Python MkDocs 随包站点目录映射与第三方前端资产，包主页与双语 README 在线文档入口切换至 https://ifoohoo.github.io/skill-family-foundation-site/。
+  en:
+    summary: "Lockstep 0.39.1 patch release: skill-family-kit diagnostic and onboarding subcommands now default to Chinese human-readable text in interactive TTY terminals when neither --json nor --format is passed while keeping deterministic JSON in non-TTY pipes and automation; retires legacy bundled MkDocs site assets in favor of the standalone ifoohoo/skill-family-foundation-site documentation repository."
+    upgradeNotes: "Adopt all 0.39.1 release units in lockstep. Non-TTY subprocesses and explicit --json / --format json invocations keep identical JSON output; pass --json explicitly when capturing JSON in an interactive terminal."
+    changes:
+      changed:
+        - Defaults check deps, check prereqs, check capability, check host-sim run, check shadowing, adopt-plan apply, and adopt-plan capability to Chinese human-readable output on interactive TTY stdout when --json and --format are omitted, preserving deterministic JSON in non-TTY environments.
+        - Retires legacy bundled MkDocs site assets and points package homepage and bilingual README documentation links to https://ifoohoo.github.io/skill-family-foundation-site/.

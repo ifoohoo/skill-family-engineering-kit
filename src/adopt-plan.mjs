@@ -1,3 +1,6 @@
+// @feature FND-FR-005
+// @decision FND-ADR-013
+// @design FND-DES-006
 import path from "node:path";
 import {
   CONTRACTS_VERSION,

@@ -1,5 +1,21 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.39.1 locale=zh-CN baseline=sha256:a71c4b741d56bb58a049443529135321ca6e33e17aae569eed1d82e07af4a5c3 -->
+## [0.39.1] - 2026-11-25
+
+随 Foundation 0.39.1 锁步补丁发布：skill-family-kit 支持交互式终端（TTY）在未传 --json/--format 时默认输出中文可读报告，管道与非 TTY 自动化调用保持默认确定性 JSON；同时退役随包分发的旧 MkDocs 静态站资产，将包主页与双语 README 在线文档入口切换至独立公开文档站 ifoohoo/skill-family-foundation-site。
+
+### 变更
+
+- check deps、check prereqs、check capability、check host-sim run、check shadowing、adopt-plan apply 与 adopt-plan capability 在交互式终端未指定 --json/--format 时默认输出中文可读汇总，非 TTY 环境与 --json 保持确定性 JSON 输出。
+- 退役旧 Python MkDocs 随包站点目录映射与第三方前端资产，包主页与双语 README 在线文档入口切换至 https://ifoohoo.github.io/skill-family-foundation-site/。
+
+### 升级说明
+
+五个发布单元同步采用 0.39.1；非 TTY 子进程与显式 --json/--format json 调用输出保持不变，交互式终端需机器解析 JSON 时请显式传入 --json。
+<!-- release-skill:changelog:end version=0.39.1 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.39.0 locale=zh-CN baseline=sha256:4c05e1fb5dc6d331ae75fe5fb9d9ce82b1ef3084e2d0cd6c7a9acb076645fc4b -->
 ## [0.39.0] - 2026-11-06
 

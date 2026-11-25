@@ -2,27 +2,27 @@
 <!-- release-skill:external-write-boundary -->
 
 > English version: [README.md](./README.md)
+> 在线文档站：<https://ifoohoo.github.io/skill-family-foundation-site/>
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.39.0 -->
+<!-- release-skill:release-version: 0.39.1 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.39.0** (2026-11-06)
+**0.39.1** (2026-11-25)
 
-Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
-原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
+随 Foundation 0.39.1 锁步补丁发布：skill-family-kit 支持交互式终端（TTY）在未传 --json/--format 时默认输出中文可读报告，管道与非 TTY 自动化调用保持默认确定性 JSON；同时退役随包分发的旧 MkDocs 静态站资产，将包主页与双语 README 在线文档入口切换至独立公开文档站 ifoohoo/skill-family-foundation-site。
 
 **变更**
 
-- Engineering Kit 新增精确运行产物登记功能。调用者在使用 runRelock、relockAction 或 check relock 时，显式指定 registrationClass="artifacts"，即可登记以项目根目录为起点的字面文件或目录路径，路径可尚未创建。登记入口保留其他分类及受管锁的元数据。当重复登记相同路径项时，不写入新文件，也不增加 lockVersion。若路径越界、存在符号链接、与已有源或持久锁冲突、无法与手写通配规则证明分离，或已有受管文件与锁摘要不一致，入口将在写入前拒绝操作。登记行为不修改 .gitignore 文件。若登记文件已写入但受管锁写入失败，系统按原有机制报告实际状态。
-  原作者与改编贡献者由项目自定义许可 Profile 分别声明为 `author` 与 `contributor`，加载路径为 `--profiles-root`。CC-BY-NC-SA-4.0 的 `noticeRequired` 为 `true`，若原始版权年份无法证实，则 `copyrightYear` 显式设为 `null`。MIT 与 Apache 许可仍要求整数年份。生成的完整原样 CC 法律正文写入 `LICENSE`，`NOTICE` 文件保留每位声明者的姓名、角色、CC 标识和指向同包 `./LICENSE` 的相对引用，不将贡献者自动视为版权权利人。项目已有的上游 URL、历史署名与改编说明应原样保留，并由维护者核对。检查器核对标准全文、每位署名及许可引用，不联网判断链接有效性或许可适用性。
+- check deps、check prereqs、check capability、check host-sim run、check shadowing、adopt-plan apply 与 adopt-plan capability 在交互式终端未指定 --json/--format 时默认输出中文可读汇总，非 TTY 环境与 --json 保持确定性 JSON 输出。
+- 退役旧 Python MkDocs 随包站点目录映射与第三方前端资产，包主页与双语 README 在线文档入口切换至 https://ifoohoo.github.io/skill-family-foundation-site/。
 
 **升级说明**
 
-四个发行单元同步采用0.39.0。新入口须核实精确正式包；旧默认登记、MIT及Apache路径保持兼容。
+五个发布单元同步采用 0.39.1；非 TTY 子进程与显式 --json/--format json 调用输出保持不变，交互式终端需机器解析 JSON 时请显式传入 --json。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -63,7 +63,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-在正式发布前，若需对本地 0.39.0 源码候选进行已授权的开发验证，可使用以下方式。为确保本地验证环境使用与工作树一致的 0.39.0 版本，避免误用已发布的旧版 0.38.0，需执行以下命令打包并构建隔离的验证环境。
+在正式发布前，若需对本地 0.39.1 源码候选进行已授权的开发验证，可使用以下方式。为确保本地验证环境使用与工作树一致的 0.39.1 版本，避免误用已发布的旧版 0.39.0，需执行以下命令打包并构建隔离的验证环境。
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -71,21 +71,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.0.tgz" "$pack_dir/skill-family-harness-node-0.39.0.tgz" "$pack_dir/skill-family-engineering-kit-0.39.0.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.1.tgz" "$pack_dir/skill-family-harness-node-0.39.1.tgz" "$pack_dir/skill-family-engineering-kit-0.39.1.tgz")
 ```
 
-当精确版本 0.39.0 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行。
+当精确版本 0.39.1 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行。
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.39.0
-npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.39.1
+npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit check --root <repo>
 ```
 
-各命令分别用于查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.39.0 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.39.0 -- skill-family-kit --help` 查看帮助。
+各命令分别用于查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.39.1 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 
@@ -389,10 +389,9 @@ Foundation 本身不发起网络请求，但绑定的 executable 仍可能联网
 
 ## 深入文档入口
 
-- 架构边界与路由：[架构说明](https://ifoohoo.github.io/skill-family-engineering-kit/architecture/)、[智能体架构路由](https://ifoohoo.github.io/skill-family-engineering-kit/agents/architecture-routing/)
-- 能力目录：[capability-catalog.json](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json)
-- 采用与迁移：[迁移指南](https://ifoohoo.github.io/skill-family-engineering-kit/migration/)
-- 副作用矩阵：[失败与副作用矩阵](https://ifoohoo.github.io/skill-family-engineering-kit/reference/failure-and-side-effect-matrix/)
+- 在线文档站：[Skill Family Foundation 公开文档站](https://ifoohoo.github.io/skill-family-foundation-site/)
+- 命令与能力总览：[CLI 命令参考](https://ifoohoo.github.io/skill-family-foundation-site/cli-reference.html)、[能力总览](https://ifoohoo.github.io/skill-family-foundation-site/capabilities.html)
+- 接入与故障排查：[五分钟上手](https://ifoohoo.github.io/skill-family-foundation-site/quickstart.html)、[常见故障排查](https://ifoohoo.github.io/skill-family-foundation-site/troubleshooting.html)
 
 ## Skill 文本声明与原生投影检查
 
@@ -686,6 +685,13 @@ skill-family-kit check native-projections --root <dir> --selection <rel> --json
 - `foundation.kit.identity-check`：身份漂移与 Profile 一致性检查。
 - `foundation.kit.cli`：四命令分派与变更旗标入口拒绝。
 - `foundation.kit.quickstart-profile-candidate`：锁定精确版本后构建确定的 Quickstart 投影 manifest 包。
+- `foundation.kit.internal-dependency-resolution`：按固定主版本轨道（`0.x` 或 `N.x`）与最低可用版本自动选择已验证最高兼容内部依赖版本、输出自绑定会话收据（`check deps resolve`）、输出第 0–3 层拓扑与核查 `support` 层滞后（`check deps --topology` / `--workspace-root`），以及通过 `adopt-plan deps` 执行受控下限抬升和本地联调覆盖往返。
+- `foundation.kit.skill-shadowing-check`：基于十宿主注册表按 `project > plugin > user` 加载优先级只读排查同名技能遮蔽冲突并给出修复建议（`check shadowing`）。
+- `foundation.kit.runtime-monitor`：零侵入只读观测 `state-store` 哈希链、`token-lock` 排他锁、`supervise-process` 子进程轨迹与多格式执行计划，提供无界面纯 JSON 快照/登记底座（`check monitor <serve|ensure|register|snapshot>`）并轻量委托外部 Studio 可视化工作台启动界面。
+- `foundation.kit.adopt-apply`：复用 `adopt-plan` 探测结果执行存量仓库无损引导接入（`adopt-plan apply`），绝不覆盖或删除任何已有业务文件，按需补齐缺失的 `skill-family.project-manifest.json` 与目录骨架。
+- `foundation.kit.capability-declaration`：按需能力声明与安全解绑（写操作归口 `adopt-plan capability <list|add|remove>`，只读查询使用 `check capability list`），移除声明时只读扫描宿主投影、配置与源码中的残留引用而不盲删文件。
+- `foundation.kit.prereqs-check`：运行期前置环境体检、会话内旧 `SKILL.md` 摘要漂移检测及业务仓温和基线提示（`check prereqs`），检查环境变量时严守零值回显边界。
+- `foundation.kit.host-simulator`：无需安装各家宿主 CLI、无需在线登录的十大规范宿主本地确定性模拟器与八阶段生命周期验证夹具（`check host-sim <run|materialize-shims|list-hosts>`），产出收据强制标记 `executionMode: "foundation-simulated-fixture"`。
 
 ### Required inputs
 
@@ -721,7 +727,7 @@ skill-family-kit check native-projections --root <dir> --selection <rel> --json
 
 ### Machine-readable sources
 
-- 公开能力目录：[`capability-catalog.json`](https://ifoohoo.github.io/skill-family-engineering-kit/agents/capability-catalog.json)（`foundation.kit.*` 条目）。
+- 公开能力目录：`skill-family-engineering-kit/data/capability-catalog/capability-catalog.json`（`foundation.kit.*` 条目；在线浏览见[能力总览](https://ifoohoo.github.io/skill-family-foundation-site/capabilities.html)）。
 - 包内源：`src/*.mjs`。
 - 包内 Candidate 源：`candidate/*`；规范公共导入：`skill-family-engineering-kit/quickstart-profile`、`/adoption` 与 `/skill-naming`；历史迁移别名：`skill-family-engineering-kit/candidate/quickstart-profile`。
 <!-- agent-quick-reference:end -->
@@ -738,7 +744,7 @@ skill-family-kit check native-projections --root <dir> --selection <rel> --json
 
 Foundation 0.28.0 面向 Windows 11 x64、本地 NTFS 与普通用户，采用 Contracts 1.21.0、56 个登记对象。三个固定世代对象保持 candidate，其他成熟度维持原登记。官方 npm 包 `skill-family-contracts@0.27.1` 仍承载 `contractsVersion=1.20.0` 与 53 个对象。精确版本的远端可用性须由正式发布凭据核实，本节范围说明不证明真实宿主资格。
 
-`skill-family-engineering-kit` 四命令保持不变，安装闭包内预构建 `win32-x64` 二进制，无需本地编译器。启动需使用 npm 的 `bin/npm-cli.js` 或 pnpm 的 `bin/pnpm.cjs`，版本必须精确匹配。真实宿主资格需额外提供 driver、版本、认证与业务证据，本地自测结果不构成通过。详见 [API 文档](https://ifoohoo.github.io/skill-family-engineering-kit/reference/api/harness/)。
+`skill-family-engineering-kit` 四命令保持不变，安装闭包内预构建 `win32-x64` 二进制，无需本地编译器。启动需使用 npm 的 `bin/npm-cli.js` 或 pnpm 的 `bin/pnpm.cjs`，版本必须精确匹配。真实宿主资格需额外提供 driver、版本、认证与业务证据，本地自测结果不构成通过。详见 [CLI 命令参考](https://ifoohoo.github.io/skill-family-foundation-site/cli-reference.html) 与 [宿主支持矩阵](https://ifoohoo.github.io/skill-family-foundation-site/host-matrix.html)。
 
 ## 精确运行产物与第三方许可
 

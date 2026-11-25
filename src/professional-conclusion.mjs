@@ -1,3 +1,6 @@
+// @feature FND-FR-023
+// @decision FND-ADR-031
+// @design FND-DES-031
 import path from "node:path";
 import { findSchemaByObject, validateDocument, ContractsError } from "skill-family-contracts";
 import { publishFileExclusive, readFileStrict, resolveContained } from "skill-family-harness-node";

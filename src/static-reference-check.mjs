@@ -1,3 +1,5 @@
+// @feature FND-FR-029
+// @design FND-DES-039
 import path from "node:path";
 import { ContractsError, findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { computeResourceClosure, readFileStrict, resolveContained } from "skill-family-harness-node";

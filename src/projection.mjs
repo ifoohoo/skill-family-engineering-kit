@@ -1,3 +1,7 @@
+// @feature FND-FR-019
+// @feature FND-FR-025
+// @decision FND-ADR-028
+// @design FND-DES-027
 import {
   chmod,
   lstat,

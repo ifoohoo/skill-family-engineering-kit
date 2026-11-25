@@ -1,3 +1,6 @@
+// @feature FND-FR-023
+// @decision FND-ADR-031
+// @design FND-DES-031
 import { findSchemaByObject, validateDocument } from "skill-family-contracts";
 import { readFileStrict } from "skill-family-harness-node";
 import { PROJECT_MANIFEST_PATH } from "./skeleton.mjs";
