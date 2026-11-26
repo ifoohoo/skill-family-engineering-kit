@@ -10,8 +10,8 @@
   "dependencies": {
     "@lezer/python": "1.1.18",
     "acorn": "8.18.0",
-    "skill-family-contracts": "0.39.1",
-    "skill-family-harness-node": "0.39.1",
+    "skill-family-contracts": "0.39.2",
+    "skill-family-harness-node": "0.39.2",
     "yaml": "2.9.0"
   },
   "description": "Build-time scaffold, adoption planning, projection, and checks.",
@@ -54,7 +54,7 @@
     "url": "https://github.com/ifoohoo/skill-family-engineering-kit.git"
   },
   "type": "module",
-  "version": "0.39.1",
+  "version": "0.39.2",
   "scripts": {
     "check": "node --test",
     "test": "node --test"

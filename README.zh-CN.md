@@ -6,23 +6,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.39.1 -->
+<!-- release-skill:release-version: 0.39.2 -->
 
 开发与 CI 阶段使用的工程工具包。**恰好四个**顶层命令，没有第五个：
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.39.1** (2026-11-25)
+**0.39.2** (2026-11-26)
 
-随 Foundation 0.39.1 锁步补丁发布：skill-family-kit 支持交互式终端（TTY）在未传 --json/--format 时默认输出中文可读报告，管道与非 TTY 自动化调用保持默认确定性 JSON；同时退役随包分发的旧 MkDocs 静态站资产，将包主页与双语 README 在线文档入口切换至独立公开文档站 ifoohoo/skill-family-foundation-site。
+随 Foundation 0.39.2 锁步更新：离线 Quickstart Profile Bundle 投影新增纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 三项 Foundation Schema 的预编译校验器。
+
+**新增**
+
+- 离线 Quickstart Profile Bundle 生成器纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 的独立校验投影。
 
 **变更**
 
-- check deps、check prereqs、check capability、check host-sim run、check shadowing、adopt-plan apply 与 adopt-plan capability 在交互式终端未指定 --json/--format 时默认输出中文可读汇总，非 TTY 环境与 --json 保持确定性 JSON 输出。
-- 退役旧 Python MkDocs 随包站点目录映射与第三方前端资产，包主页与双语 README 在线文档入口切换至 https://ifoohoo.github.io/skill-family-foundation-site/。
+- 锁步对齐 0.39.2 发布版本坐标。
 
 **升级说明**
 
-五个发布单元同步采用 0.39.1；非 TTY 子进程与显式 --json/--format json 调用输出保持不变，交互式终端需机器解析 JSON 时请显式传入 --json。
+与其余 0.39.2 发布单元锁步采用；四个顶层 CLI 命令边界保持不变。
 <!-- release-skill:managed:end id=latest-release -->
 
 ## 治理检查（0.22.0）
@@ -63,7 +66,7 @@ Kit 是「工程阶段」层，依赖 Harness 与 Contracts。它只做四件事
 
 ## 安装和最小示例
 
-在正式发布前，若需对本地 0.39.1 源码候选进行已授权的开发验证，可使用以下方式。为确保本地验证环境使用与工作树一致的 0.39.1 版本，避免误用已发布的旧版 0.39.0，需执行以下命令打包并构建隔离的验证环境。
+在正式发布前，若需对本地 0.39.2 源码候选进行已授权的开发验证，可使用以下方式。为确保本地验证环境使用与工作树一致的 0.39.2 版本，避免误用已发布的旧版 0.39.0，需执行以下命令打包并构建隔离的验证环境。
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -71,21 +74,21 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.1.tgz" "$pack_dir/skill-family-harness-node-0.39.1.tgz" "$pack_dir/skill-family-engineering-kit-0.39.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.2.tgz" "$pack_dir/skill-family-harness-node-0.39.2.tgz" "$pack_dir/skill-family-engineering-kit-0.39.2.tgz")
 ```
 
-当精确版本 0.39.1 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行。
+当精确版本 0.39.2 已在公共 registry 中正式可用时，可直接通过以下命令进行安装与执行。
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.39.1
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.39.2
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale zh-CN --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit check --root <repo>
 ```
 
-各命令分别用于查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.39.1 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help` 查看帮助。
+各命令分别用于查看工具帮助信息、生成项目骨架、执行只读盘点以识别项目能力与配置、生成受管事实投影、执行诊断检查以发现工程配置中的不一致项。在 0.39.2 正式可用后，也可不预先安装 Kit，直接使用 `npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit --help` 查看帮助。
 
 ### 工程声明调用（自 0.24.0 提供）
 

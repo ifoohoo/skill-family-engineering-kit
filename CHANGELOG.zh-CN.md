@@ -1,5 +1,24 @@
 # 变更日志
 
+<!-- release-skill:changelog:start version=0.39.2 locale=zh-CN baseline=sha256:a889926fcb7dbaab53bf3b74a48e256448c08e222b0f7af5e44b31871f70bf35 -->
+## [0.39.2] - 2026-11-26
+
+随 Foundation 0.39.2 锁步更新：离线 Quickstart Profile Bundle 投影新增纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 三项 Foundation Schema 的预编译校验器。
+
+### 新增
+
+- 离线 Quickstart Profile Bundle 生成器纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 的独立校验投影。
+
+### 变更
+
+- 锁步对齐 0.39.2 发布版本坐标。
+
+### 升级说明
+
+与其余 0.39.2 发布单元锁步采用；四个顶层 CLI 命令边界保持不变。
+<!-- release-skill:changelog:end version=0.39.2 locale=zh-CN -->
+
+
 <!-- release-skill:changelog:start version=0.39.1 locale=zh-CN baseline=sha256:a71c4b741d56bb58a049443529135321ca6e33e17aae569eed1d82e07af4a5c3 -->
 ## [0.39.1] - 2026-11-25
 

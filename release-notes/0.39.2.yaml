@@ -1,0 +1,19 @@
+version: 0.39.2
+date: 2026-11-26
+locales:
+  zh-CN:
+    summary: 随 Foundation 0.39.2 锁步更新：离线 Quickstart Profile Bundle 投影新增纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 三项 Foundation Schema 的预编译校验器。
+    upgradeNotes: 与其余 0.39.2 发布单元锁步采用；四个顶层 CLI 命令边界保持不变。
+    changes:
+      added:
+        - 离线 Quickstart Profile Bundle 生成器纳入 professional-conclusion、session-trace-bundle 与 orchestration-blueprint 的独立校验投影。
+      changed:
+        - 锁步对齐 0.39.2 发布版本坐标。
+  en:
+    summary: Lockstep 0.39.2 update adding precompiled standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint to the offline Quickstart Profile Bundle builder.
+    upgradeNotes: Adopt in lockstep with all 0.39.2 units; the four top-level CLI commands remain unchanged.
+    changes:
+      added:
+        - Projects standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint into offline Quickstart Profile Bundles.
+      changed:
+        - Advances package version coordinate to 0.39.2 in lockstep.

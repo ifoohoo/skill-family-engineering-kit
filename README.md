@@ -5,23 +5,26 @@
 
 # skill-family-engineering-kit
 
-<!-- release-skill:release-version: 0.39.1 -->
+<!-- release-skill:release-version: 0.39.2 -->
 
 An engineering toolkit used in development and CI. There are **exactly four** top-level commands, and no fifth:
 
 <!-- release-skill:managed:start id=latest-release -->
-**0.39.1** (2026-11-25)
+**0.39.2** (2026-11-26)
 
-Lockstep 0.39.1 patch release: skill-family-kit diagnostic and onboarding subcommands now default to Chinese human-readable text in interactive TTY terminals when neither --json nor --format is passed while keeping deterministic JSON in non-TTY pipes and automation; retires legacy bundled MkDocs site assets in favor of the standalone ifoohoo/skill-family-foundation-site documentation repository.
+Lockstep 0.39.2 update adding precompiled standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint to the offline Quickstart Profile Bundle builder.
+
+**Added**
+
+- Projects standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint into offline Quickstart Profile Bundles.
 
 **Changed**
 
-- Defaults check deps, check prereqs, check capability, check host-sim run, check shadowing, adopt-plan apply, and adopt-plan capability to Chinese human-readable output on interactive TTY stdout when --json and --format are omitted, preserving deterministic JSON in non-TTY environments.
-- Retires legacy bundled MkDocs site assets and points package homepage and bilingual README documentation links to https://ifoohoo.github.io/skill-family-foundation-site/.
+- Advances package version coordinate to 0.39.2 in lockstep.
 
 **Upgrade Notes**
 
-Adopt all 0.39.1 release units in lockstep. Non-TTY subprocesses and explicit --json / --format json invocations keep identical JSON output; pass --json explicitly when capturing JSON in an interactive terminal.
+Adopt in lockstep with all 0.39.2 units; the four top-level CLI commands remain unchanged.
 <!-- release-skill:managed:end id=latest-release -->
 
 ## Governance Check (0.22.0)
@@ -64,7 +67,7 @@ Kit is the "engineering stage" layer, depending on the Harness and Contracts. It
 
 ## Installation and Minimal Example
 
-Before the formal publication of version 0.39.1, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.39.0.
+Before the formal publication of version 0.39.2, authorized development verification may use a local source candidate. This validation is conditional and does not imply current registry availability. The following steps demonstrate how to package and test the candidate locally using tarballs, ensuring no accidental selection of older releases such as the previously published 0.39.0.
 
 ```sh
 pack_dir="$(mktemp -d)"
@@ -72,23 +75,23 @@ pack_dir="$(mktemp -d)"
 (cd packages/skill-family-harness-node && pnpm pack --pack-destination "$pack_dir")
 (cd packages/skill-family-engineering-kit && pnpm pack --pack-destination "$pack_dir")
 mkdir "$pack_dir/consumer" && (cd "$pack_dir/consumer" && npm init -y)
-(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.1.tgz" "$pack_dir/skill-family-harness-node-0.39.1.tgz" "$pack_dir/skill-family-engineering-kit-0.39.1.tgz")
+(cd "$pack_dir/consumer" && npm install "$pack_dir/skill-family-contracts-0.39.2.tgz" "$pack_dir/skill-family-harness-node-0.39.2.tgz" "$pack_dir/skill-family-engineering-kit-0.39.2.tgz")
 ```
 
 This approach validates the working-tree candidate in a fresh consumer project. Third-party dependencies may still be downloaded from the registry.
 
-Only after version 0.39.1 is formally available in the public registry do the following installation and execution examples apply:
+Only after version 0.39.2 is formally available in the public registry do the following installation and execution examples apply:
 
 ```sh
-npm install --save-dev skill-family-engineering-kit@0.39.1
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit projection --root <repo>
-npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit check --root <repo>
+npm install --save-dev skill-family-engineering-kit@0.39.2
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit --help
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit scaffold --root <empty-dir> --project-id my-project
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit adopt-plan --root <repo> --list-capabilities --all --scope all --locale en --uses ./uses.json
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit projection --root <repo>
+npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit check --root <repo>
 ```
 
-These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.39.1 -- skill-family-kit --help`.
+These commands demonstrate help output, skeleton generation, read-only inventory listing, managed-fact projection, and diagnostics for engineering inconsistencies. Once the exact registry version is published, the help command can be invoked without pre-installing the Kit in the target project: `npm exec --package=skill-family-engineering-kit@0.39.2 -- skill-family-kit --help`.
 
 ### Engineering declarations (available since 0.24.0)
 

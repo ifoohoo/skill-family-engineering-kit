@@ -81,6 +81,8 @@ const ADDITIONAL_FOUNDATION_SCHEMA_FILES = Object.freeze([
   ["schema-validation-batch-result.schema.json", "candidate/foundation-mechanisms/schema-validation-batch-result.schema.json", "schemas/foundation/schema-validation-batch-result.schema.json"],
   ["mechanism-batch-request.schema.json", "candidate/foundation-mechanisms/mechanism-batch-request.schema.json", "schemas/foundation/mechanism-batch-request.schema.json"],
   ["mechanism-batch-result.schema.json", "candidate/foundation-mechanisms/mechanism-batch-result.schema.json", "schemas/foundation/mechanism-batch-result.schema.json"],
+  ["session-trace-bundle.schema.json", "src/schemas/session-trace-bundle.schema.json", "schemas/foundation/session-trace-bundle.schema.json"],
+  ["orchestration-blueprint.schema.json", "src/schemas/orchestration-blueprint.schema.json", "schemas/foundation/orchestration-blueprint.schema.json"],
 ]);
 
 // Non-Schema Foundation assets projected verbatim. They are deliberately kept
@@ -809,6 +811,8 @@ function contractsIndexSource() {
     "  stableError,",
     '} from "./errors.mjs";',
     'export { canonicalJson, digestDocument } from "./canonical.mjs";',
+    'export { SESSION_TRACE_BUNDLE_SCHEMA_ID, SESSION_TRACE_BUNDLE_KIND, verifySessionTraceBundleInvariants } from "./session-trace-bundle-invariants.mjs";',
+    'export { ORCHESTRATION_BLUEPRINT_SCHEMA_ID, ORCHESTRATION_BLUEPRINT_KIND, verifyOrchestrationBlueprintStructure } from "./orchestration-blueprint-structure.mjs";',
     "",
   ].join("\n");
 }
@@ -1256,6 +1260,8 @@ export async function buildQuickstartProfileProjection({
   sources.contractsIndex = await readSourceText(contractsRoot, "src/index.mjs");
   sources.contractsErrors = await readSourceText(contractsRoot, "src/errors.mjs");
   sources.errorCodes = await readSourceText(contractsRoot, "src/error-codes.json");
+  sources.stbInvariants = await readSourceText(contractsRoot, "src/session-trace-bundle-invariants.mjs");
+  sources.bpStructure = await readSourceText(contractsRoot, "src/orchestration-blueprint-structure.mjs");
   sources.operationRequest = await readSourceText(contractsRoot, "src/schemas/operation-request.schema.json");
   sources.operationResult = await readSourceText(contractsRoot, "src/schemas/operation-result.schema.json");
   sources.migrationManifestSchema = await readSourceText(
@@ -1558,6 +1564,8 @@ export async function buildQuickstartProfileProjection({
   setText("runtime/contracts/index.mjs", contractsIndexSource());
   setText("runtime/contracts/errors.mjs", sources.contractsErrors);
   setText("runtime/contracts/error-codes.json", sources.errorCodes);
+  setText("runtime/contracts/session-trace-bundle-invariants.mjs", sources.stbInvariants);
+  setText("runtime/contracts/orchestration-blueprint-structure.mjs", sources.bpStructure);
   setText("runtime/contracts/canonical.mjs", canonicalSource(sources.auditSurface));
   setText("runtime/contracts-candidate/index.mjs", projectContractsCandidateIndex(sources.candidateIndex));
   setText("runtime/json-boundary.mjs", jsonBoundarySource(sources.candidateIndex));
@@ -1622,6 +1630,8 @@ export async function buildQuickstartProfileProjection({
     ["packages/skill-family-contracts/src/schemas/migration-manifest.schema.json", sources.migrationManifestSchema, "projected"],
     ["packages/skill-family-contracts/src/errors.mjs", sources.contractsErrors, "projected"],
     ["packages/skill-family-contracts/src/error-codes.json", sources.errorCodes, "projected"],
+    ["packages/skill-family-contracts/src/session-trace-bundle-invariants.mjs", sources.stbInvariants, "projected"],
+    ["packages/skill-family-contracts/src/orchestration-blueprint-structure.mjs", sources.bpStructure, "projected"],
     ["packages/skill-family-contracts/src/audit-surface.mjs", sources.auditSurface, "extraction-input"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/protocol.json", candidateSchemaTexts["protocol.json"], "projected"],
     ["packages/skill-family-contracts/candidate/quickstart-profile/resource.schema.json", candidateSchemaTexts["resource.schema.json"], "projected"],

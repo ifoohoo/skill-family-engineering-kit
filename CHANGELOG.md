@@ -1,5 +1,24 @@
 # Changelog
 
+<!-- release-skill:changelog:start version=0.39.2 locale=en baseline=sha256:64307b213c4ee667afaea71bbb8e5c38716fc8661e99544756133b1d95e058f9 -->
+## [0.39.2] - 2026-11-26
+
+Lockstep 0.39.2 update adding precompiled standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint to the offline Quickstart Profile Bundle builder.
+
+### Added
+
+- Projects standalone validators for professional-conclusion, session-trace-bundle, and orchestration-blueprint into offline Quickstart Profile Bundles.
+
+### Changed
+
+- Advances package version coordinate to 0.39.2 in lockstep.
+
+### Upgrade Notes
+
+Adopt in lockstep with all 0.39.2 units; the four top-level CLI commands remain unchanged.
+<!-- release-skill:changelog:end version=0.39.2 locale=en -->
+
+
 <!-- release-skill:changelog:start version=0.39.1 locale=en baseline=sha256:091c9dd8dc6ca234f40d9d3b06c6bc0ca145709db3a2bd92ea67735b5ffbe64e -->
 ## [0.39.1] - 2026-11-25
 
